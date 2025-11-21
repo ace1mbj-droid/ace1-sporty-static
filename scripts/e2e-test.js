@@ -16,6 +16,7 @@
 const { createClient } = require('@supabase/supabase-js');
 const fetch = global.fetch || require('node-fetch');
 const fs = require('fs');
+const adminClient = require('./supabase-admin.js');
 
 async function run() {
   const projectRef = process.env.SUPABASE_PROJECT_REF;
@@ -59,7 +60,7 @@ async function run() {
         if (serviceRole) {
           console.log('Attempting to create user via SUPABASE_SERVICE_ROLE_KEY for', email);
           try {
-            const admin = createClient(SUPABASE_URL, serviceRole, { auth: { persistSession: false } });
+            const admin = adminClient;
 
             // Try the modern admin API first, fallback to older api method if present.
             let createResp;
@@ -122,7 +123,7 @@ async function run() {
 
     if (serviceRole) {
       try {
-        const admin = createClient(SUPABASE_URL, serviceRole, { auth: { persistSession: false } });
+        const admin = adminClient;
         const { data: seeded, error: seedErr } = await admin
           .from('products')
           .insert([{ name: 'E2E Test Product', price_cents: 100, currency: 'INR', sku: 'E2E-SEED' }])
@@ -191,7 +192,7 @@ async function run() {
     }
 
     console.log('Inserting fallback order + payment via SUPABASE_SERVICE_ROLE_KEY');
-    const admin = createClient(SUPABASE_URL, serviceRole, { auth: { persistSession: false } });
+    const admin = adminClient;
 
     try {
       const { data: insertedOrder, error: insertErr } = await admin
