@@ -114,33 +114,58 @@ async function run() {
   }
 
   if (!products || products.length === 0) {
-    // No products found — try seeding a simple product using SUPABASE_DB_URL
+    // No products found — try seeding a simple product. Prefer using the
+    // SUPABASE_SERVICE_ROLE_KEY client over psql (pushing TCP to the DB host
+    // often fails from GH Actions). If that's not available, fall back to psql.
     console.warn('No products available to create an order — attempting to seed a product');
-    const dbUrl = process.env.SUPABASE_DB_URL;
-    if (!dbUrl) {
-      console.error('No products and no SUPABASE_DB_URL configured — cannot seed product');
-      process.exit(6);
+    const serviceRole = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+    if (serviceRole) {
+      try {
+        const admin = createClient(SUPABASE_URL, serviceRole, { auth: { persistSession: false } });
+        const { data: seeded, error: seedErr } = await admin
+          .from('products')
+          .insert([{ name: 'E2E Test Product', price_cents: 100, currency: 'INR', sku: 'E2E-SEED' }])
+          .select('id, price_cents')
+          .single();
+
+        if (seedErr) throw seedErr;
+
+        console.log('Seeded product via service role id:', seeded.id);
+        product = { id: seeded.id, price_cents: seeded.price_cents };
+      } catch (e) {
+        console.warn('Service-role product seed failed:', e?.message || e);
+        // fall back to psql below
+      }
     }
 
-    const { execSync } = require('child_process');
-    const seedSQL = `INSERT INTO products (name, price_cents, currency, sku) VALUES ('E2E Test Product', 100, 'INR', 'E2E-SEED') RETURNING id, price_cents;`;
-    try {
-      const raw = execSync(`psql "${dbUrl}" -t -A -c "${seedSQL.replace(/"/g, '\\"')}"`).toString().trim();
-      // raw will be like: <id>|100 or just <id> depending on default psql settings, split on | to be defensive
-      const parts = raw.split('|');
-      const seededId = parts[0];
-      const seededPrice = parts[1] ? parseInt(parts[1], 10) : 100;
-      if (!seededId) {
-        console.error('Seeding product failed, psql returned empty result:', raw);
+    if (!product) {
+      const dbUrl = process.env.SUPABASE_DB_URL;
+      if (!dbUrl) {
+        console.error('No products and no SUPABASE_DB_URL configured — cannot seed product');
         process.exit(6);
       }
 
-      console.log('Seeded product id:', seededId);
-      // Assign a product object so the rest of the script can use it
-      product = { id: seededId, price_cents: seededPrice };
-    } catch (e) {
-      console.error('Failed to seed product via psql:', (e && e.message) || e);
-      process.exit(6);
+      const { execSync } = require('child_process');
+      const seedSQL = `INSERT INTO products (name, price_cents, currency, sku) VALUES ('E2E Test Product', 100, 'INR', 'E2E-SEED') RETURNING id, price_cents;`;
+      try {
+        const raw = execSync(`psql "${dbUrl}" -t -A -c "${seedSQL.replace(/"/g, '\\"')}"`).toString().trim();
+        // raw will be like: <id>|100 or just <id> depending on default psql settings, split on | to be defensive
+        const parts = raw.split('|');
+        const seededId = parts[0];
+        const seededPrice = parts[1] ? parseInt(parts[1], 10) : 100;
+        if (!seededId) {
+          console.error('Seeding product failed, psql returned empty result:', raw);
+          process.exit(6);
+        }
+
+        console.log('Seeded product id (psql):', seededId);
+        // Assign a product object so the rest of the script can use it
+        product = { id: seededId, price_cents: seededPrice };
+      } catch (e) {
+        console.error('Failed to seed product via psql:', (e && e.message) || e);
+        process.exit(6);
+      }
     }
   } else {
     var product = products[0];
