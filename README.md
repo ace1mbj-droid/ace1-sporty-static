@@ -79,6 +79,8 @@ GitHub secrets to set
 - `SUPABASE_ACCESS_TOKEN` — personal supabase CLI token
 - `SUPABASE_PROJECT_REF` — the Supabase project ref id
 - `SUPABASE_DB_URL` — postgres connection string with privileges to run SQL (service role preferred)
+ - `SUPABASE_KEY` — optional server/project key for trusted server code (keep secret)
+ - `SUPABASE_SERVICE_ROLE_KEY` — service-role key used by CI and server-side scripts for admin actions. Store this in CI secrets or a secure environment and avoid exposing it in frontend code.
 - `RZ_KEY` and `RZ_SECRET` — Razorpay keys
 - `FTP_HOST`, `FTP_USER`, `FTP_PASSWORD` — FTP credentials used by the deploy action
 
