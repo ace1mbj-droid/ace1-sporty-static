@@ -28,17 +28,21 @@ jobs:
       - name: Link to Supabase project
         run: npx supabase link --project-ref ${{ secrets.SUPABASE_PROJECT_REF }}
 
-      - name: Run SQL schema & RLS (attempt)
+      - name: Apply DB schema via migrations (supabase db push)
         run: |
-          echo "Checking DB connectivity from runner..."
-          if psql "${{ secrets.SUPABASE_DB_URL }}" -c '\q' >/dev/null 2>&1; then
-            echo "DB reachable — applying DB schema and RLS"
-            psql "${{ secrets.SUPABASE_DB_URL }}" -f supabase/schema.sql
-            psql "${{ secrets.SUPABASE_DB_URL }}" -f supabase/rls.sql
+          echo "Attempting to push migrations to the linked Supabase project..."
+          # Try to push migrations using the supabase CLI (linked project). This may require Docker or network privileges.
+          set +e
+          npx supabase db push --linked --yes --project-ref ${{ secrets.SUPABASE_PROJECT_REF }}
+          rc=$?
+          if [ $rc -ne 0 ]; then
+            echo "Warning: 'supabase db push' failed with exit code $rc."
+            echo "This can happen if the runner can't reach the DB or if Docker is required for the CLI."
+            echo "Continuing - migrations did not run. See README for CI options to provide DB access or run migrations from a trusted host."
           else
-            echo "DB not reachable from runner — skipping direct SQL apply."
-            echo "If you need to apply DB schema in CI, either enable network access or use migrations via 'supabase db push' against a linked project or run the schema from a trusted host."
+            echo "Migrations applied successfully."
           fi
+          set -e
 
       - name: Deploy Edge Functions
         run: |
