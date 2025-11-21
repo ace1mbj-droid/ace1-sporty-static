@@ -1,4 +1,4 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient } from 'npm:@supabase/supabase-js';
 
 // This Edge Function is intended to run in Supabase Edge Functions environment (Deno).
 // Required env vars: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, RZ_KEY, RZ_SECRET
