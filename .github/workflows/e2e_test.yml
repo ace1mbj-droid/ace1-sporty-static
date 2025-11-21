@@ -66,7 +66,7 @@ jobs:
       - name: Verify DB updates via psql
         shell: bash
         env:
-          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          SUPABASE_DB_URL: ${{ secrets.https://vorqavsuqcjnkjzwkyzr.supabase.co }}
         run: |
           set -euo pipefail
           if [ ! -f /tmp/e2e-output.json ]; then

@@ -50,6 +50,50 @@ async function run() {
     } catch (e) {
       console.warn('Sign-in fallback threw', e?.message || e);
     }
+      // If sign-up / sign-in both failed, try to create the user using a
+      // service-role/admin key (SUPABASE_SERVICE_ROLE_KEY). This lets CI create
+      // a confirmed user even when the project blocks signup domains.
+      if (!token) {
+        const serviceRole = process.env.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZvcnFhdnN1cWNqbmtqendreXpyIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2MzY1NjAxMywiZXhwIjoyMDc5MjMyMDEzfQ.zMhcB1Hk5Ym8lxEAfrPKKiw5osYd2syVAuKT5KB7mSM;
+        if (serviceRole) {
+          console.log('Attempting to create user via SUPABASE_SERVICE_ROLE_KEY for', email);
+          try {
+            const admin = createClient(SUPABASE_URL, serviceRole, { auth: { persistSession: false } });
+
+            // Try the modern admin API first, fallback to older api method if present.
+            let createResp;
+            if (admin.auth && admin.auth.admin && typeof admin.auth.admin.createUser === 'function') {
+              createResp = await admin.auth.admin.createUser({ email, password, email_confirm: true });
+            } else if (admin.auth && admin.auth.api && typeof admin.auth.api.createUser === 'function') {
+              // Older supabase-js versions may expose auth.api.createUser
+              createResp = await admin.auth.api.createUser({ email, password, email_confirm: true });
+            } else {
+              throw new Error('Admin create user method not found on supabase client');
+            }
+
+            if (createResp && createResp.error) {
+              console.warn('Service-role createUser returned error:', createResp.error.message || createResp.error);
+            } else {
+              console.log('Created user via service-role; attempting sign-in to obtain session token');
+              // After creating the user as admin, sign in with the anon client to get a session token
+              try {
+                const signIn = await supabase.auth.signInWithPassword({ email, password });
+                if (signIn.error) {
+                  console.warn('Sign-in after service-role create failed:', signIn.error.message);
+                } else {
+                  token = signIn.data?.session?.access_token || '';
+                }
+              } catch (err) {
+                console.warn('Sign-in after service-role create threw:', err?.message || err);
+              }
+            }
+          } catch (err) {
+            console.warn('Service-role create user attempt failed:', err?.message || err);
+          }
+        } else {
+          console.log('No SUPABASE_SERVICE_ROLE_KEY available — skipping admin user creation');
+        }
+      }
   } else {
     const signIn = await supabase.auth.signInWithPassword({ email, password })
       .catch(() => ({ error: null, data: { session: null } }));
@@ -69,11 +113,38 @@ async function run() {
   }
 
   if (!products || products.length === 0) {
-    console.error('No products available to create an order');
-    process.exit(6);
+    // No products found — try seeding a simple product using SUPABASE_DB_URL
+    console.warn('No products available to create an order — attempting to seed a product');
+    const dbUrl = process.env.SUPABASE_DB_URL;
+    if (!dbUrl) {
+      console.error('No products and no SUPABASE_DB_URL configured — cannot seed product');
+      process.exit(6);
+    }
+
+    const { execSync } = require('child_process');
+    const seedSQL = `INSERT INTO products (name, price_cents, currency, sku) VALUES ('E2E Test Product', 100, 'INR', 'E2E-SEED') RETURNING id, price_cents;`;
+    try {
+      const raw = execSync(`psql "${dbUrl}" -t -A -c "${seedSQL.replace(/"/g, '\\"')}"`).toString().trim();
+      // raw will be like: <id>|100 or just <id> depending on default psql settings, split on | to be defensive
+      const parts = raw.split('|');
+      const seededId = parts[0];
+      const seededPrice = parts[1] ? parseInt(parts[1], 10) : 100;
+      if (!seededId) {
+        console.error('Seeding product failed, psql returned empty result:', raw);
+        process.exit(6);
+      }
+
+      console.log('Seeded product id:', seededId);
+      // Assign a product object so the rest of the script can use it
+      product = { id: seededId, price_cents: seededPrice };
+    } catch (e) {
+      console.error('Failed to seed product via psql:', (e && e.message) || e);
+      process.exit(6);
+    }
+  } else {
+    var product = products[0];
   }
 
-  const product = products[0];
 
   // If we have a session token attempt to call the create-order Edge Function
   let orderId = null;
