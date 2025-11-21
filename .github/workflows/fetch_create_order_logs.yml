@@ -16,4 +16,5 @@ jobs:
         run: |
           set -euo pipefail
           echo "Fetching most recent 200 logs for function: create-order"
-          npx supabase functions logs create-order --project-ref "$SUPABASE_PROJECT_REF" --token "$SUPABASE_ACCESS_TOKEN" --limit 200 || true
+          # newer CLI uses --project instead of --project-ref; add --debug to get more detail
+          npx supabase functions logs create-order --project "$SUPABASE_PROJECT_REF" --token "$SUPABASE_ACCESS_TOKEN" --limit 200 --debug || true
