@@ -64,18 +64,13 @@ jobs:
             --data-raw "$PAYLOAD" --fail -o /tmp/e2e-webhook-response.json || { echo "Webhook POST failed"; cat /tmp/e2e-webhook-response.json || true; exit 1; }
           echo "Webhook response:"; cat /tmp/e2e-webhook-response.json || true
 
-      - name: Verify DB updates via psql
-        shell: bash
+      - name: Verify DB updates (service role)
         env:
-          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: |
           set -euo pipefail
           if [ ! -f /tmp/e2e-output.json ]; then
             echo "/tmp/e2e-output.json missing — cannot verify DB without order id"; exit 1;
           fi
-          ORDER_ID=$(jq -r '.orderId' /tmp/e2e-output.json)
-          RAZOR_ID=$(jq -r '.razorId' /tmp/e2e-output.json)
-          echo "Checking payments table for provider_order_id=$RAZOR_ID"
-          psql "$SUPABASE_DB_URL" -t -c "SELECT id, provider_order_id, status FROM payments WHERE provider_order_id = '${RAZOR_ID}' LIMIT 1;"
-          echo "Checking orders table for id=$ORDER_ID"
-          psql "$SUPABASE_DB_URL" -t -c "SELECT id, status FROM orders WHERE id = '${ORDER_ID}' LIMIT 1;"
+          node ./scripts/e2e-verify.js
