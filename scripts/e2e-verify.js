@@ -12,7 +12,9 @@
 */
 
 const fs = require('fs');
-const { createClient } = require('@supabase/supabase-js');
+// Prefer using the shared admin client so we don't require caller code to
+// re-create a client with the service role key in multiple places.
+const admin = require('./supabase-admin.js');
 
 async function main(){
   const projectRef = process.env.SUPABASE_PROJECT_REF;
@@ -37,8 +39,10 @@ async function main(){
     process.exit(4);
   }
 
-  const SUPABASE_URL = `https://${projectRef}.supabase.co`;
-  const admin = createClient(SUPABASE_URL, serviceRole, { auth: { persistSession: false } });
+  if (!admin) {
+    console.error('Admin client not available — check SUPABASE_SERVICE_ROLE_KEY');
+    process.exit(2);
+  }
 
   try {
     console.log('Checking orders table for id=', orderId);
