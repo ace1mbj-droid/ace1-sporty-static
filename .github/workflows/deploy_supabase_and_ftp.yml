@@ -62,7 +62,7 @@ jobs:
           mkdir -p dist
           rsync -av --exclude='.git' --exclude='.github' --exclude='node_modules' --exclude='dist' ./ dist/
 
-      - name: FTP Deploy via SFTP
+      - name: FTP Deploy
         uses: /@4.3.0
         with:
           server: ${{ secrets.FTP_HOST }}
@@ -70,8 +70,8 @@ jobs:
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: ./dist
           server-dir: /public_html
-          protocol: sftp
-          port: 22
+          protocol: ftp
+          port: 21
 
 # Secrets for the workflow:
 # - SUPABASE_ACCESS_TOKEN (supabase CLI token)
