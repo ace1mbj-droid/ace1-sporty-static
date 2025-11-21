@@ -28,11 +28,17 @@ jobs:
       - name: Link to Supabase project
         run: npx supabase link --project-ref ${{ secrets.SUPABASE_PROJECT_REF }}
 
-      - name: Run SQL schema & RLS
+      - name: Run SQL schema & RLS (attempt)
         run: |
-          echo "Applying DB schema"
-          psql "${{ secrets.SUPABASE_DB_URL }}" -f supabase/schema.sql
-          psql "${{ secrets.SUPABASE_DB_URL }}" -f supabase/rls.sql
+          echo "Checking DB connectivity from runner..."
+          if psql "${{ secrets.SUPABASE_DB_URL }}" -c '\q' >/dev/null 2>&1; then
+            echo "DB reachable — applying DB schema and RLS"
+            psql "${{ secrets.SUPABASE_DB_URL }}" -f supabase/schema.sql
+            psql "${{ secrets.SUPABASE_DB_URL }}" -f supabase/rls.sql
+          else
+            echo "DB not reachable from runner — skipping direct SQL apply."
+            echo "If you need to apply DB schema in CI, either enable network access or use migrations via 'supabase db push' against a linked project or run the schema from a trusted host."
+          fi
 
       - name: Deploy Edge Functions
         run: |
