@@ -113,6 +113,8 @@ To apply migrations from CI the recommended approach is:
 	- Avoid putting `SERVICE_ROLE_KEY` in public/shared CI secrets. If you must, ensure the secret is scoped and stored securely and that the workflow checks expected constraints.
 
 If you want, I can: convert the rest of the DB DDL into smaller migration files, add a `supabase/migrations/` best-practices note, or show how to wire up a self-hosted runner (I can add a quick GitHub Actions instructions snippet for that). 
+
+CI deploy trigger: small doc update to kick off GitHub Actions workflow (automated by assistant) — 2025-11-21
 - Use `supabase secrets` to manage function environment variables; these are mounted into Edge Functions securely.
 
 GitHub & Supabase: Full setup from scratch
