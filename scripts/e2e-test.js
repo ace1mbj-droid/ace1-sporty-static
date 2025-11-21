@@ -140,32 +140,11 @@ async function run() {
     }
 
     if (!product) {
-      const dbUrl = process.env.SUPABASE_DB_URL;
-      if (!dbUrl) {
-        console.error('No products and no SUPABASE_DB_URL configured — cannot seed product');
-        process.exit(6);
-      }
-
-      const { execSync } = require('child_process');
-      const seedSQL = `INSERT INTO products (name, price_cents, currency, sku) VALUES ('E2E Test Product', 100, 'INR', 'E2E-SEED') RETURNING id, price_cents;`;
-      try {
-        const raw = execSync(`psql "${dbUrl}" -t -A -c "${seedSQL.replace(/"/g, '\\"')}"`).toString().trim();
-        // raw will be like: <id>|100 or just <id> depending on default psql settings, split on | to be defensive
-        const parts = raw.split('|');
-        const seededId = parts[0];
-        const seededPrice = parts[1] ? parseInt(parts[1], 10) : 100;
-        if (!seededId) {
-          console.error('Seeding product failed, psql returned empty result:', raw);
-          process.exit(6);
-        }
-
-        console.log('Seeded product id (psql):', seededId);
-        // Assign a product object so the rest of the script can use it
-        product = { id: seededId, price_cents: seededPrice };
-      } catch (e) {
-        console.error('Failed to seed product via psql:', (e && e.message) || e);
-        process.exit(6);
-      }
+      // Don't attempt direct TCP psql access from CI — most hosted runners cannot
+      // reach the DB host. Require SUPABASE_SERVICE_ROLE_KEY to be present.
+      const dbMsg = 'No product could be found or created. CI requires SUPABASE_SERVICE_ROLE_KEY to seed products.';
+      console.error(dbMsg);
+      process.exit(6);
     }
   } else {
     var product = products[0];
@@ -183,7 +162,9 @@ async function run() {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`
+        Authorization: `Bearer ${token}`,
+        // Ask the function to skip contacting external payment provider during CI
+        'x-e2e-skip-razorpay': '1'
       },
       body: JSON.stringify({ cart: [{ id: product.id, qty: 1 }], shipping: { address: 'E2E Test' } })
     });
@@ -202,29 +183,40 @@ async function run() {
   // fallback to inserting order + payment directly into the Postgres DB using
   // SUPABASE_DB_URL (this still allows testing the webhook flow).
   if (!orderId) {
-    const dbUrl = process.env.SUPABASE_DB_URL;
-    if (!dbUrl) {
-      console.error('No SUPABASE_DB_URL configured — cannot seed DB fallback');
+    // Use the SUPABASE_SERVICE_ROLE_KEY to write orders/payments from CI
+    const serviceRole = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if (!serviceRole) {
+      console.error('No SUPABASE_SERVICE_ROLE_KEY configured — cannot create fallback order in CI');
       process.exit(9);
     }
 
-    // Generate simple ids
-    const { execSync } = require('child_process');
-    const ts = Date.now();
-    const newRazorId = `e2e_razor_${ts}`;
+    console.log('Inserting fallback order + payment via SUPABASE_SERVICE_ROLE_KEY');
+    const admin = createClient(SUPABASE_URL, serviceRole, { auth: { persistSession: false } });
 
-    console.log('Inserting fallback order + payment directly into DB (ORDER/payment will use generated ids)');
-    // Insert order (total_cents 100)
-    const insertOrderSQL = `INSERT INTO orders (total_cents, currency, shipping_address) VALUES (100, 'INR', '{"address": "e2e"}') RETURNING id;`;
-    const orderIdRaw = execSync(`psql "${dbUrl}" -t -A -c "${insertOrderSQL.replace(/"/g, '\"')}"`).toString().trim();
-    orderId = orderIdRaw;
-    console.log('Inserted order id:', orderId);
+    try {
+      const { data: insertedOrder, error: insertErr } = await admin
+        .from('orders')
+        .insert([{ total_cents: 100, currency: 'INR', shipping_address: { address: 'e2e' } }])
+        .select('id')
+        .single();
+      if (insertErr) throw insertErr;
+      orderId = insertedOrder.id;
 
-    const insertPaymentSQL = `INSERT INTO payments (order_id, provider, provider_order_id, status, amount_cents) VALUES ('${orderId}', 'razorpay', '${newRazorId}', 'created', 100) RETURNING id;`;
-    const paymentId = execSync(`psql "${dbUrl}" -t -A -c "${insertPaymentSQL.replace(/"/g, '\"')}"`).toString().trim();
-    console.log('Inserted payment id:', paymentId);
+      const ts = Date.now();
+      const newRazorId = `e2e_razor_${ts}`;
+      const { data: insertedPayment, error: payErr } = await admin
+        .from('payments')
+        .insert([{ order_id: orderId, provider: 'razorpay', provider_order_id: newRazorId, status: 'created', amount_cents: 100 }])
+        .select('id')
+        .single();
+      if (payErr) throw payErr;
 
-    razorId = newRazorId;
+      razorId = newRazorId;
+      console.log('Inserted fallback order id:', orderId, 'payment id:', insertedPayment.id);
+    } catch (e) {
+      console.error('Failed fallback DB writes via service role:', (e && e.message) || e);
+      process.exit(9);
+    }
   }
 
   // Persist results for later verification (psql step)
