@@ -1,0 +1,37 @@
+name: Build & FTP Deploy
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Prepare dist folder
+        run: |
+          rm -rf dist || true
+          mkdir -p dist
+          rsync -av --exclude='.git' --exclude='.github' --exclude='node_modules' --exclude='.vscode' --exclude='dist' ./ dist/ || true
+
+      - name: FTP Deploy (SFTP/FTPS)
+        uses: SamKirkland/FTP-Deploy-Action@4.3.0
+        with:
+          server: ${{ secrets.FTP_HOST }}
+          username: ${{ secrets.FTP_USER }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: ./dist
+          server-dir: /public_html
+          protocol: sftp
+          port: 22
+
+# Secrets to set: FTP_HOST, FTP_USER, FTP_PASSWORD
+# Alternative: use SSH key or other deployment action if host requires it.
