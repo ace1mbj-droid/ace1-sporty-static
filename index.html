@@ -82,10 +82,11 @@
   <script type="module" src="scripts/cart.js"></script>
   <!-- Optional: place your Supabase & Edge function endpoints here (replace placeholders) -->
   <script>
-    window.__ACE1_SUPABASE_URL__ = 'https://your-supabase-project.supabase.co';
-    window.__ACE1_SUPABASE_ANON_KEY__ = 'your-anon-key';
-    // Edge function to create order; e.g., https://xyz.supabase.co/functions/v1/create-order
-    window.__ACE1_EDGE_CREATE_ORDER__ = '';
+    // These will be updated from the project values — safe to use anon key in the frontend.
+    window.__ACE1_SUPABASE_URL__ = 'https://vorqavsuqcjnkjzwkyzr.supabase.co';
+    window.__ACE1_SUPABASE_ANON_KEY__ = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZvcnFhdnN1cWNqbmtqendreXpyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM2NTYwMTMsImV4cCI6MjA3OTIzMjAxM30.HhExWu9XMFm2CBhoZUnHyYI0D0-smScXb_pSzCGkMvI';
+    // Edge function endpoint (create-order)
+    window.__ACE1_EDGE_CREATE_ORDER__ = 'https://vorqavsuqcjnkjzwkyzr.functions.supabase.co/create-order';
   </script>
 </body>
 </html>
