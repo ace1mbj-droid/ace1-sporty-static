@@ -89,7 +89,30 @@ SUPABASE_ACCESS_TOKEN=abc SUPABASE_PROJECT_REF=xyz SUPABASE_DB_URL=postgres://..
 ```
 
 Advanced options:
-- Replace direct `psql` schema execution with Supabase migrations (recommended) and call `supabase db push` in CI.
+ - Replace direct `psql` schema execution with Supabase migrations (recommended) and call `supabase db push` in CI.
+
+CI migrations and secure DB access
+---------------------------------
+
+I added a migration under `supabase/migrations/20251121090000_init_schema.sql` so you can track schema changes with Supabase migrations.
+
+To apply migrations from CI the recommended approach is:
+
+- Use the Supabase CLI in CI to push migrations: `npx supabase db push --linked --yes`. This workflow already attempts this in `.github/workflows/deploy_supabase_and_ftp.yml`.
+
+- Important: pushing migrations safely from CI requires the runner to have access to the project's database. There are three ways to get secure DB access from CI:
+
+	1) Self-hosted runner (recommended for production migrations): run the workflow on a self-hosted runner inside your network (or with a secure route/VPN to the DB). This runner has predictable network access and avoids exposing credentials broadly.
+
+	2) Allowlist GitHub Actions egress IPs (difficult): you can configure your DB firewall to allow GitHub's IP ranges, but these change and are harder to maintain; it's usually not the best option for production.
+
+	3) Use a secure automation host or operator: run migrations from an operations host you control (CI job can create a short-lived ticket and a separate automated job will pull migration artifacts and apply them from a trusted host).
+
+- Notes on tokens/keys:
+	- `SUPABASE_ACCESS_TOKEN` (CI secret) is used by the Supabase CLI to authenticate. Use a dedicated token limited to the necessary projects.
+	- Avoid putting `SERVICE_ROLE_KEY` in public/shared CI secrets. If you must, ensure the secret is scoped and stored securely and that the workflow checks expected constraints.
+
+If you want, I can: convert the rest of the DB DDL into smaller migration files, add a `supabase/migrations/` best-practices note, or show how to wire up a self-hosted runner (I can add a quick GitHub Actions instructions snippet for that). 
 - Use `supabase secrets` to manage function environment variables; these are mounted into Edge Functions securely.
 
 GitHub & Supabase: Full setup from scratch
