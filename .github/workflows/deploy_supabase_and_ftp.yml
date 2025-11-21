@@ -19,14 +19,14 @@ jobs:
       - name: Install psql (for running SQL)
         run: sudo apt-get update && sudo apt-get install -y postgresql-client
 
-      - name: Install Supabase CLI
-        run: npm install -g supabase@latest
+      # Use npx instead of installing the Supabase CLI globally in CI
+      # global install via npm is not supported on the Supabase package; using npx keeps the steps reproducible
 
       - name: Supabase login (token)
-        run: supabase login --token ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: npx supabase login --token ${{ secrets.SUPABASE_ACCESS_TOKEN }}
 
       - name: Link to Supabase project
-        run: supabase link --project-ref ${{ secrets.SUPABASE_PROJECT_REF }}
+        run: npx supabase link --project-ref ${{ secrets.SUPABASE_PROJECT_REF }}
 
       - name: Run SQL schema & RLS
         run: |
@@ -41,14 +41,14 @@ jobs:
               fn=$(basename "$f")
               echo "Deploying $fn"
               # Deploy using API bundling to avoid needing Docker on the runner
-              supabase functions deploy "$fn" --project-ref ${{ secrets.SUPABASE_PROJECT_REF }} --use-api --no-verify
+              npx supabase functions deploy "$fn" --project-ref ${{ secrets.SUPABASE_PROJECT_REF }} --use-api --no-verify
             fi
           done
 
       - name: Set function secrets (Razorpay)
         run: |
           if [ -n "${{ secrets.RZ_KEY }}" ] && [ -n "${{ secrets.RZ_SECRET }}" ]; then
-            supabase secrets set RZ_KEY="${{ secrets.RZ_KEY }}" RZ_SECRET="${{ secrets.RZ_SECRET }}" --project-ref ${{ secrets.SUPABASE_PROJECT_REF }}
+            npx supabase secrets set RZ_KEY="${{ secrets.RZ_KEY }}" RZ_SECRET="${{ secrets.RZ_SECRET }}" --project-ref ${{ secrets.SUPABASE_PROJECT_REF }}
           else
             echo "RZ_KEY / RZ_SECRET not set; skipping secret set"
           fi
