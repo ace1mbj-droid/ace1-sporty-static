@@ -230,7 +230,44 @@ class CheckoutManager {
         };
     }
 
-    initiateRazorpayPayment(orderData) {
+    async initiateRazorpayPayment(orderData) {
+        // If an Edge Function endpoint is configured, try to create the order server-side
+        // so the backend can create the Razorpay order and create a payments record.
+        // This stores the server response on `this.serverOrder` so we skip duplicating
+        // order creation on the client after payment.
+        const EDGE_URL = window.__ACE1_EDGE_CREATE_ORDER__ || '';
+        if (EDGE_URL) {
+            this.serverOrder = null;
+            try {
+                // Try to get a Supabase session token if available to authenticate the request
+                const supabase = window.getSupabase?.();
+                let token = '';
+                try {
+                    token = (await supabase?.auth.getSession())?.data?.session?.access_token || '';
+                } catch (e) {
+                    // ignore
+                }
+
+                const resp = await fetch(EDGE_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+                    },
+                    body: JSON.stringify({ items: this.cartItems, shipping: orderData.shipping })
+                });
+
+                const json = await resp.json().catch(() => ({}));
+                if (resp.ok && json) {
+                    // We expect { orderId, razor } back from the Edge function
+                    this.serverOrder = json;
+                } else {
+                    console.warn('Edge create-order response not ok, falling back to client flow', json);
+                }
+            } catch (err) {
+                console.warn('Edge create-order request failed, falling back to client flow:', err?.message || err);
+            }
+        }
         // Get Razorpay config
         const config = window.RAZORPAY_CONFIG || {
             KEY_ID: 'rzp_test_your_key_here',
@@ -246,7 +283,7 @@ class CheckoutManager {
             name: config.COMPANY_NAME,
             description: 'Terahertz Technology Footwear',
             image: config.COMPANY_LOGO || '',
-            order_id: orderData.orderId,
+            order_id: (this.serverOrder?.razor?.id) || orderData.orderId,
             handler: (response) => {
                 this.handlePaymentSuccess(orderData, response);
             },
@@ -280,7 +317,7 @@ class CheckoutManager {
             setTimeout(() => {
                 this.handlePaymentSuccess(orderData, {
                     razorpay_payment_id: 'demo_' + Date.now(),
-                    razorpay_order_id: orderData.orderId,
+                    razorpay_order_id: (this.serverOrder?.razor?.id) || orderData.orderId,
                     razorpay_signature: 'demo_signature'
                 });
             }, 1000);
@@ -308,6 +345,21 @@ class CheckoutManager {
         orderData.paymentStatus = 'paid';
         orderData.paymentDetails = paymentResponse;
 
+        // If the order was created on the server (Edge Function) then the server
+        // already inserted an order + payment record; the Razorpay webhook should
+        // mark the payment as captured and update the order status. In that case
+        // we avoid creating a duplicate order client-side.
+        if (this.serverOrder && this.serverOrder.orderId) {
+            try {
+                localStorage.removeItem('ace1_cart');
+            } catch (e) {
+                /* ignore */
+            }
+            this.redirectToConfirmation(this.serverOrder.orderId);
+            return;
+        }
+
+        // Fallback: persist order via client/service
         this.saveOrder(orderData);
         this.redirectToConfirmation(orderData.orderId);
     }
