@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 40px; }
+        .test-section { margin: 20px 0; padding: 20px; border: 1px solid #ddd; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+        pre { background: #f5f5f5; padding: 10px; overflow: auto; }
+    </style>
+</head>
+<body>
+    <h1>Stock Update Test</h1>
+    
+    <div class="test-section">
+        <h2>1. Test Database Connection</h2>
+        <button onclick="testConnection()">Test Connection</button>
+        <pre id="connection-result"></pre>
+    </div>
+
+    <div class="test-section">
+        <h2>2. Load All Products</h2>
+        <button onclick="loadProducts()">Load Products</button>
+        <pre id="products-result"></pre>
+    </div>
+
+    <div class="test-section">
+        <h2>3. Update Product Stock to 0</h2>
+        <label>Product ID: <input type="number" id="product-id" value="1"></label><br><br>
+        <button onclick="updateStockToZero()">Set Stock to 0</button>
+        <pre id="update-result"></pre>
+    </div>
+
+    <div class="test-section">
+        <h2>4. Verify Stock is 0</h2>
+        <button onclick="verifyStock()">Check Stock</button>
+        <pre id="verify-result"></pre>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-config.js"></script>
+    
+    <script>
+        // Wait for page to load
+        window.addEventListener('DOMContentLoaded', () => {
+            console.log('Page loaded');
+            console.log('Supabase library:', typeof window.supabase);
+            console.log('getSupabase function:', typeof window.getSupabase);
+            
+            if (!window.getSupabase) {
+                document.body.innerHTML = '<h1 style="color: red;">ERROR: Supabase not loaded!</h1><p>Check console for details.</p>';
+                return;
+            }
+        });
+        
+        const getSupabase = () => window.getSupabase();
+        let supabase;
+        
+        try {
+            supabase = window.getSupabase?.() || null;
+        } catch (e) {
+            console.error('Failed to get Supabase:', e);
+        }
+
+        async function testConnection() {
+            const result = document.getElementById('connection-result');
+            result.textContent = 'Testing...';
+            
+            try {
+                if (!supabase) supabase = window.getSupabase();
+                const { data, error } = await supabase.from('products').select('count');
+                if (error) throw error;
+                result.textContent = '✅ Connected to Supabase!\n' + JSON.stringify(data, null, 2);
+            } catch (error) {
+                result.textContent = '❌ Connection failed:\n' + error.message;
+            }
+        }
+
+        async function loadProducts() {
+            const result = document.getElementById('products-result');
+            result.textContent = 'Loading...';
+            
+            try {
+                if (!supabase) supabase = window.getSupabase();
+                const { data, error } = await supabase
+                    .from('products')
+                    .select('id, name, stock_quantity')
+                    .limit(10);
+                
+                if (error) throw error;
+                result.textContent = '✅ Products loaded:\n' + JSON.stringify(data, null, 2);
+            } catch (error) {
+                result.textContent = '❌ Load failed:\n' + error.message;
+            }
+        }
+
+        async function updateStockToZero() {
+            const result = document.getElementById('update-result');
+            result.textContent = 'Updating...';
+            const productId = document.getElementById('product-id').value;
+            
+            try {
+                if (!supabase) supabase = window.getSupabase();
+                console.log('Updating product', productId, 'stock to 0...');
+                
+                const { data, error } = await supabase
+                    .from('products')
+                    .update({ 
+                        stock_quantity: 0,
+                        updated_at: new Date().toISOString()
+                    })
+                    .eq('id', productId)
+                    .select();
+                
+                if (error) throw error;
+                
+                console.log('Update result:', data);
+                result.textContent = '✅ Stock updated to 0!\n' + JSON.stringify(data, null, 2);
+            } catch (error) {
+                console.error('Update error:', error);
+                result.textContent = '❌ Update failed:\n' + error.message;
+            }
+        }
+
+        async function verifyStock() {
+            const result = document.getElementById('verify-result');
+            result.textContent = 'Checking...';
+            const productId = document.getElementById('product-id').value;
+            
+            try {
+                if (!supabase) supabase = window.getSupabase();
+                const { data, error } = await supabase
+                    .from('products')
+                    .select('id, name, stock_quantity')
+                    .eq('id', productId)
+                    .single();
+                
+                if (error) throw error;
+                
+                const status = data.stock_quantity === 0 ? '✅ VERIFIED: Stock is 0' : '❌ FAILED: Stock is ' + data.stock_quantity;
+                result.textContent = status + '\n\n' + JSON.stringify(data, null, 2);
+            } catch (error) {
+                result.textContent = '❌ Verification failed:\n' + error.message;
+            }
+        }
+    </script>
+</body>
+</html>

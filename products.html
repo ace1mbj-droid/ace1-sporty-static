@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- Security Meta Tags -->
+    <meta http-equiv="X-Frame-Options" content="SAMEORIGIN">
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta http-equiv="X-XSS-Protection" content="1; mode=block">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <meta name="description" content="Shop Ace#1 terahertz technology footwear collection">
+    <title>Shop All Products | Ace#1</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/reviews.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Development Notice Banner -->
+    <div style="background: linear-gradient(135deg, #ff6b6b 0%, #ff8e53 100%); color: white; text-align: center; padding: 12px 20px; font-weight: 600; font-size: 14px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); position: relative; z-index: 1001;">
+        <i class="fas fa-exclamation-triangle" style="margin-right: 8px;"></i>
+        ⚠️ WEBSITE UNDER DEVELOPMENT - PLEASE DO NOT PLACE ORDERS ⚠️
+        <i class="fas fa-exclamation-triangle" style="margin-left: 8px;"></i>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="navbar" id="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <a href="index.html">
+                    <span class="logo-text">ACE<span class="logo-accent">#1</span></span>
+                </a>
+            </div>
+            <ul class="nav-menu" id="nav-menu">
+                <li><a href="index.html" class="nav-link">Home</a></li>
+                <li><a href="products.html" class="nav-link active">Shop</a></li>
+                <li><a href="technology.html" class="nav-link">Technology</a></li>
+                <li><a href="about.html" class="nav-link">About</a></li>
+                <li><a href="contact.html" class="nav-link">Contact</a></li>
+            </ul>
+            <div class="nav-icons">
+                <button class="icon-btn search-btn" id="search-btn">
+                    <i class="fas fa-search"></i>
+                </button>
+                <button class="icon-btn cart-btn" id="cart-btn">
+                    <i class="fas fa-shopping-bag"></i>
+                    <span class="cart-count" id="cart-count">0</span>
+                </button>
+                <button class="icon-btn user-btn">
+                    <i class="fas fa-user"></i>
+                </button>
+                <button class="hamburger" id="hamburger">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Search Overlay -->
+    <div class="search-overlay" id="search-overlay">
+        <div class="search-container">
+            <input type="text" class="search-input" placeholder="Search for products...">
+            <button class="search-close" id="search-close">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Page Header -->
+    <section class="page-header">
+        <div class="container">
+            <h1>Shop Collection</h1>
+            <p>Discover our complete range of terahertz-enhanced footwear</p>
+        </div>
+    </section>
+
+    <!-- Products Section -->
+    <section class="shop-section">
+        <div class="container">
+            <div class="shop-layout">
+                <!-- Sidebar Filters -->
+                <aside class="shop-sidebar">
+                    <div class="filter-group">
+                        <h3>Categories</h3>
+                        <label class="filter-checkbox">
+                            <input type="checkbox" name="category" value="runners" checked>
+                            <span>Runners</span>
+                        </label>
+                        <label class="filter-checkbox">
+                            <input type="checkbox" name="category" value="sneakers" checked>
+                            <span>Sneakers</span>
+                        </label>
+                        <label class="filter-checkbox">
+                            <input type="checkbox" name="category" value="trekking" checked>
+                            <span>Trekking</span>
+                        </label>
+                    </div>
+
+                    <div class="filter-group">
+                        <h3>Price Range</h3>
+                        <div class="price-range">
+                            <input type="range" min="0" max="300" value="300" id="price-slider">
+                            <div class="price-labels">
+                                <span>$0</span>
+                                <span id="price-value">$300</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="filter-group">
+                        <h3>Size</h3>
+                        <div class="size-grid">
+                            <button class="size-btn">6</button>
+                            <button class="size-btn">7</button>
+                            <button class="size-btn">8</button>
+                            <button class="size-btn">9</button>
+                            <button class="size-btn">10</button>
+                            <button class="size-btn">11</button>
+                            <button class="size-btn">12</button>
+                            <button class="size-btn">13</button>
+                        </div>
+                    </div>
+
+                    <div class="filter-group">
+                        <h3>Color</h3>
+                        <div class="color-grid">
+                            <button class="color-btn" style="background: #000" title="Black"></button>
+                            <button class="color-btn" style="background: #fff; border: 1px solid #ddd" title="White"></button>
+                            <button class="color-btn" style="background: #FF6B00" title="Orange"></button>
+                            <button class="color-btn" style="background: #00D4FF" title="Blue"></button>
+                            <button class="color-btn" style="background: #FF3D00" title="Red"></button>
+                            <button class="color-btn" style="background: #808080" title="Gray"></button>
+                        </div>
+                    </div>
+
+                    <button class="btn btn-secondary btn-block">Reset Filters</button>
+                </aside>
+
+                <div class="shop-content">
+                    <div class="shop-header">
+                        <p class="results-count">Showing 15 products</p>
+                        <select class="sort-select">
+                            <option>Featured</option>
+                            <option>Price: Low to High</option>
+                            <option>Price: High to Low</option>
+                            <option>Newest</option>
+                            <option>Best Selling</option>
+                        </select>
+                    </div>
+
+                    <div class="products-grid">
+                        <!-- RUNNERS CATEGORY -->
+                        <div class="product-card" data-category="runners">
+                            <div class="product-image">
+                                <img src="https://i.ibb.co/C5TF081z/IMG-0739.jpg" alt="Ace#1 Runner 1">
+                                <div class="product-badge">New</div>
+                                <div class="product-overlay">
+                                    <button class="quick-view-btn">Quick View</button>
+                                </div>
+                            </div>
+                            <div class="product-info">
+                                <h3 class="product-name">THz Runner Pro</h3>
+                                <p class="product-category">Runners Collection</p>
+                                <div class="product-rating">
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star-half-alt"></i>
+                                    <span>(127)</span>
+                                </div>
+                                <div class="product-footer">
+                                    <span class="product-price">₹8,999</span>
+                                    <button class="add-to-cart-btn" data-id="1">
+                                        <i class="fas fa-shopping-bag"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="product-card" data-category="runners">
+                            <div class="product-image">
+                                <img src="https://i.ibb.co/spfQVbMs/IMG-7157.png" alt="Ace#1 Runner 2">
+                                <div class="product-badge bg-red">Hot</div>
+                                <div class="product-overlay">
+                                    <button class="quick-view-btn">Quick View</button>
+                                </div>
+                            </div>
+                            <div class="product-info">
+                                <h3 class="product-name">Elite Runner THz</h3>
+                                <p class="product-category">Runners Collection</p>
+                                <div class="product-rating">
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <span>(203)</span>
+                                </div>
+                                <div class="product-footer">
+                                    <span class="product-price">₹8,999</span>
+                                    <button class="add-to-cart-btn" data-id="2">
+                                        <i class="fas fa-shopping-bag"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="product-card" data-category="runners">
+                            <div class="product-image">
+                                <img src="https://i.ibb.co/MxRBn2fH/IMG-7160.png" alt="Ace#1 Runner 3">
+                                <div class="product-overlay">
+                                    <button class="quick-view-btn">Quick View</button>
+                                </div>
+                            </div>
+                            <div class="product-info">
+                                <h3 class="product-name">Speed Runner THz</h3>
+                                <p class="product-category">Runners Collection</p>
+                                <div class="product-rating">
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <span>(156)</span>
+                                </div>
+                                <div class="product-footer">
+                                    <span class="product-price">₹8,999</span>
+                                    <button class="add-to-cart-btn" data-id="3">
+                                        <i class="fas fa-shopping-bag"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="product-card" data-category="runners">
+                            <div class="product-image">
+                                <img src="https://i.ibb.co/3yz3zcK9/IMG-0766.jpg" alt="Ace#1 Runner 4">
+                                <div class="product-overlay">
+                                    <button class="quick-view-btn">Quick View</button>
+                                </div>
+                            </div>
+                            <div class="product-info">
+                                <h3 class="product-name">Urban Runner THz</h3>
+                                <p class="product-category">Runners Collection</p>
+                                <div class="product-rating">
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="far fa-star"></i>
+                                    <span>(89)</span>
+                                </div>
+                                <div class="product-footer">
+                                    <span class="product-price">₹8,999</span>
+                                    <button class="add-to-cart-btn" data-id="4">
+                                        <i class="fas fa-shopping-bag"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="product-card" data-category="runners">
+                            <div class="product-image">
+                                <img src="https://i.ibb.co/nX8Gtrm/IMG-1035.png" alt="Ace#1 Runner 5">
+                                <div class="product-overlay">
+                                    <button class="quick-view-btn">Quick View</button>
+                                </div>
+                            </div>
+                            <div class="product-info">
+                                <h3 class="product-name">Performance Runner THz</h3>
+                                <p class="product-category">Runners Collection</p>
+                                <div class="product-rating">
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star-half-alt"></i>
+                                    <span>(145)</span>
+                                </div>
+                                <div class="product-footer">
+                                    <span class="product-price">₹8,999</span>
+                                    <button class="add-to-cart-btn" data-id="5">
+                                        <i class="fas fa-shopping-bag"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="product-card" data-category="runners">
+                            <div class="product-image">
+                                <img src="https://i.ibb.co/HTZ8J14C/IMG-1034.png" alt="Ace#1 Runner 6">
+                                <div class="product-overlay">
+                                    <button class="quick-view-btn">Quick View</button>
+                                </div>
+                            </div>
+                            <div class="product-info">
+                                <h3 class="product-name">Comfort Runner THz</h3>
+                                <p class="product-category">Runners Collection</p>
+                                <div class="product-rating">
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <span>(98)</span>
+                                </div>
+                                <div class="product-footer">
+                                    <span class="product-price">₹8,999</span>
+                                    <button class="add-to-cart-btn" data-id="6">
+                                        <i class="fas fa-shopping-bag"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="product-card" data-category="runners">
+                            <div class="product-image">
+                                <img src="https://i.ibb.co/twGymnd1/IMG-6892.jpg" alt="Ace#1 Runner 7">
+                                <div class="product-overlay">
+                                    <button class="quick-view-btn">Quick View</button>
+                                </div>
+                            </div>
+                            <div class="product-info">
+                                <h3 class="product-name">Classic Runner THz</h3>
+                                <p class="product-category">Runners Collection</p>
+                                <div class="product-rating">
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="far fa-star"></i>
+                                    <span>(112)</span>
+                                </div>
+                                <div class="product-footer">
+                                    <span class="product-price">₹8,999</span>
+                                    <button class="add-to-cart-btn" data-id="7">
+                                        <i class="fas fa-shopping-bag"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="product-card" data-category="runners">
+                            <div class="product-image">
+                                <img src="https://i.ibb.co/JwZ4C6Xb/15-A75469-2-C58-46-F3-B0-B9-9-BEBEE962-B30.jpg" alt="Ace#1 Runner 8">
+                                <div class="product-badge bg-red">Hot</div>
+                                <div class="product-overlay">
+                                    <button class="quick-view-btn">Quick View</button>
+                                </div>
+                            </div>
+                            <div class="product-info">
+                                <h3 class="product-name">Pro Runner THz</h3>
+                                <p class="product-category">Runners Collection</p>
+                                <div class="product-rating">
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <span>(187)</span>
+                                </div>
+                                <div class="product-footer">
+                                    <span class="product-price">₹8,999</span>
+                                    <button class="add-to-cart-btn" data-id="8">
+                                        <i class="fas fa-shopping-bag"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- SNEAKERS CATEGORY -->
+                        <div class="product-card" data-category="sneakers">
+                            <div class="product-image">
+                                <img src="https://i.ibb.co/mrvRRgWK/IMG-1041.png" alt="Ace#1 Sneaker 1">
+                                <div class="product-badge">New</div>
+                                <div class="product-overlay">
+                                    <button class="quick-view-btn">Quick View</button>
+                                </div>
+                            </div>
+                            <div class="product-info">
+                                <h3 class="product-name">Urban Sneaker THz</h3>
+                                <p class="product-category">Sneakers Collection</p>
+                                <div class="product-rating">
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star-half-alt"></i>
+                                    <span>(134)</span>
+                                </div>
+                                <div class="product-footer">
+                                    <span class="product-price">₹9,599</span>
+                                    <button class="add-to-cart-btn" data-id="9">
+                                        <i class="fas fa-shopping-bag"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="product-card" data-category="sneakers">
+                            <div class="product-image">
+                                <img src="https://i.ibb.co/sJWWgJB2/IMG-1042.png" alt="Ace#1 Sneaker 2">
+                                <div class="product-overlay">
+                                    <button class="quick-view-btn">Quick View</button>
+                                </div>
+                            </div>
+                            <div class="product-info">
+                                <h3 class="product-name">Classic Sneaker THz</h3>
+                                <p class="product-category">Sneakers Collection</p>
+                                <div class="product-rating">
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <span>(178)</span>
+                                </div>
+                                <div class="product-footer">
+                                    <span class="product-price">₹9,599</span>
+                                    <button class="add-to-cart-btn" data-id="10">
+                                        <i class="fas fa-shopping-bag"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="product-card" data-category="sneakers">
+                            <div class="product-image">
+                                <img src="https://i.ibb.co/C5hxjm9v/IMG-1043.png" alt="Ace#1 Sneaker 3">
+                                <div class="product-badge bg-red">Hot</div>
+                                <div class="product-overlay">
+                                    <button class="quick-view-btn">Quick View</button>
+                                </div>
+                            </div>
+                            <div class="product-info">
+                                <h3 class="product-name">Sport Sneaker THz</h3>
+                                <p class="product-category">Sneakers Collection</p>
+                                <div class="product-rating">
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <span>(215)</span>
+                                </div>
+                                <div class="product-footer">
+                                    <span class="product-price">₹9,599</span>
+                                    <button class="add-to-cart-btn" data-id="11">
+                                        <i class="fas fa-shopping-bag"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="product-card" data-category="sneakers">
+                            <div class="product-image">
+                                <img src="https://i.ibb.co/PZY5Df9z/IMG-1039.png" alt="Ace#1 Sneaker 4">
+                                <div class="product-overlay">
+                                    <button class="quick-view-btn">Quick View</button>
+                                </div>
+                            </div>
+                            <div class="product-info">
+                                <h3 class="product-name">Lifestyle Sneaker THz</h3>
+                                <p class="product-category">Sneakers Collection</p>
+                                <div class="product-rating">
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="far fa-star"></i>
+                                    <span>(92)</span>
+                                </div>
+                                <div class="product-footer">
+                                    <span class="product-price">₹9,599</span>
+                                    <button class="add-to-cart-btn" data-id="12">
+                                        <i class="fas fa-shopping-bag"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="product-card" data-category="sneakers">
+                            <div class="product-image">
+                                <img src="https://i.ibb.co/Q7gn6yFK/IMG-1040.png" alt="Ace#1 Sneaker 5">
+                                <div class="product-overlay">
+                                    <button class="quick-view-btn">Quick View</button>
+                                </div>
+                            </div>
+                            <div class="product-info">
+                                <h3 class="product-name">Comfort Sneaker THz</h3>
+                                <p class="product-category">Sneakers Collection</p>
+                                <div class="product-rating">
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star-half-alt"></i>
+                                    <span>(156)</span>
+                                </div>
+                                <div class="product-footer">
+                                    <span class="product-price">₹9,599</span>
+                                    <button class="add-to-cart-btn" data-id="13">
+                                        <i class="fas fa-shopping-bag"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="product-card" data-category="sneakers">
+                            <div class="product-image">
+                                <img src="https://i.ibb.co/GQhHMDmg/IMG-1044.png" alt="Ace#1 Sneaker 6">
+                                <div class="product-overlay">
+                                    <button class="quick-view-btn">Quick View</button>
+                                </div>
+                            </div>
+                            <div class="product-info">
+                                <h3 class="product-name">Premium Sneaker THz</h3>
+                                <p class="product-category">Sneakers Collection</p>
+                                <div class="product-rating">
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <span>(201)</span>
+                                </div>
+                                <div class="product-footer">
+                                    <span class="product-price">₹9,599</span>
+                                    <button class="add-to-cart-btn" data-id="14">
+                                        <i class="fas fa-shopping-bag"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- TREKKING CATEGORY -->
+                        <div class="product-card" data-category="trekking">
+                            <div class="product-image">
+                                <img src="https://i.ibb.co/SDv0vZtH/IMG-1037.png" alt="Ace#1 Trekking">
+                                <div class="product-badge">New</div>
+                                <div class="product-overlay">
+                                    <button class="quick-view-btn">Quick View</button>
+                                </div>
+                            </div>
+                            <div class="product-info">
+                                <h3 class="product-name">Adventure Trek THz</h3>
+                                <p class="product-category">Trekking Collection</p>
+                                <div class="product-rating">
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star-half-alt"></i>
+                                    <span>(167)</span>
+                                </div>
+                                <div class="product-footer">
+                                    <span class="product-price">₹9,299</span>
+                                    <button class="add-to-cart-btn" data-id="15">
+                                        <i class="fas fa-shopping-bag"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Pagination -->
+                    <div class="pagination">
+                        <button class="page-btn" disabled><i class="fas fa-chevron-left"></i></button>
+                        <button class="page-btn active">1</button>
+                        <button class="page-btn">2</button>
+                        <button class="page-btn">3</button>
+                        <button class="page-btn"><i class="fas fa-chevron-right"></i></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-column">
+                    <h3 class="footer-logo">ACE<span class="logo-accent">#1</span></h3>
+                    <p>Revolutionary footwear integrated with terahertz technology for enhanced wellness and lifestyle.</p>
+                    <div class="social-icons">
+                        <a href="#"><i class="fab fa-facebook"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-youtube"></i></a>
+                    </div>
+                </div>
+                <div class="footer-column">
+                    <h4>Shop</h4>
+                    <ul>
+                        <li><a href="products.html">All Products</a></li>
+                        <li><a href="products.html?category=runners">Runners</a></li>
+                        <li><a href="products.html?category=sneakers">Sneakers</a></li>
+                        <li><a href="products.html?category=trekking">Trekking</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h4>Company</h4>
+                    <ul>
+                        <li><a href="about.html">About Us</a></li>
+                        <li><a href="technology.html">Technology</a></li>
+                        <li><a href="contact.html">Contact</a></li>
+                        <li><a href="#">Careers</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h4>Support</h4>
+                    <ul>
+                        <li><a href="faq.html">FAQ</a></li>
+                        <li><a href="faq.html#shipping">Shipping Info</a></li>
+                        <li><a href="faq.html#returns">Returns</a></li>
+                        <li><a href="size-guide.html">Size Guide</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 Ace#1. All rights reserved.</p>
+                <div class="footer-links">
+                    <a href="#">Privacy Policy</a>
+                    <a href="#">Terms of Service</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Shopping Cart Sidebar -->
+    <div class="cart-sidebar" id="cart-sidebar">
+        <div class="cart-header">
+            <h3>Shopping Cart</h3>
+            <button class="cart-close" id="cart-close">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="cart-items" id="cart-items">
+            <div class="cart-empty">
+                <i class="fas fa-shopping-bag"></i>
+                <p>Your cart is empty</p>
+            </div>
+        </div>
+        <div class="cart-footer">
+            <div class="cart-total">
+                <span>Subtotal:</span>
+                <span id="cart-total">$0.00</span>
+            </div>
+            <button class="btn btn-primary btn-block">Checkout</button>
+            <a href="products.html" class="btn btn-secondary btn-block">Continue Shopping</a>
+        </div>
+    </div>
+
+    <div class="cart-overlay" id="cart-overlay"></div>
+
+    <!-- Quick View Modal -->
+    <div class="modal" id="quick-view-modal">
+        <div class="modal-overlay" id="modal-overlay"></div>
+        <div class="modal-content quick-view-content">
+            <button class="modal-close" id="modal-close-btn">
+                <i class="fas fa-times"></i>
+            </button>
+            <div class="quick-view-container">
+                <div class="quick-view-image">
+                    <img id="qv-image" src="" alt="">
+                </div>
+                <div class="quick-view-details">
+                    <h2 id="qv-name"></h2>
+                    <p class="qv-category" id="qv-category"></p>
+                    <div class="qv-rating" id="qv-rating">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star-half-alt"></i>
+                        <span>(127)</span>
+                    </div>
+                    <div class="qv-price" id="qv-price"></div>
+                    <p class="qv-description" id="qv-description"></p>
+                    
+                    <div class="qv-stock" id="qv-stock"></div>
+                    
+                    <div class="qv-sizes" id="qv-sizes">
+                        <h4>Select Size:</h4>
+                        <div class="size-options">
+                            <button class="size-option">7</button>
+                            <button class="size-option">8</button>
+                            <button class="size-option">9</button>
+                            <button class="size-option">10</button>
+                            <button class="size-option">11</button>
+                        </div>
+                    </div>
+                    
+                    <div class="qv-actions">
+                        <button class="btn btn-primary" id="qv-add-to-cart">
+                            <i class="fas fa-shopping-bag"></i> Add to Cart
+                        </button>
+                        <a href="products.html" class="btn btn-secondary">View Full Details</a>
+                    </div>
+                    
+                    <div class="qv-features">
+                        <div class="qv-feature">
+                            <i class="fas fa-shield-alt"></i>
+                            <span>1 Year Warranty</span>
+                        </div>
+                        <div class="qv-feature">
+                            <i class="fas fa-shipping-fast"></i>
+                            <span>Free Shipping</span>
+                        </div>
+                        <div class="qv-feature">
+                            <i class="fas fa-undo"></i>
+                            <span>30 Days Return</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cache Buster (must load first) -->
+    <script src="js/cache-buster.js"></script>
+    <!-- Supabase Integration -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-config.js"></script>
+    <!-- Security Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.6/dist/purify.min.js"></script>
+    <script src="js/password-hasher.js"></script>
+    <script src="js/security.js"></script>
+    <script src="js/database-auth.js"></script>
+    <script src="js/supabase-service.js"></script>
+    <!-- E-Commerce Backend -->
+    <script src="js/ecommerce-backend.js"></script>
+    <!-- Reviews System -->
+    <script src="js/reviews-manager.js"></script>
+
+    <script src="js/main.js"></script>
+    <script src="js/products.js"></script>
+    <!-- Image Optimization -->
+    <script src="js/image-optimizer.js"></script>
+
+</body>
+</html>
+
