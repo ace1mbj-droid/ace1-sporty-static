@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- Security Meta Tags -->
+    <meta http-equiv="X-Frame-Options" content="SAMEORIGIN">
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta http-equiv="X-XSS-Protection" content="1; mode=block">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <title>Password Hash Generator - Ace#1</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 600px;
+            width: 100%;
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        
+        .input-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 600;
+        }
+        
+        input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        button {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        .result {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            display: none;
+        }
+        
+        .result.show {
+            display: block;
+        }
+        
+        .result h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+        
+        .hash-output {
+            background: white;
+            padding: 15px;
+            border-radius: 6px;
+            border-left: 4px solid #667eea;
+            word-break: break-all;
+            font-family: 'Courier New', monospace;
+            font-size: 18px;
+            color: #667eea;
+            font-weight: bold;
+        }
+        
+        .copy-btn {
+            margin-top: 15px;
+            padding: 10px 20px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            width: auto;
+        }
+        
+        .copy-btn:hover {
+            background: #218838;
+        }
+        
+        .warning {
+            margin-top: 20px;
+            padding: 15px;
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            border-radius: 6px;
+            color: #856404;
+            font-size: 14px;
+        }
+        
+        .warning strong {
+            display: block;
+            margin-bottom: 5px;
+        }
+        
+        .examples {
+            margin-top: 30px;
+            padding: 20px;
+            background: #e7f3ff;
+            border-radius: 8px;
+        }
+        
+        .examples h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+        
+        .examples table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .examples td {
+            padding: 8px;
+            border-bottom: 1px solid #d0e7ff;
+            font-size: 14px;
+        }
+        
+        .examples td:first-child {
+            font-weight: 600;
+            color: #555;
+        }
+        
+        .examples td:last-child {
+            font-family: 'Courier New', monospace;
+            color: #667eea;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 Password Hash Generator</h1>
+        <p class="subtitle">Generate password hashes for database users</p>
+        
+        <div class="input-group">
+            <label for="password">Enter Password:</label>
+            <input type="text" id="password" placeholder="e.g., admin123">
+        </div>
+        
+        <button onclick="generateHash()">Generate Hash</button>
+        
+        <div class="result" id="result">
+            <h3>Generated Hash:</h3>
+            <div class="hash-output" id="hashOutput"></div>
+            <button class="copy-btn" onclick="copyHash()">📋 Copy Hash</button>
+        </div>
+        
+        <div class="warning">
+            <strong>⚠️ Security Warning:</strong>
+            This uses a simple hash function for demonstration purposes only. 
+            <strong>DO NOT</strong> use this in production. Implement proper bcrypt hashing on the server side.
+        </div>
+        
+        <div class="examples">
+            <h3>📝 Example Hashes:</h3>
+            <table>
+                <tr>
+                    <td>admin123</td>
+                    <td>-1555446758</td>
+                </tr>
+                <tr>
+                    <td>test1234</td>
+                    <td>1450515824</td>
+                </tr>
+                <tr>
+                    <td>demo1234</td>
+                    <td>1450516080</td>
+                </tr>
+                <tr>
+                    <td>password123</td>
+                    <td>1822837552</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+    
+    <script>
+        // Simple hash function (same as in database-auth.js)
+        function simpleHash(password) {
+            let hash = 0;
+            for (let i = 0; i < password.length; i++) {
+                const char = password.charCodeAt(i);
+                hash = ((hash << 5) - hash) + char;
+                hash = hash & hash;
+            }
+            return hash.toString();
+        }
+        
+        function generateHash() {
+            const password = document.getElementById('password').value;
+            
+            if (!password) {
+                alert('Please enter a password');
+                return;
+            }
+            
+            const hash = simpleHash(password);
+            document.getElementById('hashOutput').textContent = hash;
+            document.getElementById('result').classList.add('show');
+        }
+        
+        function copyHash() {
+            const hash = document.getElementById('hashOutput').textContent;
+            navigator.clipboard.writeText(hash).then(() => {
+                const btn = event.target;
+                const originalText = btn.textContent;
+                btn.textContent = '✅ Copied!';
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                }, 2000);
+            });
+        }
+        
+        // Allow Enter key to generate hash
+        document.getElementById('password').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                generateHash();
+            }
+        });
+    </script>
+    <!-- Image Optimization -->
+    <script src="js/image-optimizer.js"></script>
+
+</body>
+</html>
