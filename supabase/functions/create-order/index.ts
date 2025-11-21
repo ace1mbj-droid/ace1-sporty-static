@@ -1,5 +1,4 @@
-// Use the deno/npm import prefix for bundling in Supabase Functions
-import { createClient } from 'npm:@supabase/supabase-js';
+import { createClient } from '@supabase/supabase-js';
 
 // This Edge Function is intended to run in Supabase Edge Functions environment (Deno).
 // Required env vars: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, RZ_KEY, RZ_SECRET
@@ -14,8 +13,12 @@ const supabase = createClient(SUPABASE_URL, SERVICE_ROLE_KEY, { auth: { persistS
 export async function handler(req: Request): Promise<Response> {
   try {
     // Authenticate user token (optional): client will send Bearer token
+    console.log('create-order: handler start -', new Date().toISOString());
     const token = req.headers.get('authorization')?.replace('Bearer ', '');
-    if (!token) return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
+    if (!token) {
+      console.error('create-order: missing authorization token');
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
+    }
 
     const { data: userData, error: userError } = await supabase.auth.getUser(token);
     if (userError || !userData.user) return new Response(JSON.stringify({ error: 'Invalid token' }), { status: 401 });
@@ -23,10 +26,14 @@ export async function handler(req: Request): Promise<Response> {
 
     const body = await req.json();
     const { cart, shipping } = body;
-    if (!cart || cart.length === 0) return new Response(JSON.stringify({ error: 'Cart empty' }), { status: 400 });
+    if (!cart || cart.length === 0) {
+      console.error('create-order: cart empty or missing');
+      return new Response(JSON.stringify({ error: 'Cart empty' }), { status: 400 });
+    }
 
     // Recalculate price server-side
     const ids = cart.map((c: any) => c.id);
+    console.log('create-order: fetching product prices for ids=', ids);
     const { data: products } = await supabase.from('products').select('id, price_cents').in('id', ids);
 
     let calculatedTotal = 0;
@@ -38,7 +45,11 @@ export async function handler(req: Request): Promise<Response> {
 
     // Create order with service role (bypass RLS)
     const { data: order, error: orderError } = await supabase.from('orders').insert([{ user_id: userId, total_cents: calculatedTotal, currency: 'INR', shipping_address: shipping }]).select().single();
-    if (orderError) return new Response(JSON.stringify({ error: orderError.message }), { status: 500 });
+    if (orderError) {
+      console.error('create-order: failed to create order', orderError.message);
+      return new Response(JSON.stringify({ error: orderError.message }), { status: 500 });
+    }
+    console.log('create-order: created order id=', order.id);
 
     // Insert order items
     const orderItems = cart.map((c: any) => ({ order_id: order.id, product_id: c.id, size: c.size, qty: c.qty, price_cents: (products.find((p:any) => p.id === c.id).price_cents) }));
@@ -47,19 +58,45 @@ export async function handler(req: Request): Promise<Response> {
     // Create Razorpay order
     const razorBody = { amount: calculatedTotal, currency: 'INR', receipt: order.id };
     const authHeader = 'Basic ' + btoa(`${RZ_KEY}:${RZ_SECRET}`);
-    const razorResp = await fetch('https://api.razorpay.com/v1/orders', {
-      method: 'POST',
-      headers: { 'Authorization': authHeader, 'Content-Type': 'application/json' },
-      body: JSON.stringify(razorBody)
-    });
-    const razorData = await razorResp.json();
+    // Call Razorpay with a timeout. If Razorpay is slow/unavailable we should fail fast and return a clear error
+    console.log('create-order: creating razorpay order', { razorBody });
+    const controller = new AbortController();
+    const timeoutMs = 10000; // 10s
+    const timeout = setTimeout(() => controller.abort(), timeoutMs);
+    let razorResp: Response;
+    let razorData: any = null;
+    try {
+      razorResp = await fetch('https://api.razorpay.com/v1/orders', {
+        method: 'POST',
+        headers: { 'Authorization': authHeader, 'Content-Type': 'application/json' },
+        body: JSON.stringify(razorBody),
+        signal: controller.signal
+      });
+      razorData = await razorResp.json();
+      console.log('create-order: razorpay response', { status: razorResp.status, body: razorData });
+    } catch (e) {
+      console.error('create-order: razorpay request failed', String(e));
+      if ((e as Error).name === 'AbortError') {
+        // Timeout
+        return new Response(JSON.stringify({ error: 'Payment provider timeout' }), { status: 504 });
+      }
+      return new Response(JSON.stringify({ error: 'Payment provider error', details: String(e) }), { status: 502 });
+    } finally {
+      clearTimeout(timeout);
+    }
 
     // Insert payment record (created)
-    await supabase.from('payments').insert([{ order_id: order.id, provider: 'razorpay', provider_order_id: razorData.id, status: 'created', amount_cents: calculatedTotal }]);
+    try {
+      await supabase.from('payments').insert([{ order_id: order.id, provider: 'razorpay', provider_order_id: razorData?.id ?? null, status: 'created', amount_cents: calculatedTotal }]);
+    } catch (e) {
+      console.error('create-order: failed to insert payment record', String(e));
+      // continue — we already created the order; surface a 500 so caller knows about partial failure
+      return new Response(JSON.stringify({ error: 'failed to record payment', details: String(e) }), { status: 500 });
+    }
 
     return new Response(JSON.stringify({ orderId: order.id, razor: razorData }), { status: 200 });
   } catch (err) {
-    console.error(err);
+    console.error('create-order: unhandled exception', String(err));
     return new Response(JSON.stringify({ error: String(err) }), { status: 500 });
   }
 }
