@@ -22,8 +22,11 @@ jobs:
       # Use npx instead of installing the Supabase CLI globally in CI
       # global install via npm is not supported on the Supabase package; using npx keeps the steps reproducible
 
-      - name: Supabase login (token)
-        run: npx supabase login --token ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      - name: Supply SUPABASE_ACCESS_TOKEN to job env
+        run: |
+          # Avoid the interactive login command in CI which can fail due to token formatting.
+          # Write the token into $GITHUB_ENV so later supabase CLI invocations can read it.
+          echo "SUPABASE_ACCESS_TOKEN=${{ secrets.SUPABASE_ACCESS_TOKEN }}" >> $GITHUB_ENV
 
       - name: Link to Supabase project (non-fatal)
         run: |
