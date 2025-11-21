@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- Security Meta Tags -->
+    <meta http-equiv="X-Frame-Options" content="SAMEORIGIN">
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta http-equiv="X-XSS-Protection" content="1; mode=block">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <title>Order Confirmed - Ace#1</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Bebas+Neue&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="logo">
+                <span class="logo-text">ACE#1</span>
+            </a>
+            <ul class="nav-menu">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="products.html">Products</a></li>
+                <li><a href="technology.html">Technology</a></li>
+                <li><a href="about.html">About</a></li>
+                <li><a href="contact.html">Contact</a></li>
+            </ul>
+            <div class="nav-icons">
+                <a href="user-profile.html" class="icon-btn">
+                    <i class="fas fa-user"></i>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Order Confirmation Section -->
+    <section class="confirmation-section">
+        <div class="container">
+            <div class="confirmation-container">
+                <div class="confirmation-icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <h1>Order Confirmed!</h1>
+                <p class="confirmation-message">Thank you for your order. We've sent a confirmation email to your inbox.</p>
+                
+                <div class="order-number">
+                    <strong>Order Number:</strong> <span id="order-id">ACE001234</span>
+                </div>
+
+                <div class="confirmation-card">
+                    <h3>What's Next?</h3>
+                    <div class="next-steps">
+                        <div class="step">
+                            <i class="fas fa-box"></i>
+                            <div>
+                                <h4>Order Processing</h4>
+                                <p>We're preparing your items for shipment</p>
+                            </div>
+                        </div>
+                        <div class="step">
+                            <i class="fas fa-truck"></i>
+                            <div>
+                                <h4>Shipping</h4>
+                                <p>Your order will be shipped within 2-3 business days</p>
+                            </div>
+                        </div>
+                        <div class="step">
+                            <i class="fas fa-home"></i>
+                            <div>
+                                <h4>Delivery</h4>
+                                <p>Expected delivery in 5-7 business days</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="confirmation-actions">
+                    <a href="user-profile.html?tab=orders" class="btn btn-primary">View Order Details</a>
+                    <a href="products.html" class="btn btn-secondary">Continue Shopping</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-column">
+                    <h3>ACE#1</h3>
+                    <p>Revolutionary footwear integrated with terahertz technology for enhanced wellness and lifestyle.</p>
+                    <div class="social-icons">
+                        <a href="https://instagram.com/ace_1_official/" target="_blank"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+                <div class="footer-column">
+                    <h4>Shop</h4>
+                    <ul>
+                        <li><a href="products.html">All Products</a></li>
+                        <li><a href="products.html?category=runners">Runners</a></li>
+                        <li><a href="products.html?category=sneakers">Sneakers</a></li>
+                        <li><a href="products.html?category=trekking">Trekking</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h4>Company</h4>
+                    <ul>
+                        <li><a href="about.html">About Us</a></li>
+                        <li><a href="technology.html">Technology</a></li>
+                        <li><a href="contact.html">Contact</a></li>
+                        <li><a href="#">Careers</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h4>Support</h4>
+                    <ul>
+                        <li><a href="faq.html">FAQ</a></li>
+                        <li><a href="faq.html#shipping">Shipping Info</a></li>
+                        <li><a href="faq.html#returns">Returns</a></li>
+                        <li><a href="size-guide.html">Size Guide</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 Ace#1. All rights reserved.</p>
+                <div class="footer-links">
+                    <a href="#">Privacy Policy</a>
+                    <a href="#">Terms of Service</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Supabase Integration -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-config.js"></script>
+    <script src="js/supabase-service.js"></script>
+
+    <script src="js/main.js"></script>
+
+    <script>
+        // Display order ID from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const orderId = urlParams.get('order');
+        if (orderId) {
+            document.getElementById('order-id').textContent = orderId;
+        }
+    </script>
+    <!-- Image Optimization -->
+    <script src="js/image-optimizer.js"></script>
+
+</body>
+</html>
