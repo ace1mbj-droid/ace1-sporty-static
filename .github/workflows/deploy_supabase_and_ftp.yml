@@ -1,0 +1,81 @@
+name: Deploy Supabase + FTP
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  supabase:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Install psql (for running SQL)
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client
+
+      - name: Install Supabase CLI
+        run: npm install -g supabase@latest
+
+      - name: Supabase login (token)
+        run: supabase login --token ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+
+      - name: Link to Supabase project
+        run: supabase link --project-ref ${{ secrets.SUPABASE_PROJECT_REF }}
+
+      - name: Run SQL schema & RLS
+        run: |
+          echo "Applying DB schema"
+          psql "${{ secrets.SUPABASE_DB_URL }}" -f supabase/schema.sql
+          psql "${{ secrets.SUPABASE_DB_URL }}" -f supabase/rls.sql
+
+      - name: Deploy Edge Functions
+        run: |
+          for f in supabase/functions/*; do
+            if [ -d "$f" ]; then
+              fn=$(basename "$f")
+              echo "Deploying $fn"
+              supabase functions deploy "$fn" --project-ref ${{ secrets.SUPABASE_PROJECT_REF }} --no-verify
+            fi
+          done
+
+      - name: Set function secrets (Razorpay)
+        if: ${{ secrets.RZ_KEY && secrets.RZ_SECRET }}
+        run: |
+          supabase secrets set RZ_KEY="${{ secrets.RZ_KEY }}" RZ_SECRET="${{ secrets.RZ_SECRET }}" --project-ref ${{ secrets.SUPABASE_PROJECT_REF }}
+
+  ftp-deploy:
+    needs: supabase
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build & copy to dist
+        run: |
+          rm -rf dist || true
+          mkdir -p dist
+          rsync -av --exclude='.git' --exclude='.github' --exclude='node_modules' --exclude='dist' ./ dist/
+
+      - name: FTP Deploy via SFTP
+        uses: /@4.3.0
+        with:
+          server: ${{ secrets.FTP_HOST }}
+          username: ${{ secrets.FTP_USER }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: ./dist
+          server-dir: /public_html
+          protocol: sftp
+          port: 22
+
+# Secrets for the workflow:
+# - SUPABASE_ACCESS_TOKEN (supabase CLI token)
+# - SUPABASE_PROJECT_REF (project ref id)
+# - SUPABASE_DB_URL (full postgres connection url, with password; use service key)
+# - RZ_KEY, RZ_SECRET (Razorpay keys) - stored as GitHub secrets
+# - FTP_HOST, FTP_USER, FTP_PASSWORD

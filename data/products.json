@@ -1,0 +1,46 @@
+[
+  {
+    "id": "speedrun-pro",
+    "name": "SpeedRun Pro",
+    "price": 98,
+    "oldPrice": 140,
+    "sale": true,
+    "image": "https://images.unsplash.com/photo-1526403224740-6e3b1f32c38e?q=80&w=1200&auto=format&fit=crop&ixlib=rb-4.0.3&s=8b660d7ae9c6e310c9ea9f76a5858c9e"
+  },
+  {
+    "id": "fastrun-trainer",
+    "name": "FastRun Trainer",
+    "price": 99,
+    "sale": false,
+    "image": "https://images.unsplash.com/photo-1515548210238-1606e5958b80?q=80&w=1200&auto=format&fit=crop&ixlib=rb-4.0.3&s=1d2843fcebe9c3b00bdda9b8b974b77f"
+  },
+  {
+    "id": "trail-venture",
+    "name": "Trail Venture",
+    "price": 120,
+    "sale": false,
+    "image": "https://images.unsplash.com/photo-1524492412937-d3f5b1f10fca?q=80&w=1200&auto=format&fit=crop&ixlib=rb-4.0.3&s=615c7a0903f99e7b8d3d961f71f9fd90"
+  },
+  {
+    "id": "cushion-max",
+    "name": "Cushion Max",
+    "price": 105,
+    "sale": false,
+    "image": "https://images.unsplash.com/photo-1519744792095-2f2205e87b6f?q=80&w=1200&auto=format&fit=crop&ixlib=rb-4.0.3&s=c5cab3ebcb43b3a5eebf50a8b770801e"
+  },
+  {
+    "id": "stride-lite",
+    "name": "Stride Lite",
+    "price": 85,
+    "sale": true,
+    "oldPrice": 120,
+    "image": "https://images.unsplash.com/photo-1519861530060-2f3a2f5b5eb4?q=80&w=1200&auto=format&fit=crop&ixlib=rb-4.0.3&s=4c0e3d583b1a03988e625f5f1a0495b1"
+  },
+  {
+    "id": "urban-flex",
+    "name": "Urban Flex",
+    "price": 110,
+    "sale": false,
+    "image": "https://images.unsplash.com/photo-1515542622106-78bda8f4cea9?q=80&w=1200&auto=format&fit=crop&ixlib=rb-4.0.3&s=1d2d5aaaf4b3a5b2d1f3b7d8c4c8f0e0"
+  }
+]
