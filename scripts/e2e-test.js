@@ -54,7 +54,8 @@ async function run() {
       // service-role/admin key (SUPABASE_SERVICE_ROLE_KEY). This lets CI create
       // a confirmed user even when the project blocks signup domains.
       if (!token) {
-        const serviceRole = process.env.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZvcnFhdnN1cWNqbmtqendreXpyIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2MzY1NjAxMywiZXhwIjoyMDc5MjMyMDEzfQ.zMhcB1Hk5Ym8lxEAfrPKKiw5osYd2syVAuKT5KB7mSM;
+        // Read service role key from env (kept secret in CI); may be undefined
+        const serviceRole = process.env.SUPABASE_SERVICE_ROLE_KEY;
         if (serviceRole) {
           console.log('Attempting to create user via SUPABASE_SERVICE_ROLE_KEY for', email);
           try {
