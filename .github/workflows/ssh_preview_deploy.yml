@@ -6,7 +6,7 @@ on:
       target_dir:
         description: 'Remote preview directory'
         required: true
-        default: '/public_html_preview/'
+        default: '/public_html/preview/'
 
 jobs:
   preview-deploy:
