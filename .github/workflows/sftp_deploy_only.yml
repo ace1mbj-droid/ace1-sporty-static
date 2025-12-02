@@ -7,8 +7,12 @@ jobs:
   sftp-deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout (SSH)
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          ssh-key: ${{ secrets.CHECKOUT_SSH_KEY }}
+          submodules: false
 
       - name: Build & copy to dist
         run: |
@@ -34,5 +38,7 @@ jobs:
 # - SSH_PRIVATE_KEY (private key content)
 # - SSH_USER (e.g. your cPanel/SSH username)
 # - SSH_HOST (server hostname or IP)
+# For SSH checkout (actions/checkout with SSH):
+# - CHECKOUT_SSH_KEY (private key PEM; add its public key as a Deploy Key with read access in this repo)
 # Optional:
 # - To change port, set 'ssh-port' above (default 22)
