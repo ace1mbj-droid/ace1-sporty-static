@@ -37,7 +37,30 @@ jobs:
           if [ -z "$TARGET_DIR" ]; then TARGET_DIR="/public_html/preview/"; fi
           if [ ! -d dist ]; then echo "dist missing"; exit 1; fi
           echo "Deploying to $TARGET_DIR on $FTP_HOST"
-          lftp -u "$FTP_USER,$FTP_PASSWORD" -p "$FTP_PORT" "ftps://$FTP_HOST" -e "set ftp:ssl-force true; set ftp:ssl-protect-data true; set ssl:verify-certificate false; set ftps:initial-prot ''; mkdir -p $TARGET_DIR; mirror -R --parallel=4 --verbose --delete --exclude-glob .git --exclude-glob .github dist $TARGET_DIR; bye"
+          lftp -u "$FTP_USER,$FTP_PASSWORD" -p "$FTP_PORT" "ftps://$FTP_HOST" -e "set ftp:ssl-force true; set ftp:ssl-protect-data true; set ssl:verify-certificate false; set ftps:initial-prot ''; mkdir -p $TARGET_DIR; mirror -R --parallel=4 --verbose --delete \
+            --exclude-glob .git \
+            --exclude-glob .github \
+            --exclude-glob .vscode \
+            --exclude-glob node_modules \
+            --exclude-glob dist \
+            --exclude-glob docs \
+            --exclude-glob tests \
+            --exclude-glob "*.md" \
+            --exclude-glob "*.map" \
+            --exclude-glob "*.ts" \
+            --exclude-glob "*.scss" \
+            --exclude-glob "*.sass" \
+            --exclude-glob "*.less" \
+            --exclude-glob "*.psd" \
+            --exclude-glob "*.ai" \
+            --exclude-glob "*.sketch" \
+            --exclude-glob ".DS_Store" \
+            --exclude-glob "package.json" \
+            --exclude-glob "package-lock.json" \
+            --exclude-glob "pnpm-lock.yaml" \
+            --exclude-glob "yarn.lock" \
+            --exclude-glob "*.sh" \
+            dist $TARGET_DIR; bye"
 
       - name: List preview directory (top 50)
         run: |
