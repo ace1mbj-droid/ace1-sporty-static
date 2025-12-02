@@ -31,7 +31,11 @@ Supabase integration & server-side flow
 
 2. Edge Functions
 	- The Edge Functions skeletons are in `supabase/functions`:
-	  - `create-order` — creates DB order with service role, calls Razorpay server API and inserts a `payments` record.
+	- `create-order` — creates DB order with service role, calls Razorpay server API and inserts a `payments` record. NOTE: This function now performs server-side product validation and will reject orders containing:
+		- products with `is_locked = true` (locked/unavailable)
+		- products with insufficient `stock_quantity` for the requested quantity
+		- products whose `status` is not 'available'
+		This prevents clients from bypassing availability rules and keeps inventory consistent.
 	  - `webhook-razorpay` — receives webhook events and updates `payments` and `orders`.
 	- Set env vars in Supabase Functions config: `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `RZ_KEY`, `RZ_SECRET`.
 
@@ -39,9 +43,15 @@ Supabase integration & server-side flow
 	- To have the frontend call the `create-order` Edge Function, set the global variable `window.__ACE1_EDGE_CREATE_ORDER__` to the Edge endpoint URL in `index.html`.
 	- The frontend will attempt to call the Edge Function and open Razorpay checkout flow if using Razorpay.
 
-4. GitHub Actions (FTP deployment)
-	- The GitHub workflow `.github/workflows/deploy.yml` will build a `dist/` folder and then upload via SFTP using `SamKirkland/FTP-Deploy-Action`.
-	- Add `FTP_HOST`, `FTP_USER`, and `FTP_PASSWORD` to your GitHub repo secrets.
+4. GitHub Actions (Deploy & Diagnostics)
+	- `.github/workflows/deploy.yml` — FTPS deploy (clean-slate). Set `FTP_HOST`, `FTP_USER`, `FTP_PASSWORD`.
+	- `.github/workflows/ftp_deploy_only.yml` — manual FTPS deploy.
+	- `.github/workflows/sftp_deploy_only.yml` — manual SSH deploy via rsync; supports SSH checkout with `CHECKOUT_SSH_KEY`.
+	- `.github/workflows/ssh_preview_deploy.yml` — manual SSH deploy to a preview directory (default `/public_html_preview/`).
+	- `.github/workflows/ftp_healthcheck_htaccess_test.yml` — manual FTPS health-check: HEAD/GET, headers, optional `.htaccess` rename/restore.
+	- `.github/workflows/ftp_healthcheck_autorun.yml` — autorun health-check on push to `main`.
+	- `.github/workflows/ftp_permissions_normalize.yml` — manual permissions normalization (dirs 755, files 644).
+	- `.github/workflows/chain_normalize_on_healthcheck.yml` — normalize permissions automatically after autorun health-check completes.
 
 5. Testing & next steps
 	- Set up Razorpay webhook to point to your `webhook-razorpay` function URL.
@@ -81,8 +91,13 @@ GitHub secrets to set
 - `SUPABASE_DB_URL` — postgres connection string with privileges to run SQL (service role preferred)
  - `SUPABASE_KEY` — optional server/project key for trusted server code (keep secret)
  - `SUPABASE_SERVICE_ROLE_KEY` — service-role key used by CI and server-side scripts for admin actions. Store this in CI secrets or a secure environment and avoid exposing it in frontend code.
+ - New helper script: `scripts/create_admin.js` — uses `SUPABASE_SERVICE_ROLE_KEY` to create or update an `admin` user with a PBKDF2 hashed password. See `docs/admin-setup.md` for usage.
 - `RZ_KEY` and `RZ_SECRET` — Razorpay keys
 - `FTP_HOST`, `FTP_USER`, `FTP_PASSWORD` — FTP credentials used by the deploy action
+ - SSH deploy & preview:
+	 - `SSH_PRIVATE_KEY` — SSH private key for server deploy
+	 - `SSH_USER`, `SSH_HOST` — SSH credentials to the server
+	 - `CHECKOUT_SSH_KEY` — private key PEM for Git checkout (add matching public key as a read-only Deploy Key in GitHub)
 
 Example local deploy command:
 
@@ -118,6 +133,17 @@ If you want, I can: convert the rest of the DB DDL into smaller migration files,
 
 CI deploy trigger: small doc update to kick off GitHub Actions workflow (automated by assistant) — 2025-11-21
 - Use `supabase secrets` to manage function environment variables; these are mounted into Edge Functions securely.
+
+Preview deploy usage
+--------------------
+- Run the `SSH Preview Deploy (manual)` workflow and set `target_dir` (default `/public_html_preview/`).
+- To expose at `https://ace1.in/preview/`, set `target_dir` to `/public_html/preview/` and visit `/preview/`.
+
+Health-check & permissions normalization
+---------------------------------------
+- Use `FTP health-check + temporary .htaccess test (manual)` to diagnose 403 issues; it will list remote files and perform HEAD/GET checks and optional `.htaccess` rename/restore.
+- `FTP health-check autorun (push)` runs on every push to `main`.
+- If 403 persists, run `FTP permissions normalize (manual)` to set directories to 755 and files to 644, or rely on the chained normalization.
 
 GitHub & Supabase: Full setup from scratch
 ----------------------------------------
