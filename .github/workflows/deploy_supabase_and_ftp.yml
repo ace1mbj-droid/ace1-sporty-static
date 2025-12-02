@@ -102,8 +102,14 @@ jobs:
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: ./dist/
           server-dir: /public_html/
-          protocol: ftp
+          protocol: ftps
           port: 21
+          dangerous-clean-slate: true
+          exclude: |
+            **/.git*
+            **/.github/**
+            **/node_modules/**
+            dist/**
 
 # Secrets for the workflow:
 # - SUPABASE_ACCESS_TOKEN (supabase CLI token)
