@@ -34,6 +34,9 @@ jobs:
           SOURCE: dist/
           TARGET: ${{ github.event.inputs.target_dir }}
           ARGS: -avz
+          SSH_CMD_ARGS: -o StrictHostKeyChecking=no
+          SCRIPT_BEFORE: |
+            mkdir -p ${{ github.event.inputs.target_dir }}
 
       - name: Print preview location
         run: |
