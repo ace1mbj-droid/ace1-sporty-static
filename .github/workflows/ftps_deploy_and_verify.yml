@@ -1,0 +1,61 @@
+name: FTPS Deploy + Verify (manual)
+
+on:
+  workflow_dispatch:
+    inputs:
+      remote_dir:
+        description: 'Remote root directory'
+        required: true
+        default: '/public_html/'
+
+jobs:
+  deploy-and-verify:
+    runs-on: ubuntu-latest
+    env:
+      FTP_HOST: ${{ secrets.FTP_HOST }}
+      FTP_USER: ${{ secrets.FTP_USER }}
+      FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+      FTP_PORT: 21
+      DOMAIN: ${{ secrets.SITE_DOMAIN }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install lftp and curl
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y lftp curl
+
+      - name: Build & copy to dist
+        run: |
+          rm -rf dist || true
+          mkdir -p dist
+          rsync -av --exclude='.git' --exclude='.github' --exclude='node_modules' --exclude='dist' ./ dist/
+
+      - name: Upload root via FTPS (mirror)
+        run: |
+          TARGET_DIR="${{ github.event.inputs.remote_dir }}"
+          if [ -z "$TARGET_DIR" ]; then TARGET_DIR="/public_html/"; fi
+          echo "Deploying to $TARGET_DIR on $FTP_HOST"
+          lftp -u "$FTP_USER,$FTP_PASSWORD" -p "$FTP_PORT" "ftps://$FTP_HOST" -e "set ftp:ssl-force true; set ftp:ssl-protect-data true; set ssl:verify-certificate false; mkdir -p $TARGET_DIR; mirror -R --parallel=4 --verbose --delete --exclude-glob .git --exclude-glob .github dist $TARGET_DIR; bye"
+
+      - name: Normalize permissions (dirs 755, files 644)
+        run: |
+          TARGET_DIR="${{ github.event.inputs.remote_dir }}"
+          if [ -z "$TARGET_DIR" ]; then TARGET_DIR="/public_html/"; fi
+          lftp -u "$FTP_USER,$FTP_PASSWORD" -p "$FTP_PORT" "ftps://$FTP_HOST" -e "set ftp:ssl-force true; set ftp:ssl-protect-data true; set ssl:verify-certificate false; find -d $TARGET_DIR -type d -exec chmod 755 {}; find -d $TARGET_DIR -type f -exec chmod 644 {}; bye" || true
+
+      - name: List root directory (top 50)
+        run: |
+          TARGET_DIR="${{ github.event.inputs.remote_dir }}"
+          if [ -z "$TARGET_DIR" ]; then TARGET_DIR="/public_html/"; fi
+          lftp -u "$FTP_USER,$FTP_PASSWORD" -p "$FTP_PORT" "ftps://$FTP_HOST" -e "set ftp:ssl-force true; set ftp:ssl-protect-data true; set ssl:verify-certificate false; cls -l $TARGET_DIR | head -50; bye" || true
+
+      - name: Health check via GET
+        run: |
+          if [ -z "$DOMAIN" ]; then echo "SITE_DOMAIN secret not set"; exit 0; fi
+          echo "Checking https://$DOMAIN ..."
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" "https://$DOMAIN")
+          echo "HTTP status: $STATUS"
+          curl -sI "https://$DOMAIN" || true
+          test "$STATUS" = "200" && exit 0 || exit 1
