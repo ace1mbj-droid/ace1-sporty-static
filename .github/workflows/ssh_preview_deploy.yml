@@ -1,0 +1,40 @@
+name: SSH Preview Deploy (manual)
+
+on:
+  workflow_dispatch:
+    inputs:
+      target_dir:
+        description: 'Remote preview directory'
+        required: true
+        default: '/public_html_preview/'
+
+jobs:
+  preview-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout (SSH)
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          ssh-key: ${{ secrets.CHECKOUT_SSH_KEY }}
+
+      - name: Build & copy to dist
+        run: |
+          rm -rf dist || true
+          mkdir -p dist
+          rsync -av --exclude='.git' --exclude='.github' --exclude='node_modules' --exclude='dist' ./ dist/
+
+      - name: Deploy preview over SSH (rsync, no delete)
+        uses: easingthemes/ssh-deploy@v4
+        with:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          REMOTE_USER: ${{ secrets.SSH_USER }}
+          REMOTE_HOST: ${{ secrets.SSH_HOST }}
+          REMOTE_PORT: 22
+          SOURCE: dist/
+          TARGET: ${{ github.event.inputs.target_dir }}
+          ARGS: -avz
+
+      - name: Print preview location
+        run: |
+          echo "Preview deployed to ${{ github.event.inputs.target_dir }} on ${{ secrets.SSH_HOST }}"
