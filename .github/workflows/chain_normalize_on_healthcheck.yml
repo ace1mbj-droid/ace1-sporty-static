@@ -1,0 +1,73 @@
+name: Chain normalize after health-check
+
+on:
+  workflow_run:
+    workflows: ["FTP health-check autorun (push)"]
+    types:
+      - completed
+
+jobs:
+  normalize:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    env:
+      FTP_HOST: ${{ secrets.FTP_HOST }}
+      FTP_USER: ${{ secrets.FTP_USER }}
+      FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+      FTP_PORT: 21
+      REMOTE_DIR: /public_html
+      USE_FTPS: true
+    steps:
+      - name: Install tools
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y lftp
+
+      - name: Show current permissions (top level)
+        run: |
+          if [ "$USE_FTPS" = "true" ]; then
+            TARGET="ftps://$FTP_HOST"; FLAGS="set ftp:ssl-force true; set ftp:ssl-protect-data true; set ssl:verify-certificate false;"
+          else
+            TARGET="ftp://$FTP_HOST"; FLAGS=""
+          fi
+          echo "Listing $REMOTE_DIR (first 100 entries with perms)"
+          lftp -u "$FTP_USER,$FTP_PASSWORD" -p "$FTP_PORT" "$TARGET" -e "$FLAGS cls -l $REMOTE_DIR | head -100; bye" || true
+
+      - name: Ensure directories are 755
+        run: |
+          set -euo pipefail
+          if [ "$USE_FTPS" = "true" ]; then
+            TARGET="ftps://$FTP_HOST"; FLAGS="set ftp:ssl-force true; set ftp:ssl-protect-data true; set ssl:verify-certificate false;"
+          else
+            TARGET="ftp://$FTP_HOST"; FLAGS=""
+          fi
+          DIRS=$(lftp -u "$FTP_USER,$FTP_PASSWORD" -p "$FTP_PORT" "$TARGET" -e "$FLAGS find -d $REMOTE_DIR; bye" || true)
+          printf '%s\n' "$DIRS" | while IFS= read -r d; do
+            [ -z "$d" ] && continue
+            lftp -u "$FTP_USER,$FTP_PASSWORD" -p "$FTP_PORT" "$TARGET" -e "$FLAGS chmod 755 \"$d\"; bye" || true
+          done
+
+      - name: Set files to 644
+        run: |
+          set -euo pipefail
+          if [ "$USE_FTPS" = "true" ]; then
+            TARGET="ftps://$FTP_HOST"; FLAGS="set ftp:ssl-force true; set ftp:ssl-protect-data true; set ssl:verify-certificate false;"
+          else
+            TARGET="ftp://$FTP_HOST"; FLAGS=""
+          fi
+          ALL=$(lftp -u "$FTP_USER,$FTP_PASSWORD" -p "$FTP_PORT" "$TARGET" -e "$FLAGS find $REMOTE_DIR; bye" || true)
+          DIRS=$(lftp -u "$FTP_USER,$FTP_PASSWORD" -p "$FTP_PORT" "$TARGET" -e "$FLAGS find -d $REMOTE_DIR; bye" || true)
+          printf '%s\n' "$ALL" | grep -v '^$' | grep -Fvx -f <(printf '%s\n' "$DIRS") | while IFS= read -r f; do
+            [ -z "$f" ] && continue
+            lftp -u "$FTP_USER,$FTP_PASSWORD" -p "$FTP_PORT" "$TARGET" -e "$FLAGS chmod 644 \"$f\"; bye" || true
+          done
+
+      - name: Show permissions after
+        run: |
+          if [ "$USE_FTPS" = "true" ]; then
+            TARGET="ftps://$FTP_HOST"; FLAGS="set ftp:ssl-force true; set ftp:ssl-protect-data true; set ssl:verify-certificate false;"
+          else
+            TARGET="ftp://$FTP_HOST"; FLAGS=""
+          fi
+          echo "Listing $REMOTE_DIR (first 100 entries with perms) AFTER"
+          lftp -u "$FTP_USER,$FTP_PASSWORD" -p "$FTP_PORT" "$TARGET" -e "$FLAGS cls -l $REMOTE_DIR | head -100; bye" || true
