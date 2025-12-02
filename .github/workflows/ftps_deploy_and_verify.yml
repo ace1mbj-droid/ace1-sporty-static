@@ -38,28 +38,25 @@ jobs:
           if [ -z "$TARGET_DIR" ]; then TARGET_DIR="/public_html/"; fi
           echo "Deploying to $TARGET_DIR on $FTP_HOST"
           lftp -u "$FTP_USER,$FTP_PASSWORD" -p "$FTP_PORT" "ftps://$FTP_HOST" -e "set ftp:ssl-force true; set ftp:ssl-protect-data true; set ssl:verify-certificate false; set ftps:initial-prot ''; mkdir -p $TARGET_DIR; mirror -R --parallel=4 --verbose --delete \
-            --exclude-glob .git \
-            --exclude-glob .github \
-            --exclude-glob .vscode \
-            --exclude-glob node_modules \
-            --exclude-glob dist \
-            --exclude-glob docs \
-            --exclude-glob tests \
-            --exclude-glob "*.md" \
-            --exclude-glob "*.map" \
-            --exclude-glob "*.ts" \
-            --exclude-glob "*.scss" \
-            --exclude-glob "*.sass" \
-            --exclude-glob "*.less" \
-            --exclude-glob "*.psd" \
-            --exclude-glob "*.ai" \
-            --exclude-glob "*.sketch" \
-            --exclude-glob ".DS_Store" \
-            --exclude-glob "package.json" \
-            --exclude-glob "package-lock.json" \
-            --exclude-glob "pnpm-lock.yaml" \
-            --exclude-glob "yarn.lock" \
-            --exclude-glob "*.sh" \
+            --include-glob "*.html" \
+            --include-glob "*.css" \
+            --include-glob "*.js" \
+            --include-glob "*.json" \
+            --include-glob "*.ico" \
+            --include-glob "*.map" \
+            --include-glob "*.png" \
+            --include-glob "*.jpg" \
+            --include-glob "*.jpeg" \
+            --include-glob "*.gif" \
+            --include-glob "*.svg" \
+            --include-glob "*.webp" \
+            --include-glob "*.avif" \
+            --include-glob "*.woff" \
+            --include-glob "*.woff2" \
+            --include-glob "*.ttf" \
+            --include-glob "*.otf" \
+            --include-glob "*.eot" \
+            --exclude-glob "*" \
             dist $TARGET_DIR; bye"
 
       - name: Normalize permissions (dirs 755, files 644)
