@@ -1,0 +1,52 @@
+name: FTPS Server Prune (manual)
+
+on:
+  workflow_dispatch:
+    inputs:
+      remote_dir:
+        description: 'Remote root to prune'
+        required: true
+        default: '/public_html/'
+
+jobs:
+  prune:
+    runs-on: ubuntu-latest
+    env:
+      FTP_HOST: ${{ secrets.FTP_HOST }}
+      FTP_USER: ${{ secrets.FTP_USER }}
+      FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+      FTP_PORT: 990
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install lftp
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y lftp
+
+      - name: Prune non-whitelisted files from remote
+        run: |
+          set -euo pipefail
+          TARGET_DIR="${{ github.event.inputs.remote_dir }}"
+          if [ -z "$TARGET_DIR" ]; then TARGET_DIR="/public_html/"; fi
+          echo "Pruning $TARGET_DIR on $FTP_HOST"
+          lftp -u "$FTP_USER,$FTP_PASSWORD" -p "$FTP_PORT" "ftps://$FTP_HOST" -e '
+            set ftp:ssl-force true; set ftp:ssl-protect-data true; set ssl:verify-certificate false; set ftps:initial-prot "";
+            # List everything
+            find -l '$TARGET_DIR' > all.txt;
+            # Keep only whitelisted extensions
+            cat all.txt | awk "{print \$NF}" | grep -E "(\\.html$|\\.css$|\\.js$|\\.json$|\\.ico$|\\.map$|\\.png$|\\.jpg$|\\.jpeg$|\\.gif$|\\.svg$|\\.webp$|\\.avif$|\\.woff$|\\.woff2$|\\.ttf$|\\.otf$|\\.eot$)" > keep.txt;
+            # Derive delete candidates: present minus keep
+            cat all.txt | awk "{print \$NF}" | grep -vE "(\\.html$|\\.css$|\\.js$|\\.json$|\\.ico$|\\.map$|\\.png$|\\.jpg$|\\.jpeg$|\\.gif$|\\.svg$|\\.webp$|\\.avif$|\\.woff$|\\.woff2$|\\.ttf$|\\.otf$|\\.eot$)" > delete.txt;
+            # Show summary
+            echo "Will remove:"; head -200 delete.txt;
+            # Remove files
+            while read -r f; do [ -z "$f" ] || rm -f "$f" || true; done < delete.txt;
+            bye'
+
+      - name: Normalize permissions after prune
+        run: |
+          TARGET_DIR="${{ github.event.inputs.remote_dir }}"
+          if [ -z "$TARGET_DIR" ]; then TARGET_DIR="/public_html/"; fi
+          lftp -u "$FTP_USER,$FTP_PASSWORD" -p "$FTP_PORT" "ftps://$FTP_HOST" -e "set ftp:ssl-force true; set ftp:ssl-protect-data true; set ssl:verify-certificate false; set ftps:initial-prot ''; find -d $TARGET_DIR -type d -exec chmod 755 {}; find -d $TARGET_DIR -type f -exec chmod 644 {}; bye" || true
