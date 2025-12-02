@@ -1,0 +1,117 @@
+name: FTP health-check autorun (push)
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  htaccess-test-autorun:
+    runs-on: ubuntu-latest
+    env:
+      FTP_HOST: ${{ secrets.FTP_HOST }}
+      FTP_USER: ${{ secrets.FTP_USER }}
+      FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+      FTP_PORT: 21
+      DOMAIN: https://ace1.in
+      RUN_RENAME: true
+      USE_FTPS: true
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install tools
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y lftp curl dnsutils
+
+      - name: Set runtime variables
+        run: |
+          echo "TS=$(date -u +%Y%m%dT%H%M%SZ)" >> $GITHUB_ENV
+
+      - name: Initial site HEAD check
+        id: initial
+        run: |
+          echo "HEAD -> $DOMAIN"
+          code=$(curl -s -o /dev/null -w "%{http_code}" -I "$DOMAIN" || echo 000)
+          echo "status=$code" >> $GITHUB_OUTPUT
+          echo "Initial HTTP status: $code"
+
+      - name: Verbose headers (HEAD and GET)
+        run: |
+          echo "-- HEAD headers for $DOMAIN --"
+          curl -svI "$DOMAIN" -H "User-Agent: Mozilla/5.0" -o /dev/null 2>&1 | sed -n 's/^< \(Server\|Via\|CF-\|X-\)/\0/p' || true
+          echo
+          echo "-- GET headers for $DOMAIN --"
+          curl -sv "$DOMAIN" -o /dev/null -H "User-Agent: Mozilla/5.0" 2>&1 | sed -n 's/^< \(Server\|Via\|CF-\|X-\)/\0/p' || true
+          echo
+          echo "-- GET headers for $DOMAIN/index.html --"
+          curl -sv "$DOMAIN/index.html?ts=$TS" -o /dev/null -H "User-Agent: Mozilla/5.0" 2>&1 | sed -n 's/^< \(Server\|Via\|CF-\|X-\)/\0/p' || true
+
+      - name: GET status checks
+        run: |
+          root_get=$(curl -s -o /dev/null -w "%{http_code}" "$DOMAIN" || echo 000)
+          index_get=$(curl -s -o /dev/null -w "%{http_code}" "$DOMAIN/index.html?ts=$TS" || echo 000)
+          echo "ROOT_GET_STATUS=$root_get"
+          echo "INDEX_GET_STATUS=$index_get"
+
+      - name: List remote root (confirm index.html exists)
+        run: |
+          if [ "$USE_FTPS" = "true" ]; then
+            TARGET="ftps://$FTP_HOST"; FLAGS="set ftp:ssl-force true; set ftp:ssl-protect-data true; set ssl:verify-certificate false;"
+          else
+            TARGET="ftp://$FTP_HOST"; FLAGS=""
+          fi
+          echo "Listing /public_html (top 50 entries)"
+          lftp -u "$FTP_USER,$FTP_PASSWORD" -p "$FTP_PORT" "$TARGET" -e "$FLAGS cls -l /public_html | head -50; bye" || true
+
+      - name: Backup & rename remote .htaccess (safe)
+        if: ${{ env.RUN_RENAME == 'true' }}
+        id: rename
+        run: |
+          set -euo pipefail
+          if [ "$USE_FTPS" = "true" ]; then
+            TARGET="ftps://$FTP_HOST"; FLAGS="set ftp:ssl-force true; set ftp:ssl-protect-data true; set ssl:verify-certificate false;"
+          else
+            TARGET="ftp://$FTP_HOST"; FLAGS=""
+          fi
+          found=$(lftp -u "$FTP_USER,$FTP_PASSWORD" -p "$FTP_PORT" "$TARGET" -e "$FLAGS cls -1 /public_html/.htaccess || true; bye" | wc -l || true)
+          if [ "${found}" -gt 0 ]; then
+            echo "found=true" >> $GITHUB_OUTPUT
+            echo "Remote .htaccess found — renaming to .htaccess.bak-${TS}"
+            lftp -u "$FTP_USER,$FTP_PASSWORD" -p "$FTP_PORT" "$TARGET" -e "$FLAGS mv /public_html/.htaccess /public_html/.htaccess.bak-${TS}; bye"
+          else
+            echo "found=false" >> $GITHUB_OUTPUT
+            echo "No .htaccess present on remote (nothing to rename)."
+          fi
+
+      - name: Site HEAD check after rename
+        id: after
+        run: |
+          echo "HEAD -> $DOMAIN after rename"
+          code=$(curl -s -o /dev/null -w "%{http_code}" -I "$DOMAIN" || echo 000)
+          echo "status=$code" >> $GITHUB_OUTPUT
+          echo "Post-rename HTTP status: $code"
+
+      - name: Restore remote .htaccess if renamed
+        if: steps.rename.outputs.found == 'true'
+        run: |
+          echo "Restoring .htaccess from .htaccess.bak-${TS}"
+          if [ "$USE_FTPS" = "true" ]; then
+            TARGET="ftps://$FTP_HOST"; FLAGS="set ftp:ssl-force true; set ftp:ssl-protect-data true; set ssl:verify-certificate false;"
+          else
+            TARGET="ftp://$FTP_HOST"; FLAGS=""
+          fi
+          lftp -u "$FTP_USER,$FTP_PASSWORD" -p "$FTP_PORT" "$TARGET" -e "$FLAGS mv /public_html/.htaccess.bak-${TS} /public_html/.htaccess; bye"
+
+      - name: Final HEAD check
+        run: |
+          echo "Final HEAD -> $DOMAIN"
+          code=$(curl -s -o /dev/null -w "%{http_code}" -I "$DOMAIN" || echo 000)
+          echo "Final HTTP status: $code"
+
+      - name: Summary
+        run: |
+          echo "INITIAL_STATUS=${{ steps.initial.outputs.status }}"
+          echo "AFTER_RENAME_STATUS=${{ steps.after.outputs.status }}"
+          echo "If the initial status was 403 and the after-rename status becomes 200 (or changes), .htaccess was likely blocking access. If both are 403, the restriction is probably at the server level outside of .htaccess control."
