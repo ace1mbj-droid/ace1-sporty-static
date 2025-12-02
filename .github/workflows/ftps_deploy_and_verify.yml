@@ -38,6 +38,8 @@ jobs:
           if [ -z "$TARGET_DIR" ]; then TARGET_DIR="/public_html/"; fi
           echo "Deploying to $TARGET_DIR on $FTP_HOST"
           lftp -u "$FTP_USER,$FTP_PASSWORD" -p "$FTP_PORT" "ftps://$FTP_HOST" -e "set ftp:ssl-force true; set ftp:ssl-protect-data true; set ssl:verify-certificate false; set ftps:initial-prot ''; mkdir -p $TARGET_DIR; mirror -R --parallel=4 --verbose --delete \
+            --exclude-glob "ghosty/**" \
+            --exclude-glob "templates/**" \
             --include-glob "*.html" \
             --include-glob "*.css" \
             --include-glob "*.js" \
