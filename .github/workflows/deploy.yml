@@ -30,8 +30,14 @@ jobs:
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: ./dist/
           server-dir: /public_html/
-          protocol: ftp
+          protocol: ftps
           port: 21
+          dangerous-clean-slate: true
+          exclude: |
+            **/.git*
+            **/.github/**
+            **/node_modules/**
+            dist/**
 
 # Secrets to set: FTP_HOST, FTP_USER, FTP_PASSWORD
 # Alternative: use SSH key or other deployment action if host requires it.
