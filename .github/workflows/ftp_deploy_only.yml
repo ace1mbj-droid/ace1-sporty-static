@@ -30,8 +30,26 @@ jobs:
           exclude: |
             **/.git*
             **/.github/**
+            **/.vscode/**
             **/node_modules/**
             dist/**
+            docs/**
+            tests/**
+            **/*.md
+            **/*.map
+            **/*.ts
+            **/*.scss
+            **/*.sass
+            **/*.less
+            **/*.psd
+            **/*.ai
+            **/*.sketch
+            **/.DS_Store
+            package.json
+            package-lock.json
+            pnpm-lock.yaml
+            yarn.lock
+            **/*.sh
 
 # Required repository secrets for this workflow:
 # - FTP_HOST
