@@ -1,0 +1,46 @@
+name: FTPS Preview Deploy (manual)
+
+on:
+  workflow_dispatch:
+    inputs:
+      remote_dir:
+        description: 'Remote preview directory'
+        required: true
+        default: '/public_html/preview/'
+
+jobs:
+  preview-deploy:
+    runs-on: ubuntu-latest
+    env:
+      FTP_HOST: ${{ secrets.FTP_HOST }}
+      FTP_USER: ${{ secrets.FTP_USER }}
+      FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+      FTP_PORT: 21
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install lftp
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y lftp
+
+      - name: Build & copy to dist
+        run: |
+          rm -rf dist || true
+          mkdir -p dist
+          rsync -av --exclude='.git' --exclude='.github' --exclude='node_modules' --exclude='dist' ./ dist/
+
+      - name: Upload preview via FTPS (clean upload)
+        run: |
+          TARGET_DIR="${{ github.event.inputs.remote_dir }}"
+          if [ -z "$TARGET_DIR" ]; then TARGET_DIR="/public_html/preview/"; fi
+          if [ ! -d dist ]; then echo "dist missing"; exit 1; fi
+          echo "Deploying to $TARGET_DIR on $FTP_HOST"
+          lftp -u "$FTP_USER,$FTP_PASSWORD" -p "$FTP_PORT" "ftps://$FTP_HOST" -e "set ftp:ssl-force true; set ftp:ssl-protect-data true; set ssl:verify-certificate false; mkdir -p $TARGET_DIR; mirror -R --parallel=4 --verbose --delete --exclude-glob .git --exclude-glob .github dist $TARGET_DIR; bye"
+
+      - name: List preview directory (top 50)
+        run: |
+          TARGET_DIR="${{ github.event.inputs.remote_dir }}"
+          if [ -z "$TARGET_DIR" ]; then TARGET_DIR="/public_html/preview/"; fi
+          lftp -u "$FTP_USER,$FTP_PASSWORD" -p "$FTP_PORT" "ftps://$FTP_HOST" -e "set ftp:ssl-force true; set ftp:ssl-protect-data true; set ssl:verify-certificate false; cls -l $TARGET_DIR | head -50; bye" || true
