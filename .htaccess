@@ -72,14 +72,14 @@
     # Enable XSS protection
     Header always set X-XSS-Protection "1; mode=block"
     
-    # Referrer Policy
-    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+    # Referrer Policy (allow external image hotlinking)
+    Header always set Referrer-Policy "no-referrer-when-downgrade"
     
     # Permissions Policy
     Header always set Permissions-Policy "geolocation=(), microphone=(), camera=()"
     
-    # Content Security Policy
-    Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://*.supabase.co https://accounts.google.com https://connect.facebook.net; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data: https: blob:; connect-src 'self' https://*.supabase.co https://accounts.google.com; frame-src https://accounts.google.com https://www.facebook.com;"
+    # Content Security Policy (broaden img-src to allow external CDNs like ImgBB and Unsplash)
+    Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://*.supabase.co https://accounts.google.com https://connect.facebook.net; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data: https: blob: https://i.ibb.co https://images.unsplash.com; connect-src 'self' https://*.supabase.co https://accounts.google.com; frame-src https://accounts.google.com https://www.facebook.com;"
     
     # HSTS (uncomment when HTTPS is working)
     # Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
