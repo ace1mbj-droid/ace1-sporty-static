@@ -15,7 +15,7 @@ jobs:
       FTP_HOST: ${{ secrets.FTP_HOST }}
       FTP_USER: ${{ secrets.FTP_USER }}
       FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
-      FTP_PORT: 21
+      FTP_PORT: 990
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -37,10 +37,10 @@ jobs:
           if [ -z "$TARGET_DIR" ]; then TARGET_DIR="/public_html/preview/"; fi
           if [ ! -d dist ]; then echo "dist missing"; exit 1; fi
           echo "Deploying to $TARGET_DIR on $FTP_HOST"
-          lftp -u "$FTP_USER,$FTP_PASSWORD" -p "$FTP_PORT" "ftps://$FTP_HOST" -e "set ftp:ssl-force true; set ftp:ssl-protect-data true; set ssl:verify-certificate false; mkdir -p $TARGET_DIR; mirror -R --parallel=4 --verbose --delete --exclude-glob .git --exclude-glob .github dist $TARGET_DIR; bye"
+          lftp -u "$FTP_USER,$FTP_PASSWORD" -p "$FTP_PORT" "ftps://$FTP_HOST" -e "set ftp:ssl-force true; set ftp:ssl-protect-data true; set ssl:verify-certificate false; set ftps:initial-prot ''; mkdir -p $TARGET_DIR; mirror -R --parallel=4 --verbose --delete --exclude-glob .git --exclude-glob .github dist $TARGET_DIR; bye"
 
       - name: List preview directory (top 50)
         run: |
           TARGET_DIR="${{ github.event.inputs.remote_dir }}"
           if [ -z "$TARGET_DIR" ]; then TARGET_DIR="/public_html/preview/"; fi
-          lftp -u "$FTP_USER,$FTP_PASSWORD" -p "$FTP_PORT" "ftps://$FTP_HOST" -e "set ftp:ssl-force true; set ftp:ssl-protect-data true; set ssl:verify-certificate false; cls -l $TARGET_DIR | head -50; bye" || true
+          lftp -u "$FTP_USER,$FTP_PASSWORD" -p "$FTP_PORT" "ftps://$FTP_HOST" -e "set ftp:ssl-force true; set ftp:ssl-protect-data true; set ssl:verify-certificate false; set ftps:initial-prot ''; cls -l $TARGET_DIR | head -50; bye" || true
