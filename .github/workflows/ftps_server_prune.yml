@@ -38,7 +38,7 @@ jobs:
           trap cleanup EXIT
 
           # Pull remote listing into a local temp file
-          lftp -u "$FTP_USER,$FTP_PASSWORD" -p "$FTP_PORT" "ftp://$FTP_HOST" -e "set ftp:ssl-force true; set ftp:ssl-protect-data true; set ftp:ssl-auth TLS; set ssl:verify-certificate false; set ftps:initial-prot C; find -l $TARGET_DIR; bye" > "$TMP_ALL"
+          lftp -u "$FTP_USER,$FTP_PASSWORD" -p "$FTP_PORT" "ftp://$FTP_HOST" -e "set ftp:ssl-force true; set ftp:ssl-protect-data true; set ftp:ssl-auth TLS; set ssl:verify-certificate false; set ftps:initial-prot C; set cmd:fail-exit false; find -l $TARGET_DIR; bye" > "$TMP_ALL"
 
           # Determine deletion candidates locally (anything not matching the allow-list)
           awk '{print $NF}' "$TMP_ALL" \
