@@ -408,6 +408,7 @@ class AdminPanel {
                 .from('inventory')
                 .select('*')
                 .eq('product_id', productId)
+                .limit(1)
                 .single();
 
             if (existingInventory) {
@@ -445,6 +446,7 @@ class AdminPanel {
                 .from('product_images')
                 .select('*')
                 .eq('product_id', productId)
+                .limit(1)
                 .single();
 
             if (existingImage) {

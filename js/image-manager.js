@@ -294,6 +294,7 @@ class WebsiteImageManager {
                         .from('product_images')
                         .select('*')
                         .eq('product_id', imageData.id)
+                        .limit(1)
                         .single();
 
                     if (existingImage) {
