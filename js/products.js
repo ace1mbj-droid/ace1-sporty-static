@@ -31,7 +31,17 @@ class ProductFilterManager {
             console.log('🔄 Fetching products from Supabase...');
             const { data: products, error } = await supabase
                 .from('products')
-                .select('*')
+                .select(`
+                    *,
+                    product_images (
+                        storage_path,
+                        alt
+                    ),
+                    inventory (
+                        stock,
+                        size
+                    )
+                `)
                 .eq('is_active', true)
                 .order('created_at', { ascending: false });
 
@@ -39,18 +49,26 @@ class ProductFilterManager {
 
             console.log(`✅ Fetched ${products?.length || 0} products from Supabase (fresh data)`);
             
+            // Process the data to flatten related tables
+            const processedProducts = (products || []).map(product => ({
+                ...product,
+                image_url: product.product_images?.[0]?.storage_path || null,
+                stock_quantity: product.inventory?.[0]?.stock || 0,
+                price: (product.price_cents / 100).toFixed(2) // Convert cents to rupees
+            }));
+            
             // Log first product to verify stock_quantity
-            if (products && products.length > 0) {
+            if (processedProducts && processedProducts.length > 0) {
                 console.log('Sample product:', {
-                    name: products[0].name,
-                    stock_quantity: products[0].stock_quantity,
-                    price: products[0].price
+                    name: processedProducts[0].name,
+                    stock_quantity: processedProducts[0].stock_quantity,
+                    price: processedProducts[0].price
                 });
             }
 
             // IMPORTANT: Render products FIRST to replace hardcoded HTML
-            if (products && products.length > 0) {
-                this.renderProducts(products);
+            if (processedProducts && processedProducts.length > 0) {
+                this.renderProducts(processedProducts);
                 console.log('✅ Rendered products from Supabase');
             } else {
                 console.warn('⚠️ No products returned from Supabase');
