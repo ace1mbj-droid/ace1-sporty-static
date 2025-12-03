@@ -196,7 +196,8 @@ class AdminPanel {
         // Process the data to flatten the related tables
         this.products = (products || []).map(product => ({
             ...product,
-            stock_quantity: product.inventory?.[0]?.stock || 0,
+            // Sum stock across all inventory rows for this product
+            stock_quantity: (product.inventory || []).reduce((s, i) => s + (i?.stock || 0), 0),
             image_url: product.product_images?.[0]?.storage_path || null,
             price: (product.price_cents / 100).toFixed(2) // Convert cents to rupees for display
         }));
@@ -301,13 +302,23 @@ class AdminPanel {
             document.getElementById('product-description').value = product.description || '';
             document.getElementById('product-price').value = product.price;
             document.getElementById('product-category').value = product.category || 'Running';
-            document.getElementById('product-stock').value = product.stock_quantity || 0;
-            document.getElementById('product-image').value = product.image_url || '';
+            // Render inventory rows (size + stock)
+            this.renderInventoryRows(product.inventory || []);
+            document.getElementById('product-image').value = product.product_images?.[0]?.storage_path || '';
             document.getElementById('product-active').checked = product.is_active;
-            this.updateImagePreview(product.image_url);
+            this.updateImagePreview(product.product_images?.[0]?.storage_path || null);
+            // Attach add-size button handler
+            const addBtn = document.getElementById('add-size-btn');
+            if (addBtn) {
+                addBtn.onclick = () => this.addInventoryRow();
+            }
         } else {
             document.getElementById('modal-title').textContent = 'Add New Product';
             document.getElementById('image-preview').innerHTML = '<span style="color: #999;">Image preview will appear here</span>';
+            // Start with one empty size row
+            this.renderInventoryRows([]);
+            const addBtn = document.getElementById('add-size-btn');
+            if (addBtn) addBtn.onclick = () => this.addInventoryRow();
         }
         
         modal.classList.add('active');
@@ -328,12 +339,6 @@ class AdminPanel {
 
     async saveProduct() {
         const productId = document.getElementById('product-id').value;
-        const stockInput = document.getElementById('product-stock');
-        const stockValue = stockInput.value;
-        
-        console.log('Stock input element:', stockInput);
-        console.log('Stock value (raw):', stockValue);
-        console.log('Stock value (parsed):', parseInt(stockValue));
         
         // Convert price to cents (database stores price_cents)
         const priceInRupees = parseFloat(document.getElementById('product-price').value);
@@ -379,9 +384,9 @@ class AdminPanel {
         console.log('✅ Product saved successfully!');
         console.log('Saved product:', result.data);
         
-        // Handle inventory (stock)
-        const stockQuantity = parseInt(stockValue) || 0;
-        await this.saveProductInventory(savedProductId, stockQuantity);
+        // Handle inventory (multi-size)
+        const inventory = this.getInventoryFromForm();
+        await this.saveProductInventory(savedProductId, inventory);
         
         // Handle product image
         const imageUrl = document.getElementById('product-image').value.trim();
@@ -390,7 +395,8 @@ class AdminPanel {
         }
         
         // Show success message
-        alert(`✅ Product saved successfully!\n\nStock set to: ${stockQuantity}\n\nChanges will reflect across the site immediately.`);
+        const totalStock = (inventory || []).reduce((s, it) => s + (parseInt(it.stock) || 0), 0);
+        alert(`✅ Product saved successfully!\n\nTotal stock: ${totalStock}\n\nChanges will reflect across the site immediately.`);
         
         this.closeProductModal();
         await this.loadProducts();
@@ -402,41 +408,102 @@ class AdminPanel {
     }
 
     async saveProductInventory(productId, stockQuantity) {
+        // New signature: saveProductInventory(productId, inventoryArray)
+        // inventoryArray: [{ size: 'M', stock: 10 }, ...]
         try {
-            // Check if inventory record exists for this product
-            const { data: existingInventory } = await this.supabase
+            const incoming = Array.isArray(stockQuantity) ? stockQuantity : [];
+
+            // Fetch existing inventory rows for this product
+            const { data: existingRows } = await this.supabase
                 .from('inventory')
                 .select('*')
-                .eq('product_id', productId)
-                .limit(1)
-                .single();
+                .eq('product_id', productId);
 
-            if (existingInventory) {
-                // Update existing inventory
-                const { error } = await this.supabase
-                    .from('inventory')
-                    .update({ stock: stockQuantity })
-                    .eq('product_id', productId);
+            const existingMap = (existingRows || []).reduce((m, r) => {
+                m[String(r.size)] = r;
+                return m;
+            }, {});
 
-                if (error) throw error;
-                console.log('✅ Inventory updated');
-            } else {
-                // Create new inventory record (assuming "One Size" for simplicity)
-                const { error } = await this.supabase
-                    .from('inventory')
-                    .insert([{
-                        product_id: productId,
-                        size: 'One Size',
-                        stock: stockQuantity
-                    }]);
+            const incomingMap = (incoming || []).reduce((m, r) => {
+                if (r && r.size) m[String(r.size)] = { size: r.size, stock: parseInt(r.stock) || 0 };
+                return m;
+            }, {});
 
-                if (error) throw error;
-                console.log('✅ Inventory created');
+            const ops = [];
+
+            // Upsert incoming sizes
+            for (const sizeKey of Object.keys(incomingMap)) {
+                const item = incomingMap[sizeKey];
+                const existing = existingMap[sizeKey];
+                if (existing) {
+                    // Update if stock changed
+                    if ((existing.stock || 0) !== (item.stock || 0)) {
+                        ops.push(this.supabase.from('inventory').update({ stock: item.stock }).eq('id', existing.id));
+                    }
+                } else {
+                    // Insert new inventory record
+                    ops.push(this.supabase.from('inventory').insert([{ product_id: productId, size: item.size, stock: item.stock }]));
+                }
             }
+
+            // Delete sizes that existed but were removed in incoming
+            for (const sizeKey of Object.keys(existingMap)) {
+                if (!incomingMap[sizeKey]) {
+                    const existing = existingMap[sizeKey];
+                    ops.push(this.supabase.from('inventory').delete().eq('id', existing.id));
+                }
+            }
+
+            // Execute operations sequentially to keep things simple
+            for (const p of ops) {
+                const res = await p;
+                if (res.error) console.warn('Inventory operation error:', res.error);
+            }
+
+            console.log('✅ Inventory sync complete');
         } catch (error) {
             console.error('Error saving inventory:', error);
-            // Don't fail the whole save operation for inventory issues
         }
+    }
+
+    // Render inventory rows inside the product modal
+    renderInventoryRows(rows) {
+        const container = document.getElementById('inventory-rows');
+        if (!container) return;
+        container.innerHTML = '';
+        if (!rows || rows.length === 0) {
+            this.addInventoryRow();
+            return;
+        }
+        rows.forEach(r => this.addInventoryRow(r.size || '', r.stock || 0));
+    }
+
+    addInventoryRow(size = '', stock = 0) {
+        const container = document.getElementById('inventory-rows');
+        if (!container) return;
+        const row = document.createElement('div');
+        row.className = 'inventory-row';
+        row.style.display = 'flex';
+        row.style.gap = '8px';
+        row.style.marginBottom = '8px';
+        row.innerHTML = `
+            <input type="text" class="inv-size" placeholder="Size (e.g. M, 9)" value="${this.escapeHtml(size)}" style="flex:1; padding:6px" />
+            <input type="number" class="inv-stock" placeholder="Stock" value="${stock}" min="0" style="width:100px; padding:6px" />
+            <button type="button" class="btn btn-secondary inv-remove">Remove</button>
+        `;
+        container.appendChild(row);
+        const removeBtn = row.querySelector('.inv-remove');
+        removeBtn.addEventListener('click', () => row.remove());
+    }
+
+    getInventoryFromForm() {
+        const container = document.getElementById('inventory-rows');
+        if (!container) return [];
+        const rows = Array.from(container.querySelectorAll('.inventory-row'));
+        return rows.map(r => ({
+            size: r.querySelector('.inv-size')?.value.trim(),
+            stock: parseInt(r.querySelector('.inv-stock')?.value || 0) || 0
+        })).filter(it => it.size);
     }
 
     async saveProductImage(productId, imageUrl) {
