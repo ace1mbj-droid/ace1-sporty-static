@@ -496,7 +496,14 @@
 
                 <div class="form-group">
                     <label for="product-stock">Stock Quantity *</label>
-                    <input type="number" id="product-stock" value="0" min="0" step="1" required>
+                    <!-- Multi-size inventory: dynamic rows of size + stock -->
+                    <div id="inventory-rows">
+                        <!-- Rows are injected here by admin.js -->
+                    </div>
+                    <div style="display:flex; gap:8px; margin-top:8px;">
+                        <button type="button" class="btn btn-secondary" id="add-size-btn">Add Size</button>
+                        <small style="align-self:center; color:#666;">Add multiple sizes/stock entries</small>
+                    </div>
                 </div>
 
                 <div class="form-group">
