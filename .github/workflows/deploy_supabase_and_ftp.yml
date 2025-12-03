@@ -101,7 +101,7 @@ jobs:
           username: ${{ secrets.FTP_USER }}
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: ./dist/
-          server-dir: /public_html/
+          server-dir: /
           protocol: ftps
           port: 21
           dangerous-clean-slate: true
