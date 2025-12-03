@@ -32,7 +32,7 @@ jobs:
           if [ -z "$TARGET_DIR" ]; then TARGET_DIR="/public_html/"; fi
           echo "Pruning $TARGET_DIR on $FTP_HOST"
           lftp -u "$FTP_USER,$FTP_PASSWORD" -p "$FTP_PORT" "ftp://$FTP_HOST" -e '
-            set ftp:ssl-force true; set ftp:ssl-protect-data true; set ssl:verify-certificate false; set ftps:initial-prot "";
+            set ssl:verify-certificate false;
             # List everything
             find -l '$TARGET_DIR' > all.txt;
             # Keep only whitelisted extensions
@@ -49,4 +49,4 @@ jobs:
         run: |
           TARGET_DIR="${{ github.event.inputs.remote_dir }}"
           if [ -z "$TARGET_DIR" ]; then TARGET_DIR="/public_html/"; fi
-          lftp -u "$FTP_USER,$FTP_PASSWORD" -p "$FTP_PORT" "ftp://$FTP_HOST" -e "set ftp:ssl-force true; set ftp:ssl-protect-data true; set ssl:verify-certificate false; set ftps:initial-prot ''; find -d $TARGET_DIR -type d -exec chmod 755 {}; find -d $TARGET_DIR -type f -exec chmod 644 {}; bye" || true
+          lftp -u "$FTP_USER,$FTP_PASSWORD" -p "$FTP_PORT" "ftp://$FTP_HOST" -e "set ssl:verify-certificate false; find -d $TARGET_DIR -type d -exec chmod 755 {}; find -d $TARGET_DIR -type f -exec chmod 644 {}; bye" || true
