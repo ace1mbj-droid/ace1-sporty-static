@@ -6,7 +6,7 @@ on:
       remote_dir:
         description: 'Remote root directory'
         required: true
-        default: '/public_html/'
+        default: '/public_html'
       allowed_status_codes:
         description: 'Comma-separated HTTP codes treated as healthy'
         required: false
@@ -47,7 +47,7 @@ jobs:
       - name: Upload root via FTPS (mirror)
         run: |
           TARGET_DIR="${{ github.event.inputs.remote_dir }}"
-          if [ -z "$TARGET_DIR" ]; then TARGET_DIR="/public_html/"; fi
+          if [ -z "$TARGET_DIR" ]; then TARGET_DIR="/public_html"; fi
           echo "Deploying to $TARGET_DIR on $FTP_HOST"
           # reduce concurrency, add timeouts/retries; use explicit FTPS (AUTH TLS) on port 21
           lftp -u "$FTP_USER,$FTP_PASSWORD" -p "$FTP_PORT" "ftp://$FTP_HOST" -e "set ftp:ssl-force true; set ftp:ssl-protect-data true; set ssl:verify-certificate false; set net:timeout 60; set net:max-retries 3; set net:reconnect-interval-base 5; mkdir -p $TARGET_DIR; mirror -R --parallel=2 --verbose --delete \
@@ -76,13 +76,13 @@ jobs:
       - name: Normalize permissions (dirs 755, files 644)
         run: |
           TARGET_DIR="${{ github.event.inputs.remote_dir }}"
-          if [ -z "$TARGET_DIR" ]; then TARGET_DIR="/public_html/"; fi
+          if [ -z "$TARGET_DIR" ]; then TARGET_DIR="/public_html"; fi
           lftp -u "$FTP_USER,$FTP_PASSWORD" -p "$FTP_PORT" "ftp://$FTP_HOST" -e "set ftp:ssl-force true; set ftp:ssl-protect-data true; set ssl:verify-certificate false; find -d $TARGET_DIR -type d -exec chmod 755 {}; find -d $TARGET_DIR -type f -exec chmod 644 {}; bye" || true
 
       - name: List root directory (top 50)
         run: |
           TARGET_DIR="${{ github.event.inputs.remote_dir }}"
-          if [ -z "$TARGET_DIR" ]; then TARGET_DIR="/public_html/"; fi
+          if [ -z "$TARGET_DIR" ]; then TARGET_DIR="/public_html"; fi
           lftp -u "$FTP_USER,$FTP_PASSWORD" -p "$FTP_PORT" "ftp://$FTP_HOST" -e "set ftp:ssl-force true; set ftp:ssl-protect-data true; set ssl:verify-certificate false; cls -l $TARGET_DIR | head -50; bye" || true
 
       - name: Health check via GET
