@@ -4,7 +4,7 @@
 // Configured on: December 3, 2025
 const SUPABASE_CONFIG = {
     url: 'https://vorqavsuqcjnkjzwkyzr.supabase.co',
-    anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZvcnFhdnN1cWNqbmtqendreXpyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzE0MDk0NzMsImV4cCI6MjA0Njk4NTQ3M30.9E_wEHfFHLxpqqD0t4Y3mHNbOGDzQ3GNfYhNfwyqHdE'
+    anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZvcnFhdnN1cWNqbmtqendreXpyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM2NTYwMTMsImV4cCI6MjA3OTIzMjAxM30.HhExWu9XMFm2CBhoZUnHyYI0D0-smScXb_pSzCGkMvI'
 };
 
 // Initialize Supabase client
