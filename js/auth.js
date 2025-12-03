@@ -151,7 +151,16 @@ class AuthManager {
                             window.location.href = 'admin.html';
                         } else {
                             const redirect = new URLSearchParams(window.location.search).get('redirect');
-                            window.location.href = redirect && redirect !== 'admin' ? redirect : 'user-profile.html';
+                            const allowedRedirects = [
+                                'user-profile.html',
+                                'dashboard.html',
+                                'settings.html',
+                                'welcome.html'
+                                // Add more safe pages as needed
+                            ];
+                            window.location.href = allowedRedirects.includes(redirect)
+                                ? redirect
+                                : 'user-profile.html';
                         }
                     }, 1500);
                 } else {
