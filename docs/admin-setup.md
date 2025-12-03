@@ -14,7 +14,7 @@ Quick steps — create / reset the admin user
 
    - SUPABASE_PROJECT_REF or SUPABASE_URL
    - SUPABASE_SERVICE_ROLE_KEY
-   - (optional) ADMIN_EMAIL (default: admin@ace1.in)
+   - (optional) ADMIN_EMAIL (default: hello@ace1.in)
    - (optional) ADMIN_PASSWORD (default: admin123) — choose a strong password
 
 2. Run the helper script from the repository root:
@@ -23,7 +23,7 @@ Quick steps — create / reset the admin user
    # Example — set env vars and run
    export SUPABASE_SERVICE_ROLE_KEY="sbp_xxx..."
    export SUPABASE_PROJECT_REF="your-project-ref"
-   export ADMIN_EMAIL="admin@ace1.in"
+   export ADMIN_EMAIL="hello@ace1.in"
    export ADMIN_PASSWORD="choose-a-strong-password"
    node scripts/create_admin.js
    ```

@@ -77,7 +77,7 @@ class UserProfileManager {
         
         // If admin user is on user-profile, redirect to admin panel
         const user = window.databaseAuth?.getCurrentUser();
-        if (user && (user.role === 'admin' || user.email === 'admin@ace1.in')) {
+        if (user && (user.role === 'admin' || user.email === 'hello@ace1.in')) {
             console.log('🔴 Admin user detected, redirecting to admin panel...');
             window.location.href = 'admin.html';
         }
