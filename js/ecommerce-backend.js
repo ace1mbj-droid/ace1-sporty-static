@@ -91,10 +91,14 @@ class EcommerceBackend {
                     products (
                         id,
                         name,
-                        price,
-                        image_url,
-                        stock_quantity,
-                        is_active
+                        price_cents,
+                        is_active,
+                        product_images (
+                            storage_path
+                        ),
+                        inventory (
+                            stock
+                        )
                     )
                 `)
                 .eq('user_id', userId);
@@ -276,7 +280,12 @@ class EcommerceBackend {
                     *,
                     order_items (
                         *,
-                        products (name, image_url)
+                        products (
+                            name,
+                            product_images (
+                                storage_path
+                            )
+                        )
                     )
                 `)
                 .eq('id', orderId)
@@ -303,7 +312,12 @@ class EcommerceBackend {
                     *,
                     order_items (
                         *,
-                        products (name, image_url)
+                        products (
+                            name,
+                            product_images (
+                                storage_path
+                            )
+                        )
                     )
                 `)
                 .eq('user_id', userId)
@@ -413,7 +427,18 @@ class EcommerceBackend {
                 .from('wishlist')
                 .select(`
                     *,
-                    products (*)
+                    products (
+                        id,
+                        name,
+                        price_cents,
+                        is_active,
+                        product_images (
+                            storage_path
+                        ),
+                        inventory (
+                            stock
+                        )
+                    )
                 `)
                 .eq('user_id', userId);
 
@@ -546,7 +571,7 @@ class EcommerceBackend {
 
     calculateCartTotal(cartItems) {
         return cartItems.reduce((sum, item) => {
-            const price = item.products?.price || 0;
+            const price = item.products?.price_cents ? item.products.price_cents / 100 : 0;
             return sum + (price * item.quantity);
         }, 0);
     }
