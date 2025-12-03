@@ -174,7 +174,18 @@ class AdminPanel {
     async loadProducts() {
         const { data: products, error } = await this.supabase
             .from('products')
-            .select('*')
+            .select(`
+                *,
+                inventory (
+                    stock,
+                    size
+                ),
+                product_images (
+                    storage_path,
+                    alt,
+                    position
+                )
+            `)
             .order('created_at', { ascending: false });
 
         if (error) {
@@ -182,7 +193,14 @@ class AdminPanel {
             return;
         }
 
-        this.products = products || [];
+        // Process the data to flatten the related tables
+        this.products = (products || []).map(product => ({
+            ...product,
+            stock_quantity: product.inventory?.[0]?.stock || 0,
+            image_url: product.product_images?.[0]?.storage_path || null,
+            price: (product.price_cents / 100).toFixed(2) // Convert cents to rupees for display
+        }));
+
         this.renderProducts();
     }
 
@@ -317,20 +335,22 @@ class AdminPanel {
         console.log('Stock value (raw):', stockValue);
         console.log('Stock value (parsed):', parseInt(stockValue));
         
+        // Convert price to cents (database stores price_cents)
+        const priceInRupees = parseFloat(document.getElementById('product-price').value);
+        const priceInCents = Math.round(priceInRupees * 100);
+        
         const productData = {
             name: document.getElementById('product-name').value,
             description: document.getElementById('product-description').value,
-            price: parseFloat(document.getElementById('product-price').value),
+            price_cents: priceInCents,
             category: document.getElementById('product-category').value,
-            stock_quantity: parseInt(stockValue) || 0,
-            image_url: document.getElementById('product-image').value,
-            is_active: document.getElementById('product-active').checked,
-            updated_at: new Date().toISOString()
+            is_active: document.getElementById('product-active').checked
         };
 
-        console.log('Full product data being saved:', productData);
+        console.log('Product data being saved:', productData);
 
         let result;
+        let savedProductId = productId;
         
         if (productId) {
             // Update existing product
@@ -338,14 +358,15 @@ class AdminPanel {
                 .from('products')
                 .update(productData)
                 .eq('id', productId)
-                .select(); // Add select to get updated data back
+                .select()
+                .single();
         } else {
             // Create new product
-            productData.created_at = new Date().toISOString();
             result = await this.supabase
                 .from('products')
                 .insert([productData])
-                .select(); // Add select to get inserted data back
+                .select()
+                .single();
         }
 
         if (result.error) {
@@ -354,29 +375,22 @@ class AdminPanel {
             return;
         }
 
+        savedProductId = result.data.id;
         console.log('✅ Product saved successfully!');
-        console.log('Returned data:', result.data);
+        console.log('Saved product:', result.data);
+        
+        // Handle inventory (stock)
+        const stockQuantity = parseInt(stockValue) || 0;
+        await this.saveProductInventory(savedProductId, stockQuantity);
+        
+        // Handle product image
+        const imageUrl = document.getElementById('product-image').value.trim();
+        if (imageUrl) {
+            await this.saveProductImage(savedProductId, imageUrl);
+        }
         
         // Show success message
-        const savedProduct = result.data?.[0];
-        if (savedProduct && savedProduct.stock_quantity !== undefined) {
-            console.log('Saved product stock_quantity:', savedProduct.stock_quantity);
-            alert(`✅ Product saved successfully!\n\nStock set to: ${savedProduct.stock_quantity}\n\nChanges will reflect across the site immediately.`);
-        } else {
-            // Update succeeded but didn't return data - check manually
-            const { data: checkData } = await this.supabase
-                .from('products')
-                .select('stock_quantity')
-                .eq('id', productId)
-                .single();
-            
-            if (checkData) {
-                console.log('Verified stock_quantity:', checkData.stock_quantity);
-                alert(`✅ Product saved successfully!\n\nStock set to: ${checkData.stock_quantity}\n\nChanges will reflect across the site immediately.`);
-            } else {
-                alert('✅ Product saved successfully!\n\nChanges will reflect across the site immediately.');
-            }
-        }
+        alert(`✅ Product saved successfully!\n\nStock set to: ${stockQuantity}\n\nChanges will reflect across the site immediately.`);
         
         this.closeProductModal();
         await this.loadProducts();
@@ -385,6 +399,84 @@ class AdminPanel {
         // Force reload products on all pages by clearing localStorage cache
         localStorage.removeItem('ace1_products_cache');
         localStorage.setItem('ace1_products_updated', Date.now().toString());
+    }
+
+    async saveProductInventory(productId, stockQuantity) {
+        try {
+            // Check if inventory record exists for this product
+            const { data: existingInventory } = await this.supabase
+                .from('inventory')
+                .select('*')
+                .eq('product_id', productId)
+                .single();
+
+            if (existingInventory) {
+                // Update existing inventory
+                const { error } = await this.supabase
+                    .from('inventory')
+                    .update({ stock: stockQuantity })
+                    .eq('product_id', productId);
+
+                if (error) throw error;
+                console.log('✅ Inventory updated');
+            } else {
+                // Create new inventory record (assuming "One Size" for simplicity)
+                const { error } = await this.supabase
+                    .from('inventory')
+                    .insert([{
+                        product_id: productId,
+                        size: 'One Size',
+                        stock: stockQuantity
+                    }]);
+
+                if (error) throw error;
+                console.log('✅ Inventory created');
+            }
+        } catch (error) {
+            console.error('Error saving inventory:', error);
+            // Don't fail the whole save operation for inventory issues
+        }
+    }
+
+    async saveProductImage(productId, imageUrl) {
+        try {
+            // Check if image record exists for this product
+            const { data: existingImage } = await this.supabase
+                .from('product_images')
+                .select('*')
+                .eq('product_id', productId)
+                .single();
+
+            if (existingImage) {
+                // Update existing image
+                const { error } = await this.supabase
+                    .from('product_images')
+                    .update({ 
+                        storage_path: imageUrl,
+                        alt: 'Product image'
+                    })
+                    .eq('product_id', productId);
+
+                if (error) throw error;
+                console.log('✅ Product image updated');
+            } else {
+                // Create new image record
+                const { error } = await this.supabase
+                    .from('product_images')
+                    .insert([{
+                        product_id: productId,
+                        storage_path: imageUrl,
+                        alt: 'Product image',
+                        position: 1
+                    }]);
+
+                if (error) throw error;
+                console.log('✅ Product image created');
+            }
+        } catch (error) {
+            console.error('Error saving product image:', error);
+            // Don't fail the whole save operation for image issues
+        }
     }
 
     async editProduct(productId) {
@@ -401,6 +493,31 @@ class AdminPanel {
 
         console.log(`Deleting product ID: ${productId}`);
 
+        // Delete related inventory records first
+        try {
+            await this.supabase
+                .from('inventory')
+                .delete()
+                .eq('product_id', productId);
+            console.log('✅ Related inventory records deleted');
+        } catch (err) {
+            console.error('Error deleting inventory:', err);
+            // Continue with product deletion
+        }
+
+        // Delete related product images
+        try {
+            await this.supabase
+                .from('product_images')
+                .delete()
+                .eq('product_id', productId);
+            console.log('✅ Related product images deleted');
+        } catch (err) {
+            console.error('Error deleting product images:', err);
+            // Continue with product deletion
+        }
+
+        // Delete the product
         const { error } = await this.supabase
             .from('products')
             .delete()
