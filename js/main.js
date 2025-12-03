@@ -211,14 +211,18 @@ async function addToCart(productId) {
             if (!localProduct) return;
             
             // Check stock
-            if (localProduct.stock_quantity === 0) {
+            if (localProduct.stock_quantity === 0 || localProduct.is_locked) {
                 showNotification('This product is currently out of stock', 'error');
                 return;
             }
             
             addProductToCart(localProduct);
         } else {
-            // Check stock from Supabase
+            // Check stock and availability from Supabase
+            if (product.is_locked) {
+                showNotification('This product is currently unavailable', 'error');
+                return;
+            }
             if (product.stock_quantity === 0) {
                 showNotification('This product is currently out of stock', 'error');
                 return;
@@ -841,7 +845,7 @@ function openQuickView(productData) {
     const addToCartBtn = document.getElementById('qv-add-to-cart');
     const stock = productData.stock_quantity !== undefined ? productData.stock_quantity : 0;
     
-    if (stock === 0) {
+    if (stock === 0 || productData.is_locked) {
         stockEl.className = 'qv-stock out-of-stock';
         stockEl.innerHTML = '<i class="fas fa-times-circle"></i> Out of Stock';
         addToCartBtn.disabled = true;
@@ -893,7 +897,7 @@ document.addEventListener('click', (e) => {
 
 // Add to cart from Quick View
 document.getElementById('qv-add-to-cart')?.addEventListener('click', () => {
-    if (currentQuickViewProduct && currentQuickViewProduct.stock_quantity > 0) {
+    if (currentQuickViewProduct && !currentQuickViewProduct.is_locked && currentQuickViewProduct.stock_quantity > 0) {
         addToCart(currentQuickViewProduct.id);
         closeQuickView();
     }
@@ -931,6 +935,7 @@ function attachQuickViewHandlers() {
             }
             
             // Fallback: Extract data from card
+            const badgeText = (productCard?.querySelector('.product-badge')?.textContent || '').toLowerCase();
             const productData = {
                 id: productId || Date.now(),
                 name: productCard?.querySelector('.product-name, h3')?.textContent || 'Product',
@@ -939,7 +944,8 @@ function attachQuickViewHandlers() {
                 image_url: productCard?.querySelector('img')?.src || 'images/placeholder.png',
                 category: productCard?.querySelector('.product-category')?.textContent || 'Sneakers',
                 description: productCard?.querySelector('.product-description')?.textContent || 'Premium quality sneakers with exceptional comfort and style.',
-                stock_quantity: productCard?.querySelector('.product-badge')?.textContent?.includes('Out of Stock') ? 0 : 50
+                stock_quantity: badgeText.includes('out of stock') ? 0 : (badgeText.includes('low stock') ? 5 : 50),
+                is_locked: badgeText.includes('locked') || badgeText.includes('unavailable')
             };
             
             openQuickView(productData);

@@ -31,15 +31,29 @@ export async function handler(req: Request): Promise<Response> {
       return new Response(JSON.stringify({ error: 'Cart empty' }), { status: 400 });
     }
 
-    // Recalculate price server-side
+    // Recalculate price server-side and validate product availability
     const ids = cart.map((c: any) => c.id);
-    console.log('create-order: fetching product prices for ids=', ids);
-    const { data: products } = await supabase.from('products').select('id, price_cents').in('id', ids);
+    console.log('create-order: fetching product info for ids=', ids);
+    // include availability fields so the server enforces business rules
+    const { data: products } = await supabase.from('products').select('id, price_cents, is_locked, stock_quantity, status').in('id', ids);
 
     let calculatedTotal = 0;
     for (const item of cart) {
       const product = products.find((p: any) => p.id === item.id);
       if (!product) return new Response(JSON.stringify({ error: `Product not found: ${item.id}` }), { status: 400 });
+
+      // Enforce server-side availability checks (security boundary)
+      if (product.is_locked) {
+        return new Response(JSON.stringify({ error: `Product is locked/unavailable: ${item.id}` }), { status: 400 });
+      }
+      if (typeof product.stock_quantity === 'number' && product.stock_quantity < item.qty) {
+        return new Response(JSON.stringify({ error: `Insufficient stock for product: ${item.id}` }), { status: 400 });
+      }
+      // If product uses a status enum, ensure it's 'available'
+      if (product.status && String(product.status).toLowerCase() !== 'available') {
+        return new Response(JSON.stringify({ error: `Product not available: ${item.id}` }), { status: 400 });
+      }
+
       calculatedTotal += product.price_cents * item.qty;
     }
 
