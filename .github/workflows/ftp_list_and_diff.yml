@@ -6,7 +6,7 @@ on:
       remote_dir:
         description: 'Remote directory to inspect'
         required: true
-        default: '/public_html'
+        default: '/'
       use_ftps:
         description: 'Use FTPS (TLS)'
         required: true

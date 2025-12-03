@@ -60,5 +60,5 @@ jobs:
       - name: List remote root (confirm index.html exists)
         run: |
           TARGET="ftp://$FTP_HOST"; FLAGS="set ftp:ssl-force true; set ftp:ssl-protect-data true; set ssl:verify-certificate false;"
-          echo "Listing /public_html (top 50 entries)"
-          lftp -u "$FTP_USER,$FTP_PASSWORD" -p "$FTP_PORT" "$TARGET" -e "$FLAGS cls -l /public_html | head -50; bye" || true
+          echo "Listing / (top 50 entries)"
+          lftp -u "$FTP_USER,$FTP_PASSWORD" -p "$FTP_PORT" "$TARGET" -e "$FLAGS cls -l / | head -50; bye" || true
