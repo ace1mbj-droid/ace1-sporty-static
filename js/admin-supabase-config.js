@@ -17,7 +17,7 @@ function getAdminSupabase() {
     const isAdmin = localStorage.getItem('ace1_admin') === 'true';
     const user = JSON.parse(localStorage.getItem('ace1_user') || '{}');
     
-    if (!isAdmin || user.email !== 'admin@ace1.in') {
+    if (!isAdmin || user.email !== 'hello@ace1.in') {
         console.error('Unauthorized: Admin access required');
         return null;
     }

@@ -261,7 +261,7 @@
                 const result = await window.databaseAuth.login(email, password);
 
                 if (result.success) {
-                    if (result.user.role === 'admin' || result.user.email === 'admin@ace1.in') {
+                    if (result.user.role === 'admin' || result.user.email === 'hello@ace1.in') {
                         window.location.href = 'admin.html';
                     } else {
                         errorMessage.textContent = 'Access denied. This login is for administrators only.';

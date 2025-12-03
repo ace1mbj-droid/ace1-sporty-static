@@ -73,7 +73,7 @@ userBtn?.addEventListener('click', async (e) => {
     if (hasToken) {
         // Has token, go to profile/admin
         const user = window.databaseAuth?.getCurrentUser();
-        if (user?.role === 'admin' || user?.email === 'admin@ace1.in') {
+        if (user?.role === 'admin' || user?.email === 'hello@ace1.in') {
             window.location.href = 'admin.html';
         } else {
             window.location.href = 'user-profile.html';
@@ -110,7 +110,7 @@ userLink?.addEventListener('click', async (e) => {
             const user = window.databaseAuth.getCurrentUser();
             if (user) {
                 // Check if admin
-                if (user.role === 'admin' || user.email === 'admin@ace1.in') {
+                if (user.role === 'admin' || user.email === 'hello@ace1.in') {
                     window.location.href = 'admin.html';
                 } else {
                     window.location.href = 'user-profile.html';
