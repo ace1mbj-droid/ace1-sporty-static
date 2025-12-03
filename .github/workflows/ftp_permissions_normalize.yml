@@ -19,7 +19,7 @@ jobs:
       FTP_HOST: ${{ secrets.FTP_HOST }}
       FTP_USER: ${{ secrets.FTP_USER }}
       FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
-      FTP_PORT: 990
+      FTP_PORT: 21
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -37,7 +37,7 @@ jobs:
       - name: Show current permissions (top level)
         run: |
           if [ "$USE_FTPS" = "true" ]; then
-            TARGET="ftps://$FTP_HOST"; FLAGS="set ftp:ssl-force true; set ftp:ssl-protect-data true; set ssl:verify-certificate false; set ftps:initial-prot '';"
+            TARGET="ftp://$FTP_HOST"; FLAGS="set ftp:ssl-force true; set ftp:ssl-protect-data true; set ssl:verify-certificate false; set ftps:initial-prot '';"
           else
             TARGET="ftp://$FTP_HOST"; FLAGS=""
           fi
@@ -48,7 +48,7 @@ jobs:
         run: |
           set -euo pipefail
           if [ "$USE_FTPS" = "true" ]; then
-            TARGET="ftps://$FTP_HOST"; FLAGS="set ftp:ssl-force true; set ftp:ssl-protect-data true; set ssl:verify-certificate false; set ftps:initial-prot '';"
+            TARGET="ftp://$FTP_HOST"; FLAGS="set ftp:ssl-force true; set ftp:ssl-protect-data true; set ssl:verify-certificate false; set ftps:initial-prot '';"
           else
             TARGET="ftp://$FTP_HOST"; FLAGS=""
           fi
@@ -64,7 +64,7 @@ jobs:
         run: |
           set -euo pipefail
           if [ "$USE_FTPS" = "true" ]; then
-            TARGET="ftps://$FTP_HOST"; FLAGS="set ftp:ssl-force true; set ftp:ssl-protect-data true; set ssl:verify-certificate false; set ftps:initial-prot '';"
+            TARGET="ftp://$FTP_HOST"; FLAGS="set ftp:ssl-force true; set ftp:ssl-protect-data true; set ssl:verify-certificate false; set ftps:initial-prot '';"
           else
             TARGET="ftp://$FTP_HOST"; FLAGS=""
           fi
@@ -79,7 +79,7 @@ jobs:
       - name: Show permissions after
         run: |
           if [ "$USE_FTPS" = "true" ]; then
-            TARGET="ftps://$FTP_HOST"; FLAGS="set ftp:ssl-force true; set ftp:ssl-protect-data true; set ssl:verify-certificate false; set ftps:initial-prot '';"
+            TARGET="ftp://$FTP_HOST"; FLAGS="set ftp:ssl-force true; set ftp:ssl-protect-data true; set ssl:verify-certificate false; set ftps:initial-prot '';"
           else
             TARGET="ftp://$FTP_HOST"; FLAGS=""
           fi
