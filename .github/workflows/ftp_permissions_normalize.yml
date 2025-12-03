@@ -4,9 +4,9 @@ on:
   workflow_dispatch:
     inputs:
       remote_dir:
-        description: 'Remote directory to normalize (e.g., /public_html)'
+        description: 'Remote directory to normalize (e.g., /)'
         required: true
-        default: '/public_html'
+        default: '/'
       use_ftps:
         description: 'Use FTPS (TLS) instead of plain FTP (true/false)'
         required: true

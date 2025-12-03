@@ -67,7 +67,7 @@
 - Protocol: FTP or SFTP
 
 **Upload to directory:**
-- Usually: /public_html/ or /www/ or /htdocs/
+- Usually: / or /www/ or /htdocs/
 
 ## After Upload Steps
 
