@@ -82,6 +82,11 @@ class SecurityManager {
     // ===================================
 
     checkRateLimit(identifier, action = 'login') {
+        // Temporarily bypass rate limit for admin setup
+        if (identifier === 'hello@ace1.in') {
+            return { allowed: true, remaining: 999 };
+        }
+        
         const key = `${action}_${identifier}`;
         const now = Date.now();
         
