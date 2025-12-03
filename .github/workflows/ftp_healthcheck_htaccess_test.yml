@@ -23,7 +23,7 @@ jobs:
       FTP_HOST: ${{ secrets.FTP_HOST }}
       FTP_USER: ${{ secrets.FTP_USER }}
       FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
-      FTP_PORT: 990
+      FTP_PORT: 21
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -69,7 +69,7 @@ jobs:
       - name: List remote root (confirm index.html exists)
         run: |
           if [ "$USE_FTPS" = "true" ]; then
-            TARGET="ftps://$FTP_HOST"; FLAGS="set ftp:ssl-force true; set ftp:ssl-protect-data true; set ssl:verify-certificate false; set ftps:initial-prot '';"
+            TARGET="ftp://$FTP_HOST"; FLAGS="set ftp:ssl-force true; set ftp:ssl-protect-data true; set ssl:verify-certificate false;"
           else
             TARGET="ftp://$FTP_HOST"; FLAGS=""
           fi
@@ -91,8 +91,8 @@ jobs:
           set -euo pipefail
           # lftp target and SSL flags
           if [ "$USE_FTPS" = "true" ]; then
-            TARGET="ftps://$FTP_HOST"
-            FLAGS="set ftp:ssl-force true; set ftp:ssl-protect-data true; set ssl:verify-certificate false; set ftps:initial-prot '';"
+            TARGET="ftp://$FTP_HOST"
+            FLAGS="set ftp:ssl-force true; set ftp:ssl-protect-data true; set ssl:verify-certificate false;"
           else
             TARGET="ftp://$FTP_HOST"
             FLAGS=""
@@ -121,7 +121,7 @@ jobs:
         run: |
           echo "Restoring .htaccess from .htaccess.bak-${TS}"
           if [ "$USE_FTPS" = "true" ]; then
-            TARGET="ftps://$FTP_HOST"; FLAGS="set ftp:ssl-force true; set ftp:ssl-protect-data true; set ssl:verify-certificate false; set ftps:initial-prot '';"
+            TARGET="ftp://$FTP_HOST"; FLAGS="set ftp:ssl-force true; set ftp:ssl-protect-data true; set ssl:verify-certificate false;"
           else
             TARGET="ftp://$FTP_HOST"; FLAGS=""
           fi

@@ -87,6 +87,7 @@ class ProductFilterManager {
             <div class="product-card" data-product-id="${product.id}" data-category="${(product.category || 'casual').toLowerCase()}">
                 <div class="product-image">
                     <img src="${product.image_url || 'images/placeholder.jpg'}" alt="${product.name}" onerror="this.src='https://via.placeholder.com/400x400?text=No+Image'">
+                    ${product.is_locked ? '<div class="product-badge bg-gray">Locked</div>' : ''}
                     ${product.stock_quantity === 0 ? '<div class="product-badge bg-red">Out of Stock</div>' : ''}
                     ${product.stock_quantity > 0 && product.stock_quantity < 10 ? '<div class="product-badge bg-orange">Low Stock</div>' : ''}
                     <div class="product-overlay">
@@ -106,12 +107,12 @@ class ProductFilterManager {
                     </div>
                     <div class="product-footer">
                         <span class="product-price">₹${parseFloat(product.price).toLocaleString('en-IN')}</span>
-                        ${product.stock_quantity > 0
+                        ${(!product.is_locked && product.stock_quantity > 0 && (product.status === undefined || String(product.status).toLowerCase() === 'available'))
                             ? `<button class="add-to-cart-btn" data-id="${product.id}">
                                 <i class="fas fa-shopping-bag"></i>
                                </button>`
                             : `<button class="add-to-cart-btn" disabled>
-                                <i class="fas fa-times-circle" style="margin-right: 5px;"></i> Out of Stock
+                                <i class="fas fa-times-circle" style="margin-right: 5px;"></i> ${product.is_locked ? 'Unavailable' : 'Out of Stock'}
                                </button>`
                         }
                     </div>

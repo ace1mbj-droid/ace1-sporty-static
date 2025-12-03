@@ -43,15 +43,12 @@ Supabase integration & server-side flow
 	- To have the frontend call the `create-order` Edge Function, set the global variable `window.__ACE1_EDGE_CREATE_ORDER__` to the Edge endpoint URL in `index.html`.
 	- The frontend will attempt to call the Edge Function and open Razorpay checkout flow if using Razorpay.
 
-4. GitHub Actions (Deploy & Diagnostics)
-	- `.github/workflows/deploy.yml` — FTPS deploy (clean-slate). Set `FTP_HOST`, `FTP_USER`, `FTP_PASSWORD`.
-	- `.github/workflows/ftp_deploy_only.yml` — manual FTPS deploy.
-	- `.github/workflows/sftp_deploy_only.yml` — manual SSH deploy via rsync; supports SSH checkout with `CHECKOUT_SSH_KEY`.
-	- `.github/workflows/ssh_preview_deploy.yml` — manual SSH deploy to a preview directory (default `/public_html_preview/`).
+4. GitHub Actions (FTPS Deploy & Diagnostics)
+	- `.github/workflows/ftps_deploy_and_verify.yml` — manual FTPS deploy to `/public_html/` (port 990, implicit FTPS), normalizes permissions, lists files, and runs HTTP health-check. Requires `FTP_HOST`, `FTP_USER`, `FTP_PASSWORD`, and `SITE_DOMAIN`.
+	- [Preview workflow removed] — We now deploy and test directly at `/public_html/`.
 	- `.github/workflows/ftp_healthcheck_htaccess_test.yml` — manual FTPS health-check: HEAD/GET, headers, optional `.htaccess` rename/restore.
-	- `.github/workflows/ftp_healthcheck_autorun.yml` — autorun health-check on push to `main`.
-	- `.github/workflows/ftp_permissions_normalize.yml` — manual permissions normalization (dirs 755, files 644).
-	- `.github/workflows/chain_normalize_on_healthcheck.yml` — normalize permissions automatically after autorun health-check completes.
+	- `.github/workflows/ftp_permissions_normalize.yml` — manual permissions normalization (dirs 755, files 644) over FTPS (port 990).
+	- `.github/workflows/ftp_list_and_diff.yml` — manual FTPS remote listing and local/remote filename diff.
 
 5. Testing & next steps
 	- Set up Razorpay webhook to point to your `webhook-razorpay` function URL.
@@ -85,7 +82,7 @@ Files to review:
 - `.github/workflows/deploy_supabase_and_ftp.yml` — runs on push to `main` and performs the entire infra + FTP deploy.
 - `scripts/deploy_supabase.sh` — local script to run the same steps yourself (needs environment variables set).
 
-GitHub secrets to set
+GitHub secrets to set (FTPS-only)
 - `SUPABASE_ACCESS_TOKEN` — personal supabase CLI token
 - `SUPABASE_PROJECT_REF` — the Supabase project ref id
 - `SUPABASE_DB_URL` — postgres connection string with privileges to run SQL (service role preferred)
@@ -93,11 +90,8 @@ GitHub secrets to set
  - `SUPABASE_SERVICE_ROLE_KEY` — service-role key used by CI and server-side scripts for admin actions. Store this in CI secrets or a secure environment and avoid exposing it in frontend code.
  - New helper script: `scripts/create_admin.js` — uses `SUPABASE_SERVICE_ROLE_KEY` to create or update an `admin` user with a PBKDF2 hashed password. See `docs/admin-setup.md` for usage.
 - `RZ_KEY` and `RZ_SECRET` — Razorpay keys
-- `FTP_HOST`, `FTP_USER`, `FTP_PASSWORD` — FTP credentials used by the deploy action
- - SSH deploy & preview:
-	 - `SSH_PRIVATE_KEY` — SSH private key for server deploy
-	 - `SSH_USER`, `SSH_HOST` — SSH credentials to the server
-	 - `CHECKOUT_SSH_KEY` — private key PEM for Git checkout (add matching public key as a read-only Deploy Key in GitHub)
+- `FTP_HOST`, `FTP_USER`, `FTP_PASSWORD` — FTP credentials (FTPS implicit TLS, port 990)
+- `SITE_DOMAIN` — e.g., `ace1.in` (used by deploy+verify health-check)
 
 Example local deploy command:
 
@@ -136,8 +130,7 @@ CI deploy trigger: small doc update to kick off GitHub Actions workflow (automat
 
 Preview deploy usage
 --------------------
-- Run the `SSH Preview Deploy (manual)` workflow and set `target_dir` (default `/public_html_preview/`).
-- To expose at `https://ace1.in/preview/`, set `target_dir` to `/public_html/preview/` and visit `/preview/`.
+Preview has been removed. Use `FTPS Deploy + Verify (manual)` to publish to `/public_html/` and run the health-check.
 
 Health-check & permissions normalization
 ---------------------------------------

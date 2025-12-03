@@ -797,6 +797,32 @@ window.addToCartFromWishlist = async function(productId) {
     }
     
     try {
+        // Client-side validation: avoid adding locked/unavailable items
+        try {
+            const supabase = window.getSupabase ? window.getSupabase() : null;
+            if (supabase) {
+                const { data: prod, error } = await supabase.from('products').select('is_locked, stock_quantity, status').eq('id', productId).single();
+                if (error || !prod) {
+                    if (window.showNotification) window.showNotification('Product not available', 'error');
+                    return;
+                }
+                if (prod.is_locked) {
+                    if (window.showNotification) window.showNotification('Product unavailable', 'error');
+                    return;
+                }
+                if (typeof prod.stock_quantity === 'number' && prod.stock_quantity < 1) {
+                    if (window.showNotification) window.showNotification('Product out of stock', 'error');
+                    return;
+                }
+                if (prod.status && String(prod.status).toLowerCase() !== 'available') {
+                    if (window.showNotification) window.showNotification('Product unavailable', 'error');
+                    return;
+                }
+            }
+        } catch (err) {
+            console.warn('Client-side product availability check failed:', err?.message || err);
+        }
+
         const result = await window.supabaseService.addToCart(productId, 1);
         
         if (result.success) {
