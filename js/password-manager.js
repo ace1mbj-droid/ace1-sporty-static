@@ -21,58 +21,45 @@ class PasswordManager {
         }
     }
 
-    // Simple hash function (matching database-auth.js)
-    simpleHash(password) {
-        let hash = 0;
-        for (let i = 0; i < password.length; i++) {
-            const char = password.charCodeAt(i);
-            hash = ((hash << 5) - hash) + char;
-            hash = hash & hash;
-        }
-        return hash.toString();
-    }
-
     // ===================================
     // GET CURRENT USER
     // ===================================
     async getCurrentUser() {
         try {
-            // First try to get from localStorage (database auth)
+            if (window.databaseAuth) {
+                const authUser = window.databaseAuth.getCurrentUser();
+                if (authUser) {
+                    return authUser;
+                }
+            }
+
             const userStr = localStorage.getItem('ace1_user');
-            if (userStr) {
-                const user = JSON.parse(userStr);
-                
-                // Fetch fresh data from database to ensure we have latest info
+            if (userStr && this.supabase) {
+                const storedUser = JSON.parse(userStr);
                 const { data, error } = await this.supabase
                     .from('users')
                     .select('*')
-                    .eq('email', user.email)
+                    .eq('email', storedUser.email)
                     .single();
 
                 if (error) {
                     console.error('Database fetch error:', error);
-                    // Return localStorage user as fallback
-                    return user;
+                    return storedUser;
                 }
-                
-                console.log('✅ Found user:', data.email);
+
                 return data;
             }
 
-            // Fallback: check sessionStorage
             const userEmail = sessionStorage.getItem('userEmail');
-            if (userEmail) {
-                const { data, error } = await this.supabase
+            if (userEmail && this.supabase) {
+                const { data } = await this.supabase
                     .from('users')
                     .select('*')
                     .eq('email', userEmail)
                     .single();
-
-                if (error) throw error;
                 return data;
             }
 
-            console.error('❌ No user found in localStorage or sessionStorage');
             return null;
         } catch (error) {
             console.error('Get user error:', error);
@@ -124,6 +111,21 @@ class PasswordManager {
 
                 <div class="password-content">
                     <form id="password-change-form" class="password-form">
+                        <div class="form-group">
+                            <label for="current-password">
+                                <i class="fas fa-lock"></i> Current Password *
+                            </label>
+                            <div class="password-input-wrapper">
+                                <input type="password" id="current-password"
+                                       placeholder="Enter current password"
+                                       required autocomplete="current-password"
+                                       minlength="8">
+                                <button type="button" class="toggle-password" data-target="current-password">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+
                         <div class="form-group">
                             <label for="new-password">
                                 <i class="fas fa-key"></i> New Password *
@@ -322,44 +324,24 @@ class PasswordManager {
             return;
         }
 
+        let originalText = '';
+
         try {
-            // Show loading
             const submitBtn = event.target.querySelector('button[type="submit"]');
-            const originalText = submitBtn.innerHTML;
+            originalText = submitBtn.innerHTML;
             submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Changing Password...';
             submitBtn.disabled = true;
 
-            // Verify current password
-            const currentUser = await this.getCurrentUser();
-            if (!currentUser) {
-                throw new Error('User not found');
+            if (!window.databaseAuth) {
+                throw new Error('Authentication service not available');
             }
 
-            // Hash current password to verify (using same method as login)
-            const currentPasswordHash = this.simpleHash(currentPassword);
-            
-            if (currentPasswordHash !== currentUser.password_hash) {
-                throw new Error('Current password is incorrect');
+            const result = await window.databaseAuth.changePassword(currentPassword, newPassword);
+            if (!result.success) {
+                throw new Error(result.error || 'Failed to change password');
             }
 
-            // Hash new password (using same method as registration)
-            const newPasswordHash = this.simpleHash(newPassword);
-
-            // Update password in database
-            const { error } = await this.supabase
-                .from('users')
-                .update({
-                    password_hash: newPasswordHash,
-                    updated_at: new Date().toISOString()
-                })
-                .eq('id', currentUser.id);
-
-            if (error) throw error;
-
-            // Success
             this.showNotification('Password changed successfully! You will be logged out in 3 seconds...', 'success');
-
-            // Log out after 3 seconds
             setTimeout(() => {
                 this.logout();
             }, 3000);
@@ -367,10 +349,8 @@ class PasswordManager {
         } catch (error) {
             console.error('Password change error:', error);
             this.showNotification(error.message || 'Failed to change password', 'error');
-            
-            // Reset button
             const submitBtn = event.target.querySelector('button[type="submit"]');
-            submitBtn.innerHTML = '<i class="fas fa-save"></i> Change Password';
+            submitBtn.innerHTML = originalText || '<i class="fas fa-save"></i> Change Password';
             submitBtn.disabled = false;
         }
     }
@@ -380,21 +360,18 @@ class PasswordManager {
     // ===================================
     async logout() {
         try {
-            // Sign out from Supabase OAuth if exists
-            const { error } = await this.supabase.auth.signOut();
-            if (error) console.error('Supabase signout error:', error);
+            if (window.databaseAuth) {
+                await window.databaseAuth.logout();
+            } else if (this.supabase) {
+                await this.supabase.auth.signOut();
+                localStorage.clear();
+                sessionStorage.clear();
+            }
         } catch (error) {
             console.error('Logout error:', error);
         }
-        
-        // Clear all local storage
-        localStorage.removeItem('ace1_user');
-        localStorage.removeItem('ace1_token');
-        localStorage.removeItem('ace1_admin');
+
         localStorage.removeItem('userEmail');
-        sessionStorage.clear();
-        
-        // Redirect to login
         window.location.href = 'login.html';
     }
 

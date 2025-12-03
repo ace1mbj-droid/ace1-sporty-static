@@ -3519,3 +3519,15 @@ button {
 #surveyModal .close:hover {
     color: var(--primary-color);
 }
+
+/* hCaptcha widget layout tweaks */
+.captcha-container {
+    margin-top: 16px;
+    display: flex;
+    justify-content: center;
+}
+
+.captcha-container .h-captcha,
+.captcha-container iframe {
+    max-width: 100%;
+}
