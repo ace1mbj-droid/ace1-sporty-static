@@ -3,6 +3,11 @@ name: FTP health-check (scheduled)
 on:
   # Temporarily disabling scheduled runs; manual dispatch only
   workflow_dispatch:
+    inputs:
+      allowed_status_codes:
+        description: 'Comma-separated HTTP codes treated as healthy'
+        required: false
+        default: '200,301,302,403'
 
 jobs:
   healthcheck:
@@ -24,9 +29,28 @@ jobs:
 
       - name: Initial site HEAD check
         run: |
+          if [ -z "$DOMAIN" ]; then echo "SITE_DOMAIN secret not set"; exit 0; fi
           echo "HEAD -> https://$DOMAIN"
           code=$(curl -s -o /dev/null -w "%{http_code}" -I "https://$DOMAIN" || echo 000)
           echo "Initial HTTP status: $code"
+          ALLOWED="${{ github.event.inputs.allowed_status_codes }}"
+          if [ -z "$ALLOWED" ]; then ALLOWED="200,301,302,403"; fi
+          echo "Allowed status codes: $ALLOWED"
+          PASS=false
+          IFS=',' read -ra CODES <<< "$ALLOWED"
+          for candidate in "${CODES[@]}"; do
+            CLEAN_CODE=$(echo "$candidate" | xargs)
+            if [ "$code" = "$CLEAN_CODE" ]; then
+              PASS=true
+              break
+            fi
+          done
+          if [ "$PASS" = true ]; then
+            echo "Status $code is allowed"
+          else
+            echo "Status $code not in allowed list"
+            exit 1
+          fi
 
       - name: Verbose headers (HEAD and GET)
         run: |

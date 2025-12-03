@@ -67,7 +67,7 @@
                         <p>Sign in to your Ace#1 account</p>
                     </div>
                     
-                    <form class="auth-form" id="login-form">
+                    <form class="auth-form" id="login-form" data-requires-hcaptcha="true" data-hcaptcha-error="Please complete the verification to continue.">
                         <div class="form-group">
                             <label for="email">Email Address *</label>
                             <input type="email" id="email" name="email" required>
@@ -90,6 +90,8 @@
                             </label>
                             <a href="forgot-password.html" class="text-link">Forgot Password?</a>
                         </div>
+
+                        <div class="captcha-container" data-hcaptcha-placeholder="true"></div>
 
                         <button type="submit" class="btn btn-primary btn-block">Sign In</button>
                     </form>
@@ -176,6 +178,10 @@
     <script src="js/password-hasher.js"></script>
     <script src="js/security.js"></script>
     <script src="js/database-auth.js"></script>
+    <!-- Bot Defense -->
+    <script src="js/hcaptcha-config.js"></script>
+    <script src="js/hcaptcha-manager.js"></script>
+    <script src="js/bot-defense.js"></script>
 
     <script src="js/main.js"></script>
     <script src="js/auth.js"></script>

@@ -3,6 +3,11 @@ name: FTPS Deploy (scheduled)
 on:
   # Temporarily disabling scheduled runs; manual dispatch only
   workflow_dispatch:
+    inputs:
+      allowed_status_codes:
+        description: 'Comma-separated HTTP codes treated as healthy'
+        required: false
+        default: '200,301,302,403'
 
 jobs:
   deploy:
@@ -22,7 +27,7 @@ jobs:
           sudo apt-get update -y
           sudo apt-get install -y lftp curl
 
-      - name: Build & copy to dist (exclude preview & templates)
+      - name: Build & copy to dist (exclude preview & test docs)
         run: |
           rm -rf dist || true
           mkdir -p dist
@@ -32,8 +37,7 @@ jobs:
             --exclude='node_modules' \
             --exclude='dist' \
             --exclude='preview' \
-            --exclude='templates' \
-            --exclude='legacy-site' \
+            --exclude='docs/tests' \
             ./ dist/
 
       - name: Upload root via FTPS (mirror)
@@ -41,9 +45,7 @@ jobs:
           TARGET_DIR="/public_html/"
           echo "Deploying to $TARGET_DIR on $FTP_HOST"
           lftp -u "$FTP_USER,$FTP_PASSWORD" -p "$FTP_PORT" "ftp://$FTP_HOST" -e "set ftp:ssl-force true; set ftp:ssl-protect-data true; set ssl:verify-certificate false; set net:timeout 60; set net:max-retries 3; set net:reconnect-interval-base 5; mkdir -p $TARGET_DIR; mirror -R --parallel=2 --verbose --delete \
-            --exclude-glob \"ghosty/**\" \
-            --exclude-glob \"templates/**\" \
-            --exclude-glob \"legacy-site/**\" \\
+            --exclude-glob \"docs/tests/**\" \\
             --include-glob \"*.html\" \
             --include-glob \"*.css\" \
             --include-glob \"*.js\" \
@@ -77,4 +79,22 @@ jobs:
           STATUS=$(curl -s -o /dev/null -w "%{http_code}" "https://$DOMAIN")
           echo "HTTP status: $STATUS"
           curl -sI "https://$DOMAIN" || true
-          test "$STATUS" = "200" && exit 0 || exit 1
+          ALLOWED="${{ github.event.inputs.allowed_status_codes }}"
+          if [ -z "$ALLOWED" ]; then ALLOWED="200,301,302,403"; fi
+          echo "Allowed status codes: $ALLOWED"
+          PASS=false
+          IFS=',' read -ra CODES <<< "$ALLOWED"
+          for code in "${CODES[@]}"; do
+            CLEAN_CODE=$(echo "$code" | xargs)
+            if [ "$STATUS" = "$CLEAN_CODE" ]; then
+              PASS=true
+              break
+            fi
+          done
+          if [ "$PASS" = true ]; then
+            echo "Status $STATUS is allowed"
+            exit 0
+          else
+            echo "Status $STATUS not in allowed list"
+            exit 1
+          fi

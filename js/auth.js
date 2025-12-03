@@ -51,9 +51,20 @@ class AuthManager {
 
     async handleRegister(e) {
         e.preventDefault();
-        
-        const formData = new FormData(e.target);
+        const form = e.target;
+        const formData = new FormData(form);
         const data = Object.fromEntries(formData);
+
+        const captchaToken = this.requireCaptchaToken(form);
+        if (captchaToken === null) {
+            return;
+        }
+        data.hcaptcha_token = captchaToken || data.hcaptcha_token;
+
+        const captchaOk = await this.confirmCaptchaServerSide(form, captchaToken, 'register');
+        if (!captchaOk) {
+            return;
+        }
 
         // Validate password match
         if (data.password !== data.confirmPassword) {
@@ -87,9 +98,10 @@ class AuthManager {
                 );
 
                 if (result.success) {
-                    this.showNotification('Account created successfully! Redirecting...', 'success');
+                    const target = result.needsConfirmation ? 'login.html' : 'user-profile.html';
+                    this.showNotification(result.message || 'Account created successfully!', 'success');
                     setTimeout(() => {
-                        window.location.href = 'user-profile.html';
+                        window.location.href = target;
                     }, 1500);
                 } else {
                     this.showNotification(result.error || 'Registration failed. Please try again.', 'error');
@@ -101,14 +113,27 @@ class AuthManager {
         } catch (error) {
             console.error('Registration error:', error);
             this.showNotification('Registration failed. Please try again.', 'error');
+        } finally {
+            this.resetCaptchaToken(form);
         }
     }
 
     async handleLogin(e) {
         e.preventDefault();
-        
-        const formData = new FormData(e.target);
+        const form = e.target;
+        const formData = new FormData(form);
         const data = Object.fromEntries(formData);
+
+        const captchaToken = this.requireCaptchaToken(form);
+        if (captchaToken === null) {
+            return;
+        }
+        data.hcaptcha_token = captchaToken || data.hcaptcha_token;
+
+        const captchaOk = await this.confirmCaptchaServerSide(form, captchaToken, 'login');
+        if (!captchaOk) {
+            return;
+        }
 
         try {
             // Use database authentication
@@ -139,6 +164,8 @@ class AuthManager {
         } catch (error) {
             console.error('Login error:', error);
             this.showNotification('Login failed. Please check your credentials.', 'error');
+        } finally {
+            this.resetCaptchaToken(form);
         }
     }
 
@@ -216,18 +243,9 @@ class AuthManager {
     }
 
     async checkAuthStatus() {
-        // PREVENT REDIRECT LOOP: Don't check auth status on user-profile.html or admin.html
-        if (window.location.pathname.includes('user-profile.html') || 
+        if (window.location.pathname.includes('user-profile.html') ||
             window.location.pathname.includes('admin.html')) {
             console.log('⏭️ Skipping auth check on protected page (handled by page itself)');
-            return;
-        }
-
-        // Prevent infinite redirect loops
-        const redirectCount = parseInt(sessionStorage.getItem('auth_redirect_count') || '0');
-        if (redirectCount > 2) {
-            console.error('🚨 Auth redirect loop detected! Stopping redirects.');
-            sessionStorage.removeItem('auth_redirect_count');
             return;
         }
 
@@ -236,130 +254,43 @@ class AuthManager {
             return;
         }
 
-        // Check for Supabase OAuth session first
+        let supabaseSession = null;
+
         if (window.getSupabase) {
             const supabase = window.getSupabase();
-            const { data: { session } } = await supabase.auth.getSession();
-            
-            if (session && session.user && window.databaseAuth) {
-                // OAuth user detected - check if we have a valid database session
-                const existingToken = localStorage.getItem('ace1_token');
-                let hasValidSession = false;
-                
-                if (existingToken) {
-                    // Verify the token exists in database and is not expired
-                    try {
-                        const { data: sessionCheck, error } = await supabase
-                            .from('sessions')
-                            .select('id, expires_at')
-                            .eq('token', existingToken)
-                            .gt('expires_at', new Date().toISOString())
-                            .single();
-                        
-                        if (sessionCheck && !error) {
-                            hasValidSession = true;
-                            console.log('✅ OAuth user has valid database session');
-                        }
-                    } catch (err) {
-                        console.log('⚠️ Token verification failed');
-                    }
-                }
-                
-                if (!hasValidSession) {
-                    // No valid database session - sync OAuth user with database
-                    const user = session.user;
-                    const metadata = user.user_metadata || {};
-                    
-                    // Extract name from metadata
-                    const fullName = metadata.full_name || metadata.name || '';
-                    const firstName = metadata.given_name || metadata.first_name || fullName.split(' ')[0] || 'User';
-                    const lastName = metadata.family_name || metadata.last_name || fullName.split(' ').slice(1).join(' ') || '';
-                    const email = user.email || '';
-                    const avatar = metadata.avatar_url || metadata.picture || '';
-                    
-                    // Sync OAuth user with database and create session
-                    console.log('🔄 Creating database session for OAuth user...');
-                    
-                    try {
-                        const result = await window.databaseAuth.oauthLogin(metadata.provider || 'oauth', {
-                            email: email,
-                            firstName: firstName,
-                            lastName: lastName,
-                            avatar: avatar,
-                            provider: metadata.provider || 'oauth'
-                        });
-                        
-                        if (result.success) {
-                            console.log('✅ OAuth user synced with database, session created');
-                            this.updateUIForLoggedInUser(result.user);
-                            
-                            // Auto-redirect to profile on login page after OAuth
-                            if (window.location.pathname.includes('login.html')) {
-                                const count = parseInt(sessionStorage.getItem('auth_redirect_count') || '0');
-                                sessionStorage.setItem('auth_redirect_count', (count + 1).toString());
-                                sessionStorage.setItem('auth_redirecting', 'true');
-                                this.showNotification('Login successful! Redirecting...', 'success');
-                                setTimeout(() => {
-                                    const redirect = new URLSearchParams(window.location.search).get('redirect');
-                                    window.location.href = redirect || 'user-profile.html';
-                                }, 500);
-                            }
-                        } else {
-                            console.error('❌ OAuth sync failed:', result.error);
-                            // Force redirect anyway with Supabase session
-                            if (window.location.pathname.includes('login.html')) {
-                                const count = parseInt(sessionStorage.getItem('auth_redirect_count') || '0');
-                                sessionStorage.setItem('auth_redirect_count', (count + 1).toString());
-                                sessionStorage.setItem('auth_redirecting', 'true');
-                                this.showNotification('Login successful! Redirecting...', 'success');
-                                setTimeout(() => {
-                                    window.location.href = 'user-profile.html';
-                                }, 500);
-                            }
-                        }
-                    } catch (error) {
-                        console.error('❌ OAuth sync error:', error);
-                        // Force redirect anyway since Supabase session exists
-                        if (window.location.pathname.includes('login.html')) {
-                            const count = parseInt(sessionStorage.getItem('auth_redirect_count') || '0');
-                            sessionStorage.setItem('auth_redirect_count', (count + 1).toString());
-                            sessionStorage.setItem('auth_redirecting', 'true');
-                            this.showNotification('Login successful! Redirecting...', 'success');
-                            setTimeout(() => {
-                                window.location.href = 'user-profile.html';
-                            }, 500);
-                        }
-                    }
-                    return;
-                }
-                
-                // Has valid session and on login page - redirect to profile
-                if (window.location.pathname.includes('login.html')) {
-                    const count = parseInt(sessionStorage.getItem('auth_redirect_count') || '0');
-                    sessionStorage.setItem('auth_redirect_count', (count + 1).toString());
-                    sessionStorage.setItem('auth_redirecting', 'true');
-                    window.location.href = 'user-profile.html';
-                }
+            const { data, error } = await supabase.auth.getSession();
+            if (!error) {
+                supabaseSession = data.session;
             }
         }
-        
-        // Check database auth session (will verify token against database)
+
+        if (supabaseSession?.user && window.databaseAuth) {
+            try {
+                await window.databaseAuth.oauthLogin(
+                    supabaseSession.user.app_metadata?.provider || 'oauth',
+                    supabaseSession.user.user_metadata || {}
+                );
+            } catch (err) {
+                console.error('OAuth session sync failed:', err);
+            }
+
+            const user = window.databaseAuth.getCurrentUser();
+            if (user) {
+                this.updateUIForLoggedInUser(user);
+                this.handleAuthRedirect(user);
+                return;
+            }
+        }
+
         if (window.databaseAuth && window.databaseAuth.isAuthenticated()) {
             const user = window.databaseAuth.getCurrentUser();
             if (user) {
                 this.updateUIForLoggedInUser(user);
-                
-                // Redirect if on login/register page
-                if (window.location.pathname.includes('login.html') || window.location.pathname.includes('register.html')) {
-                    const count = parseInt(sessionStorage.getItem('auth_redirect_count') || '0');
-                    sessionStorage.setItem('auth_redirect_count', (count + 1).toString());
-                    sessionStorage.setItem('auth_redirecting', 'true');
-                    window.location.href = 'user-profile.html';
-                }
+                this.handleAuthRedirect(user);
+                return;
             }
         }
-        
-        // Reset counter if we made it here without redirecting
+
         sessionStorage.removeItem('auth_redirect_count');
     }
 
@@ -369,6 +300,35 @@ class AuthManager {
         if (userIcon && userIcon.parentElement.tagName === 'A') {
             userIcon.parentElement.href = 'user-profile.html';
         }
+    }
+
+    handleAuthRedirect(user) {
+        const onAuthPage = window.location.pathname.includes('login.html') || window.location.pathname.includes('register.html');
+        if (!onAuthPage) {
+            sessionStorage.removeItem('auth_redirect_count');
+            sessionStorage.removeItem('auth_redirecting');
+            return;
+        }
+
+        const redirectCount = parseInt(sessionStorage.getItem('auth_redirect_count') || '0');
+        if (redirectCount > 2) {
+            sessionStorage.removeItem('auth_redirect_count');
+            sessionStorage.removeItem('auth_redirecting');
+            return;
+        }
+
+        sessionStorage.setItem('auth_redirect_count', (redirectCount + 1).toString());
+        sessionStorage.setItem('auth_redirecting', 'true');
+
+        const redirectParam = new URLSearchParams(window.location.search).get('redirect');
+        const target = (user.role === 'admin' || user.email === 'admin@ace1.in')
+            ? 'admin.html'
+            : (redirectParam && redirectParam !== 'admin' ? redirectParam : 'user-profile.html');
+
+        this.showNotification('Login successful! Redirecting...', 'success');
+        setTimeout(() => {
+            window.location.href = target;
+        }, 500);
     }
 
     logout() {
@@ -387,6 +347,62 @@ class AuthManager {
             window.location.href = 'index.html';
         }, 500);
     }
+
+        requireCaptchaToken(form) {
+            if (!form?.dataset?.requiresHcaptcha) {
+                return '';
+            }
+
+            if (typeof window.requireHCaptchaToken === 'function') {
+                return window.requireHCaptchaToken(form);
+            }
+
+            const token = form?.querySelector('input[name="hcaptcha_token"]')?.value?.trim() || '';
+            if (!token) {
+                const message = form?.dataset?.hcaptchaError || 'Please complete the verification challenge before continuing.';
+                this.showNotification(message, 'warning');
+                return null;
+            }
+
+            return token;
+        }
+
+        resetCaptchaToken(form) {
+            if (!form?.dataset?.requiresHcaptcha) {
+                return;
+            }
+
+            if (typeof window.resetHCaptchaToken === 'function') {
+                window.resetHCaptchaToken(form);
+                return;
+            }
+
+            const tokenInput = form?.querySelector('input[name="hcaptcha_token"]');
+            if (tokenInput) {
+                tokenInput.value = '';
+            }
+        }
+
+        async confirmCaptchaServerSide(form, token, actionLabel) {
+            if (!form?.dataset?.requiresHcaptcha || !token) {
+                return true;
+            }
+
+            if (typeof window.verifyHCaptchaWithServer !== 'function') {
+                console.warn('verifyHCaptchaWithServer not found; skipping server-side validation.');
+                return true;
+            }
+
+            const result = await window.verifyHCaptchaWithServer(token, { action: actionLabel });
+            if (!result?.success) {
+                const message = result?.error || 'Verification failed. Please try again.';
+                this.showNotification(message, 'error');
+                this.resetCaptchaToken(form);
+                return false;
+            }
+
+            return true;
+        }
 
     showNotification(message, type = 'info') {
         // Use existing notification system from main.js if available
