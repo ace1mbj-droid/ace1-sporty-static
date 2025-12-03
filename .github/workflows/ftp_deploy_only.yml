@@ -25,7 +25,7 @@ jobs:
           local-dir: ./dist/
           server-dir: /public_html/
           protocol: ftps
-          port: 990
+          port: 21
           dangerous-clean-slate: true
           exclude: |
             **/.git*
