@@ -147,7 +147,7 @@ class AuthManager {
                     
                     setTimeout(() => {
                         // Redirect based on role
-                        if (user.role === 'admin' || user.email === 'admin@ace1.in') {
+                        if (user.role === 'admin' || user.email === 'hello@ace1.in') {
                             window.location.href = 'admin.html';
                         } else {
                             const redirect = new URLSearchParams(window.location.search).get('redirect');
@@ -321,7 +321,7 @@ class AuthManager {
         sessionStorage.setItem('auth_redirecting', 'true');
 
         const redirectParam = new URLSearchParams(window.location.search).get('redirect');
-        const target = (user.role === 'admin' || user.email === 'admin@ace1.in')
+        const target = (user.role === 'admin' || user.email === 'hello@ace1.in')
             ? 'admin.html'
             : (redirectParam && redirectParam !== 'admin' ? redirectParam : 'user-profile.html');
 

@@ -111,7 +111,7 @@ class DatabaseAuth {
             localStorage.removeItem('ace1_token');
         }
 
-        if (normalizedUser.role === 'admin' || normalizedUser.email === 'admin@ace1.in') {
+        if (normalizedUser.role === 'admin' || normalizedUser.email === 'hello@ace1.in') {
             localStorage.setItem('ace1_admin', 'true');
         } else {
             localStorage.removeItem('ace1_admin');

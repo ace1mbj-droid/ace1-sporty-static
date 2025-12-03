@@ -31,8 +31,8 @@ class AdminPanel {
         if (session) {
             const userEmail = session.user.email;
             
-            // ONLY admin@ace1.in is allowed as admin
-            if (userEmail === 'admin@ace1.in') {
+            // ONLY hello@ace1.in is allowed as admin
+            if (userEmail === 'hello@ace1.in') {
                 this.currentUser = session.user;
                 document.getElementById('admin-user').textContent = `Welcome, ${session.user.email}`;
                 return;
@@ -46,14 +46,14 @@ class AdminPanel {
             }
         }
         
-        // Fallback to localStorage admin (also must be admin@ace1.in)
+        // Fallback to localStorage admin (also must be hello@ace1.in)
         const isAdmin = localStorage.getItem('ace1_admin');
         const userStr = localStorage.getItem('ace1_user');
         
         if (isAdmin && userStr) {
             const user = JSON.parse(userStr);
-            // Only allow admin@ace1.in
-            if (user.email === 'admin@ace1.in') {
+            // Only allow hello@ace1.in
+            if (user.email === 'hello@ace1.in') {
                 this.currentUser = user;
                 document.getElementById('admin-user').textContent = `Welcome, ${user.firstName || user.email}`;
                 return;

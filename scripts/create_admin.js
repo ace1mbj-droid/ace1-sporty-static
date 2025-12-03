@@ -7,7 +7,7 @@
  * the following environment variables to be set:
  *   - SUPABASE_URL or SUPABASE_PROJECT_REF
  *   - SUPABASE_SERVICE_ROLE_KEY
- *   - ADMIN_EMAIL (optional, defaults to admin@ace1.in)
+ *   - ADMIN_EMAIL (optional, defaults to hello@ace1.in)
  *   - ADMIN_PASSWORD (optional, defaults to admin123) - strong password recommended
  *
  * NOTE: This script will not print or store secrets. Use a short-lived service
@@ -88,7 +88,7 @@ async function upsertAdmin(email, password) {
 
 // Run when executed directly
 if (require.main === module) {
-  const email = process.env.ADMIN_EMAIL || 'admin@ace1.in';
+  const email = process.env.ADMIN_EMAIL || 'hello@ace1.in';
   const password = process.env.ADMIN_PASSWORD || 'admin123';
 
   console.log('Starting admin upsert for:', email);
