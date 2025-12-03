@@ -167,13 +167,20 @@ class WebsiteImageManager {
             if (category === 'products') {
                 const { data: products } = await this.supabase
                     .from('products')
-                    .select('id, name, image_url')
+                    .select(`
+                        id, 
+                        name,
+                        product_images (
+                            storage_path,
+                            alt
+                        )
+                    `)
                     .limit(50);
 
                 if (products) {
                     allImages = products.map(p => ({
-                        src: p.image_url,
-                        alt: p.name,
+                        src: p.product_images?.[0]?.storage_path,
+                        alt: p.product_images?.[0]?.alt || p.name,
                         location: 'Database - Products',
                         id: p.id,
                         type: 'product'
@@ -282,12 +289,37 @@ class WebsiteImageManager {
 
                 // Update database if it's a product image
                 if (imageData.type === 'product') {
-                    const { error } = await this.supabase
-                        .from('products')
-                        .update({ image_url: imageUrl })
-                        .eq('id', imageData.id);
+                    // Update product_images table instead of products.image_url
+                    const { data: existingImage } = await this.supabase
+                        .from('product_images')
+                        .select('*')
+                        .eq('product_id', imageData.id)
+                        .single();
 
-                    if (error) throw error;
+                    if (existingImage) {
+                        // Update existing image
+                        const { error } = await this.supabase
+                            .from('product_images')
+                            .update({ 
+                                storage_path: imageUrl,
+                                alt: 'Product image'
+                            })
+                            .eq('product_id', imageData.id);
+
+                        if (error) throw error;
+                    } else {
+                        // Create new image record
+                        const { error } = await this.supabase
+                            .from('product_images')
+                            .insert([{
+                                product_id: imageData.id,
+                                storage_path: imageUrl,
+                                alt: 'Product image',
+                                position: 1
+                            }]);
+
+                        if (error) throw error;
+                    }
                 }
 
                 this.showNotification('Image replaced successfully!', 'success');
@@ -313,10 +345,11 @@ class WebsiteImageManager {
 
         try {
             if (type === 'product') {
+                // Delete from product_images table instead of setting products.image_url to null
                 const { error } = await this.supabase
-                    .from('products')
-                    .update({ image_url: null })
-                    .eq('id', id);
+                    .from('product_images')
+                    .delete()
+                    .eq('product_id', id);
 
                 if (error) throw error;
             }
