@@ -560,6 +560,12 @@ class DatabaseAuth {
 
             if (error) throw error;
 
+            // Invalidate all existing sessions for this user (security)
+            await this.supabase
+                .from('sessions')
+                .delete()
+                .eq('user_id', this.currentUser.id);
+
             // Log password change
             if (window.securityManager) {
                 window.securityManager.logSecurityEvent('PASSWORD_CHANGED', {
@@ -568,6 +574,10 @@ class DatabaseAuth {
             }
 
             console.log('✅ Password changed successfully with secure hashing');
+            
+            // Force logout to make new password effective immediately
+            await this.logout();
+            
             return { success: true };
         } catch (error) {
             console.error('Change password error:', error);
