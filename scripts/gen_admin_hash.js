@@ -4,8 +4,13 @@ const crypto = require('crypto');
 function generatePassword(len = 16) {
   const charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
   let pwd = '';
-  const bytes = crypto.randomBytes(len);
-  for (let i = 0; i < len; i++) pwd += charset[bytes[i] % charset.length];
+  while (pwd.length < len) {
+    const byte = crypto.randomBytes(1)[0];
+    // Accept values in [0,247], so that modulo 62 is uniform
+    if (byte < 248) {
+      pwd += charset[byte % charset.length];
+    }
+  }
   return pwd;
 }
 
