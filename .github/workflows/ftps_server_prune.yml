@@ -6,7 +6,7 @@ on:
       remote_dir:
         description: 'Remote root to prune'
         required: true
-        default: '/public_html/'
+        default: '/public_html'
 
 jobs:
   prune:
@@ -29,7 +29,7 @@ jobs:
         run: |
           set -euo pipefail
           TARGET_DIR="${{ github.event.inputs.remote_dir }}"
-          if [ -z "$TARGET_DIR" ]; then TARGET_DIR="/public_html/"; fi
+          if [ -z "$TARGET_DIR" ]; then TARGET_DIR="/public_html"; fi
           echo "Pruning $TARGET_DIR on $FTP_HOST"
 
           TMP_ALL=$(mktemp)
@@ -67,5 +67,5 @@ jobs:
       - name: Normalize permissions after prune
         run: |
           TARGET_DIR="${{ github.event.inputs.remote_dir }}"
-          if [ -z "$TARGET_DIR" ]; then TARGET_DIR="/public_html/"; fi
+          if [ -z "$TARGET_DIR" ]; then TARGET_DIR="/public_html"; fi
           lftp -u "$FTP_USER,$FTP_PASSWORD" -p "$FTP_PORT" "ftp://$FTP_HOST" -e "set ftp:ssl-force true; set ftp:ssl-protect-data true; set ftp:ssl-auth TLS; set ssl:verify-certificate false; set ftps:initial-prot C; find $TARGET_DIR -type d -exec chmod 755 {}; find $TARGET_DIR -type f -exec chmod 644 {}; bye" || true
