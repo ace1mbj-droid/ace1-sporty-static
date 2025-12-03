@@ -66,7 +66,7 @@
                         <p>Join Ace#1 and experience the future of wellness footwear</p>
                     </div>
                     
-                    <form class="auth-form" id="register-form">
+                    <form class="auth-form" id="register-form" data-requires-hcaptcha="true" data-hcaptcha-error="Please complete the verification to create your account.">
                         <div class="form-row">
                             <div class="form-group">
                                 <label for="first-name">First Name *</label>
@@ -122,6 +122,8 @@
                                 <span>Subscribe to newsletter for exclusive offers and updates</span>
                             </label>
                         </div>
+
+                        <div class="captcha-container" data-hcaptcha-placeholder="true"></div>
 
                         <button type="submit" class="btn btn-primary btn-block">Create Account</button>
                     </form>
@@ -209,6 +211,10 @@
     <script src="js/password-hasher.js"></script>
     <script src="js/security.js"></script>
     <script src="js/database-auth.js"></script>
+    <!-- Bot Defense -->
+    <script src="js/hcaptcha-config.js"></script>
+    <script src="js/hcaptcha-manager.js"></script>
+    <script src="js/bot-defense.js"></script>
 
     <script src="js/main.js"></script>
     <script src="js/auth.js"></script>

@@ -62,12 +62,9 @@ for (const item of cart) {
 ### Client-Side Validation Verification ✅ PASSED
 
 **Files Modified**:
-- `templates/ghosty/js/products.js` - Add-to-cart button rendering
-- `templates/ghosty/js/main.js` - Cart operations
-- `templates/ghosty/js/user-profile.js` - Wishlist to cart flow
-- `js/products.js` - Root template variant
-- `js/main.js` - Root template variant
-- `js/user-profile.js` - Root template variant
+- `js/products.js` - Add-to-cart button rendering
+- `js/main.js` - Cart operations
+- `js/user-profile.js` - Wishlist to cart flow
 
 #### Pattern Verification: `is_locked` checks
 
@@ -176,7 +173,7 @@ node scripts/create_admin.js
 ## Validation Checklist
 
 - ✅ Server-side product validation implemented
-- ✅ Client-side UI updated across all templates
+- ✅ Client-side UI updated across all pages
 - ✅ Admin helper script created
 - ✅ Documentation updated (README.md, admin-setup.md)
 - ✅ Code changes verified via grep patterns
@@ -220,7 +217,7 @@ node scripts/create_admin.js
 
 **Status**: ✅ **READY FOR PRODUCTION**
 
-All server-side validations are properly implemented and verified in code. Client-side UI protections are in place across all templates. The security boundary is enforced at the order creation endpoint, preventing locked products from being purchased regardless of client-side tampering.
+All server-side validations are properly implemented and verified in code. Client-side UI protections are in place across all pages. The security boundary is enforced at the order creation endpoint, preventing locked products from being purchased regardless of client-side tampering.
 
 **Recommended Next Step**: Reactivate Supabase project and run manual UI verification test.
 

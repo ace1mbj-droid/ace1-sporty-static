@@ -9,241 +9,263 @@
     <meta http-equiv="X-Content-Type-Options" content="nosniff">
     <meta http-equiv="X-XSS-Protection" content="1; mode=block">
     <meta name="referrer" content="strict-origin-when-cross-origin">
-    <title>Admin Login - Ace1</title>
+
+    <title>Admin Login - Ace#1</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Bebas+Neue&display=swap" rel="stylesheet">
     <style>
-        .admin-login-container {
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-            padding: 20px;
-        }
-
-        .admin-login-box {
-            background: white;
-            padding: 40px;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.4);
-            width: 100%;
-            max-width: 450px;
-        }
-
         .admin-badge {
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-            color: white;
-            padding: 8px 20px;
-            border-radius: 50px;
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            font-size: 14px;
+            padding: 6px 16px;
+            border-radius: 999px;
+            font-size: 12px;
             font-weight: 600;
-            margin-bottom: 20px;
-        }
-
-        .admin-login-header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-
-        .admin-login-header h1 {
-            font-size: 32px;
-            color: #1e3c72;
-            margin-bottom: 10px;
-        }
-
-        .admin-login-header p {
-            color: #666;
-            font-size: 14px;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            color: #333;
-            font-weight: 600;
-        }
-
-        .form-group input {
-            width: 100%;
-            padding: 14px 15px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 14px;
-            transition: border-color 0.3s;
-        }
-
-        .form-group input:focus {
-            outline: none;
-            border-color: #1e3c72;
-        }
-
-        .admin-login-btn {
-            width: 100%;
-            padding: 14px;
             background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: transform 0.2s;
-            margin-top: 10px;
+            color: #fff;
+            text-transform: uppercase;
         }
 
-        .admin-login-btn:hover {
-            transform: translateY(-2px);
-        }
-
-        .error-message {
-            background: #fee;
-            color: #c33;
-            padding: 12px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            display: none;
-            font-size: 14px;
-        }
-
-        .back-link {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        .back-link a {
-            color: #1e3c72;
-            text-decoration: none;
-            font-size: 14px;
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .back-link a:hover {
-            text-decoration: underline;
-        }
-
-        .user-login-link {
-            text-align: center;
-            margin-top: 20px;
-            padding-top: 20px;
-            border-top: 1px solid #e0e0e0;
-        }
-
-        .user-login-link p {
-            color: #666;
-            font-size: 14px;
-            margin-bottom: 10px;
-        }
-
-        .user-login-link a {
-            color: #667eea;
-            text-decoration: none;
-            font-weight: 600;
-        }
-
-        .user-login-link a:hover {
-            text-decoration: underline;
-        }
-
-        .security-notice {
-            background: #fff3cd;
+        .admin-notice {
+            background: #fff8e1;
             border-left: 4px solid #ffc107;
-            padding: 12px;
-            margin-bottom: 20px;
-            border-radius: 4px;
+            padding: 12px 14px;
+            border-radius: 8px;
             font-size: 13px;
-            color: #856404;
+            color: #7a6200;
+            margin-bottom: 20px;
         }
     </style>
 </head>
 <body>
-    <div class="admin-login-container">
-        <div class="admin-login-box">
-            <div class="back-link">
-                <a href="index.html">
-                    <i class="fas fa-arrow-left"></i> Back to Home
-                </a>
-            </div>
-
-            <div class="admin-login-header">
-                <div class="admin-badge">
-                    <i class="fas fa-shield-alt"></i>
-                    Admin Access
-                </div>
-                <h1>Admin Login</h1>
-                <p>Restricted area - Authorized personnel only</p>
-            </div>
-
-            <div class="security-notice">
-                <i class="fas fa-exclamation-triangle"></i> This area is for administrators only. Unauthorized access attempts are logged.
-            </div>
-
-            <div class="error-message" id="errorMessage"></div>
-
-            <form id="adminLoginForm">
-                <div class="form-group">
-                    <label for="email">
-                        <i class="fas fa-user-shield"></i> Admin Email
-                    </label>
-                    <input type="email" id="email" name="email" placeholder="Enter admin email" required autocomplete="username">
-                </div>
-
-                <div class="form-group">
-                    <label for="password">
-                        <i class="fas fa-lock"></i> Password
-                    </label>
-                    <input type="password" id="password" name="password" placeholder="Enter admin password" required autocomplete="current-password">
-                </div>
-
-                <button type="submit" class="admin-login-btn">
-                    <i class="fas fa-sign-in-alt"></i> Login to Admin Panel
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="logo">
+                <span class="logo-text">ACE#1</span>
+            </a>
+            <ul class="nav-menu">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="products.html">Products</a></li>
+                <li><a href="technology.html">Technology</a></li>
+                <li><a href="about.html">About</a></li>
+                <li><a href="contact.html">Contact</a></li>
+            </ul>
+            <div class="nav-icons">
+                <button class="icon-btn" id="search-btn">
+                    <i class="fas fa-search"></i>
                 </button>
-            </form>
-
-            <div class="user-login-link">
-                <p>Not an admin?</p>
-                <a href="login.html">
-                    <i class="fas fa-user"></i> Go to User Login
-                </a>
+                <button class="icon-btn user-btn">
+                    <i class="fas fa-user"></i>
+                </button>
+                <button class="icon-btn" id="cart-btn">
+                    <i class="fas fa-shopping-bag"></i>
+                    <span class="cart-count">0</span>
+                </button>
+                <button class="mobile-menu-btn">
+                    <i class="fas fa-bars"></i>
+                </button>
             </div>
+        </div>
+    </nav>
+
+    <!-- Search Overlay -->
+    <div class="search-overlay" id="search-overlay">
+        <div class="search-container">
+            <input type="text" placeholder="Search for products..." id="search-input">
+            <button class="search-close" id="search-close">
+                <i class="fas fa-times"></i>
+            </button>
         </div>
     </div>
 
+    <!-- Admin Login Section -->
+    <section class="auth-section">
+        <div class="container">
+            <div class="auth-container">
+                <div class="auth-card">
+                    <div class="auth-header">
+                        <div class="admin-badge">
+                            <i class="fas fa-user-shield"></i>
+                            Admin Access
+                        </div>
+                        <h1>Administrator Login</h1>
+                        <p>Restricted console | Authorized personnel only</p>
+                    </div>
+
+                    <div class="admin-notice">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        All admin sign-ins are audited. Use dedicated credentials and keep them confidential.
+                    </div>
+
+                    <div class="error-message" id="errorMessage" style="display:none"></div>
+
+                    <form class="auth-form" id="adminLoginForm" data-requires-hcaptcha="true" data-hcaptcha-error="Complete the admin verification challenge before signing in.">
+                        <div class="form-group">
+                            <label for="email">Admin Email *</label>
+                            <input type="email" id="email" name="email" required autocomplete="username">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="password">Password *</label>
+                            <div class="password-input">
+                                <input type="password" id="password" name="password" required autocomplete="current-password">
+                                <button type="button" class="toggle-password">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="form-row space-between">
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="remember">
+                                <span>Remember admin session</span>
+                            </label>
+                            <a href="admin-password-migration.html" class="text-link">Reset via tool</a>
+                        </div>
+
+                        <div class="captcha-container" data-hcaptcha-placeholder="true"></div>
+
+                        <button type="submit" class="btn btn-primary btn-block">
+                            <i class="fas fa-right-to-bracket"></i> Sign In to Admin
+                        </button>
+                    </form>
+
+                    <div class="auth-footer">
+                        <p>Need customer login instead? <a href="login.html">Go to user login</a></p>
+                        <p style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #e0e0e0;">
+                            <i class="fas fa-home"></i> <a href="index.html">Back to storefront</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-column">
+                    <h3>ACE#1</h3>
+                    <p>Revolutionary footwear integrated with terahertz technology for enhanced wellness and lifestyle.</p>
+                    <div class="social-icons">
+                        <a href="https://instagram.com/ace_1_official/" target="_blank"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+                <div class="footer-column">
+                    <h4>Shop</h4>
+                    <ul>
+                        <li><a href="products.html">All Products</a></li>
+                        <li><a href="products.html?category=runners">Runners</a></li>
+                        <li><a href="products.html?category=sneakers">Sneakers</a></li>
+                        <li><a href="products.html?category=trekking">Trekking</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h4>Company</h4>
+                    <ul>
+                        <li><a href="about.html">About Us</a></li>
+                        <li><a href="technology.html">Technology</a></li>
+                        <li><a href="contact.html">Contact</a></li>
+                        <li><a href="#">Careers</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h4>Support</h4>
+                    <ul>
+                        <li><a href="faq.html">FAQ</a></li>
+                        <li><a href="faq.html#shipping">Shipping Info</a></li>
+                        <li><a href="faq.html#returns">Returns</a></li>
+                        <li><a href="size-guide.html">Size Guide</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 Ace#1. All rights reserved.</p>
+                <div class="footer-links">
+                    <a href="#">Privacy Policy</a>
+                    <a href="#">Terms of Service</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Cache Buster (must load first) -->
+    <script src="js/cache-buster.js"></script>
+    <!-- Supabase Integration -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="js/supabase-config.js"></script>
+
+    <!-- Security Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.6/dist/purify.min.js"></script>
+    <script src="js/password-hasher.js"></script>
+    <script src="js/security.js"></script>
     <script src="js/database-auth.js"></script>
+    <!-- Bot Defense -->
+    <script src="js/hcaptcha-config.js"></script>
+    <script src="js/hcaptcha-manager.js"></script>
+    <script src="js/bot-defense.js"></script>
+
+    <script src="js/main.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/image-optimizer.js"></script>
+
     <script>
         const adminLoginForm = document.getElementById('adminLoginForm');
         const errorMessage = document.getElementById('errorMessage');
+        const toggleButtons = document.querySelectorAll('.toggle-password');
+
+        toggleButtons.forEach((btn) => {
+            btn.addEventListener('click', () => {
+                const input = btn.previousElementSibling;
+                const icon = btn.querySelector('i');
+                if (input.type === 'password') {
+                    input.type = 'text';
+                    icon.classList.replace('fa-eye', 'fa-eye-slash');
+                } else {
+                    input.type = 'password';
+                    icon.classList.replace('fa-eye-slash', 'fa-eye');
+                }
+            });
+        });
 
         adminLoginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            
-            const email = document.getElementById('email').value;
+
+            const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value;
+            const captchaToken = typeof window.requireHCaptchaToken === 'function'
+                ? window.requireHCaptchaToken(adminLoginForm)
+                : '';
+
+            if (captchaToken === null) {
+                return;
+            }
+
+            if (typeof window.verifyHCaptchaWithServer === 'function' && captchaToken) {
+                const verification = await window.verifyHCaptchaWithServer(captchaToken, { action: 'admin-login' });
+                if (!verification?.success) {
+                    errorMessage.textContent = verification?.error || 'Verification failed. Please try again.';
+                    errorMessage.style.display = 'block';
+                    if (typeof window.resetHCaptchaToken === 'function') {
+                        window.resetHCaptchaToken(adminLoginForm);
+                    }
+                    return;
+                }
+            }
 
             try {
-                // Use database authentication
                 const result = await window.databaseAuth.login(email, password);
-                
+
                 if (result.success) {
-                    // Check if user is admin
                     if (result.user.role === 'admin' || result.user.email === 'admin@ace1.in') {
                         window.location.href = 'admin.html';
                     } else {
-                        // Not an admin
                         errorMessage.textContent = 'Access denied. This login is for administrators only.';
                         errorMessage.style.display = 'block';
-                        
-                        // Logout the non-admin user
                         await window.databaseAuth.logout();
                     }
                 } else {
@@ -254,6 +276,10 @@
                 console.error('Login error:', error);
                 errorMessage.textContent = 'An error occurred. Please try again.';
                 errorMessage.style.display = 'block';
+            } finally {
+                if (typeof window.resetHCaptchaToken === 'function') {
+                    window.resetHCaptchaToken(adminLoginForm);
+                }
             }
         });
     </script>

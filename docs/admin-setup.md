@@ -41,4 +41,4 @@ Security notes
 Next steps
 ----------
 - After the script finishes, open `admin-login.html` and login with the admin credentials. The UI will allow admin-only actions from the admin panel.
-- If you'd rather not run the script, you can use the `templates/ghosty/admin-password-migration.html` page to generate a secure hash and update the user via Supabase SQL editor.
+- If you'd rather not run the script, open `admin-password-migration.html` in the repo root to generate a secure hash and update the user via Supabase SQL editor.

@@ -73,7 +73,7 @@
                 <!-- Contact Form -->
                 <div class="contact-form-container">
                     <h2>Send Us a Message</h2>
-                    <form class="contact-form" id="contact-form">
+                    <form class="contact-form" id="contact-form" data-requires-hcaptcha="true" data-hcaptcha-error="Please verify you are human before sending your message.">
                         <div class="form-row">
                             <div class="form-group">
                                 <label>First Name *</label>
@@ -112,6 +112,8 @@
                             <textarea name="message" rows="6" required></textarea>
                         </div>
                         
+                        <div class="captcha-container" data-hcaptcha-placeholder="true"></div>
+
                         <button type="submit" class="btn btn-primary btn-block">Send Message</button>
                     </form>
                 </div>
@@ -263,6 +265,10 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="js/supabase-config.js"></script>
     <script src="js/supabase-service.js"></script>
+    <!-- Bot Defense -->
+    <script src="js/hcaptcha-config.js"></script>
+    <script src="js/hcaptcha-manager.js"></script>
+    <script src="js/bot-defense.js"></script>
 
     <script src="js/main.js"></script>
     <script src="js/contact.js"></script>

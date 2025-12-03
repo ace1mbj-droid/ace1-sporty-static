@@ -80,6 +80,7 @@ promo_codes    → Discount codes
 ✅ Row Level Security (RLS) enabled
 ✅ Users can only access their own data
 ✅ Anon key safe for frontend
+✅ hCaptcha server verification via `verify-hcaptcha` Edge Function (see docs/bot-defense.md)
 ❌ Never commit actual credentials
 ❌ Never expose Service Role key
 
