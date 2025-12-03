@@ -5,6 +5,9 @@ class AdminPanel {
         this.currentUser = null;
         this.products = [];
         this.orders = [];
+        this.users = [];
+        this.logs = [];
+        this.settings = {};
         this.init();
     }
 
@@ -22,6 +25,9 @@ class AdminPanel {
         await this.loadDashboard();
         await this.loadProducts();
         await this.loadOrders();
+        await this.loadUsers();
+        await this.loadSettings();
+        await this.loadLogs();
     }
 
     async checkAuth() {
@@ -99,6 +105,21 @@ class AdminPanel {
         // Image preview
         document.getElementById('product-image').addEventListener('input', (e) => {
             this.updateImagePreview(e.target.value);
+        });
+
+        // Settings form
+        document.getElementById('settings-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            this.saveSettings();
+        });
+
+        // Logs buttons
+        document.getElementById('refresh-logs').addEventListener('click', () => {
+            this.refreshLogs();
+        });
+
+        document.getElementById('clear-logs').addEventListener('click', () => {
+            this.clearLogs();
         });
 
         // Logout
@@ -407,6 +428,204 @@ class AdminPanel {
         if (order) {
             alert(`Order Details:\n\nOrder ID: ${order.id}\nTotal: ₹${order.total_amount}\nStatus: ${order.payment_status}\n\nShipping:\n${JSON.stringify(order.shipping_address, null, 2)}`);
         }
+    }
+
+    // User Management
+    async loadUsers() {
+        const { data: users, error } = await this.supabase
+            .from('users')
+            .select('*')
+            .order('created_at', { ascending: false });
+
+        if (error) {
+            console.error('Error loading users:', error);
+            return;
+        }
+
+        this.users = users || [];
+        this.renderUsers();
+    }
+
+    renderUsers() {
+        const tbody = document.getElementById('users-table-body');
+        
+        if (this.users.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 40px;">No users found</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = this.users.map(user => `
+            <tr>
+                <td>${user.email}</td>
+                <td>${user.first_name || ''} ${user.last_name || ''}</td>
+                <td>
+                    <select onchange="adminPanel.changeUserRole('${user.id}', this.value)">
+                        <option value="customer" ${user.role === 'customer' ? 'selected' : ''}>Customer</option>
+                        <option value="admin" ${user.role === 'admin' ? 'selected' : ''}>Admin</option>
+                    </select>
+                </td>
+                <td>${user.last_login ? new Date(user.last_login).toLocaleDateString('en-IN') : 'Never'}</td>
+                <td>
+                    ${user.email !== 'hello@ace1.in' ? `<button class="btn btn-danger" style="padding: 5px 15px;" onclick="adminPanel.deleteUser('${user.id}')">Delete</button>` : '<span style="color: #666;">Protected</span>'}
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    async changeUserRole(userId, newRole) {
+        const { error } = await this.supabase
+            .from('users')
+            .update({ role: newRole })
+            .eq('id', userId);
+
+        if (error) {
+            console.error('Error updating user role:', error);
+            alert('Error updating user role');
+            return;
+        }
+
+        alert('User role updated successfully');
+        await this.loadUsers();
+    }
+
+    async deleteUser(userId) {
+        if (!confirm('Are you sure you want to delete this user? This action cannot be undone.')) {
+            return;
+        }
+
+        const { error } = await this.supabase
+            .from('users')
+            .delete()
+            .eq('id', userId);
+
+        if (error) {
+            console.error('Error deleting user:', error);
+            alert('Error deleting user');
+            return;
+        }
+
+        alert('User deleted successfully');
+        await this.loadUsers();
+    }
+
+    // Settings Management
+    async loadSettings() {
+        const { data: settings, error } = await this.supabase
+            .from('site_settings')
+            .select('*')
+            .single();
+
+        if (error && error.code !== 'PGRST116') { // PGRST116 is "not found"
+            console.error('Error loading settings:', error);
+            return;
+        }
+
+        this.settings = settings || {
+            site_title: 'ACE#1 - Revolutionary Footwear',
+            site_description: 'Revolutionary footwear integrated with terahertz technology for enhanced wellness and lifestyle.',
+            contact_email: 'hello@ace1.in',
+            contact_phone: '+91 98765 43210',
+            instagram_url: 'https://instagram.com/ace_1_official/',
+            maintenance_mode: false
+        };
+
+        this.renderSettings();
+    }
+
+    renderSettings() {
+        document.getElementById('site-title').value = this.settings.site_title || '';
+        document.getElementById('site-description').value = this.settings.site_description || '';
+        document.getElementById('contact-email').value = this.settings.contact_email || '';
+        document.getElementById('contact-phone').value = this.settings.contact_phone || '';
+        document.getElementById('instagram-url').value = this.settings.instagram_url || '';
+        document.getElementById('maintenance-mode').checked = this.settings.maintenance_mode || false;
+    }
+
+    async saveSettings() {
+        const settingsData = {
+            site_title: document.getElementById('site-title').value,
+            site_description: document.getElementById('site-description').value,
+            contact_email: document.getElementById('contact-email').value,
+            contact_phone: document.getElementById('contact-phone').value,
+            instagram_url: document.getElementById('instagram-url').value,
+            maintenance_mode: document.getElementById('maintenance-mode').checked,
+            updated_at: new Date().toISOString()
+        };
+
+        const { error } = await this.supabase
+            .from('site_settings')
+            .upsert([settingsData], { onConflict: 'id' });
+
+        if (error) {
+            console.error('Error saving settings:', error);
+            alert('Error saving settings');
+            return;
+        }
+
+        alert('Settings saved successfully');
+        await this.loadSettings();
+    }
+
+    // Logs Management
+    async loadLogs() {
+        const { data: logs, error } = await this.supabase
+            .from('security_logs')
+            .select('*')
+            .order('timestamp', { ascending: false })
+            .limit(100);
+
+        if (error) {
+            console.error('Error loading logs:', error);
+            this.logs = [];
+        } else {
+            this.logs = logs || [];
+        }
+        this.renderLogs();
+    }
+
+    renderLogs() {
+        const tbody = document.getElementById('logs-table-body');
+        
+        if (this.logs.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 40px;">No logs found</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = this.logs.map(log => `
+            <tr>
+                <td>${new Date(log.timestamp).toLocaleString('en-IN')}</td>
+                <td>${log.event}</td>
+                <td>${JSON.stringify(log.details)}</td>
+                <td style="max-width: 300px; overflow: hidden; text-overflow: ellipsis;">${log.user_agent}</td>
+            </tr>
+        `).join('');
+    }
+
+    async refreshLogs() {
+        await this.loadLogs();
+    }
+
+    async clearLogs() {
+        if (!confirm('Are you sure you want to clear logs older than 30 days?')) {
+            return;
+        }
+
+        const thirtyDaysAgo = new Date();
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+        const { error } = await this.supabase
+            .from('security_logs')
+            .delete()
+            .lt('timestamp', thirtyDaysAgo.toISOString());
+
+        if (error) {
+            console.error('Error clearing logs:', error);
+            alert('Error clearing logs');
+            return;
+        }
+
+        alert('Old logs cleared successfully');
+        await this.loadLogs();
     }
 }
 
