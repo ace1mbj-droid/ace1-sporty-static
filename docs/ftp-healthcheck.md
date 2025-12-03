@@ -5,9 +5,9 @@ What this does
 ---------------
 This repository contains manual and autorun GitHub Actions workflows that perform safe, reversible host-level diagnostics:
 
-- OPTION: temporarily rename /public_html/.htaccess to a timestamped backup
+- OPTION: temporarily rename /.htaccess to a timestamped backup
 - HEAD + GET checks of the configured site URL before and after the rename (HTTP status & key headers)
-- list /public_html entries with permissions to confirm index.html presence
+- list / entries with permissions to confirm index.html presence
 - restore .htaccess back to the original name when finished
 - optional chained permissions normalization (dirs 755, files 644)
 
@@ -40,7 +40,7 @@ How to interpret results
 Safety & guarantees
 --------------------
 - The workflow makes a timestamped backup (e.g., .htaccess.bak-20251121T120000Z) and restores it automatically.
-- The workflow uses the repo's FTP secrets: FTP_HOST, FTP_USER, FTP_PASSWORD. It will not modify any files other than the single /public_html/.htaccess (rename + restore).
+- The workflow uses the repo's FTP secrets: FTP_HOST, FTP_USER, FTP_PASSWORD. It will not modify any files other than the single /.htaccess (rename + restore).
 - The `FTP health-check autorun (push)` variant runs automatically on pushes to `main` with the default domain; a chained workflow can normalize permissions after a successful run.
 
 Next steps after a run

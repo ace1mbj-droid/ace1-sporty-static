@@ -52,7 +52,7 @@
 
 ☐ Connect to FTP (use FileZilla/Cyberduck)
 
-☐ Navigate to web root (/public_html/ or /www/)
+☐ Navigate to web root (/ or /www/)
 
 ☐ Upload ALL .html files (18+ files)
 

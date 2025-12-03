@@ -73,8 +73,8 @@ jobs:
           else
             TARGET="ftp://$FTP_HOST"; FLAGS=""
           fi
-          echo "Listing /public_html (top 50 entries)"
-          lftp -u "$FTP_USER,$FTP_PASSWORD" -p "$FTP_PORT" "$TARGET" -e "$FLAGS cls -l /public_html | head -50; bye" || true
+          echo "Listing / (top 50 entries)"
+          lftp -u "$FTP_USER,$FTP_PASSWORD" -p "$FTP_PORT" "$TARGET" -e "$FLAGS cls -l / | head -50; bye" || true
 
       - name: DNS + origin check
         run: |
@@ -98,11 +98,11 @@ jobs:
             FLAGS=""
           fi
           # check if the remote .htaccess file exists
-          found=$(lftp -u "$FTP_USER,$FTP_PASSWORD" -p "$FTP_PORT" "$TARGET" -e "$FLAGS cls -1 /public_html/.htaccess || true; bye" | wc -l || true)
+          found=$(lftp -u "$FTP_USER,$FTP_PASSWORD" -p "$FTP_PORT" "$TARGET" -e "$FLAGS cls -1 /.htaccess || true; bye" | wc -l || true)
           if [ "${found}" -gt 0 ]; then
             echo "found=true" >> $GITHUB_OUTPUT
             echo "Remote .htaccess found — renaming to .htaccess.bak-${TS}"
-            lftp -u "$FTP_USER,$FTP_PASSWORD" -p "$FTP_PORT" "$TARGET" -e "$FLAGS mv /public_html/.htaccess /public_html/.htaccess.bak-${TS}; bye"
+            lftp -u "$FTP_USER,$FTP_PASSWORD" -p "$FTP_PORT" "$TARGET" -e "$FLAGS mv /.htaccess /.htaccess.bak-${TS}; bye"
           else
             echo "found=false" >> $GITHUB_OUTPUT
             echo "No .htaccess present on remote (nothing to rename)."
@@ -125,7 +125,7 @@ jobs:
           else
             TARGET="ftp://$FTP_HOST"; FLAGS=""
           fi
-          lftp -u "$FTP_USER,$FTP_PASSWORD" -p "$FTP_PORT" "$TARGET" -e "$FLAGS mv /public_html/.htaccess.bak-${TS} /public_html/.htaccess; bye"
+          lftp -u "$FTP_USER,$FTP_PASSWORD" -p "$FTP_PORT" "$TARGET" -e "$FLAGS mv /.htaccess.bak-${TS} /.htaccess; bye"
 
       - name: Final HEAD check
         run: |
