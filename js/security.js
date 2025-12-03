@@ -333,22 +333,33 @@ class SecurityManager {
     }
 
     // Log security events
-    logSecurityEvent(event, details) {
+    async logSecurityEvent(event, details) {
         const logEntry = {
             timestamp: new Date().toISOString(),
             event: event,
             details: details,
-            userAgent: navigator.userAgent,
+            user_agent: navigator.userAgent,
             url: window.location.href
         };
         
         console.log('🔒 Security Event:', logEntry);
         
-        // In production, send to server for monitoring
-        // await fetch('/api/security-log', {
-        //     method: 'POST',
-        //     body: JSON.stringify(logEntry)
-        // });
+        // Insert into database if available
+        if (window.getSupabase) {
+            try {
+                const supabase = window.getSupabase();
+                await supabase
+                    .from('security_logs')
+                    .insert([{
+                        event: event,
+                        details: details,
+                        user_agent: navigator.userAgent,
+                        url: window.location.href
+                    }]);
+            } catch (error) {
+                console.error('Failed to log security event to database:', error);
+            }
+        }
     }
 }
 

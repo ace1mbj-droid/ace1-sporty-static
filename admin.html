@@ -301,7 +301,10 @@
             <button class="admin-tab active" data-tab="dashboard">Dashboard</button>
             <button class="admin-tab" data-tab="products">Products</button>
             <button class="admin-tab" data-tab="orders">Orders</button>
+            <button class="admin-tab" data-tab="users">Users</button>
             <button class="admin-tab" data-tab="images">Site Images</button>
+            <button class="admin-tab" data-tab="settings">Settings</button>
+            <button class="admin-tab" data-tab="logs">Security Logs</button>
             <button class="admin-tab" data-tab="password">Change Password</button>
         </div>
 
@@ -370,6 +373,89 @@
         <!-- Change Password Tab -->
         <div class="admin-content" id="password-content">
             <div id="password-change-container"></div>
+        </div>
+
+        <!-- Users Tab -->
+        <div class="admin-content" id="users-content">
+            <h2 style="margin-bottom: 20px;">User Management</h2>
+            <div class="orders-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Email</th>
+                            <th>Name</th>
+                            <th>Role</th>
+                            <th>Last Login</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="users-table-body">
+                        <tr>
+                            <td colspan="5" style="text-align: center; padding: 40px;">Loading users...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Settings Tab -->
+        <div class="admin-content" id="settings-content">
+            <h2 style="margin-bottom: 20px;">Site Settings</h2>
+            <form id="settings-form">
+                <div class="form-group">
+                    <label for="site-title">Site Title</label>
+                    <input type="text" id="site-title" value="ACE#1 - Revolutionary Footwear">
+                </div>
+                <div class="form-group">
+                    <label for="site-description">Site Description</label>
+                    <textarea id="site-description">Revolutionary footwear integrated with terahertz technology for enhanced wellness and lifestyle.</textarea>
+                </div>
+                <div class="form-group">
+                    <label for="contact-email">Contact Email</label>
+                    <input type="email" id="contact-email" value="hello@ace1.in">
+                </div>
+                <div class="form-group">
+                    <label for="contact-phone">Contact Phone</label>
+                    <input type="tel" id="contact-phone" value="+91 98765 43210">
+                </div>
+                <div class="form-group">
+                    <label for="instagram-url">Instagram URL</label>
+                    <input type="url" id="instagram-url" value="https://instagram.com/ace_1_official/">
+                </div>
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="maintenance-mode" checked>
+                        Maintenance Mode (disable orders)
+                    </label>
+                </div>
+                <button type="submit" class="btn btn-primary">Save Settings</button>
+            </form>
+        </div>
+
+        <!-- Logs Tab -->
+        <div class="admin-content" id="logs-content">
+            <h2 style="margin-bottom: 20px;">Security Logs</h2>
+            <div style="margin-bottom: 20px;">
+                <button class="btn btn-secondary" id="refresh-logs">Refresh Logs</button>
+                <button class="btn btn-secondary" id="clear-logs">Clear Old Logs</button>
+            </div>
+            <div class="orders-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Timestamp</th>
+                            <th>Event</th>
+                            <th>Details</th>
+                            <th>User Agent</th>
+                        </tr>
+                    </thead>
+                    <tbody id="logs-table-body">
+                        <tr>
+                            <td colspan="4" style="text-align: center; padding: 40px;">Loading logs...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 
