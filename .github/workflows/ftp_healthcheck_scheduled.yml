@@ -1,0 +1,40 @@
+name: FTP health-check (scheduled)
+
+on:
+  # Temporarily disabling scheduled runs; manual dispatch only
+  workflow_dispatch:
+
+jobs:
+  healthcheck:
+    runs-on: ubuntu-latest
+    env:
+      FTP_HOST: ${{ secrets.FTP_HOST }}
+      FTP_USER: ${{ secrets.FTP_USER }}
+      FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+      FTP_PORT: 21
+      DOMAIN: ${{ secrets.SITE_DOMAIN }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install tools
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y lftp curl
+
+      - name: Initial site HEAD check
+        run: |
+          echo "HEAD -> https://$DOMAIN"
+          code=$(curl -s -o /dev/null -w "%{http_code}" -I "https://$DOMAIN" || echo 000)
+          echo "Initial HTTP status: $code"
+
+      - name: Verbose headers (HEAD and GET)
+        run: |
+          curl -svI "https://$DOMAIN" -H "User-Agent: Mozilla/5.0" -o /dev/null 2>&1 | sed -n 's/^< \(Server\|Via\|CF-\|X-\)/\0/p'
+          curl -sv "https://$DOMAIN" -H "User-Agent: Mozilla/5.0" -o /dev/null 2>&1 | sed -n 's/^< \(Server\|Via\|CF-\|X-\)/\0/p'
+
+      - name: List remote root (confirm index.html exists)
+        run: |
+          TARGET="ftp://$FTP_HOST"; FLAGS="set ftp:ssl-force true; set ftp:ssl-protect-data true; set ssl:verify-certificate false;"
+          echo "Listing /public_html (top 50 entries)"
+          lftp -u "$FTP_USER,$FTP_PASSWORD" -p "$FTP_PORT" "$TARGET" -e "$FLAGS cls -l /public_html | head -50; bye" || true
