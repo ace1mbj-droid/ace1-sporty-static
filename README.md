@@ -44,8 +44,8 @@ Supabase integration & server-side flow
 	- The frontend will attempt to call the Edge Function and open Razorpay checkout flow if using Razorpay.
 
 4. GitHub Actions (FTPS Deploy & Diagnostics)
-	- `.github/workflows/ftps_deploy_and_verify.yml` — manual FTPS deploy to `/public_html` (port 990, implicit FTPS), normalizes permissions, lists files, and runs HTTP health-check. Requires `FTP_HOST`, `FTP_USER`, `FTP_PASSWORD`, and `SITE_DOMAIN`.
-	- [Preview workflow removed] — We now deploy and test directly at `/public_html`.
+	- `.github/workflows/ftps_deploy_and_verify.yml` — manual FTPS deploy to `/public_html/` (port 990, implicit FTPS), normalizes permissions, lists files, and runs HTTP health-check. Requires `FTP_HOST`, `FTP_USER`, `FTP_PASSWORD`, and `SITE_DOMAIN`.
+	- [Preview workflow removed] — We now deploy and test directly at `/public_html/`.
 	- `.github/workflows/ftp_healthcheck_htaccess_test.yml` — manual FTPS health-check: HEAD/GET, headers, optional `.htaccess` rename/restore.
 	- `.github/workflows/ftp_permissions_normalize.yml` — manual permissions normalization (dirs 755, files 644) over FTPS (port 990).
 	- `.github/workflows/ftp_list_and_diff.yml` — manual FTPS remote listing and local/remote filename diff.
@@ -130,7 +130,7 @@ CI deploy trigger: small doc update to kick off GitHub Actions workflow (automat
 
 Preview deploy usage
 --------------------
-Preview has been removed. Use `FTPS Deploy + Verify (manual)` to publish to `/public_html` and run the health-check.
+Preview has been removed. Use `FTPS Deploy + Verify (manual)` to publish to `/public_html/` and run the health-check.
 
 Health-check & permissions normalization
 ---------------------------------------
