@@ -1225,22 +1225,23 @@ button {
 /* ===================================
    PRODUCTS PAGE STYLES
    =================================== */
-.page-header {
+.page-hero {
     margin-top: 80px;
-    padding: 80px 0;
+    padding: 100px 0;
     background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
     text-align: center;
 }
 
-.page-header h1 {
+.page-hero h1 {
     font-family: var(--font-display);
-    font-size: 64px;
+    font-size: 72px;
     margin-bottom: 15px;
     letter-spacing: 1px;
+    color: var(--text-color);
 }
 
-.page-header p {
-    font-size: 18px;
+.page-hero p {
+    font-size: 20px;
     color: var(--text-light);
 }
 
@@ -1442,7 +1443,7 @@ button {
         border-radius: 15px;
     }
     
-    .page-header h1 {
+    .page-hero h1 {
         font-size: 48px;
     }
 }
@@ -1461,25 +1462,7 @@ button {
 
 /* ===================================
    ADDITIONAL PAGES STYLES
-   =================================== */
-.page-hero {
-    margin-top: 80px;
-    padding: 100px 0;
-    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-    text-align: center;
-}
-
-.page-hero h1 {
-    font-family: var(--font-display);
-    font-size: 72px;
-    margin-bottom: 15px;
-    letter-spacing: 1px;
-}
-
-.page-hero p {
-    font-size: 20px;
-    color: var(--text-light);
-}
+   ===================================== */
 
 /* Technology Page */
 .tech-overview {
