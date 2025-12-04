@@ -1,6 +1,9 @@
 -- Migration: create active_products sync table + triggers + publication
 
 -- 1) Create active_products table mirroring the shape of the products view
+-- Drop any existing VIEW named active_products so we can create the backing TABLE
+DROP VIEW IF EXISTS public.active_products;
+
 CREATE TABLE IF NOT EXISTS public.active_products (
   id uuid PRIMARY KEY,
   sku text,
@@ -65,17 +68,15 @@ DO $$
 BEGIN
   -- safe add: only attempt if publication exists and the relation is not already part of it
   IF EXISTS (SELECT 1 FROM pg_publication WHERE pubname = 'supabase_realtime') THEN
-    PERFORM
-      CASE
-        WHEN NOT EXISTS (
-          SELECT 1 FROM pg_publication_rel pr
-          JOIN pg_class c ON pr.prrelid = c.oid
-          JOIN pg_namespace n ON c.relnamespace = n.oid
-          WHERE pr.prpubid = (SELECT oid FROM pg_publication WHERE pubname = 'supabase_realtime')
-            AND n.nspname = 'public' AND c.relname = 'active_products'
-        ) THEN
-          EXECUTE 'ALTER PUBLICATION supabase_realtime ADD TABLE public.active_products';
-      END CASE;
+    IF NOT EXISTS (
+      SELECT 1 FROM pg_publication_rel pr
+      JOIN pg_class c ON pr.prrelid = c.oid
+      JOIN pg_namespace n ON c.relnamespace = n.oid
+      WHERE pr.prpubid = (SELECT oid FROM pg_publication WHERE pubname = 'supabase_realtime')
+        AND n.nspname = 'public' AND c.relname = 'active_products'
+    ) THEN
+      EXECUTE 'ALTER PUBLICATION supabase_realtime ADD TABLE public.active_products';
+    END IF;
   END IF;
 END$$;
 
