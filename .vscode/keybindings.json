@@ -35,4 +35,10 @@
     "args": "Supabase: Run SQL file (prompt)",
     "when": "editorTextFocus"
   }
+  ,
+  {
+    "key": "cmd+alt+e",
+    "command": "workbench.view.extension.vscode-supabase-extension",
+    "when": "editorTextFocus"
+  }
 ]
