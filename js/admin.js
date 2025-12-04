@@ -29,6 +29,7 @@ class AdminPanel {
         await this.loadUsers();
         await this.loadSettings();
         await this.loadLogs();
+        await this.loadRevocations();
     }
 
     async checkAuth() {
@@ -146,6 +147,13 @@ class AdminPanel {
             this.refreshLogs();
         });
 
+        // Revocations buttons
+        const refreshRevocationsBtn = document.getElementById('refresh-revocations');
+        if (refreshRevocationsBtn) refreshRevocationsBtn.addEventListener('click', () => this.loadRevocations());
+
+        const revokeBtn = document.getElementById('revoke-token-btn');
+        if (revokeBtn) revokeBtn.addEventListener('click', () => this.revokeTokenFromUI());
+
         document.getElementById('clear-logs').addEventListener('click', () => {
             this.clearLogs();
         });
@@ -157,6 +165,8 @@ class AdminPanel {
             } else {
                 localStorage.removeItem('ace1_admin');
                 localStorage.removeItem('ace1_user');
+            }
+        });
             // Change summary modal handlers
             const summaryClose = document.getElementById('summary-close');
             const summaryOk = document.getElementById('summary-ok');
@@ -170,22 +180,22 @@ class AdminPanel {
                 localStorage.removeItem('ace1_products_cache');
                 localStorage.setItem('ace1_products_updated', Date.now().toString());
             });
-        document.querySelectorAll('.admin-tab').forEach(tab => {
-            tab.classList.remove('active');
-        });
+        // clear any active tab classes (initial state)
+        document.querySelectorAll('.admin-tab').forEach(tab => tab.classList.remove('active'));
 
         // History modal handlers
         const historyClose = document.getElementById('history-close');
         const historyOk = document.getElementById('history-ok');
         if (historyClose) historyClose.addEventListener('click', () => document.getElementById('history-modal').classList.remove('active'));
         if (historyOk) historyOk.addEventListener('click', () => document.getElementById('history-modal').classList.remove('active'));
-        document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+        // NOTE: tabs are switched via this.switchTab() invoked by click handlers
+    }
 
-        // Update active content
-        document.querySelectorAll('.admin-content').forEach(content => {
-            content.classList.remove('active');
-        });
-        document.getElementById(`${tabName}-content`).classList.add('active');
+    // Switch tabs and show corresponding content
+    switchTab(tabName) {
+        if (!tabName) return;
+        document.querySelectorAll('.admin-tab').forEach(tab => tab.classList.toggle('active', tab.dataset.tab === tabName));
+        document.querySelectorAll('.admin-content').forEach(content => content.classList.toggle('active', content.id === `${tabName}-content`));
     }
 
     async loadDashboard() {
@@ -1134,6 +1144,126 @@ class AdminPanel {
             this.logs = logs || [];
         }
         this.renderLogs();
+    }
+
+    // Session revocations
+    async loadRevocations() {
+        try {
+            const { data: rows, error } = await this.supabase
+                .from('session_revocations')
+                .select('id, token, user_id, revoked_by, reason, ip_address, user_agent, revoked_at')
+                .order('revoked_at', { ascending: false })
+                .limit(200);
+
+            if (error) {
+                console.error('Error loading revocations:', error);
+                this.revocations = [];
+            } else {
+                this.revocations = rows || [];
+            }
+        } catch (err) {
+            console.error('Failed to fetch revocations', err);
+            this.revocations = [];
+        }
+
+        this.renderRevocations();
+    }
+
+    renderRevocations() {
+        const tbody = document.getElementById('revocations-table-body');
+        if (!tbody) return;
+
+        if (!this.revocations || this.revocations.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 40px; color:#666;">No revocations found</td></tr>';
+            return;
+        }
+
+        const maskToken = (t) => {
+            if (!t || typeof t !== 'string') return '';
+            if (t.length <= 12) return t;
+            return `${t.slice(0,8)}…${t.slice(-4)}`;
+        };
+
+        tbody.innerHTML = this.revocations.map(r => `
+            <tr>
+                <td>${r.revoked_at ? new Date(r.revoked_at).toLocaleString('en-IN') : ''}</td>
+                <td style="max-width:220px; overflow:hidden; text-overflow:ellipsis;">${this.escapeHtml(maskToken(r.token || ''))}</td>
+                <td style="max-width:220px; overflow:hidden; text-overflow:ellipsis;">${this.escapeHtml(r.user_id || '')}</td>
+                <td>${this.escapeHtml(r.revoked_by || '')}</td>
+                <td>${this.escapeHtml(r.reason || '')}</td>
+                <td>${this.escapeHtml(r.ip_address || '')}</td>
+                <td style="max-width:340px; overflow:hidden; text-overflow:ellipsis;">${this.escapeHtml(r.user_agent || '')}</td>
+            </tr>
+        `).join('');
+    }
+
+    // Revoke a session token from the UI; includes navigator.userAgent as p_user_agent.
+    async revokeTokenFromUI() {
+        const token = document.getElementById('revoke-token-input')?.value?.trim();
+        const reason = document.getElementById('revoke-reason-input')?.value?.trim() || null;
+
+        if (!token) {
+            if (!confirm('This action requires a session token to revoke. Please paste the session token you want to revoke into the input.')) return;
+        }
+
+        try {
+            // Note: p_ip is optional. We intentionally do not collect client IP in the UI by default.
+            const includeIp = document.getElementById('revoke-include-ip')?.checked;
+            let clientIp = null;
+            if (includeIp) {
+                try {
+                    clientIp = await this.getClientIp({ timeoutMs: 3000 });
+                } catch (err) {
+                    console.warn('Unable to fetch client IP:', err);
+                    // Ask admin whether to continue without IP
+                    const proceed = confirm('Could not determine client IP. Continue revoke without client IP?');
+                    if (!proceed) return;
+                    clientIp = null;
+                }
+            }
+
+            const payload = {
+                t: token,
+                p_reason: reason,
+                p_user_agent: (typeof navigator !== 'undefined' && navigator.userAgent) ? navigator.userAgent : null,
+                p_ip: clientIp
+            };
+
+            // Call the revoke RPC (server will log and delete session rows)
+            const { data, error } = await this.supabase.rpc('revoke_session_by_token', payload);
+
+            if (error) {
+                console.error('Error revoking token:', error);
+                alert('Unable to revoke session: ' + (error.message || JSON.stringify(error)));
+                return;
+            }
+
+            // data is usually an int (deleted_count). If wrapped in an array some clients return [count]
+            const deleted = Array.isArray(data) ? data[0] : data;
+
+            alert(`Revocation completed — sessions removed: ${deleted}`);
+            // refresh revocations and logs
+            await this.loadRevocations();
+            await this.loadLogs();
+        } catch (err) {
+            console.error('Unexpected error revoking token:', err);
+            alert('Unexpected error revoking session. See console for details.');
+        }
+    }
+
+    // Attempt to fetch client IP from a public IP lookup service (ipify). Returns IP string or throws.
+    async getClientIp({ timeoutMs = 3000 } = {}) {
+        const controller = new AbortController();
+        const id = setTimeout(() => controller.abort(), timeoutMs);
+        try {
+            const res = await fetch('https://api.ipify.org?format=json', { signal: controller.signal });
+            clearTimeout(id);
+            if (!res.ok) throw new Error(`ip lookup failed: ${res.status}`);
+            const j = await res.json();
+            return j && j.ip ? String(j.ip) : null;
+        } finally {
+            clearTimeout(id);
+        }
     }
 
     renderLogs() {
