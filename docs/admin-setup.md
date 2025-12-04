@@ -55,4 +55,4 @@ Security notes
 Next steps
 ----------
 - Visit `admin-login.html`, sign in with the updated password, and verify you can load protected data.
-- If you rely on the header-based flow, set the `ace1-session` header to the seeded token (`token_admin_1764844118`) or create a fresh session from the admin UI after logging in.
+If you rely on the header-based flow, create a fresh session from the admin UI after logging in and capture the new `ace1-session` token for use in header-based operations. Avoid hardcoding session tokens in frontend code or shipping them in repositories.
