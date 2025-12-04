@@ -92,6 +92,17 @@ button {
     margin: 0 auto;
 }
 
+.nav-logo {
+    display: flex;
+    align-items: center;
+}
+
+.nav-logo a {
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+}
+
 .nav-logo .logo-text {
     font-family: var(--font-display);
     font-size: 32px;
