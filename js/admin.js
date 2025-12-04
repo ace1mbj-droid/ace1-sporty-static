@@ -47,9 +47,10 @@ class AdminPanel {
                 // otherwise use the seeded session token (temporary) so admin actions like inserts succeed.
                 try {
                     const existing = localStorage.getItem('ace1_token');
-                    if (window.setSupabaseSessionToken) {
-                        window.setSupabaseSessionToken(existing || 'token_admin_1764844118');
-                        if (!existing) localStorage.setItem('ace1_token', 'token_admin_1764844118');
+                    // Only restore an existing token into the request pipeline.
+                    // Do not insert or fallback to any hard-coded seeded token from the client.
+                    if (window.setSupabaseSessionToken && existing) {
+                        window.setSupabaseSessionToken(existing);
                     }
                 } catch (err) {
                     console.warn('Unable to set ace1-session header automatically', err);
@@ -78,9 +79,8 @@ class AdminPanel {
                 // restore session header if missing so UI requests are allowed by RLS
                 try {
                     const existing = localStorage.getItem('ace1_token');
-                    if (window.setSupabaseSessionToken) {
-                        window.setSupabaseSessionToken(existing || 'token_admin_1764844118');
-                        if (!existing) localStorage.setItem('ace1_token', 'token_admin_1764844118');
+                    if (window.setSupabaseSessionToken && existing) {
+                        window.setSupabaseSessionToken(existing);
                     }
                 } catch (err) {
                     console.warn('restore session header failed', err);
