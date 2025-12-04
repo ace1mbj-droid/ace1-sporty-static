@@ -577,6 +577,42 @@
                     </tbody>
                 </table>
             </div>
+
+            <!-- Session Revocations -->
+            <h2 style="margin-top: 30px; margin-bottom: 10px;">Session Revocations</h2>
+            <div style="display:flex; gap:12px; align-items:center; margin-bottom:14px;">
+                <button class="btn btn-secondary" id="refresh-revocations">Refresh Revocations</button>
+                <div style="display:flex; gap:8px; align-items:center;">
+                    <input type="text" id="revoke-token-input" placeholder="Enter token to revoke (or leave blank for user-wide)" style="padding:8px; width:360px;" />
+                    <input type="text" id="revoke-reason-input" placeholder="Reason (optional)" style="padding:8px; width:200px;" />
+                    <label style="display:flex; gap:8px; align-items:center; font-size:13px; color:#444;">
+                        <input type="checkbox" id="revoke-include-ip" />
+                        <span>Include client IP</span>
+                    </label>
+                    <button class="btn btn-danger" id="revoke-token-btn">Revoke Token</button>
+                </div>
+            </div>
+
+            <div class="orders-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Revoked At</th>
+                            <th>Token (masked)</th>
+                            <th>User ID</th>
+                            <th>Revoked By</th>
+                            <th>Reason</th>
+                            <th>IP Address</th>
+                            <th>User Agent</th>
+                        </tr>
+                    </thead>
+                    <tbody id="revocations-table-body">
+                        <tr>
+                            <td colspan="7" style="text-align: center; padding: 40px;">Loading revocations...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 
