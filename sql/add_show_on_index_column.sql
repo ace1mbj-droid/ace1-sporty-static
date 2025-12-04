@@ -1,5 +1,6 @@
 -- Add show_on_index column to products table
--- Allows admins to control whether products appear on the homepage/index
+-- Allows admins to control whether products appear on the homepage (index.html)
+-- Featured Collection section will only show products with show_on_index = true
 
 -- Add column if it doesn't exist
 DO $$ 
@@ -19,12 +20,18 @@ BEGIN
     END IF;
 END $$;
 
--- Create index for faster queries
+-- Create index for faster homepage queries
 CREATE INDEX IF NOT EXISTS idx_products_show_on_index 
 ON public.products(show_on_index) 
 WHERE show_on_index = true;
 
+-- Create composite index for homepage queries (active + show_on_index)
+CREATE INDEX IF NOT EXISTS idx_products_active_and_featured
+ON public.products(is_active, show_on_index)
+WHERE is_active = true AND show_on_index = true;
+
 -- Update active_products view to respect show_on_index
+-- This view is used by the homepage Featured Collection section
 DROP VIEW IF EXISTS active_products;
 
 CREATE OR REPLACE VIEW active_products AS
@@ -36,7 +43,7 @@ WHERE deleted_at IS NULL
 -- Grant permissions on view
 GRANT SELECT ON active_products TO anon, authenticated;
 
--- Verification query
+-- Verification query - check the column exists and is set correctly
 SELECT 
     column_name, 
     data_type,
