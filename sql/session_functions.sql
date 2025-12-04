@@ -13,7 +13,7 @@ $$;
 COMMENT ON FUNCTION public.revoke_session_by_token(text) IS 'Delete a session row by token (admin-only).';
 
 -- 2) Revoke all sessions for a user by email (safe admin operation)
-CREATE OR REPLACE FUNCTION public.revoke_sessions_for_email(email text)
+CREATE OR REPLACE FUNCTION public.revoke_sessions_for_email(p_email text)
 RETURNS int
 LANGUAGE plpgsql
 SECURITY DEFINER
@@ -22,7 +22,8 @@ DECLARE
   uid uuid;
   deleted_count int := 0;
 BEGIN
-  SELECT id INTO uid FROM public.users WHERE lower(email) = lower(email) LIMIT 1;
+  -- use the parameter p_email to avoid ambiguity with table column names
+  SELECT id INTO uid FROM public.users WHERE lower(email) = lower(p_email) LIMIT 1;
   IF uid IS NULL THEN
     RETURN 0;
   END IF;
