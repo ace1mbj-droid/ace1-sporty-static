@@ -612,12 +612,23 @@ async function refreshProductsIfNeeded() {
     
     try {
         const supabase = window.getSupabase();
+        
+        // Fetch all active products with related data (matches products.js)
         const { data: products, error } = await supabase
             .from('products')
-            .select('*')
+            .select(`
+                *,
+                product_images (
+                    storage_path,
+                    alt
+                ),
+                inventory (
+                    stock,
+                    size
+                )
+            `)
             .eq('is_active', true)
-            .order('created_at', { ascending: false })
-            .limit(8); // Show first 8 products on homepage
+            .order('created_at', { ascending: false });
 
         if (error) throw error;
         
@@ -628,22 +639,41 @@ async function refreshProductsIfNeeded() {
             return;
         }
         
-        // Replace entire grid with fresh products from database
-        productsGrid.innerHTML = products.map(product => `
-            <div class="product-card" data-category="${(product.category || 'casual').toLowerCase()}" data-product-id="${product.id}">
+        // Helper function to convert storage path to public URL (matches products.js)
+        const getImageUrl = (storagePath) => {
+            if (!storagePath) return 'images/placeholder.jpg';
+            if (storagePath.startsWith('https://vorqavsuqcjnkjzwkyzr.supabase.co/storage')) return storagePath;
+            if (storagePath.startsWith('http')) return storagePath;
+            if (storagePath.includes('.jpg') || storagePath.includes('.png') || storagePath.includes('.jpeg') || storagePath.includes('.gif') || storagePath.includes('.webp')) {
+                return `images/${storagePath.toLowerCase()}`;
+            }
+            const projectUrl = 'https://vorqavsuqcjnkjzwkyzr.supabase.co';
+            return `${projectUrl}/storage/v1/object/public/Images/${storagePath}`;
+        };
+        
+        // Process products with proper image URLs and inventory (matches products.js)
+        const processedProducts = (products || []).map(product => ({
+            ...product,
+            image_url: getImageUrl(product.product_images?.[0]?.storage_path) || 'images/placeholder.jpg',
+            stock_quantity: product.inventory?.[0]?.stock || 0,
+            price: (product.price_cents / 100).toFixed(2)
+        }));
+        
+        // Render products with same template as products.js
+        productsGrid.innerHTML = processedProducts.map(product => `
+            <div class="product-card" data-product-id="${product.id}" data-category="${(product.category || 'casual').toLowerCase()}">
                 <div class="product-image">
-                    <img src="${product.image_url || 'images/placeholder.jpg'}" alt="${product.name}" onerror="this.src='https://via.placeholder.com/400x400?text=No+Image'">
-                    ${product.stock_quantity === 0 ? '<div class="product-badge bg-red">Out of Stock</div>' : 
-                      product.stock_quantity < 10 ? '<div class="product-badge bg-orange">Low Stock</div>' : 
-                      '<div class="product-badge">New</div>'}
+                    <img src="${product.image_url || 'images/placeholder.jpg'}" alt="${product.name}" onerror="this.src='images/placeholder.jpg'">
+                    ${product.is_locked ? '<div class="product-badge bg-gray">Locked</div>' : ''}
+                    ${product.stock_quantity === 0 ? '<div class="product-badge bg-red">Out of Stock</div>' : ''}
+                    ${product.stock_quantity > 0 && product.stock_quantity < 10 ? '<div class="product-badge bg-orange">Low Stock</div>' : ''}
                     <div class="product-overlay">
                         <button class="quick-view-btn" data-product-id="${product.id}">Quick View</button>
                     </div>
                 </div>
                 <div class="product-info">
                     <h3 class="product-name">${product.name}</h3>
-                    <p class="product-category">${product.category || 'Sneakers'} Collection</p>
-                    <p class="product-description" style="display:none;">${product.description || ''}</p>
+                    <p class="product-description">${(product.description || '').substring(0, 100)}...</p>
                     <div class="product-rating">
                         <i class="fas fa-star"></i>
                         <i class="fas fa-star"></i>
@@ -654,12 +684,12 @@ async function refreshProductsIfNeeded() {
                     </div>
                     <div class="product-footer">
                         <span class="product-price">₹${parseFloat(product.price).toLocaleString('en-IN')}</span>
-                        ${product.stock_quantity > 0 
+                        ${(!product.is_locked && product.stock_quantity > 0 && (product.status === undefined || String(product.status).toLowerCase() === 'available'))
                             ? `<button class="add-to-cart-btn" data-id="${product.id}">
                                 <i class="fas fa-shopping-bag"></i>
                                </button>`
                             : `<button class="add-to-cart-btn" disabled>
-                                <i class="fas fa-times-circle" style="margin-right: 5px;"></i> Out of Stock
+                                <i class="fas fa-times-circle" style="margin-right: 5px;"></i> ${product.is_locked ? 'Unavailable' : 'Out of Stock'}
                                </button>`
                         }
                     </div>
@@ -686,10 +716,10 @@ async function refreshProductsIfNeeded() {
         // Re-attach category filter handlers
         attachCategoryFilters();
         
-        console.log('✅ Homepage products updated from database');
+        console.log(`✅ Homepage products updated from database (${processedProducts.length} products)`);
         
     } catch (error) {
-        console.log('Could not refresh products:', error.message);
+        console.error('Could not refresh products:', error.message);
     }
 }
 
