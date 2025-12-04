@@ -173,6 +173,12 @@ class AdminPanel {
         document.querySelectorAll('.admin-tab').forEach(tab => {
             tab.classList.remove('active');
         });
+
+        // History modal handlers
+        const historyClose = document.getElementById('history-close');
+        const historyOk = document.getElementById('history-ok');
+        if (historyClose) historyClose.addEventListener('click', () => document.getElementById('history-modal').classList.remove('active'));
+        if (historyOk) historyOk.addEventListener('click', () => document.getElementById('history-modal').classList.remove('active'));
         document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
 
         // Update active content
@@ -368,6 +374,46 @@ class AdminPanel {
             const addBtn = document.getElementById('add-size-btn');
             if (addBtn) {
                 addBtn.onclick = () => this.addInventoryRow();
+            }
+            // enable view history (only when editing a saved product)
+            const viewBtn = document.getElementById('view-history-btn');
+            if (viewBtn) {
+                viewBtn.disabled = false;
+                viewBtn.onclick = async () => {
+                    const pid = document.getElementById('product-id').value;
+                    if (!pid) {
+                        alert('No saved product yet — nothing to show in history.');
+                        return;
+                    }
+
+                    try {
+                        const { data, error } = await this.supabase
+                            .from('product_changes')
+                            .select('id, actor_email, change_time, change_summary, change_diff')
+                            .eq('product_id', pid)
+                            .order('change_time', { ascending: false })
+                            .limit(100);
+
+                        if (error) throw error;
+
+                        const container = document.getElementById('history-body');
+                        if (!container) return;
+                        if (!data || data.length === 0) {
+                            container.innerHTML = '<div style="padding:16px; color:#666">No history records for this product.</div>';
+                        } else {
+                            const rows = data.map(r => {
+                                const lines = (r.change_diff || []).map(cd => `\n  • ${cd.label}\n      before: ${cd.before}\n      after: ${cd.after}`).join('');
+                                return `<div style="border-bottom:1px solid #eee; padding:12px 0;"><div style="font-weight:600; display:flex; justify-content:space-between; align-items:center;"><div>${r.actor_email || 'unknown'}</div><div style="color:#888; font-size:12px;">${new Date(r.change_time).toLocaleString()}</div></div><div style="margin-top:8px;color:#444;">${this.escapeHtml(r.change_summary || '(no summary)')}</div><pre style="background:#f8f8fb; padding:10px; border-radius:6px; margin-top:8px; white-space:pre-wrap;">${this.escapeHtml(lines)}</pre></div>`;
+                            }).join('');
+                            container.innerHTML = rows;
+                        }
+
+                        document.getElementById('history-modal').classList.add('active');
+                    } catch (err) {
+                        console.error('Failed to load history', err);
+                        alert('Unable to load change history.');
+                    }
+                };
             }
         } else {
             document.getElementById('modal-title').textContent = 'Add New Product';
@@ -598,10 +644,36 @@ class AdminPanel {
         // populate and show summary modal
         const summaryEl = document.getElementById('change-summary-body');
         if (summaryEl) {
+            // Record persistent history for this change (if any changes present)
+            try {
+                if (changes && changes.length) {
+                    const actorId = this.currentUser?.id || null;
+                    const actorEmail = this.currentUser?.email || (localStorage.getItem('ace1_user') ? JSON.parse(localStorage.getItem('ace1_user')).email : null);
+                    const summaryText = changes.map(c => c.label).join(', ');
+                    const payload = [{
+                        product_id: savedProductId,
+                        actor_id: actorId,
+                        actor_email: actorEmail,
+                        change_summary: summaryText,
+                        change_diff: changes
+                    }];
+
+                    const { data: hist, error: histErr } = await this.supabase
+                        .from('product_changes')
+                        .insert(payload)
+                        .select();
+
+                    if (histErr) console.warn('Failed to insert change history', histErr);
+                }
+            } catch (err) {
+                console.warn('Error recording history', err);
+            }
             if (!changes.length) {
                 summaryEl.innerHTML = '<div style="padding:10px">No visible changes detected.</div>';
             } else {
-                summaryEl.innerHTML = changes.map(c => `<div style="padding:8px 0;border-bottom:1px solid #eee"><strong>${this.escapeHtml(c.label)}</strong><div style="margin-top:6px;color:#444;"><span style="color:#888">before:</span> ${this.escapeHtml(String(c.before))}<br><span style="color:#888">after:</span> ${this.escapeHtml(String(c.after))}</div></div>`).join('');
+                // Create side-by-side table: field | before | after
+                const rows = changes.map(c => `<tr><td style="padding:8px; border-bottom:1px solid #eee; font-weight:600; width:33%">${this.escapeHtml(c.label)}</td><td style="padding:8px; border-bottom:1px solid #eee; width:33%; color:#777">${this.escapeHtml(String(c.before))}</td><td style="padding:8px; border-bottom:1px solid #eee; width:34%; color:#222">${this.escapeHtml(String(c.after))}</td></tr>`).join('');
+                summaryEl.innerHTML = `<div style="overflow:auto"><table style="width:100%; border-collapse:collapse;"><thead><tr><th style="text-align:left; padding:8px; border-bottom:2px solid #ddd;">Field</th><th style="text-align:left; padding:8px; border-bottom:2px solid #ddd;">Before</th><th style="text-align:left; padding:8px; border-bottom:2px solid #ddd;">After</th></tr></thead><tbody>${rows}</tbody></table></div>`;
             }
             document.getElementById('change-summary-modal').classList.add('active');
         } else {
