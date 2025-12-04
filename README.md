@@ -123,6 +123,19 @@ To apply migrations from CI the recommended approach is:
 	- `SUPABASE_ACCESS_TOKEN` (CI secret) is used by the Supabase CLI to authenticate. Use a dedicated token limited to the necessary projects.
 	- Avoid putting `SERVICE_ROLE_KEY` in public/shared CI secrets. If you must, ensure the secret is scoped and stored securely and that the workflow checks expected constraints.
 
+MCP staging workflow (new)
+-------------------------
+
+I added a staging-only MCP workflow at `.github/workflows/mcp-staging-deploy.yml`. It is intentionally scoped to the `staging` branch and `workflow_dispatch` so it doesn't run automatically on `main`.
+
+Required GitHub Secrets for the staging workflow (add these to the repository or org secrets):
+
+ - `SUPABASE_PROJECT_REF_STAGING` — staging project ref id
+ - `SUPABASE_URL_STAGING` — staging SUPABASE_URL (https://<project>.supabase.co)
+ - `SUPABASE_SERVICE_ROLE_KEY_STAGING` — service role key for staging (keep this secret and rotate if leaked)
+
+Use these staging-specific secrets so production credentials are never used accidentally by the staging workflow.
+
 If you want, I can: convert the rest of the DB DDL into smaller migration files, add a `supabase/migrations/` best-practices note, or show how to wire up a self-hosted runner (I can add a quick GitHub Actions instructions snippet for that). 
 
 CI deploy trigger: small doc update to kick off GitHub Actions workflow (automated by assistant) — 2025-11-21
