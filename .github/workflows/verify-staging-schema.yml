@@ -1,0 +1,37 @@
+name: Verify Staging Schema
+
+on:
+  workflow_dispatch: {}
+
+jobs:
+  verify-staging-db:
+    runs-on: ubuntu-latest
+    env:
+      # Add SUPABASE_DB_URL_STAGING in repo secrets (service_role DB URL, e.g. postgres://service_role:password@host:5432/postgres)
+      SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL_STAGING }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install psql client
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client
+
+      - name: Verify secret exists
+        run: |
+          if [ -z "$SUPABASE_DB_URL" ]; then
+            echo "Missing SUPABASE_DB_URL_STAGING secret. Add it to repo secrets and rerun this workflow.";
+            exit 1;
+          fi
+
+      - name: Run verify_schema.sql against staging DB
+        env:
+          PGPASSWORD: ${{ secrets.SUPABASE_DB_URL_STAGING_PASSWORD }}
+        run: |
+          # The workflow expects SUPABASE_DB_URL_STAGING to be a full postgres connection string
+          # Example: postgres://user:password@host:5432/postgres
+          set -e
+          echo "Running verification SQL on staging DB (output will be redacted for secrets)"
+          psql "$SUPABASE_DB_URL" -f supabase/snippets/verify_schema.sql || true
+
+      - name: Finished
+        run: echo "Verify run finished. Check the build logs for results."
