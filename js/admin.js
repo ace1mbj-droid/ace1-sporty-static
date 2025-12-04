@@ -352,7 +352,16 @@ class AdminPanel {
             is_active: document.getElementById('product-active').checked
         };
 
-        console.log('Product data being saved:', productData);
+        // Whitelist only the columns that truly exist on products to avoid schema errors
+        const productPayload = {
+            name: productData.name,
+            description: productData.description,
+            price_cents: productData.price_cents,
+            category: productData.category,
+            is_active: productData.is_active
+        };
+
+        console.log('Product data being saved:', productPayload);
 
         let result;
         let savedProductId = productId;
@@ -361,7 +370,7 @@ class AdminPanel {
             // Update existing product
             result = await this.supabase
                 .from('products')
-                .update(productData)
+                .update(productPayload)
                 .eq('id', productId)
                 .select()
                 .single();
@@ -369,7 +378,7 @@ class AdminPanel {
             // Create new product
             result = await this.supabase
                 .from('products')
-                .insert([productData])
+                .insert([productPayload])
                 .select()
                 .single();
         }
