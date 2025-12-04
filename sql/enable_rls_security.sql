@@ -1,111 +1,201 @@
--- Enable RLS on all public tables for security
+-- Enable RLS on critical public tables for security
+-- Based on ACE#1 schema: products, inventory, orders, payments, user_roles
 -- Run this in Supabase SQL Editor
 
 -- 1. Enable RLS on payments table
 ALTER TABLE public.payments ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Users can view their own payments"
+-- Users can view/insert their own payments (via order relationship)
+CREATE POLICY "Users can view their own payment"
 ON public.payments FOR SELECT
-USING (auth.uid() = user_id);
+USING (
+  order_id IN (
+    SELECT id FROM public.orders WHERE orders.user_id = auth.uid()
+  )
+);
 
-CREATE POLICY "Users can insert their own payments"
+CREATE POLICY "System can insert payments"
 ON public.payments FOR INSERT
-WITH CHECK (auth.uid() = user_id);
+WITH CHECK (true);
 
 -- 2. Enable RLS on user_roles table
 ALTER TABLE public.user_roles ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Admin can view all user roles"
-ON public.user_roles FOR SELECT
-USING (
-  EXISTS (
-    SELECT 1 FROM public.users
-    WHERE id = auth.uid() AND role = 'admin'
-  )
-);
-
+-- Users can view their own role
 CREATE POLICY "Users can view their own role"
 ON public.user_roles FOR SELECT
 USING (auth.uid() = user_id);
 
--- 3. Enable RLS on site_settings table
-ALTER TABLE public.site_settings ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "Public can read site settings"
-ON public.site_settings FOR SELECT
-USING (true);
-
-CREATE POLICY "Only admin can update site settings"
-ON public.site_settings FOR UPDATE
+-- Admin can view all roles
+CREATE POLICY "Admins can view all roles"
+ON public.user_roles FOR SELECT
 USING (
   EXISTS (
-    SELECT 1 FROM public.users
-    WHERE id = auth.uid() AND role = 'admin'
+    SELECT 1 FROM public.user_roles ur
+    WHERE ur.user_id = auth.uid() AND ur.is_admin = true
   )
 );
 
-CREATE POLICY "Only admin can insert site settings"
-ON public.site_settings FOR INSERT
-WITH CHECK (
-  EXISTS (
-    SELECT 1 FROM public.users
-    WHERE id = auth.uid() AND role = 'admin'
-  )
-);
-
-CREATE POLICY "Only admin can delete site settings"
-ON public.site_settings FOR DELETE
+-- Only admin can update roles
+CREATE POLICY "Only admin can update roles"
+ON public.user_roles FOR UPDATE
 USING (
   EXISTS (
-    SELECT 1 FROM public.users
-    WHERE id = auth.uid() AND role = 'admin'
+    SELECT 1 FROM public.user_roles ur
+    WHERE ur.user_id = auth.uid() AND ur.is_admin = true
   )
 );
 
--- 4. Enable RLS on users table
-ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
+-- 3. Enable RLS on orders table
+ALTER TABLE public.orders ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Users can view their own data"
-ON public.users FOR SELECT
-USING (auth.uid() = id);
+-- Users can view their own orders
+CREATE POLICY "Users can view their own orders"
+ON public.orders FOR SELECT
+USING (auth.uid() = user_id);
 
-CREATE POLICY "Admin can view all users"
-ON public.users FOR SELECT
+-- Admin can view all orders
+CREATE POLICY "Admins can view all orders"
+ON public.orders FOR SELECT
 USING (
   EXISTS (
-    SELECT 1 FROM public.users
-    WHERE id = auth.uid() AND role = 'admin'
+    SELECT 1 FROM public.user_roles ur
+    WHERE ur.user_id = auth.uid() AND ur.is_admin = true
   )
 );
 
-CREATE POLICY "Users can update their own data"
-ON public.users FOR UPDATE
-USING (auth.uid() = id);
+-- Authenticated users can create orders
+CREATE POLICY "Authenticated users can create orders"
+ON public.orders FOR INSERT
+WITH CHECK (auth.uid() = user_id);
 
-CREATE POLICY "Admin can update any user"
-ON public.users FOR UPDATE
+-- Users can update their own orders
+CREATE POLICY "Users can update their own orders"
+ON public.orders FOR UPDATE
+USING (auth.uid() = user_id);
+
+-- 4. Enable RLS on order_items table
+ALTER TABLE public.order_items ENABLE ROW LEVEL SECURITY;
+
+-- Users can view items in their orders
+CREATE POLICY "Users can view their order items"
+ON public.order_items FOR SELECT
 USING (
-  EXISTS (
-    SELECT 1 FROM public.users
-    WHERE id = auth.uid() AND role = 'admin'
+  order_id IN (
+    SELECT id FROM public.orders WHERE user_id = auth.uid()
   )
 );
 
--- 5. Enable RLS on security_logs table
-ALTER TABLE public.security_logs ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "Admin can view security logs"
-ON public.security_logs FOR SELECT
-USING (
-  EXISTS (
-    SELECT 1 FROM public.users
-    WHERE id = auth.uid() AND role = 'admin'
-  )
-);
-
-CREATE POLICY "System can insert security logs"
-ON public.security_logs FOR INSERT
+-- Authenticated users can insert order items
+CREATE POLICY "Authenticated users can create order items"
+ON public.order_items FOR INSERT
 WITH CHECK (true);
 
--- Disable direct deletion of security logs (should only be archived)
--- No DELETE policy is intentionally missing for audit trail integrity
+-- 5. Enable RLS on products table (public read, admin write)
+ALTER TABLE public.products ENABLE ROW LEVEL SECURITY;
+
+-- Everyone can view active products
+CREATE POLICY "Everyone can view active products"
+ON public.products FOR SELECT
+USING (is_active = true);
+
+-- Admin can view all products
+CREATE POLICY "Admins can view all products"
+ON public.products FOR SELECT
+USING (
+  EXISTS (
+    SELECT 1 FROM public.user_roles ur
+    WHERE ur.user_id = auth.uid() AND ur.is_admin = true
+  )
+);
+
+-- Only admin can manage products
+CREATE POLICY "Only admin can insert products"
+ON public.products FOR INSERT
+WITH CHECK (
+  EXISTS (
+    SELECT 1 FROM public.user_roles ur
+    WHERE ur.user_id = auth.uid() AND ur.is_admin = true
+  )
+);
+
+CREATE POLICY "Only admin can update products"
+ON public.products FOR UPDATE
+USING (
+  EXISTS (
+    SELECT 1 FROM public.user_roles ur
+    WHERE ur.user_id = auth.uid() AND ur.is_admin = true
+  )
+);
+
+CREATE POLICY "Only admin can delete products"
+ON public.products FOR DELETE
+USING (
+  EXISTS (
+    SELECT 1 FROM public.user_roles ur
+    WHERE ur.user_id = auth.uid() AND ur.is_admin = true
+  )
+);
+
+-- 6. Enable RLS on inventory table
+ALTER TABLE public.inventory ENABLE ROW LEVEL SECURITY;
+
+-- Everyone can view inventory
+CREATE POLICY "Everyone can view inventory"
+ON public.inventory FOR SELECT
+USING (true);
+
+-- Only admin can manage inventory
+CREATE POLICY "Only admin can insert inventory"
+ON public.inventory FOR INSERT
+WITH CHECK (
+  EXISTS (
+    SELECT 1 FROM public.user_roles ur
+    WHERE ur.user_id = auth.uid() AND ur.is_admin = true
+  )
+);
+
+CREATE POLICY "Only admin can update inventory"
+ON public.inventory FOR UPDATE
+USING (
+  EXISTS (
+    SELECT 1 FROM public.user_roles ur
+    WHERE ur.user_id = auth.uid() AND ur.is_admin = true
+  )
+);
+
+-- 7. Enable RLS on product_images table
+ALTER TABLE public.product_images ENABLE ROW LEVEL SECURITY;
+
+-- Everyone can view product images
+CREATE POLICY "Everyone can view product images"
+ON public.product_images FOR SELECT
+USING (true);
+
+-- Only admin can manage product images
+CREATE POLICY "Only admin can insert product images"
+ON public.product_images FOR INSERT
+WITH CHECK (
+  EXISTS (
+    SELECT 1 FROM public.user_roles ur
+    WHERE ur.user_id = auth.uid() AND ur.is_admin = true
+  )
+);
+
+CREATE POLICY "Only admin can update product images"
+ON public.product_images FOR UPDATE
+USING (
+  EXISTS (
+    SELECT 1 FROM public.user_roles ur
+    WHERE ur.user_id = auth.uid() AND ur.is_admin = true
+  )
+);
+
+CREATE POLICY "Only admin can delete product images"
+ON public.product_images FOR DELETE
+USING (
+  EXISTS (
+    SELECT 1 FROM public.user_roles ur
+    WHERE ur.user_id = auth.uid() AND ur.is_admin = true
+  )
+);
