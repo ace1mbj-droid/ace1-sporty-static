@@ -99,17 +99,18 @@
             color: #721c24;
         }
         .product-actions {
-            display: flex;
-            gap: 10px;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 8px;
             margin-top: 15px;
         }
         .product-actions button {
-            flex: 1;
             padding: 10px;
             border: none;
             border-radius: 6px;
             cursor: pointer;
             font-weight: 500;
+            font-size: 13px;
             transition: all 0.3s;
         }
         .btn-edit {
@@ -118,6 +119,13 @@
         }
         .btn-edit:hover {
             background: #0056b3;
+        }
+        .btn-duplicate {
+            background: #28a745;
+            color: white;
+        }
+        .btn-duplicate:hover {
+            background: #218838;
         }
         .btn-delete {
             background: #dc3545;

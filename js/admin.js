@@ -253,6 +253,9 @@ class AdminPanel {
                         <button class="btn-edit" onclick="adminPanel.editProduct('${product.id}')">
                             <i class="fas fa-edit"></i> Edit
                         </button>
+                        <button class="btn-duplicate" onclick="adminPanel.duplicateProduct('${product.id}')" title="Duplicate this product">
+                            <i class="fas fa-copy"></i> Duplicate
+                        </button>
                         <button class="btn-delete" onclick="adminPanel.deleteProduct('${product.id}')">
                             <i class="fas fa-trash"></i> Delete
                         </button>
@@ -627,6 +630,25 @@ class AdminPanel {
         if (product) {
             this.openProductModal(product);
         }
+    }
+
+    async duplicateProduct(productId) {
+        const product = this.products.find(p => p.id === productId);
+        if (!product) return;
+        
+        // Create a duplicate object without the ID (so it creates a new product)
+        const duplicate = {
+            ...product,
+            name: `${product.name} (Copy)`,
+            // Don't copy the ID - this will create a new product
+            id: null
+        };
+        
+        // Open modal with duplicated data
+        this.openProductModal(duplicate);
+        
+        // Update modal title to indicate it's a duplicate
+        document.getElementById('modal-title').textContent = 'Duplicate Product';
     }
 
     async deleteProduct(productId) {
