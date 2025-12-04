@@ -39,7 +39,7 @@ This prevents SQL injection attacks through search_path manipulation.
 | Item | Status | Action |
 |------|--------|--------|
 | RLS Enabled | ✅ | All 7 tables secured |
-| Leaked Password Protection | ⚠️ | Enable in Auth settings |
+| Leaked Password Protection | ✅ | Enabled |
 | Function Search Path | ⚠️ | Run SQL fix script |
 | SECURITY.md | ✅ | Documented |
 | Supabase Policies | ✅ | Implemented |
