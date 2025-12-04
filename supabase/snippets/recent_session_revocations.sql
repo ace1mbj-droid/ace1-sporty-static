@@ -9,6 +9,8 @@ SELECT
   sr.revoked_by,
   sr.reason,
   sr.token,
+  sr.ip_address,
+  sr.user_agent,
   sr.user_id,
   COALESCE(u.email, '<unknown>') AS user_email
 FROM public.session_revocations sr
@@ -25,6 +27,8 @@ LIMIT 200;
 --   sr.revoked_by,
 --   sr.reason,
 --   sr.token,
+--   sr.ip_address,
+--   sr.user_agent,
 --   sr.user_id,
 --   COALESCE(u.email, '<unknown>') AS user_email
 -- FROM public.session_revocations sr
