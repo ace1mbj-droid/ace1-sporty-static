@@ -1,44 +1,58 @@
-Admin setup & password reset (safe)
-=================================
+Admin setup & password reset
+============================
 
-This document explains how to create or reset an admin user safely using the repository tools (no UI required).
+Use this doc any time you need to create or reset the `hello@ace1.in` administrator without going through the UI.
 
-Prerequisites
--------------
-- A Supabase project with the `users` table used by the app
-- A SUPABASE_SERVICE_ROLE_KEY available locally or in CI (do not store this key in public places)
+Current default
+---------------
+- The seeding script (`sql/seed_admin.sql`) now ships with a secure PBKDF2 hash that corresponds to the temporary password **TempAdmin#4821**. This is meant to get into the dashboard quickly—change it immediately.
 
-Quick steps — create / reset the admin user
------------------------------------------
-1. Set environment variables locally (recommended):
+Generate a new hash (no backend access needed)
+----------------------------------------------
+NOTE: The local HTML helper (`admin-password-migration.html`) is intentionally removed from the repository for security after one-off use. You can still generate a compatible PBKDF2 hash locally — two options:
 
-   - SUPABASE_PROJECT_REF or SUPABASE_URL
-   - SUPABASE_SERVICE_ROLE_KEY
-   - (optional) ADMIN_EMAIL (default: hello@ace1.in)
-   - (optional) ADMIN_PASSWORD (default: admin123) — choose a strong password
+- In the browser (local): open any page in your working tree that loads `js/password-hasher.js`, open DevTools Console and run:
 
-2. Run the helper script from the repository root:
+```js
+// Example in browser console — DO THIS LOCALLY
+await window.passwordHasher.hashPassword('your-new-password-here');
+```
 
-   ```bash
-   # Example — set env vars and run
-   export SUPABASE_SERVICE_ROLE_KEY="sbp_xxx..."
-   export SUPABASE_PROJECT_REF="your-project-ref"
-   export ADMIN_EMAIL="hello@ace1.in"
-   export ADMIN_PASSWORD="choose-a-strong-password"
-   node scripts/create_admin.js
-   ```
+- With Node.js (local, non-network):
 
-What the script does
----------------------
-- Uses the service-role Supabase client (scripts/supabase-admin.js) to upsert a user with role 'admin'.
-- Hashes the password using PBKDF2 (100,000 iterations) and stores the hash in `users.password_hash` using the same format the frontend expects (`$pbkdf2$iterations$salt$hash`).
+```js
+// run from repository root (Node installed)
+node -e "const crypto=require('crypto'); const pw='YourNewStrongPass'; const iterations=100000; const salt=crypto.randomBytes(16).toString('hex'); const hash=crypto.pbkdf2Sync(pw, Buffer.from(salt,'hex'), iterations, 32, 'sha256').toString('hex'); console.log(`$pbkdf2$${iterations}$${salt}$${hash}`);
+```
+
+Copy the hash from either method and apply it with SQL (below). Never paste your password or the hash on a public server or in public chat.
+
+Apply the hash in Supabase
+--------------------------
+**Option A – run a one-off UPDATE**
+
+```sql
+UPDATE public.users
+SET password_hash = '<paste hash here>'
+WHERE lower(email) = 'hello@ace1.in';
+```
+
+**Option B – run the seed script with an override** (useful when rebuilding environments):
+
+```sql
+SET ace1.admin_password_hash = '<paste hash here>';
+\i sql/seed_admin.sql
+RESET ace1.admin_password_hash;
+```
+
+Both options also ensure the `sessions` and `user_roles` helpers point at the same admin account. Option B recreates the session token defined inside the seed file.
 
 Security notes
 --------------
-- The service-role key is powerful: run this script locally or in a secure CI environment and avoid committing the key into source control.
-- Choose a strong admin password and rotate the service-role key if it ever leaks.
+- Run the HTML tool and SQL statements locally or over MCP/VPN only. Do not deploy `admin-password-migration.html` to production hosting.
+- Store the new password in a secure vault and rotate it periodically. Delete any temporary copies of the hash once it has been applied.
 
 Next steps
 ----------
-- After the script finishes, open `admin-login.html` and login with the admin credentials. The UI will allow admin-only actions from the admin panel.
-- If you'd rather not run the script, open `admin-password-migration.html` in the repo root to generate a secure hash and update the user via Supabase SQL editor.
+- Visit `admin-login.html`, sign in with the updated password, and verify you can load protected data.
+- If you rely on the header-based flow, set the `ace1-session` header to the seeded token (`token_admin_1764844118`) or create a fresh session from the admin UI after logging in.
