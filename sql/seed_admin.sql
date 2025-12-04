@@ -2,9 +2,14 @@ DO $$
 DECLARE
 	admin_profile_id uuid;
 	admin_auth_id uuid;
+	admin_session_token text := COALESCE(current_setting('ace1.admin_session_token', true), 'token_admin_' || replace(gen_random_uuid()::text, '-', ''));
+	admin_password_hash text := COALESCE(
+		current_setting('ace1.admin_password_hash', true),
+		'$pbkdf2$100000$981db3dab501121dd1af7faa5f0c1580$261cf61670034f739325cb40c28efdaa0783c70fce4b5fd6c164957435dfa30a'
+	);
 BEGIN
 	INSERT INTO public.users (id, email, password_hash, first_name, last_name, role)
-	VALUES ('CFAF8ADD-B381-4F0A-882A-2C3DF801A4FD', 'hello@ace1.in', 'legacy_hashed_pw', 'Site', 'Admin', 'admin')
+	VALUES ('CFAF8ADD-B381-4F0A-882A-2C3DF801A4FD', 'hello@ace1.in', admin_password_hash, 'Site', 'Admin', 'admin')
 	ON CONFLICT (email) DO UPDATE
 		SET first_name = EXCLUDED.first_name,
 			last_name = EXCLUDED.last_name,
@@ -38,7 +43,7 @@ BEGIN
 			'authenticated',
 			'authenticated',
 			'hello@ace1.in',
-			'legacy_hashed_pw',
+			admin_password_hash,
 			now(),
 			'{"provider":"email","providers":["email"]}',
 			'{}',
@@ -51,10 +56,11 @@ BEGIN
 	END IF;
 
 	INSERT INTO public.sessions (user_id, token, expires_at)
-	VALUES (admin_profile_id, 'token_admin_1764844118', now() + interval '30 days')
+	VALUES (admin_profile_id, admin_session_token, now() + interval '30 days')
 	ON CONFLICT (token) DO UPDATE
 		SET user_id = EXCLUDED.user_id,
-			expires_at = EXCLUDED.expires_at;
+			expires_at = EXCLUDED.expires_at
+	RETURNING token INTO admin_session_token;
 
 	INSERT INTO public.user_roles (user_id, is_admin)
 	VALUES (admin_auth_id, true)
@@ -63,7 +69,9 @@ END $$;
 
 -- Verify rows
 SELECT 'user' AS type, id, email FROM public.users WHERE lower(email) = 'hello@ace1.in';
-SELECT 'session' AS type, id, user_id, token, expires_at FROM public.sessions WHERE token = 'token_admin_1764844118';
+SELECT 'session' AS type, id, user_id, token, expires_at FROM public.sessions WHERE user_id = (
+	SELECT id FROM public.users WHERE lower(email) = 'hello@ace1.in' LIMIT 1
+) ORDER BY expires_at DESC LIMIT 1;
 SELECT 'user_role' AS type, user_id, is_admin FROM public.user_roles WHERE user_id = (
 	SELECT id FROM auth.users WHERE lower(email) = 'hello@ace1.in' LIMIT 1
 );
