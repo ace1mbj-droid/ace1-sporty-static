@@ -52,12 +52,13 @@ class ProductFilterManager {
             // Helper function to convert storage path to public URL
             const getImageUrl = (storagePath) => {
                 if (!storagePath) return 'images/placeholder.jpg';
+                // If it's already a full Supabase Storage URL, return as is
+                if (storagePath.startsWith('https://vorqavsuqcjnkjzwkyzr.supabase.co/storage')) return storagePath;
                 // If it's already a full URL, return as is
                 if (storagePath.startsWith('http')) return storagePath;
                 // If it looks like a filename from the images folder, use it directly
                 if (storagePath.includes('.jpg') || storagePath.includes('.png') || storagePath.includes('.jpeg') || storagePath.includes('.gif') || storagePath.includes('.webp')) {
                     // Check if it's a local image file first (in /images folder)
-                    // Return the path - fallback will be handled by img onerror
                     return `images/${storagePath.toLowerCase()}`;
                 }
                 // Otherwise, try to construct Supabase Storage URL
