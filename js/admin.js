@@ -303,18 +303,21 @@ class AdminPanel {
         // Helper function to convert storage path to public URL
         const getImageUrl = (storagePath) => {
             if (!storagePath) return 'images/placeholder.jpg';
-            // If it's already a full Supabase Storage URL, return as is
-            if (storagePath.startsWith('https://vorqavsuqcjnkjzwkyzr.supabase.co/storage')) return storagePath;
-            // If it's already a full URL, return as is
-            if (storagePath.startsWith('http')) return storagePath;
+            // Resolve project URL from config if available so the client is not bound to a single hard-coded project
+            const projectUrl = (window.SUPABASE_CONFIG && window.SUPABASE_CONFIG.url) || window.SUPABASE_URL || 'https://vorqavsuqcjnkjzwkyzr.supabase.co';
+            const storagePrefix = `${projectUrl.replace(/\/$/, '')}/storage`;
+
+            // If it's already a full Supabase Storage URL for the configured project, return as is
+            if (typeof storagePath === 'string' && storagePath.startsWith(storagePrefix)) return storagePath;
+            // If it's already any absolute URL, return as is
+            if (typeof storagePath === 'string' && storagePath.startsWith('http')) return storagePath;
             // If it looks like a filename from the images folder, use it directly
             if (storagePath.includes('.jpg') || storagePath.includes('.png') || storagePath.includes('.jpeg') || storagePath.includes('.gif') || storagePath.includes('.webp')) {
                 // Check if it's a local image file first (in /images folder)
                 return `images/${storagePath.toLowerCase()}`;
             }
-            // Otherwise, try to construct Supabase Storage URL
-            const projectUrl = 'https://vorqavsuqcjnkjzwkyzr.supabase.co';
-            return `${projectUrl}/storage/v1/object/public/Images/${storagePath}`;
+            // Otherwise, construct Supabase Storage URL for the configured project (Images bucket)
+            return `${projectUrl.replace(/\/$/, '')}/storage/v1/object/public/Images/${storagePath}`;
         };
 
         // Process the data to flatten the related tables
