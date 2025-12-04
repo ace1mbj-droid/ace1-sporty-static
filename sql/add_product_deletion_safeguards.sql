@@ -197,8 +197,14 @@ CREATE TABLE IF NOT EXISTS product_deletion_audit (
     metadata JSONB
 );
 
--- Enable RLS on audit table
-ALTER TABLE product_deletion_audit ENABLE ROW LEVEL SECURITY;
+-- Enable RLS on audit table (safe if already enabled)
+DO $$ 
+BEGIN
+    ALTER TABLE product_deletion_audit ENABLE ROW LEVEL SECURITY;
+EXCEPTION
+    WHEN OTHERS THEN
+        RAISE NOTICE 'RLS already enabled on product_deletion_audit';
+END $$;
 
 -- Drop existing audit policy if exists
 DROP POLICY IF EXISTS "audit_select_admin" ON product_deletion_audit;
