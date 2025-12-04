@@ -54,7 +54,12 @@ class ProductFilterManager {
                 if (!storagePath) return null;
                 // If it's already a full URL, return as is
                 if (storagePath.startsWith('http')) return storagePath;
-                // Convert storage path to Supabase public URL
+                // If it looks like a filename from the images folder, use it directly
+                if (storagePath.includes('.jpg') || storagePath.includes('.png') || storagePath.includes('.jpeg') || storagePath.includes('.gif') || storagePath.includes('.webp')) {
+                    // Check if it's a local image file first (in /images folder)
+                    return `images/${storagePath}`;
+                }
+                // Otherwise, try to construct Supabase Storage URL
                 const projectUrl = 'https://vorqavsuqcjnkjzwkyzr.supabase.co';
                 return `${projectUrl}/storage/v1/object/public/product-images/${storagePath}`;
             };
