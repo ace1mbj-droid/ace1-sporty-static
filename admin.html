@@ -580,11 +580,30 @@
         </div>
     </div>
 
+    <!-- History Modal -->
+    <div class="modal" id="history-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="history-title">Product Change History</h2>
+                <button class="modal-close" id="history-close">&times;</button>
+            </div>
+            <div id="history-body" style="max-height:55vh; overflow:auto; font-family: monospace; white-space:pre-wrap;">
+                <!-- History lines injected here -->
+            </div>
+            <div style="display:flex; gap:10px; margin-top:18px; justify-content:flex-end;">
+                <button class="btn btn-secondary" id="history-ok">Close</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Product Modal -->
     <div class="modal" id="product-modal">
         <div class="modal-content">
             <div class="modal-header">
                 <h2 id="modal-title">Add New Product</h2>
+                <div style="display:flex; gap:8px; align-items:center;">
+                    <button class="btn btn-secondary" id="view-history-btn" type="button">View History</button>
+                </div>
                 <button class="modal-close" id="modal-close">&times;</button>
             </div>
             <form id="product-form">
