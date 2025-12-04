@@ -1,0 +1,38 @@
+[
+  {
+    "key": "ctrl+alt+l",
+    "command": "workbench.action.tasks.runTask",
+    "args": "Supabase: Link (prompt project ref)",
+    "when": "editorTextFocus"
+  },
+  {
+    "key": "ctrl+alt+o",
+    "command": "workbench.action.tasks.runTask",
+    "args": "Supabase: Login",
+    "when": "editorTextFocus"
+  },
+  {
+    "key": "ctrl+alt+s",
+    "command": "workbench.action.tasks.runTask",
+    "args": "Supabase: Start (local)",
+    "when": "editorTextFocus"
+  },
+  {
+    "key": "ctrl+alt+p",
+    "command": "workbench.action.tasks.runTask",
+    "args": "Supabase: DB Pull",
+    "when": "editorTextFocus"
+  },
+  {
+    "key": "ctrl+alt+u",
+    "command": "workbench.action.tasks.runTask",
+    "args": "Supabase: DB Push",
+    "when": "editorTextFocus"
+  },
+  {
+    "key": "ctrl+alt+q",
+    "command": "workbench.action.tasks.runTask",
+    "args": "Supabase: Run SQL file (prompt)",
+    "when": "editorTextFocus"
+  }
+]

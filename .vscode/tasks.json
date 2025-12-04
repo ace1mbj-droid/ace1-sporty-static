@@ -1,0 +1,80 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Supabase: Login",
+      "type": "shell",
+      "command": "supabase login",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Supabase: Link (prompt project ref)",
+      "type": "shell",
+      "command": "supabase link --project-ref ${input:supabaseProjectRef}",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Supabase: Start (local)",
+      "type": "shell",
+      "command": "supabase start",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "isBackground": true,
+      "problemMatcher": []
+    },
+    {
+      "label": "Supabase: DB Pull",
+      "type": "shell",
+      "command": "supabase db pull --yes",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Supabase: DB Push",
+      "type": "shell",
+      "command": "supabase db push --yes",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Supabase: Run SQL file (prompt)",
+      "type": "shell",
+      "command": "supabase db query --file ${input:sqlFilePath} --project-ref ${input:supabaseProjectRef}",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    }
+  ],
+  "inputs": [
+    {
+      "id": "supabaseProjectRef",
+      "type": "promptString",
+      "description": "Supabase project ref (leave blank to prompt)",
+      "default": "vorqavsuqcjnkjzwkyzr"
+    },
+    {
+      "id": "sqlFilePath",
+      "type": "promptString",
+      "description": "Path to SQL file (relative to workspace root)",
+      "default": "sql/revoke_one_time_admin_session.sql"
+    }
+  ]
+}
