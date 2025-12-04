@@ -328,6 +328,7 @@ class AdminPanel {
             this.renderInventoryRows(product.inventory || []);
             document.getElementById('product-image').value = product.product_images?.[0]?.storage_path || '';
             document.getElementById('product-active').checked = product.is_active;
+            document.getElementById('product-featured').checked = product.show_on_index !== false;
             this.updateImagePreview(product.product_images?.[0]?.storage_path || null);
             // Attach add-size button handler
             const addBtn = document.getElementById('add-size-btn');
@@ -372,7 +373,8 @@ class AdminPanel {
             description: document.getElementById('product-description').value,
             price_cents: priceInCents,
             category: document.getElementById('product-category').value,
-            is_active: document.getElementById('product-active').checked
+            is_active: document.getElementById('product-active').checked,
+            show_on_index: document.getElementById('product-featured').checked
         };
 
         // Whitelist only the columns that truly exist on products to avoid schema errors
@@ -381,7 +383,8 @@ class AdminPanel {
             description: productData.description,
             price_cents: productData.price_cents,
             category: productData.category,
-            is_active: productData.is_active
+            is_active: productData.is_active,
+            show_on_index: productData.show_on_index
         };
 
         console.log('Product data being saved:', productPayload);
