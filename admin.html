@@ -367,7 +367,76 @@
 
         <!-- Site Images Tab -->
         <div class="admin-content" id="images-content">
-            <div id="image-manager-container"></div>
+            <h2 style="margin-bottom: 20px;">Site Images Management</h2>
+            <div style="margin-bottom: 30px; padding: 20px; background: #f5f5f5; border-radius: 8px;">
+                <h3 style="margin-top: 0;">Image Guide</h3>
+                <p><strong>Product Images:</strong> Used on product cards, product detail pages, and quick view modal. Upload and manage these in the <strong>Products</strong> tab.</p>
+                <p><strong>Hero Banner:</strong> Large banner image on the homepage (coming soon)</p>
+                <p><strong>Category Images:</strong> Images for product categories (coming soon)</p>
+                <p><strong>About/Team Images:</strong> Images for the About page team section (coming soon)</p>
+                <p><strong>Logo:</strong> Site logo (currently text-based, no image needed)</p>
+            </div>
+            
+            <div style="margin-bottom: 30px;">
+                <h3>Current Image Storage</h3>
+                <p style="color: #666;">All site images are stored in Supabase Storage bucket: <strong>Images</strong></p>
+                
+                <div class="orders-table" style="margin-top: 20px;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Image Type</th>
+                                <th>Location/Purpose</th>
+                                <th>Dimensions</th>
+                                <th>Usage</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Product Images</strong></td>
+                                <td>Product Detail Pages, Cards, Quick View Modal</td>
+                                <td>500x500px (recommended)</td>
+                                <td>Upload in Products tab → Edit Product → Upload Images</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Hero Banner</strong></td>
+                                <td>Homepage top section</td>
+                                <td>1920x600px</td>
+                                <td>Available in settings (coming soon)</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Category Icons</strong></td>
+                                <td>Category filters on Products page</td>
+                                <td>200x200px</td>
+                                <td>Available in settings (coming soon)</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Team Photos</strong></td>
+                                <td>About page team section</td>
+                                <td>300x400px</td>
+                                <td>Available in settings (coming soon)</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Testimonial Photos</strong></td>
+                                <td>Testimonials section on homepage</td>
+                                <td>150x150px (circular)</td>
+                                <td>Available in settings (coming soon)</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div style="padding: 20px; background: #e8f5e9; border-radius: 8px; border-left: 4px solid #4caf50;">
+                <h3 style="margin-top: 0; color: #2e7d32;">Quick Tips</h3>
+                <ul style="margin: 10px 0; padding-left: 20px;">
+                    <li>Always optimize images before uploading (use TinyPNG or similar)</li>
+                    <li>Use descriptive filenames for easier management</li>
+                    <li>Product images should be square (1:1 aspect ratio) for best display</li>
+                    <li>Keep file sizes under 500KB for faster loading</li>
+                    <li>All images are automatically compressed by Supabase Storage</li>
+                </ul>
+            </div>
         </div>
 
         <!-- Change Password Tab -->
