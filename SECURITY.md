@@ -44,6 +44,14 @@ When using ACE#1, please follow these security practices:
 - **Authentication**: Supabase Auth with email-based authentication
 - **Encryption**: All connections use HTTPS (TLS/SSL)
 
+### Remote-first policy (important)
+
+- We do NOT store backend runtime data (database dumps, credentials, or live session tokens) in the local repository or on developer machines. Use the remote Supabase project for all production/testing data.
+- Temporary CLI artifacts or cached files (for example in any `supabase/.temp` directories) should not be kept in source control — they are ignored and should be removed from local workspace when no longer required.
+- Secrets (service_role keys, API keys, payment secrets) must only be stored in secure environment variables (CI secrets or server envs) and never committed.
+
+Following this policy keeps the codebase portable, avoids accidental exposure of production data, and ensures the canonical deployment is through GitHub + Supabase (DB) + FTP (static front end).
+
 ## Code Security
 
 This project implements:

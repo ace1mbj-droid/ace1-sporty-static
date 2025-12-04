@@ -32,4 +32,8 @@ curl -s -X POST "https://<your-proj>.supabase.co/rest/v1/rpc/revoke_sessions_for
   -d '{"p_email":"hello@ace1.in","p_revoked_by":"ops@example.com","p_reason":"incident response","p_ip":"203.0.113.5","p_user_agent":"ops-tool/0.4"}'
 ```
 
-If you call the RPC without `p_ip` or `p_user_agent`, the columns will be null — they are optional.
+If you call the RPC without `p_user_agent`, that column will be null — it is optional.
+
+If you omit `p_ip`, the revocation RPCs will attempt to capture the caller IP server-side (recommended). The function checks common request headers (x-forwarded-for, x-real-ip) and falls back to the Postgres client address (inet_client_addr()) if available. Passing `p_ip` from the client will override the server-resolved value.
+
+Important security note: These revoke RPCs are restricted to the `service_role` only. Execution from anonymous or authenticated clients has been revoked in migration and helper SQL so the functions cannot be called accidentally from the client-side. Always call them using a server-side service key (or from trusted admin tooling).
