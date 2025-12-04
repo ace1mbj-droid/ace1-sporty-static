@@ -157,19 +157,19 @@ class AdminPanel {
             } else {
                 localStorage.removeItem('ace1_admin');
                 localStorage.removeItem('ace1_user');
-                localStorage.removeItem('ace1_token');
-                if (window.setSupabaseSessionToken) {
-                    window.setSupabaseSessionToken(null);
-                }
-                await this.supabase.auth.signOut();
-            }
-            
-            window.location.href = 'login.html';
-        });
-    }
-
-    switchTab(tabName) {
-        // Update active tab
+            // Change summary modal handlers
+            const summaryClose = document.getElementById('summary-close');
+            const summaryOk = document.getElementById('summary-ok');
+            if (summaryClose) summaryClose.addEventListener('click', () => document.getElementById('change-summary-modal').classList.remove('active'));
+            if (summaryOk) summaryOk.addEventListener('click', async () => {
+                document.getElementById('change-summary-modal').classList.remove('active');
+                // After user acknowledges, close product modal and refresh lists
+                this.closeProductModal();
+                await this.loadProducts();
+                await this.loadDashboard();
+                localStorage.removeItem('ace1_products_cache');
+                localStorage.setItem('ace1_products_updated', Date.now().toString());
+            });
         document.querySelectorAll('.admin-tab').forEach(tab => {
             tab.classList.remove('active');
         });
@@ -397,6 +397,8 @@ class AdminPanel {
     async saveProduct() {
         console.log('🔄 saveProduct() called');
         const productId = document.getElementById('product-id').value;
+        // capture existing record for diff/summary (if editing)
+        const original = productId ? (this.products.find(p => String(p.id) === String(productId)) ? JSON.parse(JSON.stringify(this.products.find(p => String(p.id) === String(productId)))) : null) : null;
         
         // Convert price to cents (database stores price_cents)
         const priceInRupees = parseFloat(document.getElementById('product-price').value);
@@ -509,16 +511,107 @@ class AdminPanel {
 
         await this.syncProductStockQuantity(savedProductId, totalStock);
 
-        // Show success message
-        console.log('💾 All operations complete, showing success message');
-        alert(`✅ Product saved successfully!\n\nTotal stock: ${totalStock}\n\nChanges will reflect across the site immediately.`);
-        
-        console.log('🔄 Closing modal and reloading');
-        this.closeProductModal();
-        await this.loadProducts();
-        console.log('✅ Products reloaded');
-        await this.loadDashboard();
-        console.log('✅ Dashboard reloaded');
+        // Build a change summary and present it to the user instead of a plain alert
+        console.log('💾 All operations complete, building change summary');
+
+        // Attempt to fetch the latest product record to report final state
+        let latest = null;
+        try {
+            const { data: fetched, error: fetchErr } = await this.supabase
+                .from('products')
+                .select(`*, inventory (*), product_images (*)`)
+                .eq('id', savedProductId)
+                .single();
+            if (!fetchErr) latest = fetched;
+        } catch (err) {
+            console.warn('Could not fetch latest product for summary', err);
+        }
+
+        const changes = [];
+
+        const compareField = (label, before, after) => {
+            const b = before === undefined || before === null ? '' : String(before);
+            const a = after === undefined || after === null ? '' : String(after);
+            if (b !== a) {
+                changes.push({ label, before: b || '(empty)', after: a || '(empty)' });
+            }
+        };
+
+        if (!original) {
+            // new product — show everything added
+            compareField('Name', null, productPayload.name);
+            compareField('Price (cents)', null, productPayload.price_cents);
+            compareField('Category', null, productPayload.category);
+            compareField('Description', null, productPayload.description);
+            compareField('Active', null, productPayload.is_active);
+            compareField('Show on index', null, productPayload.show_on_index);
+        } else {
+            compareField('Name', original.name, productPayload.name);
+            compareField('Price (cents)', original.price_cents, productPayload.price_cents);
+            compareField('Category', original.category, productPayload.category);
+            const origDesc = original.long_desc || original.description || original.short_desc || '';
+            compareField('Description', origDesc, productPayload.description);
+            compareField('Active', original.is_active, productPayload.is_active);
+            compareField('Show on index', original.show_on_index, productPayload.show_on_index);
+        }
+
+        // inventory diff (compare original.inventory vs latest.inventory)
+        try {
+            const beforeInv = original && Array.isArray(original.inventory) ? original.inventory : [];
+            const afterInv = latest && Array.isArray(latest.inventory) ? latest.inventory : [];
+            const beforeMap = beforeInv.reduce((m, r) => { m[String(r.size)] = r; return m; }, {});
+            const afterMap = afterInv.reduce((m, r) => { m[String(r.size)] = r; return m; }, {});
+
+            for (const size of Object.keys(afterMap)) {
+                const b = beforeMap[size];
+                const a = afterMap[size];
+                if (!b) {
+                    changes.push({ label: `Inventory added (${size})`, before: '(none)', after: `${a.stock}` });
+                } else if (String(b.stock) !== String(a.stock)) {
+                    changes.push({ label: `Inventory changed (${size})`, before: `${b.stock}`, after: `${a.stock}` });
+                }
+            }
+            for (const size of Object.keys(beforeMap)) {
+                if (!afterMap[size]) {
+                    changes.push({ label: `Inventory removed (${size})`, before: `${beforeMap[size].stock}`, after: '(removed)' });
+                }
+            }
+        } catch (err) { console.warn('Inventory diff failed', err); }
+
+        // image diff
+        try {
+            const beforeImg = original && original.product_images && original.product_images[0] ? (original.product_images[0].storage_path || original.product_images[0].url) : '';
+            const afterImg = latest && latest.product_images && latest.product_images[0] ? (latest.product_images[0].storage_path || latest.product_images[0].url) : '';
+            if (String(beforeImg) !== String(afterImg)) {
+                changes.push({ label: 'Primary image', before: beforeImg || '(none)', after: afterImg || '(none)' });
+            }
+        } catch (err) { /* ignore */ }
+
+        // total stock
+        try {
+            const prevStock = original && original.stock_quantity !== undefined ? original.stock_quantity : null;
+            if (String(prevStock) !== String(totalStock)) {
+                changes.push({ label: 'Total stock', before: prevStock === null ? '(unknown)' : prevStock, after: totalStock });
+            }
+        } catch (err) { /* ignore */ }
+
+        // populate and show summary modal
+        const summaryEl = document.getElementById('change-summary-body');
+        if (summaryEl) {
+            if (!changes.length) {
+                summaryEl.innerHTML = '<div style="padding:10px">No visible changes detected.</div>';
+            } else {
+                summaryEl.innerHTML = changes.map(c => `<div style="padding:8px 0;border-bottom:1px solid #eee"><strong>${this.escapeHtml(c.label)}</strong><div style="margin-top:6px;color:#444;"><span style="color:#888">before:</span> ${this.escapeHtml(String(c.before))}<br><span style="color:#888">after:</span> ${this.escapeHtml(String(c.after))}</div></div>`).join('');
+            }
+            document.getElementById('change-summary-modal').classList.add('active');
+        } else {
+            alert(`✅ Product saved successfully!\n\nTotal stock: ${totalStock}\n\nChanges will reflect across the site immediately.`);
+            this.closeProductModal();
+            await this.loadProducts();
+            await this.loadDashboard();
+            localStorage.removeItem('ace1_products_cache');
+            localStorage.setItem('ace1_products_updated', Date.now().toString());
+        }
         
         // Force reload products on all pages by clearing localStorage cache
         localStorage.removeItem('ace1_products_cache');
