@@ -49,10 +49,20 @@ class ProductFilterManager {
 
             console.log(`✅ Fetched ${products?.length || 0} products from Supabase (fresh data)`);
             
+            // Helper function to convert storage path to public URL
+            const getImageUrl = (storagePath) => {
+                if (!storagePath) return null;
+                // If it's already a full URL, return as is
+                if (storagePath.startsWith('http')) return storagePath;
+                // Convert storage path to Supabase public URL
+                const projectUrl = 'https://vorqavsuqcjnkjzwkyzr.supabase.co';
+                return `${projectUrl}/storage/v1/object/public/product-images/${storagePath}`;
+            };
+            
             // Process the data to flatten related tables
             const processedProducts = (products || []).map(product => ({
                 ...product,
-                image_url: product.product_images?.[0]?.storage_path || null,
+                image_url: getImageUrl(product.product_images?.[0]?.storage_path) || null,
                 stock_quantity: product.inventory?.[0]?.stock || 0,
                 price: (product.price_cents / 100).toFixed(2) // Convert cents to rupees
             }));
@@ -61,6 +71,7 @@ class ProductFilterManager {
             if (processedProducts && processedProducts.length > 0) {
                 console.log('Sample product:', {
                     name: processedProducts[0].name,
+                    image_url: processedProducts[0].image_url,
                     stock_quantity: processedProducts[0].stock_quantity,
                     price: processedProducts[0].price
                 });
