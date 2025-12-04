@@ -4,6 +4,7 @@ class AdminPanel {
         this.supabase = window.getSupabase();
         this.currentUser = null;
         this.products = [];
+        this.productColumns = new Set();
         this.orders = [];
         this.users = [];
         this.logs = [];
@@ -198,6 +199,10 @@ class AdminPanel {
             return;
         }
 
+        if (products && products.length > 0) {
+            this.productColumns = new Set(Object.keys(products[0]));
+        }
+
         // Helper function to convert storage path to public URL
         const getImageUrl = (storagePath) => {
             if (!storagePath) return 'images/placeholder.jpg';
@@ -371,9 +376,12 @@ class AdminPanel {
         const priceInRupees = parseFloat(document.getElementById('product-price').value);
         const priceInCents = Math.round(priceInRupees * 100);
         
+        const rawDescription = document.getElementById('product-description').value || '';
+        const sanitizedDescription = (typeof DOMPurify !== 'undefined') ? DOMPurify.sanitize(rawDescription) : rawDescription;
+
         const productData = {
             name: document.getElementById('product-name').value,
-            description: document.getElementById('product-description').value,
+            description: sanitizedDescription,
             price_cents: priceInCents,
             category: document.getElementById('product-category').value,
             is_active: document.getElementById('product-active').checked,
@@ -389,6 +397,14 @@ class AdminPanel {
             is_active: productData.is_active,
             show_on_index: productData.show_on_index
         };
+
+        if (this.productColumns.has('short_desc')) {
+            productPayload.short_desc = sanitizedDescription ? sanitizedDescription.substring(0, 200) : null;
+        }
+
+        if (this.productColumns.has('long_desc')) {
+            productPayload.long_desc = sanitizedDescription || null;
+        }
 
         console.log('Product data being saved:', productPayload);
 
@@ -463,8 +479,11 @@ class AdminPanel {
             await this.saveProductImage(savedProductId, imageUrl);
         }
         
-        // Show success message
         const totalStock = (inventory || []).reduce((s, it) => s + (parseInt(it.stock) || 0), 0);
+
+        await this.syncProductStockQuantity(savedProductId, totalStock);
+
+        // Show success message
         console.log('💾 All operations complete, showing success message');
         alert(`✅ Product saved successfully!\n\nTotal stock: ${totalStock}\n\nChanges will reflect across the site immediately.`);
         
@@ -478,6 +497,34 @@ class AdminPanel {
         // Force reload products on all pages by clearing localStorage cache
         localStorage.removeItem('ace1_products_cache');
         localStorage.setItem('ace1_products_updated', Date.now().toString());
+    }
+
+    async syncProductStockQuantity(productId, totalStock) {
+        try {
+            const normalizedStock = Number.isFinite(totalStock) ? totalStock : 0;
+            const updatePayload = {
+                stock_quantity: normalizedStock
+            };
+
+            if (this.productColumns.has('status')) {
+                updatePayload.status = normalizedStock > 0 ? 'available' : 'out_of_stock';
+            }
+
+            if (this.productColumns.has('is_locked') && normalizedStock > 0) {
+                updatePayload.is_locked = false;
+            }
+
+            const { error } = await this.supabase
+                .from('products')
+                .update(updatePayload)
+                .eq('id', productId);
+
+            if (error) {
+                console.warn('⚠️ Unable to sync stock_quantity column:', error.message);
+            }
+        } catch (error) {
+            console.error('Error syncing stock_quantity:', error);
+        }
     }
 
     async saveProductInventory(productId, stockQuantity) {
