@@ -11,6 +11,18 @@ class DatabaseAuth {
         this.init();
     }
 
+    setSessionToken(token) {
+        if (token) {
+            localStorage.setItem('ace1_token', token);
+        } else {
+            localStorage.removeItem('ace1_token');
+        }
+
+        if (window.setSupabaseSessionToken) {
+            window.setSupabaseSessionToken(token || null);
+        }
+    }
+
     async init() {
         this.supabase = window.getSupabase();
         if (!this.supabase) {
@@ -77,6 +89,7 @@ class DatabaseAuth {
                     
                     // Keep user data in localStorage for quick access
                     localStorage.setItem('ace1_user', JSON.stringify(this.currentUser));
+                    this.setSessionToken(token);
                     
                     console.log('✅ Database session restored:', this.currentUser.email);
                 } else {
@@ -223,7 +236,7 @@ class DatabaseAuth {
 
             this.currentUser = user;
             localStorage.setItem('ace1_user', JSON.stringify(user));
-            localStorage.setItem('ace1_token', sessionToken);
+            this.setSessionToken(sessionToken);
 
             console.log('✅ Registration successful with secure password hashing');
             return { success: true, user: user };
@@ -351,7 +364,7 @@ class DatabaseAuth {
 
             this.currentUser = user;
             localStorage.setItem('ace1_user', JSON.stringify(user));
-            localStorage.setItem('ace1_token', sessionToken);
+            this.setSessionToken(sessionToken);
 
             // Set admin flag if user is admin
             if (data.role === 'admin' || email === 'hello@ace1.in') {
@@ -470,7 +483,7 @@ class DatabaseAuth {
 
             this.currentUser = userObj;
             localStorage.setItem('ace1_user', JSON.stringify(userObj));
-            localStorage.setItem('ace1_token', sessionToken);
+            this.setSessionToken(sessionToken);
 
             console.log('✅ OAuth login successful, session created in database');
             return { success: true, user: userObj };
@@ -616,6 +629,8 @@ class DatabaseAuth {
         
         // Clear local state
         this.currentUser = null;
+
+        this.setSessionToken(null);
         
         // Clear ALL localStorage items
         localStorage.clear();
