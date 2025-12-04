@@ -32,7 +32,7 @@ SELECT
 FROM pg_tables
 WHERE schemaname = 'public'
   AND tablename IN ('payments', 'user_roles', 'orders', 'order_items', 
-                    'products', 'inventory', 'product_images')
+                    'products', 'inventory', 'product_images', 'sessions')
 ORDER BY tablename;
 
 -- 4. Check for any remaining duplicate policy names
@@ -46,7 +46,7 @@ GROUP BY tablename, policyname
 HAVING COUNT(*) > 1;
 
 -- Expected Results:
--- Query 1: Should show 23 policies with clean names (e.g., orders_select_own)
--- Query 2: payments=2, user_roles=3, orders=4, order_items=2, products=5, inventory=3, product_images=4
+-- Query 1: Should show 27 policies with clean names (e.g., orders_select_own, sessions_select_own)
+-- Query 2: payments=2, user_roles=3, orders=4, order_items=2, products=5, inventory=3, product_images=4, sessions=4
 -- Query 3: All tables should show rls_enabled = true
 -- Query 4: Should return 0 rows (no duplicates)
