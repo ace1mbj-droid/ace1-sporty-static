@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
     <!-- Security Meta Tags -->
-    <meta http-equiv="X-Frame-Options" content="SAMEORIGIN">
     <meta http-equiv="X-Content-Type-Options" content="nosniff">
     <meta http-equiv="X-XSS-Protection" content="1; mode=block">
     <meta name="referrer" content="strict-origin-when-cross-origin">
@@ -366,6 +365,22 @@
                 </div>
             </div>
         </div>
+
+                <!-- Change Summary Modal -->
+                <div class="modal" id="change-summary-modal">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h2 id="summary-title">Changes saved</h2>
+                            <button class="modal-close" id="summary-close">&times;</button>
+                        </div>
+                        <div id="change-summary-body" style="max-height:50vh; overflow:auto; font-family: monospace; white-space:pre-wrap;">
+                            <!-- Change details injected here -->
+                        </div>
+                        <div style="display:flex; gap:10px; margin-top:18px; justify-content:flex-end;">
+                            <button class="btn btn-secondary" id="summary-ok">OK</button>
+                        </div>
+                    </div>
+                </div>
 
         <!-- Products Tab -->
         <div class="admin-content" id="products-content">
