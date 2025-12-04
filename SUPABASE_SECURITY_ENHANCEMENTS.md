@@ -2,21 +2,20 @@
 
 ## 1. Enable Leaked Password Protection
 
+⚠️ **Note: This is a paid feature on Supabase Pro plan** - Not available on the free tier.
+
 Supabase Auth can check passwords against HaveIBeenPwned.org database to prevent users from using compromised passwords.
-
-### How to Enable:
-
-1. Go to **Supabase Dashboard** → Your Project
-2. Click **Authentication** in the left sidebar
-3. Go to **Policies** tab
-4. Look for **Password Strength & Leaked Password Protection**
-5. Toggle **Enable Password Strength & Leaked Password Protection** to ON
 
 ### What It Does:
 - ✅ Prevents users from using passwords that appear in data breaches
 - ✅ Checks against HaveIBeenPwned.org (privacy-preserving with k-anonymity)
 - ✅ Shows helpful error messages to users about weak/compromised passwords
 - ✅ Improves account security automatically
+
+**Alternative for Free Tier:**
+- Implement client-side password strength validation
+- Display password requirements clearly during registration
+- Encourage users to use password managers
 
 ---
 
@@ -39,7 +38,7 @@ This prevents SQL injection attacks through search_path manipulation.
 | Item | Status | Action |
 |------|--------|--------|
 | RLS Enabled | ✅ | All 7 tables secured |
-| Leaked Password Protection | ✅ | Enabled |
+| Leaked Password Protection | ⚠️ | Paid feature (Pro plan required) |
 | Function Search Path | ⚠️ | Run SQL fix script |
 | SECURITY.md | ✅ | Documented |
 | Supabase Policies | ✅ | Implemented |
