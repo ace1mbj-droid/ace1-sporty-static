@@ -21,13 +21,19 @@ Supabase Auth can check passwords against HaveIBeenPwned.org database to prevent
 
 ## 2. Fix Function Search Path
 
-Some custom functions in your database need to have an immutable search_path for security.
+Some custom functions in your database need to have an immutable search_path for security, or should be removed if unused.
+
+### Current Status:
+- ✅ `cleanup_expired_sessions` - Fixed
+- ⚠️ `function_name` - Appears to be a placeholder/test function
 
 ### How to Fix:
 
 1. Go to **Supabase Dashboard** → **SQL Editor**
 2. Copy-paste contents of `sql/fix_function_search_path.sql`
 3. Run the SQL
+
+This will remove the unused `function_name` function. If it's actually being used, the script includes an alternative to fix the search_path instead.
 
 This prevents SQL injection attacks through search_path manipulation.
 
