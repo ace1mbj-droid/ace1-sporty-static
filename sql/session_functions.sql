@@ -49,7 +49,6 @@ END;
 $$;
 
 COMMENT ON FUNCTION public.revoke_session_by_token(text, text, text, text, text) IS 'Delete a session row by token; requires service_role and logs revocation with optional ip/user_agent. Returns number removed.';
-$$;
 
 COMMENT ON FUNCTION public.revoke_session_by_token(text) IS 'Delete a session row by token (admin-only).';
 
