@@ -1,10 +1,20 @@
 name: Verify Staging Schema
 
 on:
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      runner:
+        description: 'Which runner to use for verification: github (default) or self-hosted'
+        required: false
+        default: 'github'
+        type: choice
+        options:
+          - github
+          - self-hosted
 
 jobs:
-  verify-staging-db:
+  verify-staging-github:
+    if: ${{ github.event.inputs.runner != 'self-hosted' }}
     runs-on: ubuntu-latest
     env:
       # Add SUPABASE_DB_URL_STAGING in repo secrets (service_role DB URL, e.g. postgres://service_role:password@host:5432/postgres)
@@ -24,8 +34,6 @@ jobs:
           fi
 
       - name: Run verify_schema.sql against staging DB
-        env:
-          PGPASSWORD: ${{ secrets.SUPABASE_DB_URL_STAGING_PASSWORD }}
         run: |
           # The workflow expects SUPABASE_DB_URL_STAGING to be a full postgres connection string
           # Example: postgres://user:password@host:5432/postgres
@@ -35,3 +43,28 @@ jobs:
 
       - name: Finished
         run: echo "Verify run finished. Check the build logs for results."
+
+  verify-staging-selfhosted:
+    if: ${{ github.event.inputs.runner == 'self-hosted' }}
+    runs-on: [self-hosted, linux, x64, staging-runner]
+    env:
+      SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL_STAGING }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Verify secret exists
+        run: |
+          if [ -z "$SUPABASE_DB_URL" ]; then
+            echo "Missing SUPABASE_DB_URL_STAGING secret. Add it to repo secrets and rerun this workflow.";
+            exit 1;
+          fi
+
+      - name: Run verify_schema.sql against staging DB (self-hosted runner)
+        run: |
+          set -e
+          echo "Running verification SQL on staging DB (self-hosted runner)"
+          psql "$SUPABASE_DB_URL" -f supabase/snippets/verify_schema.sql || true
+
+      - name: Finished
+        run: echo "Self-hosted verify run finished. Check the build logs for results."
