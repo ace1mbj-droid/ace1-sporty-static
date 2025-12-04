@@ -9,6 +9,25 @@ class AdminPanel {
         this.logs = [];
         this.settings = {};
         this.init();
+
+        {
+  "mcp.providers": [
+    {
+      "name": "supabase",
+      "type": "supabase",
+      "config": {
+        "projectUrl": "https://vorqavsuqcjnkjzwkyzr.supabase.co",
+        "apiKey": "SERVICE_ROLE_KEY_HERE"
+      }
+    }
+  ],
+  "mcp.servers": {
+    "supabase": {
+      "type": "http",
+      "url": "https://mcp.supabase.com/mcp?project_ref=vorqavsuqcjnkjzwkyzr"
+    }
+  }
+}
     }
 
     async init() {
@@ -388,14 +407,30 @@ class AdminPanel {
         }
 
         const savedRow = Array.isArray(mutationResult.data) ? mutationResult.data[0] : mutationResult.data;
-        if (!savedRow) {
-            alert('Error saving product: No data returned from database.');
-            return;
+        if (savedRow && savedRow.id) {
+            savedProductId = savedRow.id;
+        } else if (productId) {
+            // Updates can succeed without returning a row if RPC policies block select
+            savedProductId = productId;
+        } else {
+            // Last resort: fetch the most recent product to grab its ID
+            const { data: fallbackRows, error: fallbackError } = await this.supabase
+                .from('products')
+                .select('id')
+                .order('created_at', { ascending: false })
+                .limit(1);
+
+            if (fallbackError || !fallbackRows || fallbackRows.length === 0) {
+                console.error('❌ Unable to retrieve saved product ID:', fallbackError);
+                alert('Error saving product: No data returned from database.');
+                return;
+            }
+
+            savedProductId = fallbackRows[0].id;
         }
 
-        savedProductId = savedRow.id;
         console.log('✅ Product saved successfully!');
-        console.log('Saved product:', savedRow);
+        console.log('Saved product ID:', savedProductId);
         
         // Handle inventory (multi-size)
         const inventory = this.getInventoryFromForm();
