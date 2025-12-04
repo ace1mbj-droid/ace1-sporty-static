@@ -214,7 +214,7 @@ class AdminPanel {
             }
             // Otherwise, try to construct Supabase Storage URL
             const projectUrl = 'https://vorqavsuqcjnkjzwkyzr.supabase.co';
-            return `${projectUrl}/storage/v1/object/public/product-images/${storagePath}`;
+            return `${projectUrl}/storage/v1/object/public/Images/${storagePath}`;
         };
 
         // Process the data to flatten the related tables
@@ -585,7 +585,7 @@ class AdminPanel {
             
             // Upload to Supabase Storage
             const { data, error: uploadError } = await this.supabase.storage
-                .from('product-images')
+                .from('Images')
                 .upload(fileName, file, {
                     cacheControl: '3600',
                     upsert: false
@@ -600,7 +600,7 @@ class AdminPanel {
             
             // Generate public URL
             const { data: publicUrlData } = this.supabase.storage
-                .from('product-images')
+                .from('Images')
                 .getPublicUrl(fileName);
             
             const publicUrl = publicUrlData?.publicUrl;
