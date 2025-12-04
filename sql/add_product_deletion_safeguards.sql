@@ -2,18 +2,31 @@
 -- Prevents accidental product deletion and ensures data integrity
 
 -- ============================================================================
--- STEP 1: Add inventory DELETE policy (was missing!)
+-- STEP 1: Add inventory DELETE policy (if not exists)
 -- ============================================================================
 
 -- Allow admins to delete inventory when removing products
-CREATE POLICY "inventory_delete_admin"
-ON public.inventory FOR DELETE
-USING (
-  EXISTS (
-    SELECT 1 FROM public.user_roles ur
-    WHERE ur.user_id = (select auth.uid()) AND ur.is_admin = true
-  )
-);
+DO $$ 
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_policies 
+        WHERE schemaname = 'public' 
+        AND tablename = 'inventory' 
+        AND policyname = 'inventory_delete_admin'
+    ) THEN
+        EXECUTE 'CREATE POLICY "inventory_delete_admin"
+        ON public.inventory FOR DELETE
+        USING (
+          EXISTS (
+            SELECT 1 FROM public.user_roles ur
+            WHERE ur.user_id = (select auth.uid()) AND ur.is_admin = true
+          )
+        )';
+        RAISE NOTICE 'Created inventory_delete_admin policy';
+    ELSE
+        RAISE NOTICE 'Policy inventory_delete_admin already exists';
+    END IF;
+END $$;
 
 -- ============================================================================
 -- STEP 2: Add soft delete column to products (if not exists)
@@ -186,6 +199,9 @@ CREATE TABLE IF NOT EXISTS product_deletion_audit (
 
 -- Enable RLS on audit table
 ALTER TABLE product_deletion_audit ENABLE ROW LEVEL SECURITY;
+
+-- Drop existing audit policy if exists
+DROP POLICY IF EXISTS "audit_select_admin" ON product_deletion_audit;
 
 -- Only admins can view audit logs
 CREATE POLICY "audit_select_admin"
