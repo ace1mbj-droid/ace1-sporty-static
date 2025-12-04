@@ -1,0 +1,12 @@
+{
+  "name": "ace1-sporty-static",
+  "version": "1.0.0",
+  "private": true,
+  "devDependencies": {
+    "@playwright/test": "^1.36.0"
+  },
+  "scripts": {
+    "test:e2e": "npx playwright test --workers=1",
+    "test:e2e:headless": "npx playwright test --headed=false --workers=1"
+  }
+}
