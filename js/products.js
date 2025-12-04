@@ -63,7 +63,7 @@ class ProductFilterManager {
                 }
                 // Otherwise, try to construct Supabase Storage URL
                 const projectUrl = 'https://vorqavsuqcjnkjzwkyzr.supabase.co';
-                return `${projectUrl}/storage/v1/object/public/product-images/${storagePath}`;
+                return `${projectUrl}/storage/v1/object/public/Images/${storagePath}`;
             };
             
             // Process the data to flatten related tables
