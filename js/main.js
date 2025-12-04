@@ -628,6 +628,7 @@ async function refreshProductsIfNeeded() {
                 )
             `)
             .eq('is_active', true)
+            .eq('show_on_index', true)
             .order('created_at', { ascending: false });
 
         if (error) throw error;
