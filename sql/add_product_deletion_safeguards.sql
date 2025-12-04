@@ -68,7 +68,8 @@ BEGIN
     FROM order_items oi
     WHERE oi.product_id = p_product_id;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER
+SET search_path = public, pg_temp;
 
 -- ============================================================================
 -- STEP 4: Create safe product deletion function (soft delete)
@@ -126,7 +127,8 @@ BEGIN
             'Product marked as deleted. You can permanently remove it later if needed.';
     END IF;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER
+SET search_path = public, pg_temp;
 
 -- ============================================================================
 -- STEP 5: Create hard delete function (only for products without orders)
@@ -167,7 +169,8 @@ BEGIN
     
     RETURN QUERY SELECT true, 'Product and all related data permanently deleted';
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER
+SET search_path = public, pg_temp;
 
 -- ============================================================================
 -- STEP 6: Create view for active products only (excludes soft-deleted)
@@ -256,7 +259,8 @@ BEGIN
     
     RETURN OLD;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER
+SET search_path = public, pg_temp;
 
 -- Create trigger on products table
 DROP TRIGGER IF EXISTS product_deletion_audit_trigger ON products;
@@ -301,3 +305,11 @@ CREATE TRIGGER product_soft_delete_audit_trigger
 -- FROM product_deletion_audit pda
 -- LEFT JOIN auth.users u ON u.id = pda.deleted_by
 -- ORDER BY deleted_at DESC;
+
+-- View all functions
+SELECT routine_name FROM information_schema.routines 
+WHERE routine_schema = 'public' AND routine_name LIKE '%product%';
+
+-- Check deleted_at column exists
+SELECT column_name FROM information_schema.columns 
+WHERE table_name = 'products' AND column_name = 'deleted_at';
