@@ -330,9 +330,19 @@ class AuthManager {
         sessionStorage.setItem('auth_redirecting', 'true');
 
         const redirectParam = new URLSearchParams(window.location.search).get('redirect');
+        const allowedRedirects = [
+            'user-profile.html',
+            'dashboard.html',
+            'settings.html',
+            // Add other internal pages allowed for redirect
+        ];
+        function isAllowedRedirect(str) {
+            return allowedRedirects.includes(str);
+        }
+        let safeRedirect = (isAllowedRedirect(redirectParam)) ? redirectParam : 'user-profile.html';
         const target = (user.role === 'admin' || user.email === 'hello@ace1.in')
             ? 'admin.html'
-            : (redirectParam && redirectParam !== 'admin' ? redirectParam : 'user-profile.html');
+            : safeRedirect;
 
         this.showNotification('Login successful! Redirecting...', 'success');
         setTimeout(() => {
