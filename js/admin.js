@@ -669,57 +669,68 @@ class AdminPanel {
     }
 
     async deleteProduct(productId) {
-        if (!confirm('Are you sure you want to delete this product? This action cannot be undone.')) {
+        // Step 1: Check if product has orders
+        console.log(`Checking product ${productId} for existing orders...`);
+        
+        const { data: orderCheck, error: checkError } = await this.supabase
+            .rpc('check_product_has_orders', { p_product_id: productId });
+        
+        if (checkError) {
+            console.error('Error checking orders:', checkError);
+            alert('⚠️ Error checking product status. Please try again.');
             return;
         }
 
-        console.log(`Deleting product ID: ${productId}`);
+        const hasOrders = orderCheck && orderCheck.length > 0 && orderCheck[0].has_orders;
+        const orderCount = orderCheck && orderCheck.length > 0 ? orderCheck[0].order_count : 0;
 
-        // Delete related inventory records first
-        try {
-            const invResult = await this.supabase
-                .from('inventory')
-                .delete()
-                .eq('product_id', productId);
-            if (invResult.error) {
-                console.error('Error deleting inventory:', invResult.error);
-            } else {
-                console.log('✅ Related inventory records deleted');
-            }
-        } catch (err) {
-            console.error('Error deleting inventory:', err);
-            // Continue with product deletion
+        // Step 2: Show appropriate confirmation based on order status
+        let confirmMessage;
+        let deletionType;
+        
+        if (hasOrders) {
+            confirmMessage = `⚠️ WARNING: This product has ${orderCount} order(s).\n\n` +
+                           `For data integrity, this product will be SOFT DELETED:\n` +
+                           `• It will be hidden from the website\n` +
+                           `• Order history will be preserved\n` +
+                           `• You can restore it later if needed\n\n` +
+                           `Do you want to continue?`;
+            deletionType = 'soft';
+        } else {
+            confirmMessage = `This product has no orders.\n\n` +
+                           `Choose deletion type:\n` +
+                           `• OK = Soft delete (can be restored later)\n` +
+                           `• Cancel = Keep product\n\n` +
+                           `Note: For permanent deletion, use the admin console.`;
+            deletionType = 'soft'; // Always soft delete from UI for safety
         }
 
-        // Delete related product images
-        try {
-            const imgResult = await this.supabase
-                .from('product_images')
-                .delete()
-                .eq('product_id', productId);
-            if (imgResult.error) {
-                console.error('Error deleting product images:', imgResult.error);
-            } else {
-                console.log('✅ Related product images deleted');
-            }
-        } catch (err) {
-            console.error('Error deleting product images:', err);
-            // Continue with product deletion
-        }
-
-        // Delete the product
-        const { error } = await this.supabase
-            .from('products')
-            .delete()
-            .eq('id', productId);
-
-        if (error) {
-            console.error('Delete error:', error);
-            alert('Error deleting product: ' + error.message);
+        if (!confirm(confirmMessage)) {
             return;
         }
 
-        console.log('✅ Product deleted from database');
+        console.log(`Performing ${deletionType} delete for product ${productId}`);
+
+        // Step 3: Use database function for safe deletion
+        const { data: deleteResult, error: deleteError } = await this.supabase
+            .rpc('soft_delete_product', { p_product_id: productId });
+
+        if (deleteError) {
+            console.error('Delete error:', deleteError);
+            alert('❌ Error deleting product:\n' + deleteError.message);
+            return;
+        }
+
+        // Check result from function
+        const result = deleteResult && deleteResult.length > 0 ? deleteResult[0] : null;
+        
+        if (!result || !result.success) {
+            const errorMsg = result ? result.message : 'Unknown error occurred';
+            alert('❌ Cannot delete product:\n' + errorMsg);
+            return;
+        }
+
+        console.log('✅ Product deleted:', result.message);
         
         // Force reload products on all pages by clearing cache
         localStorage.removeItem('ace1_products_cache');
@@ -736,7 +747,8 @@ class AdminPanel {
             console.log('✅ Products reloaded after deletion');
             await this.loadDashboard();
             console.log('✅ Dashboard reloaded after deletion');
-            alert('✅ Product deleted successfully!\n\nThe product will be removed from the website immediately.');
+            
+            alert(`✅ Success!\n\n${result.message}\n\nThe product has been removed from the website.`);
         } catch (err) {
             console.error('Error reloading after deletion:', err);
             alert('Product deleted but there was an error refreshing the list. Please refresh the page manually.');
