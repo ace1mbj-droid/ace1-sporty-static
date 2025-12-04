@@ -193,12 +193,22 @@ class AdminPanel {
             return;
         }
 
+        // Helper function to convert storage path to public URL
+        const getImageUrl = (storagePath) => {
+            if (!storagePath) return null;
+            // If it's already a full URL, return as is
+            if (storagePath.startsWith('http')) return storagePath;
+            // Convert storage path to Supabase public URL
+            const projectUrl = 'https://vorqavsuqcjnkjzwkyzr.supabase.co';
+            return `${projectUrl}/storage/v1/object/public/product-images/${storagePath}`;
+        };
+
         // Process the data to flatten the related tables
         this.products = (products || []).map(product => ({
             ...product,
             // Sum stock across all inventory rows for this product
             stock_quantity: (product.inventory || []).reduce((s, i) => s + (i?.stock || 0), 0),
-            image_url: product.product_images?.[0]?.storage_path || null,
+            image_url: getImageUrl(product.product_images?.[0]?.storage_path) || null,
             price: (product.price_cents / 100).toFixed(2) // Convert cents to rupees for display
         }));
 
