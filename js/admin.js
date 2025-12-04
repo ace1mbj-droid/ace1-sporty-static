@@ -597,11 +597,15 @@ class AdminPanel {
 
         // Delete related inventory records first
         try {
-            await this.supabase
+            const invResult = await this.supabase
                 .from('inventory')
                 .delete()
                 .eq('product_id', productId);
-            console.log('✅ Related inventory records deleted');
+            if (invResult.error) {
+                console.error('Error deleting inventory:', invResult.error);
+            } else {
+                console.log('✅ Related inventory records deleted');
+            }
         } catch (err) {
             console.error('Error deleting inventory:', err);
             // Continue with product deletion
@@ -609,11 +613,15 @@ class AdminPanel {
 
         // Delete related product images
         try {
-            await this.supabase
+            const imgResult = await this.supabase
                 .from('product_images')
                 .delete()
                 .eq('product_id', productId);
-            console.log('✅ Related product images deleted');
+            if (imgResult.error) {
+                console.error('Error deleting product images:', imgResult.error);
+            } else {
+                console.log('✅ Related product images deleted');
+            }
         } catch (err) {
             console.error('Error deleting product images:', err);
             // Continue with product deletion
@@ -632,14 +640,20 @@ class AdminPanel {
         }
 
         console.log('✅ Product deleted from database');
-        alert('✅ Product deleted successfully!\n\nThe product will be removed from the website immediately.');
         
         // Force reload products on all pages by clearing cache
         localStorage.removeItem('ace1_products_cache');
         localStorage.setItem('ace1_products_updated', Date.now().toString());
         
-        await this.loadProducts();
-        await this.loadDashboard();
+        // Clear products from memory and reload
+        this.products = [];
+        
+        // Wait a brief moment to ensure DB is updated, then reload
+        setTimeout(async () => {
+            await this.loadProducts();
+            await this.loadDashboard();
+            alert('✅ Product deleted successfully!\n\nThe product will be removed from the website immediately.');
+        }, 300);
     }
 
     async viewOrder(orderId) {
