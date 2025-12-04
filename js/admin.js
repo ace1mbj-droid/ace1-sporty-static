@@ -21,6 +21,9 @@ class AdminPanel {
         
         // Setup event listeners
         this.setupEventListeners();
+
+        // Ensure default tab is shown after init (keeps UI in-sync after login/redirect)
+        try { this.switchTab('dashboard'); } catch (e) { /* ignore if DOM not ready */ }
         
         // Load initial data
         await this.loadDashboard();
