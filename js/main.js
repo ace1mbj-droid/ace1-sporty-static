@@ -863,11 +863,26 @@ let currentQuickViewProduct = null;
 function openQuickView(productData) {
     currentQuickViewProduct = productData;
     
+    // Get proper image URL
+    const imageUrl = productData.image_url || productData.image || 'images/placeholder.jpg';
+    
+    // Get proper price (handle both price and price_cents)
+    let price = productData.price;
+    if (typeof price === 'string') {
+        price = parseFloat(price);
+    }
+    if (!price && productData.price_cents) {
+        price = (productData.price_cents / 100);
+    }
+    
     // Populate modal with product data
-    document.getElementById('qv-image').src = productData.image || productData.image_url || 'images/placeholder.png';
+    document.getElementById('qv-image').src = imageUrl;
+    document.getElementById('qv-image').onerror = () => {
+        document.getElementById('qv-image').src = 'images/placeholder.jpg';
+    };
     document.getElementById('qv-name').textContent = productData.name;
     document.getElementById('qv-category').textContent = productData.category || 'Sneakers';
-    document.getElementById('qv-price').textContent = `₹${productData.price ? productData.price.toLocaleString('en-IN') : '0'}`;
+    document.getElementById('qv-price').textContent = `₹${price ? parseFloat(price).toLocaleString('en-IN') : '0'}`;
     document.getElementById('qv-description').textContent = productData.description || 'Premium quality sneakers with exceptional comfort and style.';
     
     // Stock status
@@ -951,12 +966,42 @@ function attachQuickViewHandlers() {
                     const supabase = window.getSupabase();
                     const { data: product, error } = await supabase
                         .from('products')
-                        .select('*')
+                        .select(`
+                            *,
+                            product_images (
+                                storage_path,
+                                alt
+                            ),
+                            inventory (
+                                stock,
+                                size
+                            )
+                        `)
                         .eq('id', productId)
                         .single();
                     
                     if (product && !error) {
-                        openQuickView(product);
+                        // Helper function to convert storage path to public URL
+                        const getImageUrl = (storagePath) => {
+                            if (!storagePath) return 'images/placeholder.jpg';
+                            if (storagePath.startsWith('https://vorqavsuqcjnkjzwkyzr.supabase.co/storage')) return storagePath;
+                            if (storagePath.startsWith('http')) return storagePath;
+                            if (storagePath.includes('.jpg') || storagePath.includes('.png') || storagePath.includes('.jpeg') || storagePath.includes('.gif') || storagePath.includes('.webp')) {
+                                return `images/${storagePath.toLowerCase()}`;
+                            }
+                            const projectUrl = 'https://vorqavsuqcjnkjzwkyzr.supabase.co';
+                            return `${projectUrl}/storage/v1/object/public/Images/${storagePath}`;
+                        };
+                        
+                        // Process product with proper image URL and inventory
+                        const processedProduct = {
+                            ...product,
+                            image_url: getImageUrl(product.product_images?.[0]?.storage_path) || 'images/placeholder.jpg',
+                            stock_quantity: product.inventory?.[0]?.stock || 0,
+                            price: (product.price_cents / 100).toFixed(2)
+                        };
+                        
+                        openQuickView(processedProduct);
                         return;
                     }
                 } catch (error) {
