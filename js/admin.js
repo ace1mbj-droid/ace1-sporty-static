@@ -363,35 +363,39 @@ class AdminPanel {
 
         console.log('Product data being saved:', productPayload);
 
-        let result;
         let savedProductId = productId;
+        let mutationResult;
         
         if (productId) {
             // Update existing product
-            result = await this.supabase
+            mutationResult = await this.supabase
                 .from('products')
                 .update(productPayload)
                 .eq('id', productId)
-                .select()
-                .single();
+                .select();
         } else {
             // Create new product
-            result = await this.supabase
+            mutationResult = await this.supabase
                 .from('products')
                 .insert([productPayload])
-                .select()
-                .single();
+                .select();
         }
 
-        if (result.error) {
-            console.error('❌ Save error:', result.error);
-            alert('Error saving product: ' + result.error.message);
+        if (mutationResult.error) {
+            console.error('❌ Save error:', mutationResult.error);
+            alert('Error saving product: ' + mutationResult.error.message);
             return;
         }
 
-        savedProductId = result.data.id;
+        const savedRow = Array.isArray(mutationResult.data) ? mutationResult.data[0] : mutationResult.data;
+        if (!savedRow) {
+            alert('Error saving product: No data returned from database.');
+            return;
+        }
+
+        savedProductId = savedRow.id;
         console.log('✅ Product saved successfully!');
-        console.log('Saved product:', result.data);
+        console.log('Saved product:', savedRow);
         
         // Handle inventory (multi-size)
         const inventory = this.getInventoryFromForm();
