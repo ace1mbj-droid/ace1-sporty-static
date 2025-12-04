@@ -192,6 +192,31 @@ class AdminPanel {
         if (historyClose) historyClose.addEventListener('click', () => document.getElementById('history-modal').classList.remove('active'));
         if (historyOk) historyOk.addEventListener('click', () => document.getElementById('history-modal').classList.remove('active'));
         // NOTE: tabs are switched via this.switchTab() invoked by click handlers
+
+        // User modal handlers
+        const userModalClose = document.getElementById('user-modal-close');
+        const userModal = document.getElementById('user-modal');
+        if (userModalClose) userModalClose.addEventListener('click', () => userModal.classList.remove('active'));
+        const userCancel = document.getElementById('user-cancel-btn');
+        if (userCancel) userCancel.addEventListener('click', () => userModal.classList.remove('active'));
+        const userForm = document.getElementById('user-form');
+        if (userForm) userForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            this.saveUserFromModal();
+        });
+
+        // Order modal handlers
+        const orderModalClose = document.getElementById('order-modal-close');
+        const orderModal = document.getElementById('order-modal');
+        if (orderModalClose) orderModalClose.addEventListener('click', () => orderModal.classList.remove('active'));
+        const orderCancelBtn = document.getElementById('order-cancel-btn');
+        if (orderCancelBtn) orderCancelBtn.addEventListener('click', () => orderModal.classList.remove('active'));
+        const orderUpdateBtn = document.getElementById('order-update-btn');
+        if (orderUpdateBtn) orderUpdateBtn.addEventListener('click', () => this.updateOrderFromModal());
+        const orderCancelOrderBtn = document.getElementById('order-cancel-order-btn');
+        if (orderCancelOrderBtn) orderCancelOrderBtn.addEventListener('click', () => this.cancelOrderFromModal());
+        const orderRefundBtn = document.getElementById('order-refund-btn');
+        if (orderRefundBtn) orderRefundBtn.addEventListener('click', () => this.refundOrderFromModal());
     }
 
     // Switch tabs and show corresponding content
@@ -199,6 +224,33 @@ class AdminPanel {
         if (!tabName) return;
         document.querySelectorAll('.admin-tab').forEach(tab => tab.classList.toggle('active', tab.dataset.tab === tabName));
         document.querySelectorAll('.admin-content').forEach(content => content.classList.toggle('active', content.id === `${tabName}-content`));
+
+        // If switching to images tab, ensure image manager renders into the container
+        try {
+            if (tabName === 'images' && window.websiteImageManager && !document.querySelector('.image-manager')) {
+                window.websiteImageManager.renderImageManager('image-manager-container');
+            }
+        } catch (e) {
+            console.warn('Image manager render failed:', e);
+        }
+    }
+
+    // Show inline error message into an element or fallback to global notification/alert
+    showInlineError(elementId, message) {
+        const el = document.getElementById(elementId);
+        if (!el) {
+            if (window.showNotification) {
+                window.showNotification(message, 'error');
+            } else {
+                alert(message);
+            }
+            return;
+        }
+        el.textContent = message || 'An error occurred';
+        el.style.display = 'block';
+        // auto-hide after 8 seconds
+        if (el._hideTimeout) clearTimeout(el._hideTimeout);
+        el._hideTimeout = setTimeout(() => { try { el.style.display = 'none'; } catch (e) {} }, 8000);
     }
 
     async loadDashboard() {
@@ -991,8 +1043,93 @@ class AdminPanel {
 
     async viewOrder(orderId) {
         const order = this.orders.find(o => o.id === orderId);
-        if (order) {
-            alert(`Order Details:\n\nOrder ID: ${order.id}\nTotal: ₹${order.total_amount}\nStatus: ${order.payment_status}\n\nShipping:\n${JSON.stringify(order.shipping_address, null, 2)}`);
+        if (!order) return;
+
+        // Populate order modal
+        const details = [];
+        details.push(`Order ID: ${order.id}`);
+        details.push(`Total: ₹${order.total_amount}`);
+        details.push(`Status: ${order.payment_status || 'unknown'}`);
+        details.push(`Created: ${new Date(order.created_at).toLocaleString()}`);
+        details.push('\nShipping:');
+        details.push(JSON.stringify(order.shipping_address || {}, null, 2));
+
+        document.getElementById('order-details-area').textContent = details.join('\n\n');
+        document.getElementById('order-status-select').value = order.payment_status || 'pending';
+        document.getElementById('order-notes').value = order.admin_notes || '';
+
+        // Store current order id on the modal element
+        document.getElementById('order-modal').dataset.orderId = orderId;
+        document.getElementById('order-form-error').style.display = 'none';
+
+        // show modal
+        document.getElementById('order-modal').classList.add('active');
+    }
+
+    // Order actions
+    async updateOrderFromModal() {
+        const modal = document.getElementById('order-modal');
+        const orderId = modal.dataset.orderId;
+        const status = document.getElementById('order-status-select').value;
+        const notes = document.getElementById('order-notes').value.trim();
+
+        try {
+            const { error } = await this.supabase
+                .from('orders')
+                .update({ payment_status: status, admin_notes: notes, updated_at: new Date().toISOString() })
+                .eq('id', orderId);
+
+            if (error) {
+                console.error('Error updating order:', error);
+                this.showInlineError('order-form-error', error.message || 'Failed to update order');
+                return;
+            }
+
+            if (window.showNotification) window.showNotification('Order updated', 'success');
+            await this.loadOrders();
+            modal.classList.remove('active');
+        } catch (err) {
+            console.error('updateOrderFromModal error:', err);
+            this.showInlineError('order-form-error', err.message || 'Failed to update order');
+        }
+    }
+
+    async cancelOrderFromModal() {
+        const modal = document.getElementById('order-modal');
+        const orderId = modal.dataset.orderId;
+        if (!confirm('Are you sure you want to cancel this order? This will mark it as cancelled.')) return;
+        try {
+            const { error } = await this.supabase
+                .from('orders')
+                .update({ payment_status: 'cancelled', updated_at: new Date().toISOString() })
+                .eq('id', orderId);
+            if (error) return this.showInlineError('order-form-error', error.message || 'Failed to cancel order');
+            if (window.showNotification) window.showNotification('Order cancelled', 'success');
+            await this.loadOrders();
+            modal.classList.remove('active');
+        } catch (err) {
+            console.error('cancelOrderFromModal error:', err);
+            this.showInlineError('order-form-error', err.message || 'Failed to cancel order');
+        }
+    }
+
+    async refundOrderFromModal() {
+        // Note: Refund behaviour depends on payment provider. Here we only mark the order as refunded locally.
+        const modal = document.getElementById('order-modal');
+        const orderId = modal.dataset.orderId;
+        if (!confirm('Mark this order as refunded? (This only updates DB status; configure payment refund separately)')) return;
+        try {
+            const { error } = await this.supabase
+                .from('orders')
+                .update({ payment_status: 'refunded', updated_at: new Date().toISOString() })
+                .eq('id', orderId);
+            if (error) return this.showInlineError('order-form-error', error.message || 'Failed to mark refunded');
+            if (window.showNotification) window.showNotification('Order marked refunded', 'success');
+            await this.loadOrders();
+            modal.classList.remove('active');
+        } catch (err) {
+            console.error('refundOrderFromModal error:', err);
+            this.showInlineError('order-form-error', err.message || 'Failed to mark refunded');
         }
     }
 
@@ -1032,7 +1169,12 @@ class AdminPanel {
                 </td>
                 <td>${user.last_login ? new Date(user.last_login).toLocaleDateString('en-IN') : 'Never'}</td>
                 <td>
-                    ${user.email !== 'hello@ace1.in' ? `<button class="btn btn-danger" style="padding: 5px 15px;" onclick="adminPanel.deleteUser('${user.id}')">Delete</button>` : '<span style="color: #666;">Protected</span>'}
+                    ${user.email !== 'hello@ace1.in'
+                        ? `<div style="display:flex; gap:8px; align-items:center;">
+                                <button class="btn btn-secondary" style="padding: 5px 12px;" onclick="adminPanel.openUserModal('${user.id}')">Edit</button>
+                                <button class="btn btn-danger" style="padding: 5px 12px;" onclick="adminPanel.deleteUser('${user.id}')">Delete</button>
+                           </div>`
+                        : '<span style="color: #666;">Protected</span>'}
                 </td>
             </tr>
         `).join('');
@@ -1070,8 +1212,67 @@ class AdminPanel {
             return;
         }
 
-        alert('User deleted successfully');
+        // use inline notification if available
+        if (window.showNotification) {
+            window.showNotification('User deleted successfully', 'success');
+        } else {
+            alert('User deleted successfully');
+        }
         await this.loadUsers();
+    }
+
+    // Open Edit User modal and populate fields
+    openUserModal(userId) {
+        const user = this.users.find(u => String(u.id) === String(userId));
+        if (!user) {
+            // fetch user if not in memory
+            (async () => {
+                const { data } = await this.supabase.from('users').select('*').eq('id', userId).single();
+                if (data) this._openUserModalWithData(data);
+            })();
+            return;
+        }
+        this._openUserModalWithData(user);
+    }
+
+    _openUserModalWithData(user) {
+        document.getElementById('user-id').value = user.id;
+        document.getElementById('user-first-name').value = user.first_name || '';
+        document.getElementById('user-last-name').value = user.last_name || '';
+        document.getElementById('user-phone').value = user.phone || '';
+        document.getElementById('user-role-select').value = user.role || 'customer';
+        document.getElementById('user-avatar').value = user.avatar || '';
+        document.getElementById('user-form-error').style.display = 'none';
+        document.getElementById('user-modal').classList.add('active');
+    }
+
+    async saveUserFromModal() {
+        const id = document.getElementById('user-id').value;
+        const firstName = document.getElementById('user-first-name').value.trim();
+        const lastName = document.getElementById('user-last-name').value.trim();
+        const phone = document.getElementById('user-phone').value.trim();
+        const role = document.getElementById('user-role-select').value;
+        const avatar = document.getElementById('user-avatar').value.trim() || null;
+
+        try {
+            const { error } = await this.supabase
+                .from('users')
+                .update({ first_name: firstName, last_name: lastName, phone: phone, role: role, avatar })
+                .eq('id', id);
+
+            if (error) {
+                console.error('Error saving user:', error);
+                this.showInlineError('user-form-error', error.message || 'Failed to save user');
+                return;
+            }
+
+            if (window.showNotification) window.showNotification('User updated', 'success');
+            document.getElementById('user-modal').classList.remove('active');
+            await this.loadUsers();
+        } catch (err) {
+            console.error('saveUserFromModal error:', err);
+            this.showInlineError('user-form-error', err.message || 'Failed to save user');
+        }
     }
 
     // Settings Management
@@ -1124,7 +1325,7 @@ class AdminPanel {
 
         if (error) {
             console.error('Error saving settings:', error);
-            alert('Error saving settings');
+            this.showInlineError('settings-form-error', error.message || 'Error saving settings');
             return;
         }
 

@@ -478,6 +478,8 @@
                     </table>
                 </div>
             </div>
+            <!-- Image manager container: image-manager renders here when tab clicked -->
+            <div id="image-manager-container" style="margin-top: 20px;"></div>
 
             <div style="padding: 20px; background: #e8f5e9; border-radius: 8px; border-left: 4px solid #4caf50;">
                 <h3 style="margin-top: 0; color: #2e7d32;">Quick Tips</h3>
@@ -519,6 +521,83 @@
             </div>
         </div>
 
+        <!-- User Edit Modal -->
+        <div class="modal" id="user-modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 id="user-modal-title">Edit User</h2>
+                    <button class="modal-close" id="user-modal-close">&times;</button>
+                </div>
+                <form id="user-form">
+                    <input type="hidden" id="user-id">
+                    <div class="form-group">
+                        <label for="user-first-name">First name</label>
+                        <input type="text" id="user-first-name" required />
+                    </div>
+                    <div class="form-group">
+                        <label for="user-last-name">Last name</label>
+                        <input type="text" id="user-last-name" />
+                    </div>
+                    <div class="form-group">
+                        <label for="user-phone">Phone</label>
+                        <input type="tel" id="user-phone" />
+                    </div>
+                    <div class="form-group">
+                        <label for="user-role-select">Role</label>
+                        <select id="user-role-select">
+                            <option value="customer">Customer</option>
+                            <option value="admin">Admin</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="user-avatar">Avatar URL</label>
+                        <input id="user-avatar" type="url" placeholder="https://example.com/avatar.jpg" />
+                    </div>
+                    <div id="user-form-error" style="display:none;color:#b00020;margin-bottom:8px;"></div>
+                    <div style="display:flex; gap:10px; margin-top:12px;">
+                        <button type="button" class="btn btn-secondary" id="user-cancel-btn">Cancel</button>
+                        <button type="submit" class="btn btn-primary" id="user-save-btn">Save User</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Order Modal -->
+        <div class="modal" id="order-modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 id="order-modal-title">Order</h2>
+                    <button class="modal-close" id="order-modal-close">&times;</button>
+                </div>
+                <div id="order-modal-body">
+                    <div style="display:flex; flex-direction:column; gap:10px;">
+                        <div id="order-details-area" style="font-family: monospace; white-space: pre-wrap; max-height:35vh; overflow:auto;"></div>
+                        <div class="form-group">
+                            <label for="order-status-select">Status</label>
+                            <select id="order-status-select">
+                                <option value="pending">pending</option>
+                                <option value="processing">processing</option>
+                                <option value="shipped">shipped</option>
+                                <option value="delivered">delivered</option>
+                                <option value="cancelled">cancelled</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="order-notes">Notes / Admin comment</label>
+                            <textarea id="order-notes"></textarea>
+                        </div>
+                        <div id="order-form-error" style="display:none;color:#b00020;margin-bottom:8px;"></div>
+                        <div style="display:flex; gap:8px;">
+                            <button class="btn btn-secondary" id="order-cancel-btn" type="button">Close</button>
+                            <button class="btn btn-primary" id="order-update-btn" type="button">Save Changes</button>
+                            <button class="btn btn-danger" id="order-cancel-order-btn" type="button">Cancel Order</button>
+                            <button class="btn btn-secondary" id="order-refund-btn" type="button">Refund</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Settings Tab -->
         <div class="admin-content" id="settings-content">
             <h2 style="margin-bottom: 20px;">Site Settings</h2>
@@ -543,6 +622,7 @@
                     <label for="instagram-url">Instagram URL</label>
                     <input type="url" id="instagram-url" value="https://instagram.com/ace_1_official/">
                 </div>
+                <div id="settings-form-error" style="display:none;color:#b00020;margin-bottom:8px;"></div>
                 <div class="form-group">
                     <label>
                         <input type="checkbox" id="maintenance-mode" checked>
