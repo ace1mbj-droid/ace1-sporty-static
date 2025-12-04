@@ -304,7 +304,7 @@ class AdminPanel {
         const getImageUrl = (storagePath) => {
             if (!storagePath) return 'images/placeholder.jpg';
             // Resolve project URL from config if available so the client is not bound to a single hard-coded project
-            const projectUrl = (window.SUPABASE_CONFIG && window.SUPABASE_CONFIG.url) || window.SUPABASE_URL || window.__ACE1_SUPABASE_URL || 'https://vorqavsuqcjnkjzwkyzr.supabase.co';
+            const projectUrl = (window.SUPABASE_CONFIG && window.SUPABASE_CONFIG.url) || window.SUPABASE_URL || 'https://vorqavsuqcjnkjzwkyzr.supabase.co';
             const storagePrefix = `${projectUrl.replace(/\/$/, '')}/storage`;
 
             // If it's already a full Supabase Storage URL for the configured project, return as is
