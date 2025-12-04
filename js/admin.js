@@ -649,11 +649,18 @@ class AdminPanel {
         this.products = [];
         
         // Wait a brief moment to ensure DB is updated, then reload
-        setTimeout(async () => {
+        await new Promise(resolve => setTimeout(resolve, 300));
+        
+        try {
             await this.loadProducts();
+            console.log('✅ Products reloaded after deletion');
             await this.loadDashboard();
+            console.log('✅ Dashboard reloaded after deletion');
             alert('✅ Product deleted successfully!\n\nThe product will be removed from the website immediately.');
-        }, 300);
+        } catch (err) {
+            console.error('Error reloading after deletion:', err);
+            alert('Product deleted but there was an error refreshing the list. Please refresh the page manually.');
+        }
     }
 
     async viewOrder(orderId) {
