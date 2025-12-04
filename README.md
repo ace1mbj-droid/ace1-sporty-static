@@ -123,6 +123,41 @@ To apply migrations from CI the recommended approach is:
 	- `SUPABASE_ACCESS_TOKEN` (CI secret) is used by the Supabase CLI to authenticate. Use a dedicated token limited to the necessary projects.
 	- Avoid putting `SERVICE_ROLE_KEY` in public/shared CI secrets. If you must, ensure the secret is scoped and stored securely and that the workflow checks expected constraints.
 
+Rotate / revoke keys & purging history (recommended if secrets leaked)
+---------------------------------------------------------------
+
+If you discover a leaked service_role key, DB connection string, or other secrets in repository files or local temp artifacts, rotate them immediately. Below are recommended steps and example commands.
+
+1. Rotate Supabase service_role key (in Supabase dashboard):
+
+	- Supabase Console → Settings → API → Generate new SERVICE_ROLE key
+	- Replace keys in your CI Secrets (e.g., SUPABASE_SERVICE_ROLE_KEY_STAGING / SUPABASE_SERVICE_ROLE_KEY)
+	- Revoke any previous keys if the platform supports revocation
+
+2. Rotate DB credentials (if DB URL leaked):
+
+	- Create a new DB user + password with the same or stricter privileges, then update SUPABASE_DB_URL in CI secrets and any hosts that use it.
+
+3. Purge repository history (only if secrets were committed)
+
+	- Use git-filter-repo or BFG on a local mirror and force-push the cleaned repo. This rewrites history and will require all collaborators to re-clone.
+
+	Example with git-filter-repo (recommended):
+
+	```bash
+	# Create a mirror clone
+	git clone --mirror git@github.com:<owner>/ace1-sporty-static.git repo.git
+	cd repo.git
+
+	# Remove the path(s) that contain secrets (example: supabase/.temp)
+	git filter-repo --path supabase/.temp --invert-paths
+
+	git push --force --all
+	git push --force --tags
+	```
+
+	IMPORTANT: coordinate with your team before rewriting history — everyone will need to re-clone after this.
+
 MCP staging workflow (new)
 -------------------------
 
