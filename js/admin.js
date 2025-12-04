@@ -338,6 +338,7 @@ class AdminPanel {
     }
 
     async saveProduct() {
+        console.log('🔄 saveProduct() called');
         const productId = document.getElementById('product-id').value;
         
         // Convert price to cents (database stores price_cents)
@@ -368,6 +369,7 @@ class AdminPanel {
         
         if (productId) {
             // Update existing product
+            console.log('📝 Updating existing product:', productId);
             mutationResult = await this.supabase
                 .from('products')
                 .update(productPayload)
@@ -375,11 +377,14 @@ class AdminPanel {
                 .select();
         } else {
             // Create new product
+            console.log('➕ Creating new product');
             mutationResult = await this.supabase
                 .from('products')
                 .insert([productPayload])
                 .select();
         }
+
+        console.log('📊 Mutation result:', mutationResult);
 
         if (mutationResult.error) {
             console.error('❌ Save error:', mutationResult.error);
@@ -390,10 +395,13 @@ class AdminPanel {
         const savedRow = Array.isArray(mutationResult.data) ? mutationResult.data[0] : mutationResult.data;
         if (savedRow && savedRow.id) {
             savedProductId = savedRow.id;
+            console.log('✅ Got product ID from response:', savedProductId);
         } else if (productId) {
             // Updates can succeed without returning a row if RPC policies block select
+            console.log('ℹ️ Using existing product ID for update:', productId);
             savedProductId = productId;
         } else {
+            console.log('🔍 Fetching most recent product for fallback ID');
             // Last resort: fetch the most recent product to grab its ID
             const { data: fallbackRows, error: fallbackError } = await this.supabase
                 .from('products')
@@ -408,16 +416,20 @@ class AdminPanel {
             }
 
             savedProductId = fallbackRows[0].id;
+            console.log('✅ Got fallback product ID:', savedProductId);
         }
 
         console.log('✅ Product saved successfully!');
         console.log('Saved product ID:', savedProductId);
         
         // Handle inventory (multi-size)
+        console.log('📦 Processing inventory');
         const inventory = this.getInventoryFromForm();
+        console.log('Inventory from form:', inventory);
         await this.saveProductInventory(savedProductId, inventory);
         
         // Handle product image
+        console.log('🖼️ Processing product image');
         const imageUrl = document.getElementById('product-image').value.trim();
         if (imageUrl) {
             await this.saveProductImage(savedProductId, imageUrl);
@@ -425,11 +437,15 @@ class AdminPanel {
         
         // Show success message
         const totalStock = (inventory || []).reduce((s, it) => s + (parseInt(it.stock) || 0), 0);
+        console.log('💾 All operations complete, showing success message');
         alert(`✅ Product saved successfully!\n\nTotal stock: ${totalStock}\n\nChanges will reflect across the site immediately.`);
         
+        console.log('🔄 Closing modal and reloading');
         this.closeProductModal();
         await this.loadProducts();
+        console.log('✅ Products reloaded');
         await this.loadDashboard();
+        console.log('✅ Dashboard reloaded');
         
         // Force reload products on all pages by clearing localStorage cache
         localStorage.removeItem('ace1_products_cache');
@@ -872,5 +888,12 @@ class AdminPanel {
 // Initialize admin panel
 let adminPanel;
 document.addEventListener('DOMContentLoaded', () => {
-    adminPanel = new AdminPanel();
+    try {
+        adminPanel = new AdminPanel();
+        console.log('✅ AdminPanel initialized successfully');
+        window.adminPanel = adminPanel; // Make globally accessible for debugging
+    } catch (err) {
+        console.error('❌ Error initializing AdminPanel:', err);
+    }
 });
+
