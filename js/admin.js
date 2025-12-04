@@ -9,25 +9,6 @@ class AdminPanel {
         this.logs = [];
         this.settings = {};
         this.init();
-
-        {
-  "mcp.providers": [
-    {
-      "name": "supabase",
-      "type": "supabase",
-      "config": {
-        "projectUrl": "https://vorqavsuqcjnkjzwkyzr.supabase.co",
-        "apiKey": "SERVICE_ROLE_KEY_HERE"
-      }
-    }
-  ],
-  "mcp.servers": {
-    "supabase": {
-      "type": "http",
-      "url": "https://mcp.supabase.com/mcp?project_ref=vorqavsuqcjnkjzwkyzr"
-    }
-  }
-}
     }
 
     async init() {
