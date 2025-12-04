@@ -225,6 +225,15 @@ USING (
   )
 );
 
+CREATE POLICY "inventory_delete_admin"
+ON public.inventory FOR DELETE
+USING (
+  EXISTS (
+    SELECT 1 FROM public.user_roles ur
+    WHERE ur.user_id = (select auth.uid()) AND ur.is_admin = true
+  )
+);
+
 -- -----------------------------------------------------------------------------
 -- 7. PRODUCT_IMAGES TABLE
 -- -----------------------------------------------------------------------------
