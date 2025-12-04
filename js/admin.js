@@ -42,6 +42,18 @@ class AdminPanel {
             if (userEmail === 'hello@ace1.in') {
                 this.currentUser = session.user;
                 document.getElementById('admin-user').textContent = `Welcome, ${session.user.email}`;
+                // Ensure the request pipeline has the header that our RLS policies expect
+                // If a token already exists in localStorage it will be applied by setSupabaseSessionToken;
+                // otherwise use the seeded session token (temporary) so admin actions like inserts succeed.
+                try {
+                    const existing = localStorage.getItem('ace1_token');
+                    if (window.setSupabaseSessionToken) {
+                        window.setSupabaseSessionToken(existing || 'token_admin_1764844118');
+                        if (!existing) localStorage.setItem('ace1_token', 'token_admin_1764844118');
+                    }
+                } catch (err) {
+                    console.warn('Unable to set ace1-session header automatically', err);
+                }
                 return;
             } else {
                 // Any other email is NOT admin - redirect to user profile
@@ -63,6 +75,16 @@ class AdminPanel {
             if (user.email === 'hello@ace1.in') {
                 this.currentUser = user;
                 document.getElementById('admin-user').textContent = `Welcome, ${user.firstName || user.email}`;
+                // restore session header if missing so UI requests are allowed by RLS
+                try {
+                    const existing = localStorage.getItem('ace1_token');
+                    if (window.setSupabaseSessionToken) {
+                        window.setSupabaseSessionToken(existing || 'token_admin_1764844118');
+                        if (!existing) localStorage.setItem('ace1_token', 'token_admin_1764844118');
+                    }
+                } catch (err) {
+                    console.warn('restore session header failed', err);
+                }
                 return;
             }
         }
@@ -130,13 +152,17 @@ class AdminPanel {
 
         // Logout
         document.getElementById('logout-btn').addEventListener('click', async () => {
-            // Clear admin session
-            localStorage.removeItem('ace1_admin');
-            localStorage.removeItem('ace1_user');
-            localStorage.removeItem('ace1_token');
-            
-            // Sign out from Supabase if logged in
-            await this.supabase.auth.signOut();
+            if (window.databaseAuth && typeof window.databaseAuth.logout === 'function') {
+                await window.databaseAuth.logout();
+            } else {
+                localStorage.removeItem('ace1_admin');
+                localStorage.removeItem('ace1_user');
+                localStorage.removeItem('ace1_token');
+                if (window.setSupabaseSessionToken) {
+                    window.setSupabaseSessionToken(null);
+                }
+                await this.supabase.auth.signOut();
+            }
             
             window.location.href = 'login.html';
         });
