@@ -102,9 +102,16 @@ class AdminPanel {
             this.saveProduct();
         });
 
-        // Image preview
-        document.getElementById('product-image').addEventListener('input', (e) => {
-            this.updateImagePreview(e.target.value);
+        // Image preview (for file input)
+        document.getElementById('product-image').addEventListener('change', (e) => {
+            const file = e.target.files?.[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    this.updateImagePreview(event.target.result);
+                };
+                reader.readAsDataURL(file);
+            }
         });
 
         // Settings form
@@ -196,6 +203,8 @@ class AdminPanel {
         // Helper function to convert storage path to public URL
         const getImageUrl = (storagePath) => {
             if (!storagePath) return 'images/placeholder.jpg';
+            // If it's already a full Supabase Storage URL, return as is
+            if (storagePath.startsWith('https://vorqavsuqcjnkjzwkyzr.supabase.co/storage')) return storagePath;
             // If it's already a full URL, return as is
             if (storagePath.startsWith('http')) return storagePath;
             // If it looks like a filename from the images folder, use it directly
@@ -445,9 +454,9 @@ class AdminPanel {
         
         // Handle product image
         console.log('🖼️ Processing product image');
-        const imageUrl = document.getElementById('product-image').value.trim();
-        if (imageUrl) {
-            await this.saveProductImage(savedProductId, imageUrl);
+        const imageFile = document.getElementById('product-image').files?.[0];
+        if (imageFile) {
+            await this.uploadProductImage(savedProductId, imageFile);
         }
         
         // Show success message
@@ -564,6 +573,46 @@ class AdminPanel {
             size: r.querySelector('.inv-size')?.value.trim(),
             stock: parseInt(r.querySelector('.inv-stock')?.value || 0) || 0
         })).filter(it => it.size);
+    }
+
+    async uploadProductImage(productId, file) {
+        try {
+            console.log('📤 Uploading image to Supabase Storage:', file.name);
+            
+            // Generate unique filename
+            const timestamp = Date.now();
+            const fileName = `${productId}-${timestamp}-${file.name.replace(/\s+/g, '-')}`;
+            
+            // Upload to Supabase Storage
+            const { data, error: uploadError } = await this.supabase.storage
+                .from('product-images')
+                .upload(fileName, file, {
+                    cacheControl: '3600',
+                    upsert: false
+                });
+            
+            if (uploadError) {
+                console.error('❌ Upload error:', uploadError);
+                throw uploadError;
+            }
+            
+            console.log('✅ Image uploaded to Supabase Storage:', data.path);
+            
+            // Generate public URL
+            const { data: publicUrlData } = this.supabase.storage
+                .from('product-images')
+                .getPublicUrl(fileName);
+            
+            const publicUrl = publicUrlData?.publicUrl;
+            console.log('✅ Generated public URL:', publicUrl);
+            
+            // Save the public URL to database
+            await this.saveProductImage(productId, publicUrl);
+            
+        } catch (error) {
+            console.error('❌ Error uploading product image:', error);
+            alert('Error uploading image: ' + error.message);
+        }
     }
 
     async saveProductImage(productId, imageUrl) {
