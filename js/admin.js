@@ -195,13 +195,13 @@ class AdminPanel {
 
         // Helper function to convert storage path to public URL
         const getImageUrl = (storagePath) => {
-            if (!storagePath) return null;
+            if (!storagePath) return 'images/placeholder.jpg';
             // If it's already a full URL, return as is
             if (storagePath.startsWith('http')) return storagePath;
             // If it looks like a filename from the images folder, use it directly
             if (storagePath.includes('.jpg') || storagePath.includes('.png') || storagePath.includes('.jpeg') || storagePath.includes('.gif') || storagePath.includes('.webp')) {
                 // Check if it's a local image file first (in /images folder)
-                return `images/${storagePath}`;
+                return `images/${storagePath.toLowerCase()}`;
             }
             // Otherwise, try to construct Supabase Storage URL
             const projectUrl = 'https://vorqavsuqcjnkjzwkyzr.supabase.co';
@@ -230,9 +230,9 @@ class AdminPanel {
 
         grid.innerHTML = this.products.map(product => `
             <div class="product-admin-card">
-                <img src="${product.image_url || 'https://via.placeholder.com/400x300/FF6B00/FFFFFF?text=No+Image'}" 
+                <img src="${product.image_url || 'images/placeholder.jpg'}" 
                      alt="${this.escapeHtml(product.name)}" 
-                     onerror="this.src='https://via.placeholder.com/400x300/FF6B00/FFFFFF?text=Image+Not+Found'"
+                     onerror="this.src='images/placeholder.jpg'"
                      loading="lazy">
                 <div class="product-admin-info">
                     <h3>${this.escapeHtml(product.name)}</h3>
