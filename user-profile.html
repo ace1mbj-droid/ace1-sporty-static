@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- Security Meta Tags -->
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta http-equiv="X-XSS-Protection" content="1; mode=block">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <title>My Account - Ace#1</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Bebas+Neue&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-logo">
+            <a href="index.html">
+                <span class="logo-text">ACE<span class="logo-accent">#1</span></span>
+            </a>
+        </div>
+            <ul class="nav-menu">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="products.html">Products</a></li>
+                <li><a href="technology.html">Technology</a></li>
+                <li><a href="about.html">About</a></li>
+                <li><a href="contact.html">Contact</a></li>
+            </ul>
+            <div class="nav-icons">
+                <button class="icon-btn" id="search-btn">
+                    <i class="fas fa-search"></i>
+                </button>
+                <div class="user-dropdown">
+                    <button class="icon-btn" id="user-btn">
+                        <i class="fas fa-user"></i>
+                    </button>
+                    <div class="dropdown-menu" id="user-menu">
+                        <a href="user-profile.html"><i class="fas fa-user"></i> My Profile</a>
+                        <a href="user-profile.html?tab=orders"><i class="fas fa-box"></i> My Orders</a>
+                        <a href="user-profile.html?tab=wishlist"><i class="fas fa-heart"></i> Wishlist</a>
+                        <a href="#" id="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                    </div>
+                </div>
+                <button class="icon-btn" id="cart-btn">
+                    <i class="fas fa-shopping-bag"></i>
+                    <span class="cart-count">0</span>
+                </button>
+                <button class="mobile-menu-btn">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Search Overlay -->
+    <div class="search-overlay" id="search-overlay">
+        <div class="search-container">
+            <input type="text" placeholder="Search for products..." id="search-input">
+            <button class="search-close" id="search-close">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- User Profile Section -->
+    <section class="profile-section">
+        <div class="container">
+            <div class="profile-container">
+                <!-- Sidebar -->
+                <aside class="profile-sidebar">
+                    <div class="profile-user-info">
+                        <div class="profile-avatar">
+                            <img src="https://ui-avatars.com/api/?name=User&background=FF6B00&color=fff&size=128" alt="User Avatar" id="user-avatar">
+                        </div>
+                        <h3 id="user-name">Loading...</h3>
+                        <p id="user-email">Loading...</p>
+                    </div>
+                    <nav class="profile-nav">
+                        <a href="#" class="profile-nav-link active" data-tab="profile">
+                            <i class="fas fa-user"></i> My Profile
+                        </a>
+                        <a href="#" class="profile-nav-link" data-tab="orders">
+                            <i class="fas fa-box"></i> My Orders
+                        </a>
+                        <a href="#" class="profile-nav-link" data-tab="wishlist">
+                            <i class="fas fa-heart"></i> Wishlist
+                        </a>
+                        <a href="#" class="profile-nav-link" data-tab="addresses">
+                            <i class="fas fa-map-marker-alt"></i> Addresses
+                        </a>
+                        <a href="#" class="profile-nav-link" data-tab="reviews">
+                            <i class="fas fa-star"></i> My Reviews
+                        </a>
+                        <a href="#" class="profile-nav-link" data-tab="settings">
+                            <i class="fas fa-cog"></i> Settings
+                        </a>
+                        <a href="#" id="logout-link" class="profile-nav-link">
+                            <i class="fas fa-sign-out-alt"></i> Logout
+                        </a>
+                    </nav>
+                </aside>
+
+                <!-- Main Content -->
+                <main class="profile-main">
+                    <!-- Profile Tab -->
+                    <div class="profile-tab active" id="tab-profile">
+                        <h2>Personal Information</h2>
+                        <form class="profile-form" id="profile-update-form">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="first-name">First Name</label>
+                                    <input type="text" id="first-name" name="firstName" value="">
+                                </div>
+                                <div class="form-group">
+                                    <label for="last-name">Last Name</label>
+                                    <input type="text" id="last-name" name="lastName" value="">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="email">Email Address</label>
+                                <input type="email" id="email" name="email" value="" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label for="phone">Phone Number</label>
+                                <input type="tel" id="phone" name="phone" value="">
+                            </div>
+                            <div class="form-group">
+                                <label for="dob">Date of Birth</label>
+                                <input type="date" id="dob" name="dob">
+                            </div>
+                            <button type="submit" class="btn btn-primary">Update Profile</button>
+                        </form>
+                    </div>
+
+                    <!-- Orders Tab -->
+                    <div class="profile-tab" id="tab-orders">
+                        <h2>My Orders</h2>
+                        <div class="orders-list" id="orders-list">
+                            <div class="empty-state">
+                                <i class="fas fa-box"></i>
+                                <h3>No orders yet</h3>
+                                <p>Start shopping and your orders will appear here</p>
+                                <a href="products.html" class="btn btn-primary">Browse Products</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Wishlist Tab -->
+                    <div class="profile-tab" id="tab-wishlist">
+                        <h2>My Wishlist</h2>
+                        <div class="wishlist-grid">
+                            <!-- Wishlist items will be dynamically added here -->
+                            <div class="empty-state">
+                                <i class="fas fa-heart"></i>
+                                <h3>Your wishlist is empty</h3>
+                                <p>Save items you love for later</p>
+                                <a href="products.html" class="btn btn-primary">Browse Products</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Addresses Tab -->
+                    <div class="profile-tab" id="tab-addresses">
+                        <div class="tab-header">
+                            <h2>Saved Addresses</h2>
+                            <button class="btn btn-primary" id="add-address-btn">Add New Address</button>
+                        </div>
+                        <div class="addresses-grid" id="addresses-list">
+                            <div class="empty-state">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <h3>No addresses saved</h3>
+                                <p>Add a shipping address for faster checkout</p>
+                                <button class="btn btn-primary">Add New Address</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Reviews Tab -->
+                    <div class="profile-tab" id="tab-reviews">
+                        <h2>My Reviews</h2>
+                        <div class="reviews-list">
+                            <div class="empty-state">
+                                <i class="fas fa-star"></i>
+                                <h3>No reviews yet</h3>
+                                <p>Share your experience with products you've purchased</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Settings Tab -->
+                    <div class="profile-tab" id="tab-settings">
+                        <h2>Account Settings</h2>
+                        
+                        <div class="settings-section">
+                            <h3>Change Password</h3>
+                            <form class="profile-form" id="change-password-form">
+                                <div class="form-group">
+                                    <label for="current-password">Current Password</label>
+                                    <input type="password" id="current-password" name="currentPassword">
+                                </div>
+                                <div class="form-group">
+                                    <label for="new-password">New Password</label>
+                                    <input type="password" id="new-password" name="newPassword">
+                                </div>
+                                <div class="form-group">
+                                    <label for="confirm-new-password">Confirm New Password</label>
+                                    <input type="password" id="confirm-new-password" name="confirmNewPassword">
+                                </div>
+                                <button type="submit" class="btn btn-primary">Update Password</button>
+                            </form>
+                        </div>
+
+                        <div class="settings-section">
+                            <h3>Notifications</h3>
+                            <div class="settings-options">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" checked>
+                                    <span>Order updates</span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" checked>
+                                    <span>Promotional emails</span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox">
+                                    <span>SMS notifications</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="settings-section danger-zone">
+                            <h3>Danger Zone</h3>
+                            <button class="btn btn-danger">Delete Account</button>
+                        </div>
+                    </div>
+                </main>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-column">
+                    <h3>ACE#1</h3>
+                    <p>Revolutionary footwear integrated with terahertz technology for enhanced wellness and lifestyle.</p>
+                    <div class="social-icons">
+                        <a href="https://instagram.com/ace_1_official/" target="_blank"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+                <div class="footer-column">
+                    <h4>Shop</h4>
+                    <ul>
+                        <li><a href="products.html">All Products</a></li>
+                        <li><a href="products.html?category=runners">Runners</a></li>
+                        <li><a href="products.html?category=sneakers">Sneakers</a></li>
+                        <li><a href="products.html?category=trekking">Trekking</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h4>Company</h4>
+                    <ul>
+                        <li><a href="about.html">About Us</a></li>
+                        <li><a href="technology.html">Technology</a></li>
+                        <li><a href="contact.html">Contact</a></li>
+                        <li><a href="#">Careers</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h4>Support</h4>
+                    <ul>
+                        <li><a href="faq.html">FAQ</a></li>
+                        <li><a href="faq.html#shipping">Shipping Info</a></li>
+                        <li><a href="faq.html#returns">Returns</a></li>
+                        <li><a href="size-guide.html">Size Guide</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 Ace#1. All rights reserved.</p>
+                <div class="footer-links">
+                    <a href="#">Privacy Policy</a>
+                    <a href="#">Terms of Service</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Shopping Cart Sidebar -->
+    <div class="cart-sidebar" id="cart-sidebar">
+        <div class="cart-header">
+            <h3>Shopping Cart</h3>
+            <button class="cart-close" id="cart-close">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="cart-items" id="cart-items">
+            <div class="cart-empty">
+                <i class="fas fa-shopping-bag"></i>
+                <p>Your cart is empty</p>
+            </div>
+        </div>
+        <div class="cart-footer">
+            <div class="cart-total">
+                <span>Subtotal:</span>
+                <span id="cart-total">₹0</span>
+            </div>
+            <button class="btn btn-primary btn-block">Checkout</button>
+            <a href="products.html" class="btn btn-secondary btn-block">Continue Shopping</a>
+        </div>
+    </div>
+
+    <div class="cart-overlay" id="cart-overlay"></div>
+
+    <!-- Cache Buster (must load first) -->
+    <script src="js/cache-buster.js"></script>
+    <!-- Supabase Integration -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-config.js"></script>
+    <!-- Security Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.6/dist/purify.min.js"></script>
+    <script src="js/password-hasher.js"></script>
+    <script src="js/security.js"></script>
+    <script src="js/database-auth.js"></script>
+    <script src="js/supabase-service.js"></script>
+
+    <script src="js/main.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/user-profile.js"></script>
+    <!-- Image Optimization -->
+    <script src="js/image-optimizer.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,6 @@
+{
+  // Prefill the project ref for the Supabase extension / workspace helpers.
+  // This does NOT include any API keys — users should sign in via the extension or CLI.
+  "supabase.projectRef": "vorqavsuqcjnkjzwkyzr",
+  "supabase.autoLink": true
+}

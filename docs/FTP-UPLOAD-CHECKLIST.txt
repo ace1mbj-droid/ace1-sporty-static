@@ -1,0 +1,161 @@
+# ✅ FTP Upload Checklist
+
+## Files Ready for Upload
+
+### Root Directory Files
+- [x] index.html
+- [x] login.html
+- [x] register.html
+- [x] products.html
+- [x] cart.html
+- [x] checkout.html
+- [x] profile.html
+- [x] orders.html
+- [x] wishlist.html
+- [x] contact.html
+- [x] about.html
+- [x] terms.html
+- [x] privacy.html
+- [x] faq.html
+- [x] test-social-login.html
+- [x] security-validation.html
+- [x] test-sql-injection.html
+- [x] admin-password-migration.html
+- [x] .htaccess (for Apache)
+- [x] web.config (for IIS/Windows)
+
+### JavaScript Files (js/ folder)
+- [x] supabase-config.js ⚠️ CRITICAL
+- [x] database-auth.js
+- [x] password-hasher.js
+- [x] security.js
+- [x] api.js
+- [x] cart.js
+- [x] products.js
+- [x] checkout.js
+- [x] profile.js
+
+### CSS Files (css/ folder)
+- [x] All CSS files in your css/ directory
+
+### Images (images/ folder)
+- [x] All product images
+- [x] Logos
+- [x] Icons
+- [x] Banners
+
+## ❌ DO NOT Upload These
+
+- [ ] node_modules/
+- [ ] .git/
+- [ ] .env
+- [ ] vercel.json
+- [ ] package.json
+- [ ] database-setup.sql (run in Supabase instead)
+- [ ] *.md files (documentation)
+- [ ] load-test.py
+- [ ] setup-supabase.sh
+- [ ] add-security-to-html.sh
+
+## FTP Server Details
+
+**You need to fill these in:**
+- Host: ___________________________
+- Username: ________________________
+- Password: ________________________
+- Port: 21 (standard) or 22 (SFTP)
+- Protocol: FTP or SFTP
+
+**Upload to directory:**
+- Usually: / or /www/ or /htdocs/
+
+## After Upload Steps
+
+1. [ ] Visit your website: https://your-domain.com
+2. [ ] Test login page
+3. [ ] Update Supabase Settings:
+   - Site URL: https://your-domain.com
+   - Redirect URLs: https://your-domain.com/**
+4. [ ] Test Google OAuth login
+5. [ ] Test security features
+6. [ ] Check browser console for errors
+7. [ ] Verify all images load
+8. [ ] Test adding products to cart
+9. [ ] Test checkout flow
+
+## Supabase Configuration (Already Done)
+
+Your files connect to:
+- Supabase URL: https://ivxjmxrphuplqpxntseb.supabase.co
+- This is in: js/supabase-config.js
+- Works on ANY domain automatically ✅
+
+## Server Type
+
+Choose your server type:
+
+### Apache Server
+- [x] Upload .htaccess
+- [ ] Don't upload web.config
+
+### Windows/IIS Server
+- [ ] Don't upload .htaccess
+- [x] Upload web.config
+
+### Nginx Server
+- [ ] Don't upload .htaccess or web.config
+- [ ] Add configuration to nginx.conf manually
+- [ ] See: FTP-DEPLOYMENT-GUIDE.md for Nginx config
+
+## Permissions (Important!)
+
+After upload, set these permissions:
+
+```
+Files (.html, .css, .js, .png, .jpg): 644
+Folders (css/, js/, images/): 755
+.htaccess or web.config: 644
+```
+
+## Common FTP Clients
+
+- **FileZilla** - https://filezilla-project.org/ (Free)
+- **Cyberduck** - https://cyberduck.io/ (Free)
+- **WinSCP** - https://winscp.net/ (Free, Windows only)
+- **Transmit** - https://panic.com/transmit/ (Paid, Mac)
+
+## Need Help?
+
+If something doesn't work after upload:
+
+1. Check browser console (F12) for errors
+2. Verify js/supabase-config.js uploaded correctly
+3. Check file permissions
+4. Make sure .htaccess or web.config is in root directory
+5. Update Supabase redirect URLs to your new domain
+6. Clear browser cache and try again
+
+## Your Website Structure After Upload
+
+```
+your-domain.com/
+├── index.html              (Homepage)
+├── login.html              (Login page)
+├── products.html           (Products)
+├── cart.html              (Shopping cart)
+├── .htaccess              (Apache config)
+│
+├── js/
+│   ├── supabase-config.js  (Database connection)
+│   ├── database-auth.js    (Login/register)
+│   └── ...
+│
+├── css/
+│   └── styles.css
+│
+└── images/
+    └── (your images)
+```
+
+All pages will connect to Supabase automatically!
+No database on your FTP server needed. ✅

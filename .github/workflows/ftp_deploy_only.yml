@@ -1,0 +1,57 @@
+name: FTP Deploy Only (manual)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  ftp-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build & copy to dist
+        run: |
+          rm -rf dist || true
+          mkdir -p dist
+          rsync -av --exclude='.git' --exclude='.github' --exclude='node_modules' --exclude='dist' ./ dist/
+
+      - name: FTP Deploy
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_HOST }}
+          username: ${{ secrets.FTP_USER }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: ./dist/
+          server-dir: /
+          protocol: ftps
+          port: 21
+          dangerous-clean-slate: false
+          exclude: |
+            **/.git*
+            **/.github/**
+            **/.vscode/**
+            **/node_modules/**
+            dist/**
+            docs/**
+            tests/**
+            **/*.md
+            **/*.map
+            **/*.ts
+            **/*.scss
+            **/*.sass
+            **/*.less
+            **/*.psd
+            **/*.ai
+            **/*.sketch
+            **/.DS_Store
+            package.json
+            package-lock.json
+            pnpm-lock.yaml
+            yarn.lock
+            **/*.sh
+
+# Required repository secrets for this workflow:
+# - FTP_HOST
+# - FTP_USER
+# - FTP_PASSWORD
