@@ -260,13 +260,24 @@ USING (
 );
 
 -- -----------------------------------------------------------------------------
--- 8. SESSIONS TABLE (if exists in your schema)
+-- 8. SESSIONS TABLE
 -- -----------------------------------------------------------------------------
--- Uncomment if you have a sessions table
--- CREATE POLICY "sessions_all_operations"
--- ON public.sessions FOR ALL
--- USING ((select auth.uid()) = user_id)
--- WITH CHECK ((select auth.uid()) = user_id);
+CREATE POLICY "sessions_select_own"
+ON public.sessions FOR SELECT
+USING ((select auth.uid()) = user_id);
+
+CREATE POLICY "sessions_insert_own"
+ON public.sessions FOR INSERT
+WITH CHECK ((select auth.uid()) = user_id);
+
+CREATE POLICY "sessions_update_own"
+ON public.sessions FOR UPDATE
+USING ((select auth.uid()) = user_id)
+WITH CHECK ((select auth.uid()) = user_id);
+
+CREATE POLICY "sessions_delete_own"
+ON public.sessions FOR DELETE
+USING ((select auth.uid()) = user_id);
 
 -- ============================================================================
 -- VERIFICATION
