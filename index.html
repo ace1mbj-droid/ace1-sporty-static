@@ -15,7 +15,6 @@
     </script>
     
     <!-- Security Meta Tags -->
-    <meta http-equiv="X-Frame-Options" content="SAMEORIGIN">
     <meta http-equiv="X-Content-Type-Options" content="nosniff">
     <meta http-equiv="X-XSS-Protection" content="1; mode=block">
     <meta name="referrer" content="strict-origin-when-cross-origin">
@@ -157,123 +156,7 @@
             </div>
 
             <div class="products-grid" id="products-grid">
-                <!-- Product 1 - Runner -->
-                <div class="product-card" data-category="runners" data-product-id="1">
-                    <div class="product-image">
-                        <img src="https://vorqavsuqcjnkjzwkyzr.supabase.co/storage/v1/object/public/Images/Black.jpg" alt="Ace#1 THz Runner Pro">
-                        <div class="product-badge">New</div>
-                        <div class="product-overlay">
-                            <button class="quick-view-btn" data-product-id="1">Quick View</button>
-                        </div>
-                    </div>
-                    <div class="product-info">
-                        <h3 class="product-name">THz Runner Pro</h3>
-                        <p class="product-category">Runners Collection</p>
-                        <p class="product-description" style="display:none;">High-performance running shoes with advanced THz technology for maximum comfort and speed.</p>
-                        <div class="product-rating">
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star-half-alt"></i>
-                            <span>(127)</span>
-                        </div>
-                        <div class="product-footer">
-                            <span class="product-price">₹8,999</span>
-                            <button class="add-to-cart-btn" data-id="1">
-                                <i class="fas fa-shopping-bag"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Product 2 - Runner -->
-                <div class="product-card" data-category="runners" data-product-id="2">
-                    <div class="product-image">
-                        <img src="https://vorqavsuqcjnkjzwkyzr.supabase.co/storage/v1/object/public/Images/Blue-Pink.PNG" alt="Ace#1 Elite Runner">
-                        <div class="product-badge bg-red">Hot</div>
-                        <div class="product-overlay">
-                            <button class="quick-view-btn" data-product-id="2">Quick View</button>
-                        </div>
-                    </div>
-                    <div class="product-info">
-                        <h3 class="product-name">Elite Runner THz</h3>
-                        <p class="product-category">Runners Collection</p>
-                        <p class="product-description" style="display:none;">Premium elite running shoes designed for professional athletes and serious runners.</p>
-                        <div class="product-rating">
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <span>(203)</span>
-                        </div>
-                        <div class="product-footer">
-                            <span class="product-price">₹8,999</span>
-                            <button class="add-to-cart-btn" data-id="2">
-                                <i class="fas fa-shopping-bag"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Product 3 - Sneaker -->
-                <div class="product-card" data-category="sneakers" data-product-id="3">
-                    <div class="product-image">
-                        <img src="https://vorqavsuqcjnkjzwkyzr.supabase.co/storage/v1/object/public/Images/Orange.JPG" alt="Ace#1 Urban Sneaker">
-                        <div class="product-overlay">
-                            <button class="quick-view-btn" data-product-id="3">Quick View</button>
-                        </div>
-                    </div>
-                    <div class="product-info">
-                        <h3 class="product-name">Urban Sneaker THz</h3>
-                        <p class="product-category">Sneakers Collection</p>
-                        <p class="product-description" style="display:none;">Stylish urban sneakers perfect for everyday wear with unmatched comfort and design.</p>
-                        <div class="product-rating">
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <span>(156)</span>
-                        </div>
-                        <div class="product-footer">
-                            <span class="product-price">₹9,599</span>
-                            <button class="add-to-cart-btn" data-id="3">
-                                <i class="fas fa-shopping-bag"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Product 4 - Trekking -->
-                <div class="product-card" data-category="trekking" data-product-id="4">
-                    <div class="product-image">
-                        <img src="https://vorqavsuqcjnkjzwkyzr.supabase.co/storage/v1/object/public/Images/Remote.jpeg" alt="Ace#1 Adventure Trek">
-                        <div class="product-overlay">
-                            <button class="quick-view-btn" data-product-id="4">Quick View</button>
-                        </div>
-                    </div>
-                    <div class="product-info">
-                        <h3 class="product-name">Adventure Trek THz</h3>
-                        <p class="product-category">Trekking Collection</p>
-                        <p class="product-description" style="display:none;">Rugged trekking shoes built for adventure with superior grip and all-terrain durability.</p>
-                        <div class="product-rating">
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="far fa-star"></i>
-                            <span>(89)</span>
-                        </div>
-                        <div class="product-footer">
-                            <span class="product-price">₹9,299</span>
-                            <button class="add-to-cart-btn" data-id="4">
-                                <i class="fas fa-shopping-bag"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
+                <!-- Products loaded dynamically by refreshProductsIfNeeded() -->
             </div>
 
             <div class="section-footer">
@@ -324,7 +207,7 @@
                     </div>
                     <p class="testimonial-text">"After wearing Ace#1 shoes for just two weeks, my chronic foot pain has significantly reduced. The terahertz technology really works!"</p>
                     <div class="testimonial-author">
-                        <img src="images/avatar-1.jpg" alt="Sarah Johnson">
+                        <img src="images/placeholder.jpg" alt="Sarah Johnson">
                         <div>
                             <h4>Sarah Johnson</h4>
                             <p>Verified Buyer</p>
@@ -341,7 +224,7 @@
                     </div>
                     <p class="testimonial-text">"Best investment I've made for my health. The comfort and energy boost I feel throughout the day is incredible."</p>
                     <div class="testimonial-author">
-                        <img src="images/avatar-2.jpg" alt="Michael Chen">
+                        <img src="images/placeholder.jpg" alt="Michael Chen">
                         <div>
                             <h4>Michael Chen</h4>
                             <p>Verified Buyer</p>
@@ -358,7 +241,7 @@
                     </div>
                     <p class="testimonial-text">"Stylish, comfortable, and therapeutic - what more could you ask for? Ace#1 has become my go-to footwear brand."</p>
                     <div class="testimonial-author">
-                        <img src="images/avatar-3.jpg" alt="Emily Rodriguez">
+                        <img src="images/placeholder.jpg" alt="Emily Rodriguez">
                         <div>
                             <h4>Emily Rodriguez</h4>
                             <p>Verified Buyer</p>
