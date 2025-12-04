@@ -517,13 +517,17 @@ class AdminPanel {
 
     async saveProductImage(productId, imageUrl) {
         try {
-            // Check if image record exists for this product
-            const { data: existingImage } = await this.supabase
+            // Check if an image record already exists (only grab the first row to avoid .single() coercion)
+            const { data: imageRows, error: fetchError } = await this.supabase
                 .from('product_images')
                 .select('*')
                 .eq('product_id', productId)
-                .limit(1)
-                .single();
+                .order('position', { ascending: true })
+                .limit(1);
+
+            if (fetchError) throw fetchError;
+
+            const existingImage = Array.isArray(imageRows) ? imageRows[0] : null;
 
             if (existingImage) {
                 // Update existing image
