@@ -51,13 +51,14 @@ class ProductFilterManager {
             
             // Helper function to convert storage path to public URL
             const getImageUrl = (storagePath) => {
-                if (!storagePath) return null;
+                if (!storagePath) return 'images/placeholder.jpg';
                 // If it's already a full URL, return as is
                 if (storagePath.startsWith('http')) return storagePath;
                 // If it looks like a filename from the images folder, use it directly
                 if (storagePath.includes('.jpg') || storagePath.includes('.png') || storagePath.includes('.jpeg') || storagePath.includes('.gif') || storagePath.includes('.webp')) {
                     // Check if it's a local image file first (in /images folder)
-                    return `images/${storagePath}`;
+                    // Return the path - fallback will be handled by img onerror
+                    return `images/${storagePath.toLowerCase()}`;
                 }
                 // Otherwise, try to construct Supabase Storage URL
                 const projectUrl = 'https://vorqavsuqcjnkjzwkyzr.supabase.co';
@@ -120,7 +121,7 @@ class ProductFilterManager {
         grid.innerHTML = products.map(product => `
             <div class="product-card" data-product-id="${product.id}" data-category="${(product.category || 'casual').toLowerCase()}">
                 <div class="product-image">
-                    <img src="${product.image_url || 'images/placeholder.jpg'}" alt="${product.name}" onerror="this.src='https://via.placeholder.com/400x400?text=No+Image'">
+                    <img src="${product.image_url || 'images/placeholder.jpg'}" alt="${product.name}" onerror="this.src='images/placeholder.jpg'">
                     ${product.is_locked ? '<div class="product-badge bg-gray">Locked</div>' : ''}
                     ${product.stock_quantity === 0 ? '<div class="product-badge bg-red">Out of Stock</div>' : ''}
                     ${product.stock_quantity > 0 && product.stock_quantity < 10 ? '<div class="product-badge bg-orange">Low Stock</div>' : ''}
