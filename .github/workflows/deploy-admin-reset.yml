@@ -1,0 +1,104 @@
+name: Deploy Supabase admin-reset function
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch: {}
+
+jobs:
+  deploy-admin-reset:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: CI guard — prevent accidental production deploys
+        if: github.ref == 'refs/heads/main' && github.event_name != 'workflow_dispatch' && secrets.ALLOW_PRODUCTION_DEPLOY != 'true'
+        run: |
+          echo "Automatic production deploys are disabled for safety. To allow a deploy, re-run manually as 'workflow_dispatch' or temporarily set the secret 'ALLOW_PRODUCTION_DEPLOY=true'."
+          exit 1
+
+      - name: Use Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Supply SUPABASE_ACCESS_TOKEN to job env
+        run: |
+          echo "SUPABASE_ACCESS_TOKEN=${{ secrets.SUPABASE_ACCESS_TOKEN }}" >> $GITHUB_ENV
+
+      - name: Link to Supabase project (non-fatal)
+        run: |
+          set +e
+          npx supabase link --project-ref ${{ secrets.SUPABASE_PROJECT_REF }}
+          rc=$?
+          if [ $rc -eq 0 ]; then
+            echo "LINK_OK=true" >> $GITHUB_ENV
+          else
+            echo "LINK_OK=false" >> $GITHUB_ENV
+            echo "Warning: supabase link failed (exit $rc). Runner may not be able to reach project; continuing to deploy functions using API mode."
+          fi
+          set -e
+
+      - name: Deploy admin-reset function
+        run: |
+          echo "Deploying supabase/functions/admin-reset"
+          # Use API based deployment (no Docker) and ensure ref is supplied
+          npx supabase functions deploy admin-reset --project-ref ${{ secrets.SUPABASE_PROJECT_REF }} --use-api --no-verify-jwt
+
+      - name: Set function secrets (service role key etc.)
+        run: |
+          if [ -n "${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}" ]; then
+            echo "Setting SUPABASE_SERVICE_ROLE_KEY as function secret"
+            npx supabase secrets set SUPABASE_SERVICE_ROLE_KEY="${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}" --project-ref ${{ secrets.SUPABASE_PROJECT_REF }} || echo "Failed to set SUPABASE_SERVICE_ROLE_KEY"
+          else
+            echo "SUPABASE_SERVICE_ROLE_KEY not provided in GitHub secrets; skipping secret set."
+          fi
+          # Optionally set SendGrid secrets for post-reset notifications
+          if [ -n "${{ secrets.SENDGRID_API_KEY }}" ]; then
+            echo "Setting SENDGRID_API_KEY as function secret"
+            npx supabase secrets set SENDGRID_API_KEY="${{ secrets.SENDGRID_API_KEY }}" --project-ref ${{ secrets.SUPABASE_PROJECT_REF }} || echo "Failed to set SENDGRID_API_KEY"
+          fi
+          if [ -n "${{ secrets.SENDGRID_FROM }}" ]; then
+            echo "Setting SENDGRID_FROM as function secret"
+            npx supabase secrets set SENDGRID_FROM="${{ secrets.SENDGRID_FROM }}" --project-ref ${{ secrets.SUPABASE_PROJECT_REF }} || echo "Failed to set SENDGRID_FROM"
+          fi
+
+      - name: Update site settings with ADMIN_API_URL (optional)
+        env:
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          SUPABASE_FUNCTIONS_URL: ${{ secrets.SUPABASE_FUNCTIONS_URL }}
+          SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+        run: |
+          if [ -z "$SUPABASE_SERVICE_ROLE_KEY" ]; then
+            echo "SUPABASE_SERVICE_ROLE_KEY not provided — skipping site settings update"
+            exit 0
+          fi
+
+          echo "Attempting to update site_settings.admin_api_url via Supabase REST API"
+
+          if [ -n "$SUPABASE_FUNCTIONS_URL" ]; then
+            ADMIN_URL="$SUPABASE_FUNCTIONS_URL/admin-reset"
+          else
+            ADMIN_URL="https://${SUPABASE_PROJECT_REF}.functions.supabase.co/admin-reset"
+          fi
+
+          # If SUPABASE_URL not provided, fall back to the standard project URL derived from project ref
+          if [ -z "$SUPABASE_URL" ] && [ -n "$SUPABASE_PROJECT_REF" ]; then
+            SUPABASE_URL="https://${SUPABASE_PROJECT_REF}.supabase.co"
+          fi
+
+          echo "ADMIN_URL=$ADMIN_URL"
+
+          # Upsert the site_settings row (id=1) with admin_api_url using service_role key
+          curl -s -X POST "${SUPABASE_URL}/rest/v1/site_settings?on_conflict=id" \
+            -H "apikey: ${SUPABASE_SERVICE_ROLE_KEY}" \
+            -H "Authorization: Bearer ${SUPABASE_SERVICE_ROLE_KEY}" \
+            -H "Content-Type: application/json" \
+            -d "{ \"id\": 1, \"admin_api_url\": \"${ADMIN_URL}\", \"updated_at\": \"$(date --utc +%Y-%m-%dT%H:%M:%SZ)\" }"
+
+
+      - name: Print function URL
+        run: |
+          echo "Function admin-reset should be available once deployed. Visit Supabase Functions console to confirm the URL or use 'supabase functions list' locally."
