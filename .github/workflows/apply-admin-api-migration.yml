@@ -32,7 +32,7 @@ jobs:
           # Print the parsed host/db (sanitized - avoid printing secrets). Wrap in try/except
           # so parsing errors won't fail the entire step.
           # Use a regex-based parse to avoid urlparse IPv6/format edge-cases
-          python -c 'import os, re; u=os.getenv("SUPABASE_DB_URL") or ""; host=(re.search(r"@([^/:]+)", u) or [None])[1] if u else ""; db=(re.search(r"/([^/?#]+)(?:\?.*)?$", u) or [None])[1] if u else ""; print(f"DBG: host={host or "<missing>"} db={db or "<missing>"}")'
+          python -c 'import os, re; u=os.getenv("SUPABASE_DB_URL") or ""; hosts=re.findall(r"@([^/:]+)", u); host=hosts[-1] if hosts else ""; db=(re.search(r"/([^/?#]+)(?:\?.*)?$", u) or [None])[1] if u else ""; print(f"DBG: host={host or "<missing>"} db={db or "<missing>"}")'
 
             cat > /tmp/apply_admin_api_migration.py <<'PY'
             #!/usr/bin/env python3
@@ -127,6 +127,9 @@ jobs:
           print('All attempts failed — migration not applied')
           sys.exit(3)
           PY
+
+          # strip leading indentation introduced by YAML heredoc (ensure valid python file)
+          sed -E -i 's/^ {10}//' /tmp/apply_admin_api_migration.py || true
 
           python /tmp/apply_admin_api_migration.py > /tmp/apply_admin_api_migration.log 2>&1 || (
             echo 'Migration script returned non-zero; check /tmp/apply_admin_api_migration.log for details'
