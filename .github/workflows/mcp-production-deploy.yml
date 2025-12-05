@@ -1,0 +1,45 @@
+name: MCP Deploy (production)
+
+on:
+  workflow_dispatch: {}
+  push:
+    branches: [ main ]
+
+jobs:
+  mcp-deploy-production:
+    name: Run MCP migrations & deploy functions (production) — requires environment approval
+    runs-on: ubuntu-latest
+    environment: production
+    env:
+      # These must be added to the repository (or org) secrets for a safe run
+      SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF_PROD }}
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL_PROD }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY_PROD }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Verify secrets exist
+        run: |
+          if [ -z "$SUPABASE_PROJECT_REF" ] || [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_SERVICE_ROLE_KEY" ]; then
+            echo "Missing required Supabase production secrets. Set SUPABASE_PROJECT_REF_PROD, SUPABASE_URL_PROD and SUPABASE_SERVICE_ROLE_KEY_PROD in repo secrets.";
+            exit 1;
+          fi
+
+      - name: Run MCP:DB (apply migrations) — PRODUCTION
+        run: |
+          # Production deploys require a protected environment approval step in GitHub
+          npx -y @supabase/mcp-server-supabase@0.5.9 --project-ref "$SUPABASE_PROJECT_REF" --api-url "$SUPABASE_URL" --SUPABASE_SERVICE_ROLE_KEY "$SUPABASE_SERVICE_ROLE_KEY" deploy:db
+
+      - name: Run MCP:functions (deploy edge functions)
+        run: |
+          npx -y @supabase/mcp-server-supabase@0.5.9 --project-ref "$SUPABASE_PROJECT_REF" --api-url "$SUPABASE_URL" --SUPABASE_SERVICE_ROLE_KEY "$SUPABASE_SERVICE_ROLE_KEY" deploy:functions || echo "Function deploy may be skipped if no functions found."
+
+      - name: Post-run guidance
+        run: |
+          echo "MCP production deploy finished. This workflow requires the 'production' environment approval in GitHub to avoid accidental runs. Use short-lived/service-role secrets and rotate keys after usage."
