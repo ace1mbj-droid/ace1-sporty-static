@@ -34,11 +34,13 @@ jobs:
       - name: Run MCP:DB (apply migrations) — PRODUCTION
         run: |
           # Production deploys require a protected environment approval step in GitHub
-          npx -y @supabase/mcp-server-supabase@0.5.9 --project-ref "$SUPABASE_PROJECT_REF" --api-url "$SUPABASE_URL" --SUPABASE_SERVICE_ROLE_KEY "$SUPABASE_SERVICE_ROLE_KEY" deploy:db
+          # MCP CLI reads SERVICE_ROLE key from environment variables, do not pass it as an unknown CLI flag
+          npx -y @supabase/mcp-server-supabase@0.5.9 --project-ref "$SUPABASE_PROJECT_REF" --api-url "$SUPABASE_URL" deploy:db
 
       - name: Run MCP:functions (deploy edge functions)
         run: |
-          npx -y @supabase/mcp-server-supabase@0.5.9 --project-ref "$SUPABASE_PROJECT_REF" --api-url "$SUPABASE_URL" --SUPABASE_SERVICE_ROLE_KEY "$SUPABASE_SERVICE_ROLE_KEY" deploy:functions || echo "Function deploy may be skipped if no functions found."
+          # MCP CLI will read the service_role key from env; avoid passing it as an invalid CLI option
+          npx -y @supabase/mcp-server-supabase@0.5.9 --project-ref "$SUPABASE_PROJECT_REF" --api-url "$SUPABASE_URL" deploy:functions || echo "Function deploy may be skipped if no functions found."
 
       - name: Post-run guidance
         run: |
