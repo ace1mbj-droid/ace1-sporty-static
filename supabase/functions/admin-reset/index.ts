@@ -3,7 +3,8 @@
 // SUPABASE_SERVICE_ROLE_KEY. It validates the caller's access token and
 // requires the caller to be the admin email (hello@ace1.in) by default.
 
-import { serve } from 'std/server'
+// Use the JSR alias for Deno std modules so the Supabase bundler can resolve them.
+import { serve } from 'jsr:std/server'
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL') || Deno.env.get('SUPABASE_PROJECT_URL')
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
