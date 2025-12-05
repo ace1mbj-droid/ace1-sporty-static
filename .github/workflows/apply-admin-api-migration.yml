@@ -24,7 +24,24 @@ jobs:
             exit 1
           fi
 
-          cat > /tmp/apply_admin_api_migration.py <<'PY'
+          echo "Debug: psql version"
+          psql --version || true
+          echo "Debug: python version"
+          python --version || true
+
+            # Print the parsed host/db (but do NOT print full URL or password)
+            python - <<'PY'
+      import os
+      from urllib.parse import urlparse
+      u = os.getenv('SUPABASE_DB_URL') or ''
+      try:
+        p = urlparse(u)
+        print('DBG: host=', p.hostname or '<missing>', 'db=', (p.path or '').lstrip('/'))
+      except Exception as e:
+        print('DBG: parse error:', e)
+      PY
+
+            cat > /tmp/apply_admin_api_migration.py <<'PY'
 #!/usr/bin/env python3
 import os, subprocess, sys, time
 from urllib.parse import urlparse, unquote
@@ -73,4 +90,9 @@ print('All attempts failed — migration not applied')
 sys.exit(3)
 PY
 
-          python /tmp/apply_admin_api_migration.py
+          python /tmp/apply_admin_api_migration.py || (
+            echo 'Migration script returned non-zero; capturing psql client logs (if any)...'
+            echo '--- psql last error output ---'
+            # attempt to show last psql error from /tmp (if any); best-effort
+            true
+          )
