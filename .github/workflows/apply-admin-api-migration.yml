@@ -22,15 +22,32 @@ jobs:
             exit 1
           fi
           echo 'Parsing SUPABASE_DB_URL and applying SQL using psql parameters (avoids malformed host parsing)'
-          # Parse the DATABASE URL and call psql with explicit flags (PGPASSWORD used for password)
-          if ! [[ "$SUPABASE_DB_URL" =~ ^postgres://([^:]+):([^@]+)@([^:/]+):([0-9]+)/(.+)$ ]]; then
-            echo "SUPABASE_DB_URL malformed or uses an unexpected format."
+          # Parse the DATABASE URL robustly using Python (handles query string / percent-encoding)
+          echo "Parsing SUPABASE_DB_URL via python to extract components"
+          parse_out=$(python - <<'PY'
+import os
+from urllib.parse import urlparse, unquote
+u = os.getenv('SUPABASE_DB_URL')
+if not u:
+    print("__EMPTY__")
+    raise SystemExit(1)
+p = urlparse(u)
+user = p.username or ''
+password = p.password or ''
+host = p.hostname or ''
+port = p.port or 5432
+dbname = (p.path or '').lstrip('/') or ''
+print(user)
+print(password)
+print(host)
+print(port)
+print(dbname)
+PY
+)
+          if [ -z "$parse_out" ] || [ "$parse_out" = "__EMPTY__" ]; then
+            echo "Failed to parse SUPABASE_DB_URL (empty or invalid)"
             exit 1
           fi
-          user="${BASH_REMATCH[1]}"
-          pass="${BASH_REMATCH[2]}"
-          host="${BASH_REMATCH[3]}"
-          port="${BASH_REMATCH[4]}"
-          db="${BASH_REMATCH[5]}"
+          IFS=$'\n' read -r user pass host port db <<< "$parse_out"
           echo "Connecting to ${host}:${port} (db ${db}) as ${user}"
           PGPASSWORD="$pass" psql -h "$host" -p "$port" -U "$user" -d "$db" -c "ALTER TABLE IF EXISTS public.site_settings ADD COLUMN IF NOT EXISTS admin_api_url text;"
