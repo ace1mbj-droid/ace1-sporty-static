@@ -4,7 +4,8 @@
 // requires the caller to be the admin email (hello@ace1.in) by default.
 
 // Use the JSR alias for Deno std modules so the Supabase bundler can resolve them.
-import { serve } from 'jsr:std/server'
+// Use explicit deno.land std URL so the Supabase bundler can resolve the module.
+import { serve } from 'https://deno.land/std@0.201.0/http/server.ts'
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL') || Deno.env.get('SUPABASE_PROJECT_URL')
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
