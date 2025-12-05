@@ -22,6 +22,23 @@ jobs:
           mkdir -p dist
           rsync -av --exclude='.git' --exclude='.github' --exclude='node_modules' --exclude='.vscode' --exclude='dist' ./ dist/ || true
 
+      - name: Inject ADMIN_API_URL into built admin.html (optional)
+        if: ${{ secrets.SUPABASE_FUNCTIONS_URL != '' || secrets.ADMIN_API_URL != '' }}
+        run: |
+          # prefer ADMIN_API_URL secret (explicit); fall back to SUPABASE_FUNCTIONS_URL + /admin-reset
+          if [ -n "${{ secrets.ADMIN_API_URL }}" ]; then
+            ADMIN_URL="${{ secrets.ADMIN_API_URL }}"
+          else
+            ADMIN_URL="${{ secrets.SUPABASE_FUNCTIONS_URL }}/admin-reset"
+          fi
+
+          if [ -f dist/admin.html ]; then
+            echo "Injecting ADMIN_API_URL=${ADMIN_URL} into dist/admin.html"
+            sed -i '' "s#__ADMIN_API_URL__#${ADMIN_URL}#g" dist/admin.html || sed -i "s#__ADMIN_API_URL__#${ADMIN_URL}#g" dist/admin.html
+          else
+            echo "dist/admin.html not found; skipping injection"
+          fi
+
       - name: FTP Deploy
         uses: 
         with:

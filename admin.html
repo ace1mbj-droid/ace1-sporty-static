@@ -495,7 +495,9 @@
 
         <!-- Change Password Tab -->
         <div class="admin-content" id="password-content">
-            <div id="password-change-container"></div>
+                <div id="password-change-container"></div>
+                <!-- Build-time injected admin API URL (CI will replace) -->
+                <script>window.ADMIN_API_URL = "__ADMIN_API_URL__";</script>
         </div>
 
         <!-- Users Tab -->
@@ -552,6 +554,20 @@
                     <div class="form-group">
                         <label for="user-avatar">Avatar URL</label>
                         <input id="user-avatar" type="url" placeholder="https://example.com/avatar.jpg" />
+                    </div>
+                    <!-- Admin: Reset password for this user -->
+                    <div class="form-group" id="admin-reset-section" style="margin-top:10px; border-top:1px dashed #ddd; padding-top:10px; display:none;">
+                        <label>Reset user password</label>
+                        <div style="display:flex; gap:8px; align-items:center;">
+                            <input type="password" id="admin-new-password" placeholder="New password for user" style="flex:1; min-width:260px;" />
+                            <input type="password" id="admin-confirm-new-password" placeholder="Confirm password" style="flex:1; min-width:260px;" />
+                        </div>
+                        <div style="display:flex; gap:8px; margin-top:8px;">
+                            <button type="button" class="btn btn-secondary" id="user-generate-password">Generate</button>
+                            <button type="button" class="btn btn-danger" id="user-reset-password-btn">Reset Password</button>
+                            <span id="user-reset-notice" style="color:#2e7d32; display:none; align-self:center;">Password reset sent</span>
+                        </div>
+                        <small style="display:block; margin-top:8px; color:#666;">This action performs a server-side reset (service_role required) and will invalidate existing sessions for the user.</small>
                     </div>
                     <div id="user-form-error" style="display:none;color:#b00020;margin-bottom:8px;"></div>
                     <div style="display:flex; gap:10px; margin-top:12px;">

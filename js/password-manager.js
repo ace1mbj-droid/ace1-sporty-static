@@ -185,6 +185,10 @@ class PasswordManager {
                             <button type="button" class="btn-cancel" id="cancel-password-change">
                                 <i class="fas fa-times"></i> Cancel
                             </button>
+                            <!-- New: allow sending a password reset email if admin doesn't remember current password -->
+                            <button type="button" class="btn btn-secondary" id="send-reset-email" title="Send reset link to account email">
+                                <i class="fas fa-envelope"></i> Send Reset Email
+                            </button>
                         </div>
                     </form>
 
@@ -230,6 +234,34 @@ class PasswordManager {
         const cancelBtn = document.getElementById('cancel-password-change');
         if (cancelBtn) {
             cancelBtn.addEventListener('click', () => this.resetForm());
+        }
+
+        // Send reset email button (in case admin forgot current password)
+        const sendResetBtn = document.getElementById('send-reset-email');
+        if (sendResetBtn) sendResetBtn.addEventListener('click', () => this.sendPasswordResetEmail());
+    }
+
+    // ===================================
+    // SEND RESET EMAIL (for forgotten current password)
+    // ===================================
+    async sendPasswordResetEmail() {
+        if (!this.currentUser || !this.currentUser.email) {
+            this.showNotification('No admin email found to send reset link to', 'error');
+            return;
+        }
+
+        try {
+            // Use Supabase auth reset password email flow (safe from client)
+            const { error } = await this.supabase.auth.resetPasswordForEmail(this.currentUser.email, {
+                redirectTo: `${window.location.origin}/reset-password.html`
+            });
+
+            if (error) throw error;
+
+            this.showNotification(`Password reset email sent to ${this.currentUser.email}`, 'success');
+        } catch (err) {
+            console.error('Failed to send reset email:', err);
+            this.showNotification(err.message || 'Failed to send reset email', 'error');
         }
     }
 
