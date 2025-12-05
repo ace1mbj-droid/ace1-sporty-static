@@ -29,8 +29,9 @@ jobs:
           echo "Debug: python version"
           python --version || true
           
-          # Print the parsed host/db (sanitized - avoid printing secrets)
-          python -c "import os; from urllib.parse import urlparse; u=os.getenv('SUPABASE_DB_URL') or ''; p=urlparse(u); print('DBG: host=' + str(p.hostname or '<missing>') + ' db=' + str((p.path or '').lstrip('/')) )"
+          # Print the parsed host/db (sanitized - avoid printing secrets). Wrap in try/except
+          # so parsing errors won't fail the entire step.
+          python -c 'import os,sys; from urllib.parse import urlparse; u=os.getenv("SUPABASE_DB_URL") or ""; try: p=urlparse(u); print("DBG: host=%s db=%s" % (p.hostname or "<missing>", (p.path or "").lstrip("/"))); except Exception as e: print("DBG: parse error:", e)'
 
           cat > /tmp/apply_admin_api_migration.py <<'PY'
           #!/usr/bin/env python3
