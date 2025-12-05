@@ -132,7 +132,8 @@ jobs:
           # Use textwrap.dedent to remove the shared indent while preserving inner code indentation
           # remove the smallest leading indentation shared by all non-empty lines.
           # This left-aligns top-level code while preserving relative indentation for inner blocks.
-          python -c "import pathlib; p=pathlib.Path('/tmp/apply_admin_api_migration.py'); txt=p.read_text(); lines=txt.splitlines(); indents=[len(l)-len(l.lstrip(' ')) for l in lines if l.strip()]; m=min(indents) if indents else 0; out='\n'.join([l[m:] if l.strip() else '' for l in lines])+'\n'; p.write_text(out)" || true
+          # Use the first non-empty line's indentation as the amount to remove
+          python -c "import pathlib; p=pathlib.Path('/tmp/apply_admin_api_migration.py'); txt=p.read_text(); lines=txt.splitlines(); first=(next((l for l in lines if l.strip()), '') ); n = len(first)-len(first.lstrip(' ')) if first else 0; out='\n'.join([l[n:] if l.startswith(' ' * n) else l for l in lines])+'\n'; p.write_text(out)" || true
 
           # Print a preview of the generated file for debugging (safe: file contains no secrets)
           echo '--- Generated migration script (first 200 lines) ---'
