@@ -128,8 +128,8 @@ jobs:
           sys.exit(3)
           PY
 
-          # strip leading indentation introduced by YAML heredoc (ensure valid python file)
-          sed -E -i 's/^ {10}//' /tmp/apply_admin_api_migration.py || true
+          # strip common indentation introduced by YAML heredoc (ensure valid python file)
+          python -c "import textwrap, pathlib; p=pathlib.Path('/tmp/apply_admin_api_migration.py'); p.write_text(textwrap.dedent(p.read_text()))" || true
 
           python /tmp/apply_admin_api_migration.py > /tmp/apply_admin_api_migration.log 2>&1 || (
             echo 'Migration script returned non-zero; check /tmp/apply_admin_api_migration.log for details'
