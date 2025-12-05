@@ -34,22 +34,57 @@ jobs:
           # Use a regex-based parse to avoid urlparse IPv6/format edge-cases
           python -c 'import os, re; u=os.getenv("SUPABASE_DB_URL") or ""; host=(re.search(r"@([^/:]+)", u) or [None])[1] if u else ""; db=(re.search(r"/([^/?#]+)(?:\?.*)?$", u) or [None])[1] if u else ""; print(f"DBG: host={host or "<missing>"} db={db or "<missing>"}")'
 
-          cat > /tmp/apply_admin_api_migration.py <<'PY'
-          #!/usr/bin/env python3
-          import os, subprocess, sys, time
-          from urllib.parse import urlparse, unquote
+            cat > /tmp/apply_admin_api_migration.py <<'PY'
+            #!/usr/bin/env python3
+            import os, subprocess, sys, time
+            from urllib.parse import unquote
 
-          u = os.getenv('SUPABASE_DB_URL')
-          if not u:
+            u = os.getenv('SUPABASE_DB_URL')
+            if not u:
               print('ERROR: SUPABASE_DB_URL empty')
               sys.exit(2)
 
-          p = urlparse(u)
-          user = unquote(p.username or '')
-          password = unquote(p.password or '')
-          host = p.hostname or ''
-          port = p.port or 5432
-          dbname = (p.path or '').lstrip('/') or ''
+            # Robust parsing approach:
+            # - split on '://' then take the rest
+            # - split off the database name by rsplit('/', 1)
+            # - split netloc on the last '@' (so passwords containing '@' are preserved)
+            # - split host/port using rsplit(':', 1)
+            rest = u.split('://', 1)[1] if '://' in u else u
+            netloc_and_path = rest
+            if '/' in rest:
+              netloc, dbname = rest.rsplit('/', 1)
+            else:
+              netloc = rest
+              dbname = ''
+
+            if '@' in netloc:
+              creds, hostport = netloc.rsplit('@', 1)
+            else:
+              creds = ''
+              hostport = netloc
+
+            # creds may be user[:password]
+            if creds and ':' in creds:
+              user, password = creds.split(':', 1)
+            else:
+              user = creds
+              password = ''
+
+            # hostport may be host[:port]
+            if ':' in hostport:
+              host, port = hostport.rsplit(':', 1)
+              try:
+                port = int(port)
+              except Exception:
+                port = 5432
+            else:
+              host = hostport
+              port = 5432
+
+            user = unquote(user or '')
+            password = unquote(password or '')
+            host = host or ''
+            dbname = (dbname or '').lstrip('/') or ''
 
           if not (host and dbname and user):
               print('ERROR: Failed to parse host/user/db from SUPABASE_DB_URL')
