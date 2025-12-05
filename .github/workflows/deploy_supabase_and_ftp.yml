@@ -61,7 +61,10 @@ jobs:
           echo "Attempting to push migrations to the linked Supabase project..."
           # Try to push migrations using the supabase CLI (linked project). This may require Docker or network privileges.
           set +e
-          npx supabase db push --linked --yes --project-ref ${{ secrets.SUPABASE_PROJECT_REF }}
+          # Use the linked project when --linked is provided. The --project-ref flag is not valid
+          # together with --linked (it caused "unknown flag: --project-ref" in CI). Use --linked
+          # and --yes to push migrations to the linked project on this runner.
+          npx supabase db push --linked --yes
           rc=$?
           if [ $rc -ne 0 ]; then
             echo "Warning: 'supabase db push' failed with exit code $rc."
