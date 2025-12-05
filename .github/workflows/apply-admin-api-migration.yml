@@ -29,10 +29,42 @@ jobs:
           echo "Debug: python version"
           python --version || true
           
-          # Print the parsed host/db (sanitized - avoid printing secrets). Wrap in try/except
-          # so parsing errors won't fail the entire step.
-          # Use a regex-based parse to avoid urlparse IPv6/format edge-cases
-          python -c 'import os, re; u=os.getenv("SUPABASE_DB_URL") or ""; hosts=re.findall(r"@([^/:]+)", u); host=hosts[-1] if hosts else ""; db=(re.search(r"/([^/?#]+)(?:\?.*)?$", u) or [None])[1] if u else ""; print(f"DBG: host={host or "<missing>"} db={db or "<missing>"}")'
+            # Print sanitized parsed host/port/db/user (no secrets). Use a robust parser that handles
+            # IPv6 bracketed hosts and passwords containing '@'. Don't raise on parse errors.
+          python - <<'PY'
+            import os
+            u = os.getenv('SUPABASE_DB_URL') or ''
+            if not u:
+              print('DBG: SUPABASE_DB_URL missing')
+            else:
+              try:
+                rest = u.split('://', 1)[1] if '://' in u else u
+                netloc = rest.split('/', 1)[0]
+                db = rest.split('/', 1)[1] if '/' in rest else ''
+                if '@' in netloc:
+                  creds, hostport = netloc.rsplit('@', 1)
+                  user = creds.split(':', 1)[0] if creds else ''
+                else:
+                  hostport = netloc
+                  user = ''
+
+                # handle IPv6 bracketed '[::1]:5432'
+                host = hostport
+                port = ''
+                if host.startswith('[') and ']' in host:
+                  closing = host.find(']')
+                  host_inner = host[1:closing]
+                  rem = host[closing+1:]
+                  host = host_inner
+                  if rem.startswith(':'):
+                    port = rem[1:]
+                elif ':' in hostport:
+                  host, port = hostport.rsplit(':', 1)
+
+                print(f"DBG: host={host or '<missing>'} port={port or '<missing>'} db={db or '<missing>'} user={user or '<missing>'}")
+              except Exception as e:
+                print('DBG: parse error -', str(e))
+          PY
 
             cat > /tmp/apply_admin_api_migration.py <<'PY'
             #!/usr/bin/env python3
@@ -100,8 +132,8 @@ jobs:
           for attempt in range(1, max_attempts + 1):
               print(f'Attempt {attempt}/{max_attempts} - trying direct connection via URI')
               # Try direct connection with the full connection URL first (psql accepts a URI argument)
-              # force IPv4 (-4) on GitHub runners (they often lack IPv6 routing to hosted DBs)
-              proc = subprocess.run(['psql', '-4', u, '-c', sql], env=env, capture_output=True, text=True)
+              # Try direct connection via URI first (psql will handle credentials present in the URI)
+              proc = subprocess.run(['psql', u, '-c', sql], env=env, capture_output=True, text=True)
               print('Direct attempt stdout:\n', proc.stdout)
               print('Direct attempt stderr:\n', proc.stderr)
               rc = proc.returncode
@@ -111,8 +143,20 @@ jobs:
 
               print(f'direct psql attempt returned {rc} — trying explicit host/port (fallback)')
               # fallback: explicit host/port/user/db invocation
-              # fallback: force IPv4 and connect via explicit host/port/user/db
-              cmd = ['psql', '-4', '-h', host, '-p', str(port), '-U', user, '-d', dbname, '-c', sql]
+                # fallback: resolve host to IPv4 if necessary and use explicit host/port/user/db
+                # prefer a numeric IPv4 address if available to avoid IPv6 routing issues on hosted runners
+                try:
+                  import socket
+                  addrs = socket.getaddrinfo(host, None)
+                  ipv4 = next((ai[4][0] for ai in addrs if ai[0] == socket.AF_INET), None)
+                  if ipv4:
+                    host_to_use = ipv4
+                  else:
+                    host_to_use = host
+                except Exception:
+                  host_to_use = host
+
+                cmd = ['psql', '-h', host_to_use, '-p', str(port), '-U', user, '-d', dbname, '-c', sql]
               proc2 = subprocess.run(cmd, env=env, capture_output=True, text=True)
               print('Fallback stdout:\n', proc2.stdout)
               print('Fallback stderr:\n', proc2.stderr)
