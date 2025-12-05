@@ -205,6 +205,23 @@ class AdminPanel {
             this.saveUserFromModal();
         });
 
+        // Admin password-reset supporting controls in the user modal
+        const generateBtn = document.getElementById('user-generate-password');
+        if (generateBtn) generateBtn.addEventListener('click', () => {
+            // generate a random, strong password and fill both fields
+            const len = 16;
+            const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*-_+=';
+            let out = '';
+            for (let i = 0; i < len; i++) out += chars[Math.floor(Math.random() * chars.length)];
+            const newPwd = document.getElementById('admin-new-password');
+            const confirm = document.getElementById('admin-confirm-new-password');
+            if (newPwd) newPwd.value = out;
+            if (confirm) confirm.value = out;
+        });
+
+        const resetBtn = document.getElementById('user-reset-password-btn');
+        if (resetBtn) resetBtn.addEventListener('click', () => this.resetUserPasswordFromModal());
+
         // Order modal handlers
         const orderModalClose = document.getElementById('order-modal-close');
         const orderModal = document.getElementById('order-modal');
@@ -1247,6 +1264,36 @@ class AdminPanel {
         document.getElementById('user-avatar').value = user.avatar || '';
         document.getElementById('user-form-error').style.display = 'none';
         document.getElementById('user-modal').classList.add('active');
+        // Configure admin-reset UI: show reset area only for site admin
+        try {
+            const resetSection = document.getElementById('admin-reset-section');
+            if (resetSection) {
+                const isAdmin = this.currentUser && (this.currentUser.email === 'hello@ace1.in' || this.currentUser.role === 'admin');
+                resetSection.style.display = isAdmin ? 'block' : 'none';
+                // clear fields
+                // Ensure required inputs are present (defensive: if HTML variant lacks inputs)
+                let newPwd = document.getElementById('admin-new-password');
+                let confirm = document.getElementById('admin-confirm-new-password');
+                if (!newPwd) {
+                    newPwd = document.createElement('input');
+                    newPwd.type = 'password';
+                    newPwd.id = 'admin-new-password';
+                    newPwd.placeholder = 'New password for user';
+                    resetSection.querySelector('div')?.prepend(newPwd);
+                }
+                if (!confirm) {
+                    confirm = document.createElement('input');
+                    confirm.type = 'password';
+                    confirm.id = 'admin-confirm-new-password';
+                    confirm.placeholder = 'Confirm password';
+                    resetSection.querySelector('div')?.append(confirm);
+                }
+                const notice = document.getElementById('user-reset-notice');
+                if (newPwd) newPwd.value = '';
+                if (confirm) confirm.value = '';
+                if (notice) { notice.style.display = 'none'; notice.textContent = '' }
+            }
+        } catch (e) { /* no-op if DOM not ready */ }
     }
 
     async saveUserFromModal() {
@@ -1275,6 +1322,80 @@ class AdminPanel {
         } catch (err) {
             console.error('saveUserFromModal error:', err);
             this.showInlineError('user-form-error', err.message || 'Failed to save user');
+        }
+    }
+
+    // Server-side admin reset password for a user
+    async resetUserPasswordFromModal() {
+        try {
+            const userId = document.getElementById('user-id').value;
+            const newPassword = document.getElementById('admin-new-password').value;
+            const confirmPassword = document.getElementById('admin-confirm-new-password').value;
+
+            if (!userId) {
+                this.showInlineError('user-form-error', 'Missing user id');
+                return;
+            }
+
+            if (!newPassword || newPassword.length < 8) {
+                this.showInlineError('user-form-error', 'New password must be at least 8 characters');
+                return;
+            }
+
+            if (newPassword !== confirmPassword) {
+                this.showInlineError('user-form-error', 'New passwords do not match');
+                return;
+            }
+
+            if (!confirm(`Reset password for user ${userId}? This will invalidate their sessions.`)) return;
+
+            // Try to use a stored session token to authenticate the admin call
+            const token = localStorage.getItem('ace1_token');
+            if (!token) {
+                this.showInlineError('user-form-error', 'Admin session missing; please log in to perform this action');
+                return;
+            }
+
+            const submitBtn = document.getElementById('user-reset-password-btn');
+            const orig = submitBtn ? submitBtn.innerHTML : null;
+            if (submitBtn) { submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Resetting...'; submitBtn.disabled = true; }
+
+            // Delegate actual reset to server-side endpoint which must run with service_role privileges
+            // Resolve admin reset endpoint (configurable for production serverless URL)
+            // Resolve admin reset endpoint (override via window.ADMIN_API_URL or SUPABASE_FUNCTIONS_URL)
+            // Resolve admin reset endpoint (override via window.ADMIN_API_URL or SUPABASE_FUNCTIONS_URL).
+            // Fallback to site settings (this.settings.admin_api_url) so CI can write the production URL into the DB.
+            const adminApi = window.ADMIN_API_URL
+                || (window.SUPABASE_FUNCTIONS_URL ? `${window.SUPABASE_FUNCTIONS_URL.replace(/\/$/, '')}/admin-reset` : null)
+                || (this.settings && (this.settings.admin_api_url || this.settings.adminResetUrl))
+                || '/api/admin/reset-user-password';
+            const resp = await fetch(adminApi, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify({ userId, newPassword })
+            });
+
+            const body = await resp.json().catch(() => ({}));
+            if (!resp.ok) {
+                throw new Error(body.error || `Server rejected reset (${resp.status})`);
+            }
+
+            // show confirmation
+            const notice = document.getElementById('user-reset-notice');
+            if (notice) { notice.style.display = 'inline-block'; notice.textContent = 'Password successfully reset (server-side)'; }
+
+            // clear inputs
+            document.getElementById('admin-new-password').value = '';
+            document.getElementById('admin-confirm-new-password').value = '';
+
+            if (submitBtn) { submitBtn.innerHTML = orig || 'Reset Password'; submitBtn.disabled = false; }
+            if (window.showNotification) window.showNotification('Password reset successfully', 'success');
+
+        } catch (err) {
+            console.error('Reset user password failed:', err);
+            this.showInlineError('user-form-error', err.message || 'Reset failed');
+            const submitBtn = document.getElementById('user-reset-password-btn');
+            if (submitBtn) { submitBtn.innerHTML = '<i class="fas fa-trash"></i> Reset Password'; submitBtn.disabled = false; }
         }
     }
 
