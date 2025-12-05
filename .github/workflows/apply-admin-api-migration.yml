@@ -21,33 +21,47 @@ jobs:
             echo 'Missing SUPABASE_DB_URL secret; cannot apply migration.'
             exit 1
           fi
-          echo 'Parsing SUPABASE_DB_URL and applying SQL using psql parameters (avoids malformed host parsing)'
-          # Parse the DATABASE URL robustly using Python (handles query string / percent-encoding)
-          echo "Parsing SUPABASE_DB_URL via python to extract components"
-          parse_out=$(python - <<'PY'
-import os
+
+          cat > /tmp/apply_admin_api_migration.py <<'PY'
+#!/usr/bin/env python3
+import os, subprocess, sys, time
 from urllib.parse import urlparse, unquote
+
 u = os.getenv('SUPABASE_DB_URL')
 if not u:
-    print("__EMPTY__")
-    raise SystemExit(1)
+    print('ERROR: SUPABASE_DB_URL empty')
+    sys.exit(2)
+
 p = urlparse(u)
-user = p.username or ''
-password = p.password or ''
+user = unquote(p.username or '')
+password = unquote(p.password or '')
 host = p.hostname or ''
 port = p.port or 5432
 dbname = (p.path or '').lstrip('/') or ''
-print(user)
-print(password)
-print(host)
-print(port)
-print(dbname)
+
+if not (host and dbname and user):
+    print('ERROR: Failed to parse host/user/db from SUPABASE_DB_URL')
+    print('url=', u)
+    sys.exit(2)
+
+sql = 'ALTER TABLE IF EXISTS public.site_settings ADD COLUMN IF NOT EXISTS admin_api_url text;'
+cmd = ['psql', '-h', host, '-p', str(port), '-U', user, '-d', dbname, '-c', sql]
+env = dict(os.environ)
+env['PGPASSWORD'] = password
+
+max_attempts = 6
+for attempt in range(1, max_attempts + 1):
+    print(f'Attempt {attempt}/{max_attempts} - running psql')
+    rc = subprocess.call(cmd, env=env)
+    if rc == 0:
+        print('Migration applied successfully')
+        sys.exit(0)
+    else:
+        print(f'psql returned {rc} — retrying after delay')
+        time.sleep(attempt * 2)
+
+print('All attempts failed — migration not applied')
+sys.exit(3)
 PY
-)
-          if [ -z "$parse_out" ] || [ "$parse_out" = "__EMPTY__" ]; then
-            echo "Failed to parse SUPABASE_DB_URL (empty or invalid)"
-            exit 1
-          fi
-          IFS=$'\n' read -r user pass host port db <<< "$parse_out"
-          echo "Connecting to ${host}:${port} (db ${db}) as ${user}"
-          PGPASSWORD="$pass" psql -h "$host" -p "$port" -U "$user" -d "$db" -c "ALTER TABLE IF EXISTS public.site_settings ADD COLUMN IF NOT EXISTS admin_api_url text;"
+
+          python /tmp/apply_admin_api_migration.py
