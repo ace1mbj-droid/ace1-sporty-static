@@ -13,7 +13,7 @@ jobs:
       - name: Install psql
         run: sudo apt-get update && sudo apt-get install -y postgresql-client
 
-      - name: Apply migration SQL
+      - name: Apply migration SQL (safe parse)
         env:
           SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
         run: |
@@ -21,5 +21,32 @@ jobs:
             echo 'Missing SUPABASE_DB_URL secret; cannot apply migration.'
             exit 1
           fi
-          echo 'Applying supabase/migrations/20251205202000_add_admin_api_url_to_site_settings.sql'
-          psql "$SUPABASE_DB_URL" -f supabase/migrations/20251205202000_add_admin_api_url_to_site_settings.sql
+          echo 'Parsing SUPABASE_DB_URL and applying SQL using psql parameters (avoids malformed host parsing)'
+          python - <<'PY'
+import os
+from urllib.parse import urlparse
+u = os.getenv('SUPABASE_DB_URL')
+if not u:
+    raise SystemExit('SUPABASE_DB_URL empty')
+p = urlparse(u)
+username = p.username
+password = p.password
+host = p.hostname
+port = p.port or 5432
+dbname = p.path.lstrip('/')
+print('Connecting to', host, 'port', port, 'db', dbname)
+import subprocess, sys
+cmd = [
+    'psql',
+    '-h', host,
+    '-p', str(port),
+    '-U', username,
+    '-d', dbname,
+    '-c', "ALTER TABLE IF EXISTS public.site_settings ADD COLUMN IF NOT EXISTS admin_api_url text;"
+]
+env = dict(os.environ)
+env['PGPASSWORD'] = password or ''
+print('Running psql...')
+rc = subprocess.call(cmd, env=env)
+sys.exit(rc)
+PY
