@@ -129,7 +129,8 @@ jobs:
           PY
 
           # strip common indentation introduced by YAML heredoc (ensure valid python file)
-          python -c "import textwrap, pathlib; p=pathlib.Path('/tmp/apply_admin_api_migration.py'); p.write_text(textwrap.dedent(p.read_text()))" || true
+          # remove any leading spaces on each line so the generated file is valid Python
+          python -c "import pathlib; p=pathlib.Path('/tmp/apply_admin_api_migration.py'); txt=p.read_text(); p.write_text('\n'.join([l.lstrip() for l in txt.splitlines()])+'\n')" || true
 
           python /tmp/apply_admin_api_migration.py > /tmp/apply_admin_api_migration.log 2>&1 || (
             echo 'Migration script returned non-zero; check /tmp/apply_admin_api_migration.log for details'
