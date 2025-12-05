@@ -2,6 +2,8 @@ name: Apply admin_api_url migration
 
 on:
   workflow_dispatch: {}
+  push:
+    branches: [ main ]
 
 jobs:
   apply-migration:
@@ -45,20 +47,27 @@ if not (host and dbname and user):
     sys.exit(2)
 
 sql = 'ALTER TABLE IF EXISTS public.site_settings ADD COLUMN IF NOT EXISTS admin_api_url text;'
-cmd = ['psql', '-h', host, '-p', str(port), '-U', user, '-d', dbname, '-c', sql]
 env = dict(os.environ)
 env['PGPASSWORD'] = password
 
 max_attempts = 6
 for attempt in range(1, max_attempts + 1):
-    print(f'Attempt {attempt}/{max_attempts} - running psql')
-    rc = subprocess.call(cmd, env=env)
+  print(f'Attempt {attempt}/{max_attempts} - trying direct connection via URI')
+  # Try direct connection with the full connection URL first (psql accepts a URI argument)
+  rc = subprocess.call(['psql', u, '-c', sql], env=env)
     if rc == 0:
         print('Migration applied successfully')
         sys.exit(0)
     else:
-        print(f'psql returned {rc} — retrying after delay')
-        time.sleep(attempt * 2)
+    print(f'direct psql attempt returned {rc} — trying explicit host/port (fallback)')
+    # fallback: explicit host/port/user/db invocation
+    cmd = ['psql', '-h', host, '-p', str(port), '-U', user, '-d', dbname, '-c', sql]
+    rc2 = subprocess.call(cmd, env=env)
+    if rc2 == 0:
+      print('Migration applied successfully (via fallback host/port)')
+      sys.exit(0)
+    print(f'fallback psql returned {rc2} — retrying after delay')
+    time.sleep(attempt * 2)
 
 print('All attempts failed — migration not applied')
 sys.exit(3)
