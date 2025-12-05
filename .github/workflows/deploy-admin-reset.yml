@@ -13,10 +13,14 @@ jobs:
         uses: actions/checkout@v4
 
       - name: CI guard — prevent accidental production deploys
-        if: github.ref == 'refs/heads/main' && github.event_name != 'workflow_dispatch' && secrets.ALLOW_PRODUCTION_DEPLOY != 'true'
+        if: github.ref == 'refs/heads/main' && github.event_name != 'workflow_dispatch'
         run: |
-          echo "Automatic production deploys are disabled for safety. To allow a deploy, re-run manually as 'workflow_dispatch' or temporarily set the secret 'ALLOW_PRODUCTION_DEPLOY=true'."
-          exit 1
+          # 'secrets' can't be used in the job/step 'if' expression (causes parse-time errors).
+          # Evaluate the ALLOW_PRODUCTION_DEPLOY secret at runtime instead.
+          if [ "${{ secrets.ALLOW_PRODUCTION_DEPLOY }}" != "true" ]; then
+            echo "Automatic production deploys are disabled for safety. To allow a deploy, re-run manually as 'workflow_dispatch' or temporarily set the secret 'ALLOW_PRODUCTION_DEPLOY=true'."
+            exit 1
+          fi
 
       - name: Use Node
         uses: actions/setup-node@v4
