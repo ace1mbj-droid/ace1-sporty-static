@@ -28,71 +28,79 @@ jobs:
           psql --version || true
           echo "Debug: python version"
           python --version || true
+          
+          # Print the parsed host/db (sanitized - avoid printing secrets)
+          python -c "import os; from urllib.parse import urlparse; u=os.getenv('SUPABASE_DB_URL') or ''; p=urlparse(u); print('DBG: host=' + str(p.hostname or '<missing>') + ' db=' + str((p.path or '').lstrip('/')) )"
 
-            # Print the parsed host/db (but do NOT print full URL or password)
-            python - <<'PY'
-      import os
-      from urllib.parse import urlparse
-      u = os.getenv('SUPABASE_DB_URL') or ''
-      try:
-        p = urlparse(u)
-        print('DBG: host=', p.hostname or '<missing>', 'db=', (p.path or '').lstrip('/'))
-      except Exception as e:
-        print('DBG: parse error:', e)
-      PY
+          cat > /tmp/apply_admin_api_migration.py <<'PY'
+          #!/usr/bin/env python3
+          import os, subprocess, sys, time
+          from urllib.parse import urlparse, unquote
 
-            cat > /tmp/apply_admin_api_migration.py <<'PY'
-#!/usr/bin/env python3
-import os, subprocess, sys, time
-from urllib.parse import urlparse, unquote
+          u = os.getenv('SUPABASE_DB_URL')
+          if not u:
+              print('ERROR: SUPABASE_DB_URL empty')
+              sys.exit(2)
 
-u = os.getenv('SUPABASE_DB_URL')
-if not u:
-    print('ERROR: SUPABASE_DB_URL empty')
-    sys.exit(2)
+          p = urlparse(u)
+          user = unquote(p.username or '')
+          password = unquote(p.password or '')
+          host = p.hostname or ''
+          port = p.port or 5432
+          dbname = (p.path or '').lstrip('/') or ''
 
-p = urlparse(u)
-user = unquote(p.username or '')
-password = unquote(p.password or '')
-host = p.hostname or ''
-port = p.port or 5432
-dbname = (p.path or '').lstrip('/') or ''
+          if not (host and dbname and user):
+              print('ERROR: Failed to parse host/user/db from SUPABASE_DB_URL')
+              print('url=', u)
+              sys.exit(2)
 
-if not (host and dbname and user):
-    print('ERROR: Failed to parse host/user/db from SUPABASE_DB_URL')
-    print('url=', u)
-    sys.exit(2)
+          sql = 'ALTER TABLE IF EXISTS public.site_settings ADD COLUMN IF NOT EXISTS admin_api_url text;'
+          env = dict(os.environ)
+          env['PGPASSWORD'] = password
 
-sql = 'ALTER TABLE IF EXISTS public.site_settings ADD COLUMN IF NOT EXISTS admin_api_url text;'
-env = dict(os.environ)
-env['PGPASSWORD'] = password
+          # Increase attempts and add verbose output to capture stdout/stderr for diagnostics
+          max_attempts = 10
+          for attempt in range(1, max_attempts + 1):
+              print(f'Attempt {attempt}/{max_attempts} - trying direct connection via URI')
+              # Try direct connection with the full connection URL first (psql accepts a URI argument)
+              proc = subprocess.run(['psql', u, '-c', sql], env=env, capture_output=True, text=True)
+              print('Direct attempt stdout:\n', proc.stdout)
+              print('Direct attempt stderr:\n', proc.stderr)
+              rc = proc.returncode
+              if rc == 0:
+                  print('Migration applied successfully (direct)')
+                  sys.exit(0)
 
-max_attempts = 6
-for attempt in range(1, max_attempts + 1):
-  print(f'Attempt {attempt}/{max_attempts} - trying direct connection via URI')
-  # Try direct connection with the full connection URL first (psql accepts a URI argument)
-  rc = subprocess.call(['psql', u, '-c', sql], env=env)
-    if rc == 0:
-        print('Migration applied successfully')
-        sys.exit(0)
-    else:
-    print(f'direct psql attempt returned {rc} — trying explicit host/port (fallback)')
-    # fallback: explicit host/port/user/db invocation
-    cmd = ['psql', '-h', host, '-p', str(port), '-U', user, '-d', dbname, '-c', sql]
-    rc2 = subprocess.call(cmd, env=env)
-    if rc2 == 0:
-      print('Migration applied successfully (via fallback host/port)')
-      sys.exit(0)
-    print(f'fallback psql returned {rc2} — retrying after delay')
-    time.sleep(attempt * 2)
+              print(f'direct psql attempt returned {rc} — trying explicit host/port (fallback)')
+              # fallback: explicit host/port/user/db invocation
+              cmd = ['psql', '-h', host, '-p', str(port), '-U', user, '-d', dbname, '-c', sql]
+              proc2 = subprocess.run(cmd, env=env, capture_output=True, text=True)
+              print('Fallback stdout:\n', proc2.stdout)
+              print('Fallback stderr:\n', proc2.stderr)
+              rc2 = proc2.returncode
+              if rc2 == 0:
+                  print('Migration applied successfully (via fallback host/port)')
+                  sys.exit(0)
 
-print('All attempts failed — migration not applied')
-sys.exit(3)
-PY
+              print(f'Both attempts failed (direct={rc}, fallback={rc2}); retrying after backoff')
+              # Exponential backoff plus a small jitter
+              delay = attempt * 3 + (attempt % 3)
+              time.sleep(delay)
 
-          python /tmp/apply_admin_api_migration.py || (
-            echo 'Migration script returned non-zero; capturing psql client logs (if any)...'
-            echo '--- psql last error output ---'
-            # attempt to show last psql error from /tmp (if any); best-effort
-            true
+          print('All attempts failed — migration not applied')
+          sys.exit(3)
+          PY
+
+          python /tmp/apply_admin_api_migration.py > /tmp/apply_admin_api_migration.log 2>&1 || (
+            echo 'Migration script returned non-zero; check /tmp/apply_admin_api_migration.log for details'
+            echo '--- Last 200 lines of migration log ---'
+            tail -n 200 /tmp/apply_admin_api_migration.log || true
+            exit 1
           )
+
+      - name: Upload migration logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: admin-api-migration-logs
+          path: /tmp/apply_admin_api_migration.log
