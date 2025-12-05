@@ -100,7 +100,8 @@ jobs:
           for attempt in range(1, max_attempts + 1):
               print(f'Attempt {attempt}/{max_attempts} - trying direct connection via URI')
               # Try direct connection with the full connection URL first (psql accepts a URI argument)
-              proc = subprocess.run(['psql', u, '-c', sql], env=env, capture_output=True, text=True)
+              # force IPv4 (-4) on GitHub runners (they often lack IPv6 routing to hosted DBs)
+              proc = subprocess.run(['psql', '-4', u, '-c', sql], env=env, capture_output=True, text=True)
               print('Direct attempt stdout:\n', proc.stdout)
               print('Direct attempt stderr:\n', proc.stderr)
               rc = proc.returncode
@@ -110,7 +111,8 @@ jobs:
 
               print(f'direct psql attempt returned {rc} — trying explicit host/port (fallback)')
               # fallback: explicit host/port/user/db invocation
-              cmd = ['psql', '-h', host, '-p', str(port), '-U', user, '-d', dbname, '-c', sql]
+              # fallback: force IPv4 and connect via explicit host/port/user/db
+              cmd = ['psql', '-4', '-h', host, '-p', str(port), '-U', user, '-d', dbname, '-c', sql]
               proc2 = subprocess.run(cmd, env=env, capture_output=True, text=True)
               print('Fallback stdout:\n', proc2.stdout)
               print('Fallback stderr:\n', proc2.stderr)
