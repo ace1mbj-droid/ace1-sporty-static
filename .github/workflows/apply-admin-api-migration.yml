@@ -1,0 +1,25 @@
+name: Apply admin_api_url migration
+
+on:
+  workflow_dispatch: {}
+
+jobs:
+  apply-migration:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install psql
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client
+
+      - name: Apply migration SQL
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          if [ -z "$SUPABASE_DB_URL" ]; then
+            echo 'Missing SUPABASE_DB_URL secret; cannot apply migration.'
+            exit 1
+          fi
+          echo 'Applying supabase/migrations/20251205202000_add_admin_api_url_to_site_settings.sql'
+          psql "$SUPABASE_DB_URL" -f supabase/migrations/20251205202000_add_admin_api_url_to_site_settings.sql
