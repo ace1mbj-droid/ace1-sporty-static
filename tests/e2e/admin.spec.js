@@ -39,8 +39,11 @@ test.describe('Admin panel smoke tests (headless)', () => {
       window.adminPanel.renderUsers();
     });
 
-    // Click the Edit button and assert modal fields
-    await page.click('button:has-text("Edit")');
+    // Switch to Users tab so the user list is visible, then click the Edit button and assert modal fields
+    await page.click('button.admin-tab[data-tab="users"]');
+    await page.waitForSelector('#users-content.active');
+    await page.waitForSelector('#users-table-body button:has-text("Edit")');
+    await page.click('#users-table-body button:has-text("Edit")');
     await expect(page.locator('#user-modal')).toHaveClass(/active/);
     await expect(page.locator('#user-first-name')).toHaveValue('Alice');
     await expect(page.locator('#user-role-select')).toHaveValue('customer');
@@ -78,8 +81,12 @@ test.describe('Admin panel smoke tests (headless)', () => {
       route.fulfill({ status: 200, contentType: 'application/json', body: '[]' });
     });
 
-    // Click the view button
-    await page.click('button:has-text("View")');
+    // Switch to Orders tab so the orders list is visible, then click the view button
+    await page.click('button.admin-tab[data-tab="orders"]');
+    await page.waitForSelector('#orders-content.active');
+    // Click the order-specific View button in the orders table
+    await page.waitForSelector('#orders-table-body button:has-text("View")');
+    await page.click('#orders-table-body button:has-text("View")');
     await expect(page.locator('#order-modal')).toHaveClass(/active/);
 
     // Change status and save
