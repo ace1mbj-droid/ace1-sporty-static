@@ -22,31 +22,15 @@ jobs:
             exit 1
           fi
           echo 'Parsing SUPABASE_DB_URL and applying SQL using psql parameters (avoids malformed host parsing)'
-          python - <<'PY'
-import os
-from urllib.parse import urlparse
-u = os.getenv('SUPABASE_DB_URL')
-if not u:
-    raise SystemExit('SUPABASE_DB_URL empty')
-p = urlparse(u)
-username = p.username
-password = p.password
-host = p.hostname
-port = p.port or 5432
-dbname = p.path.lstrip('/')
-print('Connecting to', host, 'port', port, 'db', dbname)
-import subprocess, sys
-cmd = [
-    'psql',
-    '-h', host,
-    '-p', str(port),
-    '-U', username,
-    '-d', dbname,
-    '-c', "ALTER TABLE IF EXISTS public.site_settings ADD COLUMN IF NOT EXISTS admin_api_url text;"
-]
-env = dict(os.environ)
-env['PGPASSWORD'] = password or ''
-print('Running psql...')
-rc = subprocess.call(cmd, env=env)
-sys.exit(rc)
-PY
+          # Parse the DATABASE URL and call psql with explicit flags (PGPASSWORD used for password)
+          if ! [[ "$SUPABASE_DB_URL" =~ ^postgres://([^:]+):([^@]+)@([^:/]+):([0-9]+)/(.+)$ ]]; then
+            echo "SUPABASE_DB_URL malformed or uses an unexpected format."
+            exit 1
+          fi
+          user="${BASH_REMATCH[1]}"
+          pass="${BASH_REMATCH[2]}"
+          host="${BASH_REMATCH[3]}"
+          port="${BASH_REMATCH[4]}"
+          db="${BASH_REMATCH[5]}"
+          echo "Connecting to ${host}:${port} (db ${db}) as ${user}"
+          PGPASSWORD="$pass" psql -h "$host" -p "$port" -U "$user" -d "$db" -c "ALTER TABLE IF EXISTS public.site_settings ADD COLUMN IF NOT EXISTS admin_api_url text;"
