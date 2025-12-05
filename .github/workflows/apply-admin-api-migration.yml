@@ -130,7 +130,9 @@ jobs:
 
           # strip common indentation introduced by YAML heredoc (ensure valid python file)
           # Use textwrap.dedent to remove the shared indent while preserving inner code indentation
-          python -c "import pathlib, textwrap; p=pathlib.Path('/tmp/apply_admin_api_migration.py'); txt=p.read_text(); p.write_text(textwrap.dedent(txt))" || true
+          # remove the smallest leading indentation shared by all non-empty lines.
+          # This left-aligns top-level code while preserving relative indentation for inner blocks.
+          python -c "import pathlib; p=pathlib.Path('/tmp/apply_admin_api_migration.py'); txt=p.read_text(); lines=txt.splitlines(); indents=[len(l)-len(l.lstrip(' ')) for l in lines if l.strip()]; m=min(indents) if indents else 0; out='\n'.join([l[m:] if l.strip() else '' for l in lines])+'\n'; p.write_text(out)" || true
 
           # Print a preview of the generated file for debugging (safe: file contains no secrets)
           echo '--- Generated migration script (first 200 lines) ---'
