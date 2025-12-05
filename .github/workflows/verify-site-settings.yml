@@ -1,0 +1,31 @@
+name: Verify site_settings.admin_api_url
+
+on:
+  workflow_dispatch: {}
+
+jobs:
+  verify-site-settings:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Print admin_api_url from site_settings
+        env:
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+        run: |
+          if [ -z "$SUPABASE_SERVICE_ROLE_KEY" ] || [ -z "$SUPABASE_URL" ]; then
+            echo "Missing SUPABASE_SERVICE_ROLE_KEY or SUPABASE_URL. Add them to repo secrets.";
+            exit 1
+          fi
+
+          echo "Fetching site_settings (id=1)..."
+          val=$(curl -s -H "apikey: $SUPABASE_SERVICE_ROLE_KEY" -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" "$SUPABASE_URL/rest/v1/site_settings?id=eq.1" | jq -r '.[0].admin_api_url // empty')
+          if [ -z "$val" ]; then
+            echo "admin_api_url is empty or not set";
+            exit 0
+          fi
+
+          # Print final value (will be visible in the run logs)
+          echo "admin_api_url: $val"
