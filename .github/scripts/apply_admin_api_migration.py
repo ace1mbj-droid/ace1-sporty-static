@@ -20,18 +20,74 @@ import sys
 import time
 from urllib.parse import urlsplit
 
+
+def parse_supabase_db_url(u: str):
+    """Parse the SUPABASE_DB_URL robustly.
+    Prefer urllib.parse.urlsplit but fall back to a permissive extractor if urlsplit
+    raises ValueError for unusual or malformed netlocs.
+
+    Returns (user, password, host, port, dbname)
+    """
+    try:
+        # urlsplit is strict and will raise ValueError for bracketed non-IP hosts;
+        # prefer it when it works so we get proper decoding of usernames/passwords.
+        parts = urlsplit(u)
+        user = parts.username or ''
+        password = parts.password or ''
+        host = parts.hostname or ''
+        port = parts.port or 5432
+        dbname = (parts.path or '').lstrip('/')
+        return user, password, host, port, dbname
+    except ValueError:
+        # Fall back to a permissive parse (handles passwords containing '@' and
+        # unbracketed hosts that urlsplit may choke on).
+        rest = u.split('://', 1)[1] if '://' in u else u
+        netloc = rest.split('/', 1)[0]
+        dbname = rest.split('/', 1)[1] if '/' in rest else ''
+
+        # credentials might contain ':' and '@', so split at the last '@' if present
+        creds_split = netloc.rsplit('@', 1)
+        if len(creds_split) == 2:
+            creds, hostport = creds_split
+            if ':' in creds:
+                user, password = creds.split(':', 1)
+            else:
+                user, password = creds, ''
+        else:
+            hostport = creds_split[0]
+            user = ''
+            password = ''
+
+        # handle IPv6 bracketed host or host:port
+        host = hostport
+        port = 5432
+        if host.startswith('[') and ']' in host:
+            closing = host.find(']')
+            host = host[1:closing]
+            rem = hostport[closing+1:]
+            if rem.startswith(':'):
+                _p = rem[1:]
+                if _p:
+                    port = int(_p)
+        elif ':' in hostport:
+            # split on last colon in case IPv6 was not bracketed but contains ':'
+            parts_hp = hostport.rsplit(':', 1)
+            host = parts_hp[0]
+            try:
+                port = int(parts_hp[1])
+            except Exception:
+                port = 5432
+
+        return user, password, host, port, dbname
+
+
 u = os.getenv('SUPABASE_DB_URL')
 if not u:
     print('ERROR: SUPABASE_DB_URL empty')
     sys.exit(2)
 
 # Robust parsing using urllib.parse.urlsplit
-parts = urlsplit(u)
-user = parts.username or ''
-password = parts.password or ''
-host = parts.hostname or ''
-port = parts.port or 5432
-dbname = (parts.path or '').lstrip('/')
+user, password, host, port, dbname = parse_supabase_db_url(u)
 print(f"DBG: host={host or '<missing>'} port={port or '<missing>'} db={dbname or '<missing>'} user={user or '<missing>'}")
 
 if not (host and dbname and user):
