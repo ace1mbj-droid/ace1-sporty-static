@@ -102,21 +102,22 @@ env['PGPASSWORD'] = password
 # Increase attempts and add verbose output to capture stdout/stderr for diagnostics
 max_attempts = 10
 for attempt in range(1, max_attempts + 1):
-    print(f'Attempt {attempt}/{max_attempts} - trying direct connection via URI')
+    print(f'Attempt {attempt}/{max_attempts} - trying explicit host/port connection (prefer IPv4)')
 
-    # Try direct connection with the full connection URL first (psql accepts a URI argument)
-    proc = subprocess.run(['psql', u, '-c', sql], env=env, capture_output=True, text=True)
-    print('Direct attempt stdout:\n', proc.stdout)
-    print('Direct attempt stderr:\n', proc.stderr)
-    rc = proc.returncode
-    if rc == 0:
-        print('Migration applied successfully (direct)')
-        sys.exit(0)
-
-    print(f'direct psql attempt returned {rc} — trying explicit host/port (fallback)')
-
-    # Resolve host to IPv4 if necessary and use explicit host/port/user/db
-    # Prefer a numeric IPv4 address if available to avoid IPv6 routing issues on hosted runners
+    # Resolve host to IPv4 if possible (to avoid IPv6 routing issues on hosted runners)
+    try:
+        import socket
+        addrs = socket.getaddrinfo(host, None)
+        ipv4 = next((ai[4][0] for ai in addrs if ai[0] == socket.AF_INET), None)
+        if ipv4:
+            host_to_use = ipv4
+            print(f'DEBUG: resolved IPv4 {ipv4} for host {host}; using numeric IPv4 address')
+        else:
+            host_to_use = host
+            print(f'DEBUG: no IPv4 address available for {host}; using original host for DNS resolution')
+    except Exception as e:
+        host_to_use = host
+        print('DEBUG: host resolution error, using host as-is:', e)
     try:
         import socket
         addrs = socket.getaddrinfo(host, None)
@@ -131,10 +132,21 @@ for attempt in range(1, max_attempts + 1):
     print('Fallback stderr:\n', proc2.stderr)
     rc2 = proc2.returncode
     if rc2 == 0:
-        print('Migration applied successfully (via fallback host/port)')
+        print('Migration applied successfully (via explicit host/port)')
         sys.exit(0)
 
-    print(f'Both attempts failed (direct={rc}, fallback={rc2}); retrying after backoff')
+    print(f'explicit host/port attempt returned {rc2}; trying direct URI as a secondary fallback')
+
+    # Try direct connection with the full connection URL as a secondary fallback
+    proc = subprocess.run(['psql', u, '-c', sql], env=env, capture_output=True, text=True)
+    print('Direct attempt stdout:\n', proc.stdout)
+    print('Direct attempt stderr:\n', proc.stderr)
+    rc = proc.returncode
+    if rc == 0:
+        print('Migration applied successfully (via direct URI)')
+        sys.exit(0)
+
+    print(f'both explicit and direct attempts failed (explicit={rc2}, direct={rc}); retrying after backoff')
     # Exponential backoff plus a small jitter
     delay = attempt * 3 + (attempt % 3)
     time.sleep(delay)
