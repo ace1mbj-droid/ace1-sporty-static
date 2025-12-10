@@ -1,11 +1,11 @@
-DO $$
+AddDO $$
 DECLARE
 	admin_profile_id uuid;
 	admin_auth_id uuid;
 	admin_session_token text := COALESCE(current_setting('ace1.admin_session_token', true), 'token_admin_' || replace(gen_random_uuid()::text, '-', ''));
 	admin_password_hash text := COALESCE(
 		current_setting('ace1.admin_password_hash', true),
-		'$pbkdf2$100000$981db3dab501121dd1af7faa5f0c1580$261cf61670034f739325cb40c28efdaa0783c70fce4b5fd6c164957435dfa30a'
+		'$pbkdf2$100000104547e4d4628d37adb7db69328c80069b352104545f0ce6c9ffcbdd898f28b17cda733d5cd577a31e1e6ba44117e9fd12cc841dba'
 	);
 BEGIN
 	INSERT INTO public.users (id, email, password_hash, first_name, last_name, role)
