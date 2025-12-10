@@ -668,9 +668,11 @@ class DatabaseAuth {
         return null;
     }
 
-    // Generate session token
+    // Generate cryptographically secure session token
     generateToken() {
-        return 'token_' + Math.random().toString(36).substr(2) + Date.now().toString(36);
+        const array = new Uint8Array(32);
+        crypto.getRandomValues(array);
+        return 'token_' + Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
     }
 }
 
