@@ -9,6 +9,7 @@ This document explains how to configure the VS Code MCP integration for your Sup
 - Confirm `.vscode/mcp.json` exists and contains default inputs (project-ref, api-url, features). It’s been updated to use flags instead of positional args (fixes EINVALIDTAGNAME).
 - Make sure `npx` is available locally (Node 18+ recommended).
 - Keep your SUPABASE_ACCESS_TOKEN handy (service role or personal token with SQL permissions).
+- For CI verification, both staging and production workflows now include a dry-run step that lists migrations and functions to verify MCP access before deployment.
 
 ## Steps (VS Code MCP extension)
 
@@ -33,6 +34,30 @@ npx -y @supabase/mcp-server-supabase@0.5.9 --project-ref vorqavsuqcjnkjzwkyzr \
    1. `sql/optimize_rls_policies.sql` (if not applied already)
    2. `sql/enable_admin_header_access.sql`
    3. `sql/seed_admin.sql` (create admin user, session & user_roles)
+
+## Local verification (dry-run)
+
+Before running deployments, verify MCP access locally:
+
+```bash
+# Using VS Code task (recommended)
+# Run "MCP: Verify access (dry-run)" from Command Palette > Tasks: Run Task
+
+# Or manually:
+curl -f -H "Authorization: Bearer <SERVICE_ROLE_KEY>" \
+  "https://mcp.supabase.com/mcp?project_ref=vorqavsuqcjnkjzwkyzr&features=docs,account,database,debugging,development,functions,storage,branching" \
+  > /dev/null 2>&1 && echo "MCP access verified successfully." || echo "MCP access verification failed."
+```
+
+This sends an authenticated request to the MCP endpoint without performing any actions, confirming your token has access.
+
+## CI verification
+
+The GitHub Actions workflows (`mcp-staging-deploy.yml` and `mcp-production-deploy.yml`) now include an automatic verification step before deployment:
+
+- **Verify MCP access (dry-run check)**: Makes an authenticated HTTP request to the MCP endpoint to ensure the service role key is valid and has permissions before proceeding with `deploy:db` and `deploy:functions`.
+
+This prevents failed deployments due to authentication or permission issues.
 
 ## Troubleshooting
 

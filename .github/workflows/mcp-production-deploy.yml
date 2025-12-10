@@ -31,6 +31,15 @@ jobs:
             exit 1;
           fi
 
+      - name: Verify MCP access (dry-run check)
+        run: |
+          echo "Verifying MCP connection and permissions..."
+          if ! curl -f -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" "https://mcp.supabase.com/mcp?project_ref=$SUPABASE_PROJECT_REF&features=docs,account,database,debugging,development,functions,storage,branching" > /dev/null 2>&1; then
+            echo "MCP access verification failed. Check your SUPABASE_SERVICE_ROLE_KEY_PROD secret."
+            exit 1
+          fi
+          echo "MCP access verified successfully."
+
       - name: Run MCP:DB (apply migrations) — PRODUCTION
         run: |
           # Production deploys require a protected environment approval step in GitHub
