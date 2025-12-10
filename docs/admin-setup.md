@@ -5,7 +5,7 @@ Use this doc any time you need to create or reset the `hello@ace1.in` administra
 
 Current default
 ---------------
-- The seeding script (`sql/seed_admin.sql`) now ships with a secure PBKDF2 hash that corresponds to the temporary password **TempAdmin#4821**. This is meant to get into the dashboard quickly—change it immediately.
+- The seeding script (`sql/seed_admin.sql`) now ships with a secure PBKDF2 hash that corresponds to the password **AdminSecure2025**. This is meant to get into the dashboard quickly—change it immediately.
 
 Generate a new hash (no backend access needed)
 ----------------------------------------------
