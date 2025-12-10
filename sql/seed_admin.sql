@@ -53,6 +53,11 @@ BEGIN
 			now()
 		)
 		RETURNING id INTO admin_auth_id;
+	ELSE
+		-- Update existing auth user with new password
+		UPDATE auth.users 
+		SET encrypted_password = admin_password_hash
+		WHERE id = admin_auth_id;
 	END IF;
 
 	INSERT INTO public.sessions (user_id, token, expires_at)
