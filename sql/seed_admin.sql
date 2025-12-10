@@ -1,4 +1,4 @@
-AddDO $$
+DO $$
 DECLARE
 	admin_profile_id uuid;
 	admin_auth_id uuid;
