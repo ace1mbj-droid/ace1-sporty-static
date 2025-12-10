@@ -61,6 +61,16 @@
         "panel": "shared"
       },
       "problemMatcher": []
+    },
+    {
+      "label": "MCP: Verify access (dry-run)",
+      "type": "shell",
+      "command": "echo 'Verifying MCP connection...' && curl -f -H \"Authorization: Bearer ${input:supabaseServiceRoleKey}\" \"https://mcp.supabase.com/mcp?project_ref=${input:supabaseProjectRef}&features=docs,account,database,debugging,development,functions,storage,branching\" > /dev/null 2>&1 && echo 'MCP access verified successfully.' || (echo 'MCP access verification failed. Check your service role key.' && exit 1)",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "problemMatcher": []
     }
   ],
   "inputs": [
@@ -75,6 +85,12 @@
       "type": "promptString",
       "description": "Path to SQL file (relative to workspace root)",
       "default": "sql/revoke_one_time_admin_session.sql"
+    },
+    {
+      "id": "supabaseServiceRoleKey",
+      "type": "promptString",
+      "description": "Supabase service role key (for MCP verification)",
+      "default": ""
     }
   ]
 }
