@@ -54,7 +54,7 @@ jobs:
 
       - name: Apply DB schema via migrations (supabase db push)
         run: |
-          if [ "${{ env.LINK_OK }}" != "true" ]; then
+          if [ "$LINK_OK" != "true" ]; then
             echo "Supabase link failed earlier; not running 'supabase db push' in this runner. See README for CI options or run from a trusted runner."
             exit 0
           fi
