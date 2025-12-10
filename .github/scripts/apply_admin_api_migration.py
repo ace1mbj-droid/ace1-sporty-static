@@ -18,7 +18,7 @@ import os
 import subprocess
 import sys
 import time
-from urllib.parse import urlsplit
+from urllib.parse import urlsplit, quote
 
 
 def parse_supabase_db_url(u: str):
@@ -138,7 +138,16 @@ for attempt in range(1, max_attempts + 1):
     print(f'explicit host/port attempt returned {rc2}; trying direct URI as a secondary fallback')
 
     # Try direct connection with the full connection URL as a secondary fallback
-    proc = subprocess.run(['psql', u, '-c', sql], env=env, capture_output=True, text=True)
+    # Rebuild a safe URI using percent-encoding for username and password so psql won't mis-parse
+    try:
+        # Only reconstruct if we can parse parts; otherwise use original environment URI (u)
+        safe_user = quote(user, safe='')
+        safe_password = quote(password, safe='')
+        safe_uri = f"postgresql://{safe_user}:{safe_password}@{host}:{port}/{dbname}"
+    except Exception:
+        safe_uri = u
+
+    proc = subprocess.run(['psql', safe_uri, '-c', sql], env=env, capture_output=True, text=True)
     print('Direct attempt stdout:\n', proc.stdout)
     print('Direct attempt stderr:\n', proc.stderr)
     rc = proc.returncode
