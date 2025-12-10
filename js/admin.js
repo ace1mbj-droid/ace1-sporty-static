@@ -518,10 +518,18 @@ class AdminPanel {
 
     updateImagePreview(url) {
         const preview = document.getElementById('image-preview');
+        // Clear previous preview content
+        preview.innerHTML = "";
         if (url) {
-            preview.innerHTML = `<img src="${url}" alt="Preview">`;
+            const img = document.createElement("img");
+            img.src = url;
+            img.alt = "Preview";
+            preview.appendChild(img);
         } else {
-            preview.innerHTML = '<span style="color: #999;">Image preview will appear here</span>';
+            const span = document.createElement("span");
+            span.style.color = "#999";
+            span.textContent = "Image preview will appear here";
+            preview.appendChild(span);
         }
     }
 
