@@ -2,8 +2,10 @@
 class AuthManager {
     constructor() {
         // Don't initialize on user-profile page (it has its own auth check)
-        if (window.location.pathname.includes('user-profile.html')) {
-            console.log('⏭️ Skipping AuthManager init on user-profile.html');
+        // Don't initialize on admin-login page (it has inline auth handling)
+        if (window.location.pathname.includes('user-profile.html') || 
+            window.location.pathname.includes('admin-login.html')) {
+            console.log('⏭️ Skipping AuthManager init on', window.location.pathname);
             return;
         }
         this.init();
