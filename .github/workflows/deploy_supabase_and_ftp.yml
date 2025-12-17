@@ -144,23 +144,7 @@ jobs:
         run: |
           set -e
           echo "Validating file types in dist-public against allowlist"
-          DISALLOWED=$(find dist-public -type f \
-            ! -name '*.html' \
-            ! -name '*.css' \
-            ! -name '*.js' \
-            ! -name '*.png' \
-            ! -name '*.jpg' \
-            ! -name '*.jpeg' \
-            ! -name '*.webp' \
-            ! -name '*.gif' \
-            ! -name '*.svg' \
-            ! -name '*.ico' \
-            ! -name '*.woff' \
-            ! -name '*.woff2' \
-            ! -name '*.ttf' \
-            ! -name '*.eot' -print)
-            ! -name 'web.config' \
-            ! -name '.htaccess' -print)
+          DISALLOWED=$(find dist-public -type f -printf '%P\n' | grep -Ev '^(.+\\.(html|css|js|png|jpg|jpeg|webp|gif|svg|ico|woff|woff2|ttf|eot))$|^(web\\.config|\\.htaccess)$' || true)
           if [ -n "$DISALLOWED" ]; then
             echo "Found disallowed files in dist-public:"
             echo "$DISALLOWED"
