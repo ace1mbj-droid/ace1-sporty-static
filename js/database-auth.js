@@ -142,7 +142,7 @@ class DatabaseAuth {
         return hash.toString();
     }
 
-    // Register new user
+    // Register new user - using Supabase Auth
     async register(email, password, userData) {
         try {
             // Validate email format
@@ -169,41 +169,32 @@ class DatabaseAuth {
                 }
             }
 
-            // Check if user already exists
-            const { data: existing } = await this.supabase
-                .from('users')
-                .select('email')
-                .eq('email', email)
-                .single();
+            // Use Supabase Auth for registration
+            const { data: authData, error: authError } = await this.supabase.auth.signUp({
+                email: email,
+                password: password,
+                options: {
+                    data: {
+                        first_name: userData.firstName || '',
+                        last_name: userData.lastName || '',
+                        phone: userData.phone || ''
+                    }
+                }
+            });
 
-            if (existing) {
-                return { 
-                    success: false, 
-                    error: 'Email already registered. Please login instead.' 
-                };
+            if (authError) {
+                console.error('Registration error:', authError);
+                if (authError.message.includes('already registered')) {
+                    return { 
+                        success: false, 
+                        error: 'Email already registered. Please login instead.' 
+                    };
+                }
+                return { success: false, error: authError.message };
             }
 
-            // Hash password securely
-            const passwordHash = await this.hashPassword(password);
-
-            // Insert new user
-            const { data, error } = await this.supabase
-                .from('users')
-                .insert([{
-                    id: crypto.randomUUID(), // Generate UUID for new user
-                    email: email,
-                    password_hash: passwordHash,
-                    first_name: userData.firstName || '',
-                    last_name: userData.lastName || '',
-                    phone: userData.phone || '',
-                    role: 'customer'
-                }])
-                .select()
-                .single();
-
-            if (error) {
-                console.error('Registration error:', error);
-                return { success: false, error: error.message };
+            if (!authData.user) {
+                return { success: false, error: 'Registration failed. Please try again.' };
             }
 
             // Reset rate limit on successful registration
@@ -211,26 +202,57 @@ class DatabaseAuth {
                 window.securityManager.resetRateLimit(email, 'register');
             }
 
-            // Create session in database (no localStorage storage)
-            const sessionId = crypto.randomUUID(); // Generate unique session ID
-            const sessionToken = this.generateToken();
-            const expiresAt = new Date();
-            expiresAt.setDate(expiresAt.getDate() + 7); // 7 days expiry
-            
-            const user = {
-                id: data.id,
-                email: data.email,
-                firstName: data.first_name,
-                lastName: data.last_name,
-                phone: data.phone,
-                role: data.role,
-                avatar: data.avatar
+            // Create user profile in public.users
+            const newUser = {
+                id: authData.user.id,
+                email: authData.user.email,
+                first_name: userData.firstName || '',
+                last_name: userData.lastName || '',
+                phone: userData.phone || '',
+                role: 'customer',
+                created_at: new Date().toISOString(),
+                last_login: new Date().toISOString()
             };
+
+            const { error: profileError } = await this.supabase
+                .from('users')
+                .insert([newUser]);
+
+            if (profileError) {
+                console.warn('Could not create user profile:', profileError);
+            }
+
+            const user = {
+                id: newUser.id,
+                email: newUser.email,
+                firstName: newUser.first_name,
+                lastName: newUser.last_name,
+                phone: newUser.phone,
+                role: newUser.role
+            };
+
+            // Check if email confirmation is required
+            const needsConfirmation = !authData.session;
+
+            if (needsConfirmation) {
+                console.log('📧 Email confirmation required');
+                return { 
+                    success: true, 
+                    user: user,
+                    needsConfirmation: true,
+                    message: 'Registration successful! Please check your email to confirm your account.'
+                };
+            }
+
+            // Auto-login if no confirmation needed
+            const sessionId = crypto.randomUUID();
+            const sessionToken = authData.session.access_token;
+            const expiresAt = new Date(authData.session.expires_at * 1000);
 
             const { error: sessionError } = await this.supabase
                 .from('sessions')
                 .insert([{
-                    user_id: data.id,
+                    user_id: authData.user.id,
                     session_id: sessionId,
                     jwt_token: sessionToken,
                     user_data: user,
@@ -241,18 +263,14 @@ class DatabaseAuth {
 
             if (sessionError) {
                 console.error('Session creation error:', sessionError);
-                // Continue anyway with minimal data
             }
 
-            // Auto-login after registration
             this.currentUser = user;
-            
-            // Store only session_id in localStorage (reference to database session)
             localStorage.setItem('ace1_session_id', sessionId);
             this.setSessionToken(sessionToken);
             this.setHttpOnlyCookie(sessionId);
 
-            console.log('✅ Registration successful with secure password hashing');
+            console.log('✅ Registration successful via Supabase Auth');
             return { success: true, user: user };
         } catch (error) {
             console.error('Registration error:', error);
@@ -260,7 +278,7 @@ class DatabaseAuth {
         }
     }
 
-    // Login user
+    // Login user - using Supabase Auth
     async login(email, password) {
         try {
             // Validate email format
@@ -288,14 +306,13 @@ class DatabaseAuth {
                 }
             }
 
-            // Get user from database
-            const { data, error } = await this.supabase
-                .from('users')
-                .select('*')
-                .eq('email', email)
-                .single();
+            // Use Supabase Auth for authentication
+            const { data: authData, error: authError } = await this.supabase.auth.signInWithPassword({
+                email: email,
+                password: password
+            });
 
-            if (error || !data) {
+            if (authError || !authData.user) {
                 // Don't reveal if email exists or password is wrong (security)
                 if (window.securityManager) {
                     window.securityManager.logSecurityEvent('LOGIN_FAILED', {
@@ -309,67 +326,72 @@ class DatabaseAuth {
                 };
             }
 
-            // Verify password
-            const isPasswordValid = await this.verifyPassword(password, data.password_hash);
-            
-            if (!isPasswordValid) {
-                if (window.securityManager) {
-                    window.securityManager.logSecurityEvent('LOGIN_FAILED', {
-                        email: email,
-                        reason: 'Invalid password'
-                    });
-                }
-                return { 
-                    success: false, 
-                    error: 'Invalid email or password' 
-                };
-            }
-
-            // Check if password needs rehashing (upgrade from old format)
-            if (window.passwordHasher && window.passwordHasher.needsRehash && window.passwordHasher.needsRehash(data.password_hash)) {
-                console.log('🔄 Upgrading password hash to PBKDF2...');
-                const newHash = await this.hashPassword(password);
-                await this.supabase
-                    .from('users')
-                    .update({ password_hash: newHash })
-                    .eq('id', data.id);
-            }
-
-            // 2FA removed: no TOTP requirement for admin users
-
             // Reset rate limit on successful login
             if (window.securityManager) {
                 const clientId = window.securityManager.getClientIdentifier();
                 window.securityManager.resetRateLimit(`${clientId}_${email}`, 'login');
             }
 
-            // Update last login time
-            await this.supabase
+            // Get or create user profile in public.users
+            let { data: userData, error: userError } = await this.supabase
                 .from('users')
-                .update({ last_login: new Date().toISOString() })
-                .eq('id', data.id);
+                .select('*')
+                .eq('id', authData.user.id)
+                .single();
+
+            // If user doesn't exist in public.users, create profile
+            if (userError || !userData) {
+                const newUser = {
+                    id: authData.user.id,
+                    email: authData.user.email,
+                    first_name: authData.user.user_metadata?.first_name || '',
+                    last_name: authData.user.user_metadata?.last_name || '',
+                    phone: authData.user.user_metadata?.phone || '',
+                    role: authData.user.email === 'hello@ace1.in' ? 'admin' : 'customer',
+                    created_at: new Date().toISOString(),
+                    last_login: new Date().toISOString()
+                };
+
+                const { data: createdUser, error: createError } = await this.supabase
+                    .from('users')
+                    .insert([newUser])
+                    .select()
+                    .single();
+
+                if (createError) {
+                    console.warn('Could not create user profile:', createError);
+                    userData = newUser; // Use the data we tried to insert
+                } else {
+                    userData = createdUser;
+                }
+            } else {
+                // Update last login time
+                await this.supabase
+                    .from('users')
+                    .update({ last_login: new Date().toISOString() })
+                    .eq('id', authData.user.id);
+            }
 
             // Create user object
             const user = {
-                id: data.id,
-                email: data.email,
-                firstName: data.first_name,
-                lastName: data.last_name,
-                phone: data.phone,
-                role: data.role,
-                avatar: data.avatar
+                id: userData.id,
+                email: userData.email,
+                firstName: userData.first_name,
+                lastName: userData.last_name,
+                phone: userData.phone,
+                role: userData.role,
+                avatar: userData.avatar
             };
 
-            // Create session in database (no localStorage storage for token/user)
+            // Create session in database
             const sessionId = crypto.randomUUID();
-            const sessionToken = this.generateToken();
-            const expiresAt = new Date();
-            expiresAt.setDate(expiresAt.getDate() + 7); // 7 days expiry
+            const sessionToken = authData.session.access_token; // Use Supabase's token
+            const expiresAt = new Date(authData.session.expires_at * 1000);
 
             const { error: sessionError } = await this.supabase
                 .from('sessions')
                 .insert([{
-                    user_id: data.id,
+                    user_id: userData.id,
                     session_id: sessionId,
                     jwt_token: sessionToken,
                     user_data: user,
@@ -380,12 +402,12 @@ class DatabaseAuth {
 
             if (sessionError) {
                 console.error('Session creation error:', sessionError);
-                // Continue anyway with minimal data
+                // Continue anyway
             }
 
             this.currentUser = user;
             
-            // Store only session_id in localStorage (reference to database session)
+            // Store session reference
             localStorage.setItem('ace1_session_id', sessionId);
             this.setSessionToken(sessionToken);
             this.setHttpOnlyCookie(sessionId);
@@ -394,11 +416,11 @@ class DatabaseAuth {
             if (window.securityManager) {
                 window.securityManager.logSecurityEvent('LOGIN_SUCCESS', {
                     email: email,
-                    role: data.role
+                    role: userData.role
                 });
             }
 
-            console.log('✅ Login successful with secure password verification');
+            console.log('✅ Login successful via Supabase Auth');
             return { success: true, user: user };
         } catch (error) {
             console.error('Login error:', error);
@@ -553,7 +575,7 @@ class DatabaseAuth {
         }
     }
 
-    // Change password
+    // Change password - using Supabase Auth
     async changePassword(currentPassword, newPassword) {
         try {
             if (!this.currentUser) {
@@ -571,31 +593,20 @@ class DatabaseAuth {
                 }
             }
 
-            // Get current user data
-            const { data: user } = await this.supabase
-                .from('users')
-                .select('password_hash')
-                .eq('id', this.currentUser.id)
-                .single();
+            // Verify current password by attempting to sign in
+            const { error: verifyError } = await this.supabase.auth.signInWithPassword({
+                email: this.currentUser.email,
+                password: currentPassword
+            });
 
-            if (!user) {
-                return { success: false, error: 'User not found' };
-            }
-
-            // Verify current password
-            const isCurrentValid = await this.verifyPassword(currentPassword, user.password_hash);
-            if (!isCurrentValid) {
+            if (verifyError) {
                 return { success: false, error: 'Current password is incorrect' };
             }
 
-            // Hash new password
-            const newHash = await this.hashPassword(newPassword);
-            
-            // Update password
-            const { error } = await this.supabase
-                .from('users')
-                .update({ password_hash: newHash })
-                .eq('id', this.currentUser.id);
+            // Update password via Supabase Auth
+            const { error } = await this.supabase.auth.updateUser({
+                password: newPassword
+            });
 
             if (error) throw error;
 
@@ -612,7 +623,7 @@ class DatabaseAuth {
                 });
             }
 
-            console.log('✅ Password changed successfully with secure hashing');
+            console.log('✅ Password changed successfully via Supabase Auth');
             
             // Force logout to make new password effective immediately
             await this.logout();
