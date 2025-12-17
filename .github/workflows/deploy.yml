@@ -38,6 +38,12 @@ jobs:
             --exclude='node_modules' \
             --exclude='.vscode' \
             --exclude='dist' \
+            --exclude='.gitignore' \
+            --exclude='.env*' \
+            --exclude='*.tgz' \
+            --exclude='package.json' \
+            --exclude='package-lock.json' \
+            --exclude='vercel.json' \
             --exclude='tests' \
             --exclude='test-results' \
             --exclude='sql' \
@@ -74,6 +80,8 @@ jobs:
             ! -name '*.woff2' \
             ! -name '*.ttf' \
             ! -name '*.eot' -print)
+            ! -name 'web.config' \
+            ! -name '.htaccess' -print)
           if [ -n "$DISALLOWED" ]; then
             echo "Found disallowed files in dist-public:"
             echo "$DISALLOWED"
