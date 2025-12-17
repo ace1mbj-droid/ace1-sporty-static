@@ -1,5 +1,15 @@
+// TEMPORARY: Disable hCaptcha for development/testing
+// Set to false to re-enable hCaptcha validation
+window.HCAPTCHA_DISABLED = true;
+
 class HCaptchaManager {
     constructor() {
+        // Skip initialization if disabled
+        if (window.HCAPTCHA_DISABLED) {
+            console.warn('⚠️ hCaptcha is TEMPORARILY DISABLED');
+            return;
+        }
+        
         this.siteKey = window.HCAPTCHA_SITE_KEY;
         this.theme = window.HCAPTCHA_THEME || 'light';
         this.widgetMap = new Map();
@@ -184,6 +194,11 @@ function fallbackReset(form) {
 }
 
 window.requireHCaptchaToken = function requireHCaptchaToken(form) {
+    // TEMPORARY: Skip validation if disabled
+    if (window.HCAPTCHA_DISABLED) {
+        return ''; // Return empty string (valid token) when disabled
+    }
+    
     if (window.hcaptchaManager?.requireToken) {
         return window.hcaptchaManager.requireToken(form);
     }
@@ -191,6 +206,11 @@ window.requireHCaptchaToken = function requireHCaptchaToken(form) {
 };
 
 window.resetHCaptchaToken = function resetHCaptchaToken(form) {
+    // TEMPORARY: Skip reset if disabled
+    if (window.HCAPTCHA_DISABLED) {
+        return;
+    }
+    
     if (window.hcaptchaManager?.reset) {
         window.hcaptchaManager.reset(form);
         return;

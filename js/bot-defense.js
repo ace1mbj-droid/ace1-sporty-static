@@ -6,6 +6,12 @@
             : '');
 
     async function verifyHCaptchaWithServer(token, context = {}) {
+        // TEMPORARY: Skip verification if hCaptcha is disabled
+        if (window.HCAPTCHA_DISABLED) {
+            console.warn('⚠️ hCaptcha verification SKIPPED (disabled)');
+            return { success: true, details: { disabled: true } };
+        }
+        
         if (!token) {
             return { success: false, error: 'Missing verification token.' };
         }
