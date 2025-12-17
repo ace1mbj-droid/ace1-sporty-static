@@ -15,6 +15,8 @@ Successfully migrated **ALL user authentication, session, and CSRF data from loc
 - ⚡ Enterprise-grade security with server-side session control
 - 🌍 Cross-device synchronization
 - 🛡️ Instant server-side session revocation capability
+- 🍪 Added httpOnly, secure cookies for sessions (set/clear via server)
+- 🔑 Added admin TOTP enforcement (server-side verification)
 
 ---
 
