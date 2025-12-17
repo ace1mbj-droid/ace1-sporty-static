@@ -236,7 +236,7 @@ async function addToCart(productId) {
             const cartProduct = {
                 id: product.id,
                 name: product.name,
-                price: parseFloat(product.price),
+                price: parseFloat(product.price || product.price_cents || 0),
                 image: product.image_url || 'images/placeholder.jpg',
                 stock_quantity: product.stock_quantity
             };
@@ -250,6 +250,13 @@ async function addToCart(productId) {
 }
 
 function addProductToCart(product) {
+    // Ensure price is a number (handle both price and price_cents from Supabase)
+    const price = parseFloat(product.price || product.price_cents || 0);
+    if (price <= 0) {
+        showNotification('Error: Product price not available', 'error');
+        return;
+    }
+    
     // Check if product already in cart
     const existingItem = cart.find(item => item.id === product.id);
     
@@ -261,7 +268,7 @@ function addProductToCart(product) {
         }
         existingItem.quantity += 1;
     } else {
-        cart.push({ ...product, quantity: 1 });
+        cart.push({ ...product, price, quantity: 1 });
     }
     
     updateCart();
@@ -286,7 +293,7 @@ function updateCart() {
     }
 
     // Update cart total
-    cartTotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    cartTotal = cart.reduce((sum, item) => sum + ((parseFloat(item.price) || 0) * item.quantity), 0);
     cartTotalElement.textContent = `₹${cartTotal.toLocaleString('en-IN')}`;
     
     // Update cart items display
@@ -298,12 +305,14 @@ function updateCart() {
             </div>
         `;
     } else {
-        cartItems.innerHTML = cart.map(item => `
+        cartItems.innerHTML = cart.map(item => {
+            const price = parseFloat(item.price || 0);
+            return `
             <div class="cart-item" data-id="${item.id}">
                 <img src="${item.image}" alt="${item.name}" onerror="this.src='images/placeholder.jpg'">
                 <div class="cart-item-info">
                     <h4>${item.name}</h4>
-                    <p>₹${item.price.toLocaleString('en-IN')}</p>
+                    <p>₹${price.toLocaleString('en-IN')}</p>
                     <div class="cart-item-quantity">
                         <button class="qty-btn minus" data-id="${item.id}">-</button>
                         <span>${item.quantity}</span>
@@ -314,7 +323,8 @@ function updateCart() {
                     <i class="fas fa-times"></i>
                 </button>
             </div>
-        `).join('');
+        `;
+        }).join('');
         
         // Add event listeners for quantity buttons and remove buttons
         document.querySelectorAll('.qty-btn').forEach(btn => {
