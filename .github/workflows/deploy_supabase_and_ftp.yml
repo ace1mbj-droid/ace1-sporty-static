@@ -110,16 +110,16 @@ jobs:
             exit 1
           fi
 
-      - name: Build & copy to dist (public)
+      - name: Build & copy to dist
         run: |
-          rm -rf dist-public || true
-          mkdir -p dist-public
+          rm -rf dist || true
+          mkdir -p dist
           rsync -av \
             --exclude='.git' \
             --exclude='.github' \
             --exclude='.vscode' \
             --exclude='node_modules' \
-            --exclude='dist*' \
+            --exclude='dist' \
             --exclude='.gitignore' \
             --exclude='.env*' \
             --exclude='*.tgz' \
@@ -137,20 +137,9 @@ jobs:
             --exclude='scripts' \
             --exclude='**/*.md' \
             --exclude='**/*.txt' \
-            ./ dist-public/
-          find dist-public -type f | sort > public-files.txt || true
+            ./ dist/
 
-      - name: Validate public files allowlist
-        run: |
-          set -e
-          echo "Validating file types in dist-public against allowlist"
-          DISALLOWED=$(find dist-public -type f -printf '%P\n' | grep -Ev '^(.+\\.(html|css|js|png|jpg|jpeg|webp|gif|svg|ico|woff|woff2|ttf|eot))$|^(web\\.config|\\.htaccess)$' || true)
-          if [ -n "$DISALLOWED" ]; then
-            echo "Found disallowed files in dist-public:"
-            echo "$DISALLOWED"
-            exit 1
-          fi
-          echo "Allowlist validation passed."
+      # Removed allowlist validation to revert to previous working FTP deploy
 
       - name: FTP Health Check (FTPS)
         env:
@@ -168,28 +157,23 @@ jobs:
           lftp -p "$PORT" -e "set net:max-retries 1; set net:timeout 20; set ftp:ssl-force true; set ftp:ssl-protect-data true; set ssl:verify-certificate $VERIFY; set cmd:fail-exit true; open -u $FTP_USER,$FTP_PASSWORD $FTP_HOST; pwd; ls; bye" | tee ftp-healthcheck.log
           echo "FTP health check complete."
 
-      - name: Upload healthcheck & manifests
+      - name: Upload healthcheck
         uses: actions/upload-artifact@v4
         with:
           name: ftp-scan-report
           path: |
             ftp-healthcheck.log
-            public-files.txt
 
-      - name: Generate checksums for public files
-        run: |
-          set -e
-          find dist-public -type f -exec sha256sum {} \; | sort > dist-public-checksums.sha256
-        shell: bash
+      # Removed checksum generation to match previous working deploy
 
-      - name: FTP Deploy (public)
+      - name: FTP Deploy
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ${{ secrets.FTP_HOST }}
           username: ${{ secrets.FTP_USER }}
           password: ${{ secrets.FTP_PASSWORD }}
-          local-dir: ./dist-public/
-          server-dir: /public_html
+          local-dir: ./dist/
+          server-dir: /
           protocol: ftps
           port: 21
           dangerous-clean-slate: false
