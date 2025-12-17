@@ -1242,12 +1242,12 @@ class AdminPanel {
             }
 
             console.log(`✅ Loaded ${users?.length || 0} users`);
+            this.users = users || [];
         } catch (err) {
             console.error('Exception loading users:', err);
             alert(`Exception loading users: ${err.message}`);
+            this.users = [];
         }
-
-        this.users = users || [];
         this.renderUsers();
     }
 
