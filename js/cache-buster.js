@@ -73,12 +73,69 @@
     // ===================================
     // VERSION CHECK & FORCE RELOAD
     // ===================================
-    function checkVersion() {
+    async function checkVersion() {
+        try {
+            // Try to get version from database
+            const supabase = window.getSupabase?.();
+            if (supabase) {
+                const { data, error } = await supabase
+                    .from('application_settings')
+                    .select('app_version, last_cache_version_update')
+                    .eq('id', 1)
+                    .single();
+                
+                if (!error && data) {
+                    if (data.app_version !== CACHE_VERSION) {
+                        console.log('🔄 New version detected, clearing cache...');
+                        clearBrowserCache();
+                        
+                        // Update database
+                        await supabase
+                            .from('application_settings')
+                            .update({ app_version: CACHE_VERSION, last_cache_version_update: new Date() })
+                            .eq('id', 1);
+                        
+                        // Keep localStorage backup
+                        localStorage.setItem('ace1_version', CACHE_VERSION);
+                        localStorage.setItem('ace1_last_reload', Date.now().toString());
+                        return true;
+                    }
+                    
+                    // Check time interval
+                    const lastUpdate = new Date(data.last_cache_version_update).getTime();
+                    const timeSinceUpdate = Date.now() - lastUpdate;
+                    if (timeSinceUpdate > FORCE_RELOAD_INTERVAL) {
+                        console.log('⏰ Cache refresh interval reached, clearing cache...');
+                        clearBrowserCache();
+                        
+                        // Update database
+                        await supabase
+                            .from('application_settings')
+                            .update({ last_cache_version_update: new Date() })
+                            .eq('id', 1);
+                        
+                        localStorage.setItem('ace1_last_reload', Date.now().toString());
+                        return true;
+                    }
+                    
+                    // Update database with current reload time (keep it fresh)
+                    await supabase
+                        .from('application_settings')
+                        .update({ last_cache_version_update: new Date() })
+                        .eq('id', 1);
+                    
+                    return false;
+                }
+            }
+        } catch (error) {
+            console.warn('Failed to check version from database:', error);
+        }
+        
+        // Fallback to localStorage
         const lastVersion = localStorage.getItem('ace1_version');
         const lastReload = localStorage.getItem('ace1_last_reload');
         const now = Date.now();
 
-        // Check if version changed or if it's been too long
         if (lastVersion !== CACHE_VERSION) {
             console.log('🔄 New version detected, clearing cache...');
             clearBrowserCache();
@@ -87,7 +144,6 @@
             return true;
         }
 
-        // Force reload after interval (to ensure fresh data)
         if (lastReload) {
             const timeSinceReload = now - parseInt(lastReload);
             if (timeSinceReload > FORCE_RELOAD_INTERVAL) {
