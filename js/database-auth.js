@@ -261,7 +261,7 @@ class DatabaseAuth {
     }
 
     // Login user
-    async login(email, password, totpCode = '') {
+    async login(email, password) {
         try {
             // Validate email format
             if (window.securityManager && !window.securityManager.validateEmail(email)) {
@@ -335,18 +335,7 @@ class DatabaseAuth {
                     .eq('id', data.id);
             }
 
-            // If user is admin, require TOTP (can be temporarily disabled via global flag)
-            const isAdmin = data.role === 'admin' || data.email === 'hello@ace1.in' || await this.isUserAdmin(data.id);
-            const disable2fa = !!(window && window.ACE_DISABLE_2FA);
-            if (isAdmin && !disable2fa) {
-                if (!totpCode) {
-                    return { success: false, error: '2FA code required for admin login' };
-                }
-                const totpOk = await this.verifyAdminTotp(totpCode);
-                if (!totpOk) {
-                    return { success: false, error: 'Invalid 2FA code' };
-                }
-            }
+            // 2FA removed: no TOTP requirement for admin users
 
             // Reset rate limit on successful login
             if (window.securityManager) {
@@ -768,24 +757,7 @@ class DatabaseAuth {
         }
     }
 
-    async verifyAdminTotp(code) {
-        try {
-            const res = await fetch('https://vorqavsuqcjnkjzwkyzr.supabase.co/functions/v1/admin-verify-totp', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': 'Bearer admin-token'
-                },
-                body: JSON.stringify({ code })
-            });
-            if (!res.ok) return false;
-            const body = await res.json().catch(() => ({}));
-            return !!body.success;
-        } catch (err) {
-            console.warn('TOTP verification error', err);
-            return false;
-        }
-    }
+    // 2FA removed: verifyAdminTotp no longer used
 }
 
 // Initialize and export

@@ -78,6 +78,4 @@ window.setSupabaseSessionToken = (token) => {
     }
 };
 
-// Temporary feature flag to disable 2FA checks site-wide
-// Set to true to bypass admin TOTP requirement
-window.ACE_DISABLE_2FA = true;
+// 2FA removed site-wide: no feature flag needed
