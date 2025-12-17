@@ -24,13 +24,16 @@ jobs:
 
       - name: Inject ADMIN_API_URL into built admin.html (optional)
         # Run only when either admin API secret is provided
-        if: ${{ secrets.SUPABASE_FUNCTIONS_URL || secrets.ADMIN_API_URL }}
+        env:
+          ADMIN_API_URL: ${{ secrets.ADMIN_API_URL }}
+          SUPABASE_FUNCTIONS_URL: ${{ secrets.SUPABASE_FUNCTIONS_URL }}
+        if: ${{ env.ADMIN_API_URL != '' || env.SUPABASE_FUNCTIONS_URL != '' }}
         run: |
           # prefer ADMIN_API_URL secret (explicit); fall back to SUPABASE_FUNCTIONS_URL + /admin-reset
-          if [ -n "${{ secrets.ADMIN_API_URL }}" ]; then
-            ADMIN_URL="${{ secrets.ADMIN_API_URL }}"
+          if [ -n "$ADMIN_API_URL" ]; then
+            ADMIN_URL="$ADMIN_API_URL"
           else
-            ADMIN_URL="${{ secrets.SUPABASE_FUNCTIONS_URL }}/admin-reset"
+            ADMIN_URL="${SUPABASE_FUNCTIONS_URL}/admin-reset"
           fi
 
           if [ -f dist/admin.html ]; then
