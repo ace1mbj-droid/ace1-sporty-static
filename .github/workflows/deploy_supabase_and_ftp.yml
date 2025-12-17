@@ -101,23 +101,96 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Build & copy to dist
+      - name: Build & copy to dist (public/private)
         run: |
-          rm -rf dist || true
-          mkdir -p dist
-          rsync -av --exclude='.git' --exclude='.github' --exclude='node_modules' --exclude='dist' ./ dist/
+          rm -rf dist-public || true
+          rm -rf dist-private || true
+          mkdir -p dist-public
+          mkdir -p dist-private
+          rsync -av \
+            --exclude='.git' \
+            --exclude='.github' \
+            --exclude='node_modules' \
+            --exclude='dist*' \
+            --exclude='tests' \
+            --exclude='test-results' \
+            --exclude='sql' \
+            --exclude='supabase' \
+            --exclude='server' \
+            --exclude='package' \
+            --exclude='docs' \
+            --exclude='reproduction' \
+            --exclude='scripts' \
+            --exclude='**/*.md' \
+            --exclude='**/*.txt' \
+            ./ dist-public/
+          for d in docs sql supabase server scripts package reproduction; do
+            if [ -d "$d" ]; then
+              rsync -av "$d" dist-private/ || true
+            fi
+          done
+          find dist-public -type f | sort > public-files.txt || true
+          find dist-private -type f | sort > private-files.txt || true
 
-      - name: FTP Deploy
+      - name: FTP Health Check (FTPS)
+        env:
+          FTP_HOST: ${{ secrets.FTP_HOST }}
+          FTP_USER: ${{ secrets.FTP_USER }}
+          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+          FTP_PORT: ${{ secrets.FTP_PORT }}
+        run: |
+          sudo apt-get update && sudo apt-get install -y lftp
+          set -e
+          PORT=${FTP_PORT:-21}
+          echo "Running FTP health check against ${FTP_HOST}:${PORT}"
+          lftp -p "$PORT" -e "set net:max-retries 1; set net:timeout 20; set ftp:ssl-force true; set ftp:ssl-protect-data true; set cmd:fail-exit true; open -u $FTP_USER,$FTP_PASSWORD $FTP_HOST; pwd; ls; bye" | tee ftp-healthcheck.log
+          echo "FTP health check complete."
+
+      - name: Upload healthcheck & manifests
+        uses: actions/upload-artifact@v4
+        with:
+          name: ftp-scan-report
+          path: |
+            ftp-healthcheck.log
+            public-files.txt
+            private-files.txt
+
+      - name: Set FTP target directories
+        run: |
+          if [ -n "${{ secrets.FTP_PUBLIC_DIR }}" ]; then echo "PUBLIC_DIR=${{ secrets.FTP_PUBLIC_DIR }}" >> $GITHUB_ENV; else echo "PUBLIC_DIR=/" >> $GITHUB_ENV; fi
+          if [ -n "${{ secrets.FTP_PRIVATE_DIR }}" ]; then echo "PRIVATE_DIR=${{ secrets.FTP_PRIVATE_DIR }}" >> $GITHUB_ENV; else echo "PRIVATE_DIR=/_private" >> $GITHUB_ENV; fi
+
+      - name: FTP Deploy (public)
         uses: 
         with:
           server: ${{ secrets.FTP_HOST }}
           username: ${{ secrets.FTP_USER }}
           password: ${{ secrets.FTP_PASSWORD }}
-          local-dir: ./dist/
-          server-dir: /
+          local-dir: ./dist-public/
+          server-dir: ${{ env.PUBLIC_DIR }}
           protocol: ftps
           port: 21
           dangerous-clean-slate: false
+          state-name: ace1-public-deploy-state.json
+          exclude: |
+            **/.git*
+            **/.github/**
+            **/node_modules/**
+            dist/**
+
+      - name: FTP Deploy (private)
+        if: ${{ hashFiles('dist-private/**') != '' }}
+        uses: 
+        with:
+          server: ${{ secrets.FTP_HOST }}
+          username: ${{ secrets.FTP_USER }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: ./dist-private/
+          server-dir: ${{ env.PRIVATE_DIR }}
+          protocol: ftps
+          port: 21
+          dangerous-clean-slate: false
+          state-name: ace1-private-deploy-state.json
           exclude: |
             **/.git*
             **/.github/**
@@ -130,3 +203,4 @@ jobs:
 # - SUPABASE_DB_URL (full postgres connection url, with password; use service key)
 # - RZ_KEY, RZ_SECRET (Razorpay keys) - stored as GitHub secrets
 # - FTP_HOST, FTP_USER, FTP_PASSWORD
+# Optional FTP secrets: FTP_PUBLIC_DIR (default '/'), FTP_PRIVATE_DIR (default '/_private'), FTP_PORT (default 21)
