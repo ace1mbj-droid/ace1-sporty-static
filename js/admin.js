@@ -54,13 +54,7 @@ class AdminPanel {
             issues.push('Admin server endpoint not configured (ADMIN_API_URL missing) — some server-side actions will fail');
         }
 
-        // Admin session token presence (used by server RPCs / admin endpoints)
-        try {
-            const token = localStorage.getItem('ace1_token');
-            if (!token) issues.push('Admin session token not found in localStorage (ace1_token) — some actions will require re-login');
-        } catch (e) {
-            issues.push('Unable to read localStorage for session token');
-        }
+        // Admin session enforced by httpOnly cookie (no localStorage needed)
 
         // If issues found, create or update a visible banner at top of admin container
         const existing = document.getElementById('admin-critical-banner');
@@ -131,7 +125,7 @@ class AdminPanel {
     }
 
     async checkAuth() {
-        // First, check if user is logged in via Supabase
+        // Check if user is logged in via Supabase
         const { data: { session } } = await this.supabase.auth.getSession();
         
         if (session) {
@@ -142,17 +136,7 @@ class AdminPanel {
                 this.currentUser = session.user;
                 document.getElementById('admin-user').textContent = `Welcome, ${session.user.email}`;
                 
-                // Store session token in localStorage for admin requests
-                if (session.access_token) {
-                    localStorage.setItem('ace1_token', session.access_token);
-                    localStorage.setItem('ace1_admin', 'true');
-                    localStorage.setItem('ace1_user', JSON.stringify({
-                        id: session.user.id,
-                        email: session.user.email
-                    }));
-                }
-                
-                // Ensure the request pipeline has the header that our RLS policies expect
+                // Set session token in request pipeline (httpOnly cookie is sent automatically by browser)
                 if (window.setSupabaseSessionToken && session.access_token) {
                     window.setSupabaseSessionToken(session.access_token);
                 }
@@ -167,31 +151,7 @@ class AdminPanel {
             }
         }
         
-        // Fallback to localStorage admin (also must be hello@ace1.in)
-        const isAdmin = localStorage.getItem('ace1_admin');
-        const userStr = localStorage.getItem('ace1_user');
-        
-        if (isAdmin && userStr) {
-            const user = JSON.parse(userStr);
-            // Only allow hello@ace1.in
-            if (user.email === 'hello@ace1.in') {
-                this.currentUser = user;
-                document.getElementById('admin-user').textContent = `Welcome, ${user.firstName || user.email}`;
-                
-                // Restore session token if missing so UI requests are allowed by RLS
-                try {
-                    const existing = localStorage.getItem('ace1_token');
-                    if (existing && window.setSupabaseSessionToken) {
-                        window.setSupabaseSessionToken(existing);
-                    }
-                } catch (err) {
-                    console.warn('restore session header failed', err);
-                }
-                return;
-            }
-        }
-        
-        // No valid admin session - redirect to login
+        // No valid admin session - redirect to login (no localStorage fallback)
         showNotification('Please log in as an administrator', 'error');
         setTimeout(() => {
             window.location.href = 'admin-login.html';
@@ -263,9 +223,6 @@ class AdminPanel {
         document.getElementById('logout-btn').addEventListener('click', async () => {
             if (window.databaseAuth && typeof window.databaseAuth.logout === 'function') {
                 await window.databaseAuth.logout();
-            } else {
-                localStorage.removeItem('ace1_admin');
-                localStorage.removeItem('ace1_user');
             }
         });
             // Change summary modal handlers
@@ -839,7 +796,7 @@ class AdminPanel {
             try {
                 if (changes && changes.length) {
                     const actorId = this.currentUser?.id || null;
-                    const actorEmail = this.currentUser?.email || (localStorage.getItem('ace1_user') ? JSON.parse(localStorage.getItem('ace1_user')).email : null);
+                    const actorEmail = this.currentUser?.email || null;
                     const summaryText = changes.map(c => c.label).join(', ');
                     const payload = [{
                         product_id: savedProductId,

@@ -2,17 +2,11 @@
 // CACHE BUSTER & BROWSER CACHE CLEANER
 // ===================================
 // Ensures users always get the latest version of the website
-// Clears browser cache on page load
+// Uses ETag/Last-Modified headers for cache validation (no localStorage)
 
 (function() {
     'use strict';
 
-    // ===================================
-    // CONFIGURATION
-    // ===================================
-    const CACHE_VERSION = 'v1.0.' + Date.now(); // Unique version per deployment
-    const FORCE_RELOAD_INTERVAL = 3600000; // 1 hour in milliseconds
-    
     // ===================================
     // CLEAR BROWSER CACHE
     // ===================================
@@ -30,32 +24,7 @@
                 });
             }
 
-            // 2. Clear localStorage cache items (preserve user session)
-            const itemsToPreserve = [
-                'ace1_user',
-                'ace1_token',
-                'ace1_admin',
-                'ace1_cart',
-                'userEmail'
-            ];
-
-            // Remove old cache items
-            const cacheKeys = Object.keys(localStorage).filter(key => 
-                key.includes('cache') || 
-                key.includes('cached') ||
-                key.includes('_timestamp') ||
-                key.includes('products_cache') ||
-                key.includes('categories_cache')
-            );
-
-            cacheKeys.forEach(key => {
-                if (!itemsToPreserve.includes(key)) {
-                    localStorage.removeItem(key);
-                    console.log('Removed cache:', key);
-                }
-            });
-
-            // 3. Clear sessionStorage cache (safe to clear all)
+            // 2. Clear cache items from sessionStorage only (no localStorage)
             const sessionCacheKeys = Object.keys(sessionStorage).filter(key =>
                 key.includes('cache') || key.includes('cached')
             );
@@ -75,29 +44,28 @@
     // ===================================
     async function checkVersion() {
         try {
-            // Try to get version from database
-            const supabase = window.getSupabase?.();
-            if (supabase) {
-                const { data, error } = await supabase
-                    .from('application_settings')
-                    .select('app_version, last_cache_version_update')
-                    .eq('id', 1)
-                    .single();
-                
-                if (!error && data) {
-                    if (data.app_version !== CACHE_VERSION) {
-                        console.log('🔄 New version detected, clearing cache...');
-                        clearBrowserCache();
-                        
-                        // Update database
-                        await supabase
-                            .from('application_settings')
-                            .update({ app_version: CACHE_VERSION, last_cache_version_update: new Date() })
-                            .eq('id', 1);
-                        
-                        // Keep localStorage backup
-                        localStorage.setItem('ace1_version', CACHE_VERSION);
-                        localStorage.setItem('ace1_last_reload', Date.now().toString());
+            // Check cache headers (ETag/Last-Modified) from main resource
+            const response = await fetch(window.location.href, { method: 'HEAD' });
+            const etag = response.headers.get('ETag');
+            const lastModified = response.headers.get('Last-Modified');
+            
+            // Store current version in sessionStorage (transient, not persistent)
+            const key = 'ace1_cache_etag';
+            const stored = sessionStorage.getItem(key);
+            const currentVersion = etag || lastModified;
+            
+            if (stored && stored !== currentVersion) {
+                console.log('🔄 New version detected, clearing cache...');
+                clearBrowserCache();
+                sessionStorage.setItem(key, currentVersion);
+            } else if (!stored && currentVersion) {
+                sessionStorage.setItem(key, currentVersion);
+            }
+            
+        } catch (error) {
+            console.warn('Version check failed:', error);
+        }
+    }
                         return true;
                     }
                     
@@ -124,41 +92,6 @@
                         .update({ last_cache_version_update: new Date() })
                         .eq('id', 1);
                     
-                    return false;
-                }
-            }
-        } catch (error) {
-            console.warn('Failed to check version from database:', error);
-        }
-        
-        // Fallback to localStorage
-        const lastVersion = localStorage.getItem('ace1_version');
-        const lastReload = localStorage.getItem('ace1_last_reload');
-        const now = Date.now();
-
-        if (lastVersion !== CACHE_VERSION) {
-            console.log('🔄 New version detected, clearing cache...');
-            clearBrowserCache();
-            localStorage.setItem('ace1_version', CACHE_VERSION);
-            localStorage.setItem('ace1_last_reload', now.toString());
-            return true;
-        }
-
-        if (lastReload) {
-            const timeSinceReload = now - parseInt(lastReload);
-            if (timeSinceReload > FORCE_RELOAD_INTERVAL) {
-                console.log('⏰ Cache refresh interval reached, clearing cache...');
-                clearBrowserCache();
-                localStorage.setItem('ace1_last_reload', now.toString());
-                return true;
-            }
-        } else {
-            localStorage.setItem('ace1_last_reload', now.toString());
-        }
-
-        return false;
-    }
-
     // ===================================
     // ADD CACHE BUSTING TO SCRIPTS/STYLES
     // ===================================
@@ -212,9 +145,19 @@
     // CLEAR SPECIFIC PRODUCT/DATA CACHES
     // ===================================
     function clearDataCaches() {
+        // Only clear sessionStorage caches; localStorage has been migrated
         const dataCacheKeys = [
             'ace1_products_cache',
             'ace1_categories_cache',
+            'ace1_search_cache'
+        ];
+
+        dataCacheKeys.forEach(key => {
+            if (sessionStorage.getItem(key)) {
+                sessionStorage.removeItem(key);
+            }
+        });
+    }
             'ace1_products_updated',
             'ace1_cart_cache',
             'ace1_wishlist_cache'
@@ -286,7 +229,6 @@
     window.CacheBuster = {
         clear: clearBrowserCache,
         clearData: clearDataCaches,
-        version: CACHE_VERSION,
         forceReload: function() {
             clearBrowserCache();
             clearDataCaches();
@@ -297,5 +239,5 @@
     // Run on page load
     init();
 
-    console.log('✅ Cache Buster loaded - Version:', CACHE_VERSION);
+    console.log('✅ Cache Buster loaded - using ETag/Last-Modified headers for versioning');
 })();
