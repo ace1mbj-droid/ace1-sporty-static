@@ -1711,7 +1711,7 @@ class AdminPanel {
             const { error } = await this.supabase
                 .from('security_logs')
                 .delete()
-                .gt('created_at', '1900-01-01'); // All logs created after 1900
+                .gt('timestamp', '1900-01-01'); // All logs created after 1900
 
             if (error) {
                 console.error('Error clearing logs:', error);
