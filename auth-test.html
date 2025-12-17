@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Authentication Testing Dashboard - Ace#1</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .test-container {
+            max-width: 1200px;
+            margin: 120px auto 50px;
+            padding: 30px;
+        }
+        .test-section {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .test-section h2 {
+            color: #FF6B00;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #FF6B00;
+            padding-bottom: 10px;
+        }
+        .test-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .test-card {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            border-left: 4px solid #FF6B00;
+        }
+        .test-card h3 {
+            margin-bottom: 10px;
+            color: #333;
+        }
+        .test-card p {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+        .test-card .btn {
+            width: 100%;
+            margin-top: 10px;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+        .status-working {
+            background: #d4edda;
+            color: #155724;
+        }
+        .status-disabled {
+            background: #fff3cd;
+            color: #856404;
+        }
+        .code-block {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            overflow-x: auto;
+            margin-top: 15px;
+        }
+        .feature-list {
+            list-style: none;
+            padding: 0;
+        }
+        .feature-list li {
+            padding: 8px 0;
+            padding-left: 25px;
+            position: relative;
+        }
+        .feature-list li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #28a745;
+            font-weight: bold;
+        }
+        .warning-box {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .warning-box h3 {
+            color: #856404;
+            margin-top: 0;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="logo">
+                <span class="logo-text">ACE<span class="logo-accent">#1</span></span>
+            </a>
+            <ul class="nav-menu">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="products.html">Products</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="test-container">
+        <h1 style="text-align: center; margin-bottom: 10px;">🧪 Authentication Testing Dashboard</h1>
+        <p style="text-align: center; color: #666; margin-bottom: 40px;">Test all authentication features and verify they're working correctly</p>
+
+        <div class="warning-box">
+            <h3><i class="fas fa-shield-alt"></i> hCaptcha Status</h3>
+            <p><strong>TEMPORARILY DISABLED</strong> - All forms will work without captcha verification.</p>
+            <p>To re-enable: Set <code>window.HCAPTCHA_DISABLED = false</code> in <code>js/hcaptcha-manager.js</code></p>
+        </div>
+
+        <!-- User Authentication Tests -->
+        <div class="test-section">
+            <h2><i class="fas fa-user"></i> User Authentication <span class="status-badge status-working">WORKING</span></h2>
+            
+            <div class="test-grid">
+                <div class="test-card">
+                    <h3>Register New User</h3>
+                    <p>Test user registration with email/password and profile creation</p>
+                    <ul class="feature-list">
+                        <li>Form validation</li>
+                        <li>PBKDF2 password hashing</li>
+                        <li>Database user creation</li>
+                        <li>Auto-login after registration</li>
+                    </ul>
+                    <a href="register.html" class="btn btn-primary">
+                        <i class="fas fa-user-plus"></i> Test Registration
+                    </a>
+                </div>
+
+                <div class="test-card">
+                    <h3>User Login</h3>
+                    <p>Test email/password login and session management</p>
+                    <ul class="feature-list">
+                        <li>Email/password validation</li>
+                        <li>Password verification</li>
+                        <li>Session token generation</li>
+                        <li>Redirect to profile</li>
+                    </ul>
+                    <a href="login.html" class="btn btn-primary">
+                        <i class="fas fa-sign-in-alt"></i> Test Login
+                    </a>
+                </div>
+
+                <div class="test-card">
+                    <h3>Password Reset</h3>
+                    <p>Test forgot password flow with email reset link</p>
+                    <ul class="feature-list">
+                        <li>Email validation</li>
+                        <li>Reset link generation</li>
+                        <li>Email delivery</li>
+                        <li>Password update page</li>
+                    </ul>
+                    <a href="forgot-password.html" class="btn btn-primary">
+                        <i class="fas fa-key"></i> Test Reset
+                    </a>
+                </div>
+
+                <div class="test-card">
+                    <h3>User Profile</h3>
+                    <p>View and edit user profile after login</p>
+                    <ul class="feature-list">
+                        <li>Profile information display</li>
+                        <li>Edit name and phone</li>
+                        <li>Change password</li>
+                        <li>Session management</li>
+                    </ul>
+                    <a href="user-profile.html" class="btn btn-primary">
+                        <i class="fas fa-user-circle"></i> View Profile
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Admin Authentication Tests -->
+        <div class="test-section">
+            <h2><i class="fas fa-user-shield"></i> Admin Authentication <span class="status-badge status-working">WORKING</span></h2>
+            
+            <div class="test-grid">
+                <div class="test-card">
+                    <h3>Admin Login</h3>
+                    <p>Test admin login (restricted to hello@ace1.in)</p>
+                    <ul class="feature-list">
+                        <li>Email restriction check</li>
+                        <li>Admin password verification</li>
+                        <li>Admin session creation</li>
+                        <li>Redirect to dashboard</li>
+                    </ul>
+                    <a href="admin-login.html" class="btn btn-primary">
+                        <i class="fas fa-user-shield"></i> Test Admin Login
+                    </a>
+                    <div class="code-block">
+Email: hello@ace1.in
+Password: AdminSecure2025
+                    </div>
+                </div>
+
+                <div class="test-card">
+                    <h3>Admin Dashboard</h3>
+                    <p>Test admin panel with all management features</p>
+                    <ul class="feature-list">
+                        <li>Dashboard statistics</li>
+                        <li>Products management</li>
+                        <li>Orders management</li>
+                        <li>Users management</li>
+                        <li>Settings & logs</li>
+                    </ul>
+                    <a href="admin.html" class="btn btn-primary">
+                        <i class="fas fa-tachometer-alt"></i> Open Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Database Integration Tests -->
+        <div class="test-section">
+            <h2><i class="fas fa-database"></i> Backend Integration <span class="status-badge status-working">WORKING</span></h2>
+            
+            <div style="margin-top: 20px;">
+                <h3>Connected Services:</h3>
+                <ul class="feature-list">
+                    <li>Supabase Database (PostgreSQL)</li>
+                    <li>Supabase Auth (OAuth & Email)</li>
+                    <li>PBKDF2 Password Hashing (100,000 iterations)</li>
+                    <li>Session Management (Database-stored)</li>
+                    <li>Security Logging (All auth events)</li>
+                    <li>Role-Based Access Control</li>
+                </ul>
+
+                <h3 style="margin-top: 30px;">Database Tables:</h3>
+                <div class="test-grid">
+                    <div class="test-card">
+                        <h3>public.users</h3>
+                        <p>Stores user profiles and credentials</p>
+                        <small style="color: #999;">• email (unique)<br>• password_hash<br>• first_name, last_name<br>• phone, role<br>• created_at, updated_at</small>
+                    </div>
+                    <div class="test-card">
+                        <h3>public.sessions</h3>
+                        <p>Manages active user sessions</p>
+                        <small style="color: #999;">• user_id (FK)<br>• token (unique)<br>• expires_at<br>• last_activity<br>• ip_address, user_agent</small>
+                    </div>
+                    <div class="test-card">
+                        <h3>public.security_logs</h3>
+                        <p>Logs all authentication events</p>
+                        <small style="color: #999;">• event_type<br>• user_id<br>• ip_address<br>• user_agent<br>• created_at</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Security Features -->
+        <div class="test-section">
+            <h2><i class="fas fa-lock"></i> Security Features <span class="status-badge status-working">IMPLEMENTED</span></h2>
+            
+            <div class="test-grid">
+                <div class="test-card">
+                    <h3>Password Security</h3>
+                    <ul class="feature-list">
+                        <li>PBKDF2-SHA256 hashing</li>
+                        <li>100,000 iterations</li>
+                        <li>Unique salt per password</li>
+                        <li>Min 8 chars with complexity</li>
+                    </ul>
+                </div>
+                <div class="test-card">
+                    <h3>Session Security</h3>
+                    <ul class="feature-list">
+                        <li>Secure random tokens</li>
+                        <li>Database-stored sessions</li>
+                        <li>Automatic expiration</li>
+                        <li>Admin session revocation</li>
+                    </ul>
+                </div>
+                <div class="test-card">
+                    <h3>Input Protection</h3>
+                    <ul class="feature-list">
+                        <li>XSS prevention</li>
+                        <li>SQL injection protection</li>
+                        <li>Email format validation</li>
+                        <li>Phone number validation</li>
+                    </ul>
+                </div>
+                <div class="test-card">
+                    <h3>Access Control</h3>
+                    <ul class="feature-list">
+                        <li>Role-based permissions</li>
+                        <li>Admin-only routes</li>
+                        <li>Session verification</li>
+                        <li>Security event logging</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Test Credentials -->
+        <div class="test-section">
+            <h2><i class="fas fa-clipboard-list"></i> Test Credentials</h2>
+            
+            <div class="test-grid">
+                <div class="test-card">
+                    <h3>Admin Account</h3>
+                    <div class="code-block">
+Email: hello@ace1.in
+Password: AdminSecure2025
+Role: admin
+                    </div>
+                </div>
+                <div class="test-card">
+                    <h3>Create Test User</h3>
+                    <p>Use the registration form to create a test user account with any email</p>
+                    <a href="register.html" class="btn btn-secondary">
+                        <i class="fas fa-user-plus"></i> Register Test User
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="test-section">
+            <h2><i class="fas fa-bolt"></i> Quick Test Sequence</h2>
+            <p>Follow this sequence to test the complete authentication flow:</p>
+            
+            <ol style="line-height: 2.5; font-size: 16px;">
+                <li><strong>Register:</strong> <a href="register.html">Create new user account</a> → Should redirect to profile</li>
+                <li><strong>Logout:</strong> Clear browser localStorage → Session ends</li>
+                <li><strong>Login:</strong> <a href="login.html">Sign in with created account</a> → Should redirect to profile</li>
+                <li><strong>Reset Password:</strong> <a href="forgot-password.html">Request password reset</a> → Check email</li>
+                <li><strong>Admin Login:</strong> <a href="admin-login.html">Login as admin</a> → Access admin dashboard</li>
+                <li><strong>Admin Features:</strong> <a href="admin.html">Test all admin tabs</a> → Manage products, orders, users</li>
+            </ol>
+        </div>
+
+        <!-- Documentation Links -->
+        <div class="test-section">
+            <h2><i class="fas fa-book"></i> Documentation</h2>
+            <div class="test-grid">
+                <div class="test-card">
+                    <h3>Authentication Status</h3>
+                    <p>Complete overview of authentication system implementation</p>
+                    <a href="AUTHENTICATION_STATUS.md" class="btn btn-secondary" target="_blank">
+                        <i class="fas fa-file-alt"></i> View Documentation
+                    </a>
+                </div>
+                <div class="test-card">
+                    <h3>Security Audit</h3>
+                    <p>Security features and vulnerability assessment</p>
+                    <a href="SECURITY_AUDIT_REPORT.html" class="btn btn-secondary" target="_blank">
+                        <i class="fas fa-shield-alt"></i> View Report
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-bottom">
+                <p>&copy; 2025 Ace#1. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Supabase Integration -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-config.js"></script>
+    <script src="js/main.js"></script>
+
+    <script>
+        // Check authentication status
+        window.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const supabase = window.getSupabase();
+                const { data: { session } } = await supabase.auth.getSession();
+                
+                if (session) {
+                    console.log('✅ User authenticated:', session.user.email);
+                } else {
+                    console.log('ℹ️ No active session');
+                }
+
+                // Check database auth
+                if (window.databaseAuth?.currentUser) {
+                    console.log('✅ Database auth active:', window.databaseAuth.currentUser.email);
+                }
+            } catch (error) {
+                console.error('Auth check error:', error);
+            }
+        });
+    </script>
+</body>
+</html>
