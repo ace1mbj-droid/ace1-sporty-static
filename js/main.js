@@ -1,9 +1,17 @@
 // ===================================
 // GLOBAL VARIABLES
 // ===================================
-// Load cart from localStorage
+// Load cart from localStorage (will sync to database)
 let cart = JSON.parse(localStorage.getItem('ace1_cart') || '[]');
 let cartTotal = 0;
+let cartSessionId = localStorage.getItem('ace1_session_id') || generateSessionId();
+
+// Generate session ID for anonymous users
+function generateSessionId() {
+    const sessionId = 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    localStorage.setItem('ace1_session_id', sessionId);
+    return sessionId;
+}
 
 // ===================================
 // NAVIGATION
@@ -278,8 +286,13 @@ function addProductToCart(product) {
 }
 
 function updateCart() {
-    // Save cart to localStorage
+    // Save cart to localStorage (local backup)
     localStorage.setItem('ace1_cart', JSON.stringify(cart));
+    
+    // Sync cart to database if user is authenticated
+    if (window.AuthManager?.isLoggedIn()) {
+        syncCartToDatabase();
+    }
     
     // Update cart count
     const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
@@ -360,6 +373,73 @@ function removeFromCart(e) {
     cart = cart.filter(item => item.id !== productId);
     updateCart();
     showNotification('Product removed from cart');
+}
+
+// Sync cart to database for authenticated users
+async function syncCartToDatabase() {
+    try {
+        const supabase = window.getSupabase?.();
+        if (!supabase) return; // Fallback to localStorage if Supabase not available
+        
+        const user = window.AuthManager?.getCurrentUser();
+        if (!user) return; // Only sync for authenticated users
+        
+        // Delete old cart entries for this user
+        await supabase
+            .from('shopping_carts')
+            .delete()
+            .eq('user_id', user.id);
+        
+        // Insert new cart items
+        if (cart.length > 0) {
+            const cartItems = cart.map(item => ({
+                user_id: user.id,
+                product_id: item.id,
+                quantity: item.quantity,
+                size: item.size || null
+            }));
+            
+            await supabase
+                .from('shopping_carts')
+                .insert(cartItems);
+        }
+    } catch (error) {
+        console.warn('Cart sync to database failed, using localStorage:', error);
+        // Fallback to localStorage is automatic
+    }
+}
+
+// Load cart from database if user is authenticated
+async function loadCartFromDatabase() {
+    try {
+        const supabase = window.getSupabase?.();
+        if (!supabase) return; // Fallback to localStorage
+        
+        const user = window.AuthManager?.getCurrentUser();
+        if (!user) return; // No user, use localStorage
+        
+        const { data, error } = await supabase
+            .from('shopping_carts')
+            .select('*')
+            .eq('user_id', user.id);
+        
+        if (error) throw error;
+        
+        if (data && data.length > 0) {
+            // Convert database items to cart format
+            cart = data.map(item => ({
+                id: item.product_id,
+                quantity: item.quantity,
+                size: item.size
+            }));
+            
+            // Re-render cart with new data
+            updateCart();
+        }
+    } catch (error) {
+        console.warn('Failed to load cart from database:', error);
+        // Keep using localStorage fallback
+    }
 }
 
 // ===================================

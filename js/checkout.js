@@ -361,9 +361,12 @@ class CheckoutManager {
     }
 
     async saveOrder(orderData) {
-        // Use Supabase if available, otherwise fallback to localStorage
-        if (window.supabaseService && window.supabaseService.supabase && window.supabaseService.currentUser) {
+        // Use Supabase to save order
+        if (window.supabaseService && window.supabaseService.supabase) {
             try {
+                const user = window.AuthManager?.getCurrentUser();
+                const userId = user?.id || null;
+                
                 const orderItems = orderData.items.map(item => ({
                     productId: item.id,
                     quantity: item.quantity,
@@ -373,6 +376,7 @@ class CheckoutManager {
                 }));
 
                 const result = await window.supabaseService.createOrder({
+                    userId: userId,
                     totalAmount: orderData.pricing.total,
                     subtotal: orderData.pricing.subtotal,
                     tax: orderData.pricing.tax,
@@ -385,30 +389,42 @@ class CheckoutManager {
                 });
 
                 if (result.success) {
-                    console.log('✅ Order saved to Supabase:', result.order);
+                    console.log('✅ Order saved to database:', result.order);
+                    // Clear cart from database and localStorage
+                    await this.clearCart();
                 } else {
-                    console.error('Failed to save order to Supabase:', result.error);
-                    // Fallback to localStorage
-                    this.saveOrderToLocalStorage(orderData);
+                    console.error('Failed to save order to database:', result.error);
+                    throw new Error(result.error);
                 }
             } catch (error) {
-                console.error('Error saving order to Supabase:', error);
-                // Fallback to localStorage
-                this.saveOrderToLocalStorage(orderData);
+                console.error('Error saving order:', error);
+                showNotification('Error placing order. Please try again.', 'error');
+                throw error;
             }
         } else {
-            // Fallback to localStorage for demo mode
-            this.saveOrderToLocalStorage(orderData);
+            throw new Error('Order service not available');
         }
     }
 
-    saveOrderToLocalStorage(orderData) {
-        const orders = JSON.parse(localStorage.getItem('ace1_orders') || '[]');
-        orders.push(orderData);
-        localStorage.setItem('ace1_orders', JSON.stringify(orders));
-
-        // Clear cart
-        localStorage.removeItem('ace1_cart');
+    async clearCart() {
+        try {
+            // Clear from database if authenticated
+            if (window.AuthManager?.getCurrentUser()) {
+                const supabase = window.getSupabase?.();
+                if (supabase) {
+                    const user = window.AuthManager.getCurrentUser();
+                    await supabase
+                        .from('shopping_carts')
+                        .delete()
+                        .eq('user_id', user.id);
+                }
+            }
+            
+            // Clear from localStorage backup
+            localStorage.removeItem('ace1_cart');
+        } catch (error) {
+            console.warn('Error clearing cart:', error);
+        }
     }
 
     redirectToConfirmation(orderId) {
