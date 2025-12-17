@@ -19,6 +19,12 @@ class AdminPanel {
         // Check authentication
         await this.checkAuth();
         
+        // Load site settings early so getResolvedAdminApi() can fallback to DB value
+        try { await this.loadSettings(); } catch (e) { console.warn('Early loadSettings failed', e); }
+
+        // Check for critical runtime configuration and surface warnings
+        try { this.checkCriticalConfig(); } catch (e) { console.warn('checkCriticalConfig failed', e); }
+        
         // Setup event listeners
         this.setupEventListeners();
 
@@ -30,9 +36,98 @@ class AdminPanel {
         await this.loadProducts();
         await this.loadOrders();
         await this.loadUsers();
-        await this.loadSettings();
         await this.loadLogs();
         await this.loadRevocations();
+    }
+
+    // Surface a banner in the admin UI if critical config is missing
+    checkCriticalConfig() {
+        const issues = [];
+
+        // Supabase client availability
+        if (!this.supabase) issues.push('Supabase client not initialized');
+
+        // Admin API URL used for server-side actions (password reset etc.)
+        const resolvedAdminApi = this.getResolvedAdminApi();
+
+        if (!resolvedAdminApi || resolvedAdminApi === '__ADMIN_API_URL__') {
+            issues.push('Admin server endpoint not configured (ADMIN_API_URL missing) — some server-side actions will fail');
+        }
+
+        // Admin session token presence (used by server RPCs / admin endpoints)
+        try {
+            const token = localStorage.getItem('ace1_token');
+            if (!token) issues.push('Admin session token not found in localStorage (ace1_token) — some actions will require re-login');
+        } catch (e) {
+            issues.push('Unable to read localStorage for session token');
+        }
+
+        // If issues found, create or update a visible banner at top of admin container
+        const existing = document.getElementById('admin-critical-banner');
+        if (issues.length === 0) {
+            if (existing) existing.remove();
+            return;
+        }
+
+        const message = issues.map(i => `• ${i}`).join('\n');
+        const bannerText = `Admin configuration issues detected:\n${message}`;
+
+        const container = document.querySelector('.admin-container') || document.body;
+        let banner = existing;
+        if (!banner) {
+            banner = document.createElement('pre');
+            banner.id = 'admin-critical-banner';
+            banner.style.background = '#fff4e5';
+            banner.style.borderLeft = '4px solid #ff9800';
+            banner.style.padding = '12px 16px';
+            banner.style.borderRadius = '6px';
+            banner.style.marginBottom = '12px';
+            banner.style.whiteSpace = 'pre-wrap';
+            banner.style.fontFamily = 'inherit';
+            banner.style.color = '#663c00';
+            container.prepend(banner);
+        }
+        banner.textContent = bannerText;
+
+        // Disable password reset controls if admin API is not available
+        try {
+            const resetBtn = document.getElementById('user-reset-password-btn');
+            const genBtn = document.getElementById('user-generate-password');
+            const newPwd = document.getElementById('admin-new-password');
+            const confirmPwd = document.getElementById('admin-confirm-new-password');
+            const note = document.getElementById('user-reset-notice');
+
+            const disabled = (!resolvedAdminApi || resolvedAdminApi === '__ADMIN_API_URL__');
+            if (resetBtn) {
+                resetBtn.disabled = disabled;
+                resetBtn.title = disabled ? 'Admin server endpoint not configured — password reset disabled' : '';
+            }
+            if (genBtn) genBtn.disabled = disabled;
+            if (newPwd) newPwd.disabled = disabled;
+            if (confirmPwd) confirmPwd.disabled = disabled;
+            if (note) {
+                if (disabled) {
+                    note.style.display = 'inline-block';
+                    note.textContent = 'Server-side reset disabled: ADMIN_API_URL missing';
+                } else {
+                    note.style.display = 'none';
+                    note.textContent = '';
+                }
+            }
+        } catch (e) {
+            console.warn('Failed to update reset UI state', e);
+        }
+    }
+
+    // Resolve the admin API endpoint used for server-side actions (password reset etc.)
+    getResolvedAdminApi() {
+        const fromWindow = window.ADMIN_API_URL || null;
+        if (fromWindow && fromWindow !== '__ADMIN_API_URL__') return fromWindow;
+        if (window.SUPABASE_FUNCTIONS_URL) return `${window.SUPABASE_FUNCTIONS_URL.replace(/\/$/, '')}/admin-reset`;
+        if (this.settings && (this.settings.admin_api_url || this.settings.adminResetUrl)) {
+            return this.settings.admin_api_url || this.settings.adminResetUrl;
+        }
+        return null;
     }
 
     async checkAuth() {
@@ -1336,6 +1431,14 @@ class AdminPanel {
     // Server-side admin reset password for a user
     async resetUserPasswordFromModal() {
         try {
+            // Ensure admin API endpoint is available before attempting server-side reset
+            const resolvedAdminApi = this.getResolvedAdminApi();
+            if (!resolvedAdminApi || resolvedAdminApi === '__ADMIN_API_URL__') {
+                this.showInlineError('user-form-error', 'Admin reset endpoint not configured (ADMIN_API_URL). Password reset is disabled.');
+                const resetBtn = document.getElementById('user-reset-password-btn');
+                if (resetBtn) resetBtn.disabled = true;
+                return;
+            }
             const userId = document.getElementById('user-id').value;
             const newPassword = document.getElementById('admin-new-password').value;
             const confirmPassword = document.getElementById('admin-confirm-new-password').value;
@@ -1369,14 +1472,8 @@ class AdminPanel {
             if (submitBtn) { submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Resetting...'; submitBtn.disabled = true; }
 
             // Delegate actual reset to server-side endpoint which must run with service_role privileges
-            // Resolve admin reset endpoint (configurable for production serverless URL)
-            // Resolve admin reset endpoint (override via window.ADMIN_API_URL or SUPABASE_FUNCTIONS_URL)
-            // Resolve admin reset endpoint (override via window.ADMIN_API_URL or SUPABASE_FUNCTIONS_URL).
-            // Fallback to site settings (this.settings.admin_api_url) so CI can write the production URL into the DB.
-            const adminApi = window.ADMIN_API_URL
-                || (window.SUPABASE_FUNCTIONS_URL ? `${window.SUPABASE_FUNCTIONS_URL.replace(/\/$/, '')}/admin-reset` : null)
-                || (this.settings && (this.settings.admin_api_url || this.settings.adminResetUrl))
-                || '/api/admin/reset-user-password';
+            // Target admin API endpoint resolved earlier
+            const adminApi = this.getResolvedAdminApi() || '/api/admin/reset-user-password';
             const resp = await fetch(adminApi, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
