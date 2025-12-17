@@ -77,3 +77,7 @@ window.setSupabaseSessionToken = (token) => {
         delete sessionHeaders['ace1-session'];
     }
 };
+
+// Temporary feature flag to disable 2FA checks site-wide
+// Set to true to bypass admin TOTP requirement
+window.ACE_DISABLE_2FA = true;
