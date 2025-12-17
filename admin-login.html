@@ -118,6 +118,11 @@
                             </div>
                         </div>
 
+                        <div class="form-group">
+                            <label for="totp">2FA Code *</label>
+                            <input type="text" id="totp" name="totp" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" placeholder="6-digit code" required>
+                        </div>
+
                         <div class="form-row space-between">
                             <label class="checkbox-label">
                                 <input type="checkbox" name="remember">
@@ -237,10 +242,11 @@
 
             const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value;
+            const totp = document.getElementById('totp').value.trim();
 
             // Check if Supabase is available
             const supabase = window.getSupabase ? window.getSupabase() : null;
-            if (!supabase) {
+            if (!supabase || !window.databaseAuth) {
                 errorMessage.textContent = 'Authentication service unavailable.';
                 errorMessage.style.display = 'block';
                 return;
@@ -267,61 +273,15 @@
             }
 
             try {
-                // Use Supabase Auth for admin login
-                const { data, error } = await supabase.auth.signInWithPassword({
-                    email: email,
-                    password: password
-                });
+                const result = await window.databaseAuth.login(email, password, totp);
 
-                if (error) {
-                    throw error;
-                }
-
-                if (data.user) {
-                    // Store session token in localStorage for admin requests
-                    if (data.session?.access_token) {
-                        localStorage.setItem('ace1_token', data.session.access_token);
-                    }
-
-                    // Check if user is admin by querying the public.users table
-                    const { data: userData, error: userError } = await supabase
-                        .from('users')
-                        .select('role, email')
-                        .eq('id', data.user.id)
-                        .single();
-
-                    if (userError) {
-                        console.error('Error fetching user role:', userError);
-                        // Allow hello@ace1.in to proceed even if role lookup fails
-                        if (data.user.email === 'hello@ace1.in') {
-                            window.location.href = 'admin.html';
-                            return;
-                        }
-                        throw new Error('Unable to verify admin access');
-                    }
-
-                    // Check if user has admin role
-                    if (userData.role === 'admin' || data.user.email === 'hello@ace1.in') {
-                        // Store admin info for fallback
-                        localStorage.setItem('ace1_admin', 'true');
-                        localStorage.setItem('ace1_user', JSON.stringify({
-                            id: data.user.id,
-                            email: data.user.email,
-                            firstName: userData.firstName || ''
-                        }));
-                        
-                        window.showNotification('Welcome, Admin!', 'success');
-                        setTimeout(() => {
-                            window.location.href = 'admin.html';
-                        }, 500);
-                    } else {
-                        errorMessage.textContent = 'Access denied. This login is for administrators only.';
-                        errorMessage.style.display = 'block';
-                        localStorage.removeItem('ace1_token');
-                        await supabase.auth.signOut();
-                    }
+                if (result.success && (result.user.role === 'admin' || result.user.email === 'hello@ace1.in')) {
+                    window.showNotification('Welcome, Admin!', 'success');
+                    setTimeout(() => {
+                        window.location.href = 'admin.html';
+                    }, 500);
                 } else {
-                    errorMessage.textContent = 'Invalid credentials';
+                    errorMessage.textContent = result.error || 'Access denied. This login is for administrators only.';
                     errorMessage.style.display = 'block';
                 }
             } catch (error) {

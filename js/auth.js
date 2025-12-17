@@ -140,7 +140,7 @@ class AuthManager {
         try {
             // Use database authentication
             if (window.databaseAuth) {
-                const result = await window.databaseAuth.login(data.email, data.password);
+                const result = await window.databaseAuth.login(data.email, data.password, data.totp || '');
 
                 if (result.success) {
                     const user = result.user;
