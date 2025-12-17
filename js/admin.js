@@ -449,20 +449,27 @@ class AdminPanel {
     }
 
     async loadOrders() {
-        const { data: orders, error } = await this.supabase
-            .from('orders')
-            .select('*')
-            .order('created_at', { ascending: false });
+        console.log('🔄 Loading orders...');
+        try {
+            const { data: orders, error } = await this.supabase
+                .from('orders')
+                .select('*')
+                .order('created_at', { ascending: false });
 
-        if (error) {
-            console.error('Error loading orders:', error);
-            console.error('Error details:', JSON.stringify(error, null, 2));
-            alert(`Error loading orders: ${error.message || error.hint || 'Unknown error'}`);
-            return;
+            if (error) {
+                console.error('Error loading orders:', error);
+                console.error('Error details:', JSON.stringify(error, null, 2));
+                alert(`Error loading orders: ${error.message || error.hint || 'Unknown error'}`);
+                return;
+            }
+
+            console.log(`✅ Loaded ${orders?.length || 0} orders`);
+            this.orders = orders || [];
+            this.renderOrders();
+        } catch (err) {
+            console.error('Exception loading orders:', err);
+            alert(`Exception loading orders: ${err.message}`);
         }
-
-        this.orders = orders || [];
-        this.renderOrders();
     }
 
     renderOrders() {
@@ -1220,16 +1227,24 @@ class AdminPanel {
 
     // User Management
     async loadUsers() {
-        const { data: users, error } = await this.supabase
-            .from('users')
-            .select('*')
-            .order('created_at', { ascending: false });
+        console.log('🔄 Loading users...');
+        try {
+            const { data: users, error } = await this.supabase
+                .from('users')
+                .select('*')
+                .order('created_at', { ascending: false });
 
-        if (error) {
-            console.error('Error loading users:', error);
-            console.error('Error details:', JSON.stringify(error, null, 2));
-            alert(`Error loading users: ${error.message || error.hint || 'Unknown error'}`);
-            return;
+            if (error) {
+                console.error('Error loading users:', error);
+                console.error('Error details:', JSON.stringify(error, null, 2));
+                alert(`Error loading users: ${error.message || error.hint || 'Unknown error'}`);
+                return;
+            }
+
+            console.log(`✅ Loaded ${users?.length || 0} users`);
+        } catch (err) {
+            console.error('Exception loading users:', err);
+            alert(`Exception loading users: ${err.message}`);
         }
 
         this.users = users || [];
