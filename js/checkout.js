@@ -51,8 +51,9 @@ class CheckoutManager {
     }
 
     loadCartItems() {
-        const cart = localStorage.getItem('ace1_cart');
-        this.cartItems = cart ? JSON.parse(cart) : [];
+        // Cart state is maintained via session/DB, not localStorage
+        // This method is now a no-op; cart items are fetched from window.cart if available
+        this.cartItems = window.cart || [];
     }
 
     loadUserInfo() {
@@ -346,11 +347,7 @@ class CheckoutManager {
         // mark the payment as captured and update the order status. In that case
         // we avoid creating a duplicate order client-side.
         if (this.serverOrder && this.serverOrder.orderId) {
-            try {
-                localStorage.removeItem('ace1_cart');
-            } catch (e) {
-                /* ignore */
-            }
+            // Cart is cleared server-side; no localStorage needed
             this.redirectToConfirmation(this.serverOrder.orderId);
             return;
         }
@@ -420,8 +417,7 @@ class CheckoutManager {
                 }
             }
             
-            // Clear from localStorage backup
-            localStorage.removeItem('ace1_cart');
+            // Cart is cleared server-side; no localStorage needed
         } catch (error) {
             console.warn('Error clearing cart:', error);
         }
