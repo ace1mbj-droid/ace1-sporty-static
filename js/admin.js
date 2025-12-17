@@ -141,18 +141,20 @@ class AdminPanel {
             if (userEmail === 'hello@ace1.in') {
                 this.currentUser = session.user;
                 document.getElementById('admin-user').textContent = `Welcome, ${session.user.email}`;
+                
+                // Store session token in localStorage for admin requests
+                if (session.access_token) {
+                    localStorage.setItem('ace1_token', session.access_token);
+                    localStorage.setItem('ace1_admin', 'true');
+                    localStorage.setItem('ace1_user', JSON.stringify({
+                        id: session.user.id,
+                        email: session.user.email
+                    }));
+                }
+                
                 // Ensure the request pipeline has the header that our RLS policies expect
-                // If a token already exists in localStorage it will be applied by setSupabaseSessionToken;
-                // otherwise use the seeded session token (temporary) so admin actions like inserts succeed.
-                try {
-                    const existing = localStorage.getItem('ace1_token');
-                    // Only restore an existing token into the request pipeline.
-                    // Do not insert or fallback to any hard-coded seeded token from the client.
-                    if (window.setSupabaseSessionToken && existing) {
-                        window.setSupabaseSessionToken(existing);
-                    }
-                } catch (err) {
-                    console.warn('Unable to set ace1-session header automatically', err);
+                if (window.setSupabaseSessionToken && session.access_token) {
+                    window.setSupabaseSessionToken(session.access_token);
                 }
                 return;
             } else {
@@ -175,10 +177,11 @@ class AdminPanel {
             if (user.email === 'hello@ace1.in') {
                 this.currentUser = user;
                 document.getElementById('admin-user').textContent = `Welcome, ${user.firstName || user.email}`;
-                // restore session header if missing so UI requests are allowed by RLS
+                
+                // Restore session token if missing so UI requests are allowed by RLS
                 try {
                     const existing = localStorage.getItem('ace1_token');
-                    if (window.setSupabaseSessionToken && existing) {
+                    if (existing && window.setSupabaseSessionToken) {
                         window.setSupabaseSessionToken(existing);
                     }
                 } catch (err) {
@@ -191,7 +194,7 @@ class AdminPanel {
         // No valid admin session - redirect to login
         showNotification('Please log in as an administrator', 'error');
         setTimeout(() => {
-            window.location.href = 'login.html';
+            window.location.href = 'admin-login.html';
         }, 1500);
     }
 
