@@ -66,32 +66,7 @@
             console.warn('Version check failed:', error);
         }
     }
-                        return true;
-                    }
-                    
-                    // Check time interval
-                    const lastUpdate = new Date(data.last_cache_version_update).getTime();
-                    const timeSinceUpdate = Date.now() - lastUpdate;
-                    if (timeSinceUpdate > FORCE_RELOAD_INTERVAL) {
-                        console.log('⏰ Cache refresh interval reached, clearing cache...');
-                        clearBrowserCache();
-                        
-                        // Update database
-                        await supabase
-                            .from('application_settings')
-                            .update({ last_cache_version_update: new Date() })
-                            .eq('id', 1);
-                        
-                        localStorage.setItem('ace1_last_reload', Date.now().toString());
-                        return true;
-                    }
-                    
-                    // Update database with current reload time (keep it fresh)
-                    await supabase
-                        .from('application_settings')
-                        .update({ last_cache_version_update: new Date() })
-                        .eq('id', 1);
-                    
+
     // ===================================
     // ADD CACHE BUSTING TO SCRIPTS/STYLES
     // ===================================
@@ -155,18 +130,6 @@
         dataCacheKeys.forEach(key => {
             if (sessionStorage.getItem(key)) {
                 sessionStorage.removeItem(key);
-            }
-        });
-    }
-            'ace1_products_updated',
-            'ace1_cart_cache',
-            'ace1_wishlist_cache'
-        ];
-
-        dataCacheKeys.forEach(key => {
-            if (localStorage.getItem(key)) {
-                localStorage.removeItem(key);
-                console.log('Cleared data cache:', key);
             }
         });
     }
