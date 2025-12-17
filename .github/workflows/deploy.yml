@@ -143,6 +143,16 @@ jobs:
           cp dist-public-checksums.sha256 dist-private/checksums-public.sha256 || true
         shell: bash
 
+      - name: Flag private content presence
+        run: |
+          if [ -d dist-private ] && [ "$(find dist-private -type f | wc -l)" -gt 0 ]; then
+            echo "HAS_PRIVATE=true" >> $GITHUB_ENV
+            echo "Private content detected for upload."
+          else
+            echo "HAS_PRIVATE=false" >> $GITHUB_ENV
+            echo "No private content to upload."
+          fi
+
       - name: Set FTP target directories
         run: |
           if [ -n "${{ secrets.FTP_PUBLIC_DIR }}" ]; then echo "PUBLIC_DIR=${{ secrets.FTP_PUBLIC_DIR }}" >> $GITHUB_ENV; else echo "PUBLIC_DIR=/public_html" >> $GITHUB_ENV; fi
@@ -169,7 +179,7 @@ jobs:
             **/*.ts
 
       - name: FTP Deploy (private)
-        if: ${{ hashFiles('dist-private/**') != '' }}
+        if: ${{ env.HAS_PRIVATE == 'true' }}
         uses: 
         with:
           server: ${{ secrets.FTP_HOST }}
