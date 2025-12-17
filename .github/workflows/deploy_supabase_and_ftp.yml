@@ -189,10 +189,6 @@ jobs:
           find dist-public -type f -exec sha256sum {} \; | sort > dist-public-checksums.sha256
         shell: bash
 
-      - name: Set FTP target directories
-        run: |
-          if [ -n "${{ secrets.FTP_PUBLIC_DIR }}" ]; then echo "PUBLIC_DIR=${{ secrets.FTP_PUBLIC_DIR }}" >> $GITHUB_ENV; else echo "PUBLIC_DIR=/public_html" >> $GITHUB_ENV; fi
-
       - name: FTP Deploy (public)
         uses: 
         with:
@@ -200,7 +196,7 @@ jobs:
           username: ${{ secrets.FTP_USER }}
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: ./dist-public/
-          server-dir: ${{ env.PUBLIC_DIR }}
+          server-dir: /public_html
           protocol: ftps
           port: 21
           dangerous-clean-slate: false
