@@ -403,9 +403,14 @@
         <div class="admin-content" id="orders-content">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                 <h2>Recent Orders</h2>
-                <button onclick="window.adminPanel?.testAdminAccess()" class="btn btn-primary" style="padding: 10px 20px;">
-                    <i class="fas fa-bug"></i> Debug Access
-                </button>
+                <div style="display: flex; gap: 10px;">
+                    <button onclick="window.adminPanel?.loadOrders()" class="btn btn-secondary" style="padding: 10px 20px;">
+                        <i class="fas fa-sync-alt"></i> Refresh
+                    </button>
+                    <button onclick="window.adminPanel?.testAdminAccess()" class="btn btn-primary" style="padding: 10px 20px;">
+                        <i class="fas fa-bug"></i> Debug
+                    </button>
+                </div>
             </div>
             <div class="orders-table">
                 <table>
@@ -513,7 +518,12 @@
 
         <!-- Users Tab -->
         <div class="admin-content" id="users-content">
-            <h2 style="margin-bottom: 20px;">User Management</h2>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2>User Management</h2>
+                <button onclick="window.adminPanel?.loadUsers()" class="btn btn-secondary" style="padding: 10px 20px;">
+                    <i class="fas fa-sync-alt"></i> Refresh
+                </button>
+            </div>
             <div class="orders-table">
                 <table>
                     <thead>
