@@ -280,6 +280,11 @@ function updateCart() {
         cartCount.textContent = totalItems;
     }
     
+    // If cart UI not present on this page, stop here
+    if (!cartItems || !cartTotalElement) {
+        return;
+    }
+
     // Update cart total
     cartTotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     cartTotalElement.textContent = `₹${cartTotal.toLocaleString('en-IN')}`;
