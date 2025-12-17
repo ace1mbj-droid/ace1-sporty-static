@@ -36,7 +36,7 @@ const sessionAwareFetch = async (input, init = {}) => {
 
 // Initialize Supabase client
 // Add this script tag to your HTML files: <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-let supabase = null;
+let supabaseClient = null;
 
 function initSupabase() {
     if (typeof window.supabase === 'undefined') {
@@ -44,9 +44,9 @@ function initSupabase() {
         return null;
     }
     
-    if (!supabase) {
+    if (!supabaseClient) {
         const { createClient } = window.supabase;
-        supabase = createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey, {
+        supabaseClient = createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey, {
             global: {
                 fetch: sessionAwareFetch
             }
@@ -54,7 +54,7 @@ function initSupabase() {
         console.log('✅ Supabase initialized successfully');
     }
     
-    return supabase;
+    return supabaseClient;
 }
 
 // Auto-initialize on load
@@ -64,10 +64,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Export for use in other modules
 window.getSupabase = () => {
-    if (!supabase) {
+    if (!supabaseClient) {
         return initSupabase();
     }
-    return supabase;
+    return supabaseClient;
 };
 
 window.setSupabaseSessionToken = (token) => {
