@@ -1704,6 +1704,50 @@ class AdminPanel {
         alert('All security logs cleared successfully');
         await this.loadLogs();
     }
+
+    async testAdminAccess() {
+        console.log('🔍 Testing admin access...');
+        
+        try {
+            // Get current user
+            const { data: { user }, error: authError } = await this.supabase.auth.getUser();
+            if (authError) throw authError;
+            
+            console.log('✅ Current user:', user?.email, user?.id);
+            
+            // Test user_roles access
+            const { data: roles, error: rolesError } = await this.supabase
+                .from('user_roles')
+                .select('*')
+                .eq('user_id', user.id);
+            
+            console.log('User roles query result:', { data: roles, error: rolesError });
+            
+            if (rolesError) {
+                alert(`❌ Cannot read user_roles: ${rolesError.message}`);
+                return;
+            }
+            
+            // Test orders access
+            const { data: orders, error: ordersError } = await this.supabase
+                .from('orders')
+                .select('*')
+                .limit(1);
+            
+            console.log('Orders query result:', { count: orders?.length, error: ordersError });
+            
+            if (ordersError) {
+                alert(`❌ Cannot read orders: ${ordersError.message}\n\nCode: ${ordersError.code}\nDetails: ${ordersError.details || 'None'}\nHint: ${ordersError.hint || 'None'}`);
+                return;
+            }
+            
+            alert(`✅ Admin access working!\n\nUser: ${user.email}\nIs Admin: ${roles?.[0]?.is_admin || 'false'}\nOrders accessible: Yes`);
+            
+        } catch (error) {
+            console.error('❌ Test failed:', error);
+            alert(`❌ Test failed: ${error.message}`);
+        }
+    }
 }
 
 // Initialize admin panel
