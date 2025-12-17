@@ -1,6 +1,8 @@
 {
   "recommendations": [
-    "Supabase.vscode-supabase-extension"
+    "Supabase.vscode-supabase-extension",
+    "supabase.postgrestools",
+    "supabase-snippets.supabase-javascript-snippets"
   ],
   "unwantedRecommendations": []
 }
