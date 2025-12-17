@@ -370,15 +370,36 @@ class WebsiteImageManager {
     // ===================================
     // UPLOAD IMAGE FILE
     // ===================================
-    async uploadImageFile(file) {
-        // In production, upload to Supabase Storage or Cloudinary
-        // For now, convert to base64 or return placeholder
-        return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = (e) => resolve(e.target.result);
-            reader.onerror = reject;
-            reader.readAsDataURL(file);
-        });
+    async uploadImageFile(file, category = 'other') {
+        if (!this.supabase) this.supabase = window.getSupabase && window.getSupabase();
+        if (!this.supabase) throw new Error('Supabase client not initialized');
+
+        // Basic validation
+        const maxBytes = 5 * 1024 * 1024; // 5MB
+        if (file.size > maxBytes) throw new Error('File too large. Max 5MB');
+
+        const safeName = (file.name || 'image').replace(/[^a-zA-Z0-9_.-]/g, '_');
+        const ts = Date.now();
+        const path = `Site/${category}/${ts}_${safeName}`;
+
+        const { error: uploadError } = await this.supabase
+            .storage
+            .from('Images')
+            .upload(path, file, {
+                cacheControl: '3600',
+                upsert: true,
+                contentType: file.type || 'application/octet-stream'
+            });
+
+        if (uploadError) throw uploadError;
+
+        const { data } = this.supabase
+            .storage
+            .from('Images')
+            .getPublicUrl(path);
+
+        if (!data || !data.publicUrl) throw new Error('Failed to obtain public URL');
+        return data.publicUrl;
     }
 
     // ===================================
@@ -454,8 +475,51 @@ class WebsiteImageManager {
         if (uploadForm) {
             uploadForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
-                // Handle upload
-                this.showNotification('Upload functionality coming soon!', 'info');
+                try {
+                    const category = document.getElementById('upload-category').value || 'other';
+                    const fileInput = document.getElementById('image-file');
+                    const urlInput = document.getElementById('image-url');
+                    const altInput = document.getElementById('image-alt');
+                    const applyLoc = document.getElementById('apply-location').value;
+                    const selector = document.getElementById('element-selector').value;
+
+                    if (!fileInput.files[0] && !urlInput.value) {
+                        this.showNotification('Please choose a file or provide a URL', 'error');
+                        return;
+                    }
+
+                    let publicUrl = urlInput.value.trim();
+                    if (fileInput.files[0]) {
+                        this.showNotification('Uploading image...', 'info');
+                        publicUrl = await this.uploadImageFile(fileInput.files[0], category);
+                    }
+
+                    // If apply to specific selector, try to update DOM immediately
+                    if (applyLoc === 'specific' && selector) {
+                        try {
+                            document.querySelectorAll(selector).forEach(el => {
+                                if (el.tagName === 'IMG') el.src = publicUrl;
+                                else if (el.style) el.style.backgroundImage = `url('${publicUrl}')`;
+                            });
+                        } catch (_) { /* ignore selector issues */ }
+                    }
+
+                    // For now we just upload and provide the URL; future: persist mapping in DB
+                    this.showNotification('Image uploaded successfully', 'success');
+                    try {
+                        await navigator.clipboard.writeText(publicUrl);
+                        this.showNotification('Copied URL to clipboard', 'success');
+                    } catch (_) { /* clipboard may fail */ }
+
+                    // Refresh current category grid (if products, user should use product editor)
+                    const cat = this.getCurrentCategory();
+                    await this.scanImages(cat);
+                    this.closeUploadModal();
+                } catch (err) {
+                    console.error('Upload error:', err);
+                    const msg = err?.message || 'Upload failed';
+                    this.showNotification(msg, 'error');
+                }
             });
         }
 
