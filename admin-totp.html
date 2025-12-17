@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin TOTP - Ace#1</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    .totp-card { max-width: 520px; margin: 40px auto; padding: 24px; border-radius: 12px; background: #fff; box-shadow: 0 10px 30px rgba(0,0,0,0.08); }
+    .totp-card h1 { margin-bottom: 12px; }
+    .totp-grid { display: grid; gap: 16px; }
+    .qr-box { text-align: center; padding: 16px; background: #f7f9fc; border: 1px solid #e5e7eb; border-radius: 12px; }
+    .qr-box img { width: 220px; height: 220px; }
+    .secret-box { font-family: monospace; padding: 12px; background: #111827; color: #e5e7eb; border-radius: 8px; overflow-wrap: anywhere; }
+    .actions { display: flex; gap: 12px; }
+    .btn { padding: 10px 14px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; }
+    .btn-primary { background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); color: #fff; }
+    .btn-ghost { background: #f3f4f6; color: #111827; }
+    .status { font-size: 13px; color: #374151; }
+    .error { color: #b91c1c; }
+    .success { color: #065f46; }
+  </style>
+</head>
+<body>
+  <div class="totp-card">
+    <h1>Admin TOTP</h1>
+    <p class="status">Scan the QR code with your authenticator app. Use Rotate to generate a new secret.</p>
+    <div class="totp-grid" id="totpGrid">
+      <div class="qr-box" id="qrBox">Loading...</div>
+      <div>
+        <div class="secret-box" id="secretBox">••••••</div>
+        <div class="actions" style="margin-top:12px;">
+          <button class="btn btn-primary" id="rotateBtn">Rotate Secret</button>
+          <button class="btn btn-ghost" id="copyBtn">Copy Secret</button>
+        </div>
+      </div>
+    </div>
+    <div class="status" id="statusMsg"></div>
+  </div>
+
+  <script>
+    const qrBox = document.getElementById('qrBox');
+    const secretBox = document.getElementById('secretBox');
+    const statusMsg = document.getElementById('statusMsg');
+    const rotateBtn = document.getElementById('rotateBtn');
+    const copyBtn = document.getElementById('copyBtn');
+
+    async function fetchActive() {
+      setStatus('Loading...', false);
+      try {
+        const res = await fetch('/api/admin/totp/active', { credentials: 'include' });
+        const body = await res.json();
+        if (!res.ok || !body.success) throw new Error(body.error || 'Failed');
+        renderSecret(body.secret, body.qrDataUrl);
+        setStatus('Active secret loaded', true);
+      } catch (err) {
+        qrBox.textContent = 'Unable to load QR';
+        setStatus(err.message || 'Failed to load', false, true);
+      }
+    }
+
+    function renderSecret(secret, qrDataUrl) {
+      if (qrDataUrl) {
+        qrBox.innerHTML = `<img src="${qrDataUrl}" alt="TOTP QR" />`;
+      }
+      secretBox.textContent = secret;
+    }
+
+    async function rotateSecret() {
+      setStatus('Rotating...', false);
+      rotateBtn.disabled = true;
+      try {
+        const res = await fetch('/api/admin/totp/rotate', { method: 'POST', credentials: 'include' });
+        const body = await res.json();
+        if (!res.ok || !body.success) throw new Error(body.error || 'Failed');
+        renderSecret(body.secret, body.qrDataUrl);
+        setStatus('Secret rotated. Update your authenticator.', true);
+      } catch (err) {
+        setStatus(err.message || 'Rotation failed', false, true);
+      } finally {
+        rotateBtn.disabled = false;
+      }
+    }
+
+    function setStatus(msg, success=false, isError=false) {
+      statusMsg.textContent = msg;
+      statusMsg.className = 'status' + (success ? ' success' : '') + (isError ? ' error' : '');
+    }
+
+    copyBtn.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(secretBox.textContent);
+        setStatus('Secret copied to clipboard', true);
+      } catch {
+        setStatus('Copy failed', false, true);
+      }
+    });
+
+    rotateBtn.addEventListener('click', rotateSecret);
+
+    fetchActive();
+  </script>
+</body>
+</html>
