@@ -526,7 +526,7 @@ class AdminPanel {
                     </span>
                 </td>
                 <td>
-                    <button class="btn btn-secondary" style="padding: 5px 15px;" onclick="adminPanel.viewOrder(${order.id})">
+                    <button class="btn btn-secondary" style="padding: 5px 15px;" onclick="adminPanel.viewOrder('${order.id}')">
                         View
                     </button>
                 </td>
