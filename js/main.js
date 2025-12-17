@@ -137,8 +137,8 @@ userLink?.addEventListener('click', async (e) => {
             const { data: { user } } = await supabase.auth.getUser();
             
             if (user) {
-                // Check if admin
-                const isAdmin = localStorage.getItem('ace1_admin') === 'true';
+                // Check if admin from database
+                const isAdmin = await window.databaseAuth?.isUserAdmin(user.id);
                 if (isAdmin) {
                     window.location.href = 'admin.html';
                 } else {
