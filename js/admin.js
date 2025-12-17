@@ -1705,19 +1705,27 @@ class AdminPanel {
             return;
         }
 
-        const { error } = await this.supabase
-            .from('security_logs')
-            .delete()
-            .neq('id', '00000000-0000-0000-0000-000000000000'); // PostgREST requires WHERE clause
+        console.log('🔄 Clearing all security logs...');
+        try {
+            // Delete all logs using gt filter (since we can't do unrestricted delete)
+            const { error } = await this.supabase
+                .from('security_logs')
+                .delete()
+                .gt('created_at', '1900-01-01'); // All logs created after 1900
 
-        if (error) {
-            console.error('Error clearing logs:', error);
-            alert('Error clearing logs');
-            return;
+            if (error) {
+                console.error('Error clearing logs:', error);
+                alert(`Error clearing logs: ${error.message}`);
+                return;
+            }
+
+            console.log('✅ All security logs cleared successfully');
+            alert('All security logs cleared successfully');
+            await this.loadLogs();
+        } catch (err) {
+            console.error('Exception clearing logs:', err);
+            alert(`Exception clearing logs: ${err.message}`);
         }
-
-        alert('All security logs cleared successfully');
-        await this.loadLogs();
     }
 
     async testAdminAccess() {
