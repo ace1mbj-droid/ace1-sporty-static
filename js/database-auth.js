@@ -366,11 +366,6 @@ class DatabaseAuth {
             localStorage.setItem('ace1_user', JSON.stringify(user));
             this.setSessionToken(sessionToken);
 
-            // Set admin flag if user is admin
-            if (data.role === 'admin' || email === 'hello@ace1.in') {
-                localStorage.setItem('ace1_admin', 'true');
-            }
-
             // Log successful login
             if (window.securityManager) {
                 window.securityManager.logSecurityEvent('LOGIN_SUCCESS', {
@@ -673,6 +668,25 @@ class DatabaseAuth {
         const array = new Uint8Array(32);
         crypto.getRandomValues(array);
         return 'token_' + Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
+    }
+
+    // Check if user is admin (queries database, no localStorage)
+    async isUserAdmin(userId) {
+        try {
+            if (!userId || !this.supabase) return false;
+            
+            const { data, error } = await this.supabase
+                .from('user_roles')
+                .select('is_admin')
+                .eq('user_id', userId)
+                .single();
+            
+            if (error || !data) return false;
+            return data.is_admin === true;
+        } catch (error) {
+            console.warn('Error checking admin status:', error);
+            return false;
+        }
     }
 }
 
