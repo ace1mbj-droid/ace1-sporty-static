@@ -456,6 +456,8 @@ class AdminPanel {
 
         if (error) {
             console.error('Error loading orders:', error);
+            console.error('Error details:', JSON.stringify(error, null, 2));
+            alert(`Error loading orders: ${error.message || error.hint || 'Unknown error'}`);
             return;
         }
 
@@ -1225,6 +1227,8 @@ class AdminPanel {
 
         if (error) {
             console.error('Error loading users:', error);
+            console.error('Error details:', JSON.stringify(error, null, 2));
+            alert(`Error loading users: ${error.message || error.hint || 'Unknown error'}`);
             return;
         }
 
