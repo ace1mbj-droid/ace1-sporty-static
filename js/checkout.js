@@ -53,10 +53,6 @@ class CheckoutManager {
     loadCartItems() {
         const cart = localStorage.getItem('ace1_cart');
         this.cartItems = cart ? JSON.parse(cart) : [];
-
-        if (this.cartItems.length === 0) {
-            this.showEmptyCart();
-        }
     }
 
     loadUserInfo() {
