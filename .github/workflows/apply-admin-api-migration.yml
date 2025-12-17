@@ -1,9 +1,9 @@
 name: Apply admin_api_url migration
 
+# Migration already applied manually - keeping workflow for reference only
+# Can be triggered manually if needed in future
 on:
   workflow_dispatch: {}
-  push:
-    branches: [ main ]
 
 jobs:
   apply-migration:
