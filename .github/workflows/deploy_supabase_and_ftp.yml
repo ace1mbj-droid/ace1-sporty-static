@@ -201,8 +201,8 @@ jobs:
 
       - name: Set FTP target directories
         run: |
-          if [ -n "${{ secrets.FTP_PUBLIC_DIR }}" ]; then echo "PUBLIC_DIR=${{ secrets.FTP_PUBLIC_DIR }}" >> $GITHUB_ENV; else echo "PUBLIC_DIR=/" >> $GITHUB_ENV; fi
-          if [ -n "${{ secrets.FTP_PRIVATE_DIR }}" ]; then echo "PRIVATE_DIR=${{ secrets.FTP_PRIVATE_DIR }}" >> $GITHUB_ENV; else echo "PRIVATE_DIR=/_private" >> $GITHUB_ENV; fi
+          if [ -n "${{ secrets.FTP_PUBLIC_DIR }}" ]; then echo "PUBLIC_DIR=${{ secrets.FTP_PUBLIC_DIR }}" >> $GITHUB_ENV; else echo "PUBLIC_DIR=/public_html" >> $GITHUB_ENV; fi
+          if [ -n "${{ secrets.FTP_PRIVATE_DIR }}" ]; then echo "PRIVATE_DIR=${{ secrets.FTP_PRIVATE_DIR }}" >> $GITHUB_ENV; else echo "PRIVATE_DIR=/private" >> $GITHUB_ENV; fi
 
       - name: FTP Deploy (public)
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
@@ -251,5 +251,5 @@ jobs:
 # - SUPABASE_DB_URL (full postgres connection url, with password; use service key)
 # - RZ_KEY, RZ_SECRET (Razorpay keys) - stored as GitHub secrets
 # - FTP_HOST, FTP_USER, FTP_PASSWORD
-# Optional FTP secrets: FTP_PUBLIC_DIR (default '/'), FTP_PRIVATE_DIR (default '/_private'), FTP_PORT (default 21)
+# Optional FTP secrets: FTP_PUBLIC_DIR (default '/public_html'), FTP_PRIVATE_DIR (default '/private'), FTP_PORT (default 21)
 # Optional hardening: ALLOW_PRODUCTION_DEPLOY (require manual approval), FTP_SSL_VERIFY (default 'true')
