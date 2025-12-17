@@ -1,6 +1,7 @@
 // Product Reviews Manager
 class ProductReviewsManager {
     constructor() {
+        this.allReviews = [];
         this.reviews = [];
         this.productId = null;
         this.init();
@@ -58,8 +59,9 @@ class ProductReviewsManager {
             await this.loadReviewsFromDatabase();
         } else {
             // Fallback to localStorage if database not available
-            const allReviews = JSON.parse(localStorage.getItem('ace1_reviews') || '{}');
-            this.reviews = allReviews[this.productId] || this.getDefaultReviews();
+            const stored = JSON.parse(localStorage.getItem('ace1_reviews') || '{}');
+            this.allReviews = stored[this.productId] || this.getDefaultReviews();
+            this.reviews = [...this.allReviews];
         }
     }
 
@@ -77,7 +79,7 @@ class ProductReviewsManager {
             if (error) throw error;
             
             // Convert database format to display format
-            this.reviews = (data || []).map(review => ({
+            this.allReviews = (data || []).map(review => ({
                 id: review.id,
                 userId: review.user_id,
                 userName: review.user_name,
@@ -92,9 +94,10 @@ class ProductReviewsManager {
         } catch (error) {
             console.warn('Failed to load reviews from database:', error);
             // Fallback to localStorage
-            const allReviews = JSON.parse(localStorage.getItem('ace1_reviews') || '{}');
-            this.reviews = allReviews[this.productId] || this.getDefaultReviews();
+            const stored = JSON.parse(localStorage.getItem('ace1_reviews') || '{}');
+            this.allReviews = stored[this.productId] || this.getDefaultReviews();
         }
+        this.reviews = [...this.allReviews];
     }
 
     getDefaultReviews() {
@@ -161,6 +164,9 @@ class ProductReviewsManager {
             return;
         }
 
+        const submitBtn = e.target.querySelector('button[type="submit"]');
+        if (submitBtn) submitBtn.disabled = true;
+
         try {
             const supabase = window.getSupabase?.();
             if (!supabase) throw new Error('Database not available');
@@ -172,7 +178,7 @@ class ProductReviewsManager {
                     product_id: this.productId,
                     user_id: user.id,
                     user_email: user.email,
-                    user_name: user.firstName + ' ' + user.lastName,
+                    user_name: `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email,
                     rating: rating,
                     title: formData.get('title'),
                     comment: formData.get('comment'),
@@ -183,7 +189,7 @@ class ProductReviewsManager {
 
             if (error) throw error;
 
-            // Add to local list
+            // Add to source + view
             const newReview = {
                 id: data.id,
                 userId: data.user_id,
@@ -197,45 +203,20 @@ class ProductReviewsManager {
                 verified: true
             };
 
-            this.reviews.unshift(newReview);
+            this.allReviews.unshift(newReview);
+            this.reviews = [newReview, ...this.reviews];
             this.showNotification('Review submitted successfully!', 'success');
-        } catch (error) {
-            console.error('Error submitting review:', error);
-            this.showNotification('Failed to submit review. Please try again.', 'error');
-            return;
-        }
 
-        // Reset form
-        e.target.reset();
-        document.querySelectorAll('.star-rating-btn').forEach(star => star.classList.remove('selected'));
-
-        // Update display
+            // Reset form and stars
+            e.target.reset();
+            document.querySelectorAll('.star-rating-btn').forEach(star => star.classList.remove('selected'));
             this.displayReviews();
             this.calculateRatingSummary();
-
         } catch (error) {
             console.error('Error submitting review:', error);
             this.showNotification('Failed to submit review. Please try again.', 'error');
-        }
-    }
-
-    async loadReviewsFromSupabase() {
-        if (window.supabaseService && window.supabaseService.supabase) {
-            const result = await window.supabaseService.getReviews(this.productId);
-            if (result.success) {
-                this.reviews = result.reviews.map(r => ({
-                    id: r.id,
-                    userId: r.user_id,
-                    userName: `${r.user.first_name} ${r.user.last_name}`,
-                    rating: r.rating,
-                    title: r.title,
-                    comment: r.comment,
-                    date: new Date(r.created_at).toISOString().split('T')[0],
-                    helpful: r.helpful_count || 0,
-                    notHelpful: 0,
-                    verified: r.verified_purchase
-                }));
-            }
+        } finally {
+            if (submitBtn) submitBtn.disabled = false;
         }
     }
 
@@ -247,7 +228,6 @@ class ProductReviewsManager {
             } else {
                 star.classList.remove('selected');
             }
-            star.dataset.rating = rating;
         });
     }
 
@@ -266,15 +246,22 @@ class ProductReviewsManager {
             return;
         }
 
+        const escapeHtml = (val = '') => String(val)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+
         reviewsList.innerHTML = this.reviews.map(review => `
             <div class="review-card">
                 <div class="review-header">
                     <div class="review-user">
                         <div class="user-avatar">
-                            ${review.userName.charAt(0)}
+                            ${escapeHtml(review.userName.charAt(0) || '?')}
                         </div>
                         <div>
-                            <h4>${review.userName} ${review.verified ? '<i class="fas fa-check-circle verified"></i>' : ''}</h4>
+                            <h4>${escapeHtml(review.userName)} ${review.verified ? '<i class="fas fa-check-circle verified"></i>' : ''}</h4>
                             <div class="review-rating">
                                 ${this.generateStars(review.rating)}
                             </div>
@@ -283,8 +270,8 @@ class ProductReviewsManager {
                     <span class="review-date">${this.formatDate(review.date)}</span>
                 </div>
                 <div class="review-content">
-                    <h4>${review.title}</h4>
-                    <p>${review.comment}</p>
+                    <h4>${escapeHtml(review.title)}</h4>
+                    <p>${escapeHtml(review.comment)}</p>
                 </div>
                 <div class="review-footer">
                     <span>Was this helpful?</span>
@@ -357,9 +344,9 @@ class ProductReviewsManager {
         e.currentTarget.classList.add('active');
 
         if (rating === 0) {
-            this.loadReviews();
+            this.reviews = [...this.allReviews];
         } else {
-            this.reviews = this.reviews.filter(r => r.rating === rating);
+            this.reviews = this.allReviews.filter(r => r.rating === rating);
         }
         
         this.displayReviews();
@@ -368,19 +355,19 @@ class ProductReviewsManager {
     sortReviews(sortBy) {
         switch(sortBy) {
             case 'newest':
-                this.reviews.sort((a, b) => new Date(b.date) - new Date(a.date));
+                this.reviews = [...this.reviews].sort((a, b) => new Date(b.date) - new Date(a.date));
                 break;
             case 'oldest':
-                this.reviews.sort((a, b) => new Date(a.date) - new Date(b.date));
+                this.reviews = [...this.reviews].sort((a, b) => new Date(a.date) - new Date(b.date));
                 break;
             case 'highest':
-                this.reviews.sort((a, b) => b.rating - a.rating);
+                this.reviews = [...this.reviews].sort((a, b) => b.rating - a.rating);
                 break;
             case 'lowest':
-                this.reviews.sort((a, b) => a.rating - b.rating);
+                this.reviews = [...this.reviews].sort((a, b) => a.rating - b.rating);
                 break;
             case 'helpful':
-                this.reviews.sort((a, b) => b.helpful - a.helpful);
+                this.reviews = [...this.reviews].sort((a, b) => b.helpful - a.helpful);
                 break;
         }
         this.displayReviews();
@@ -393,16 +380,23 @@ class ProductReviewsManager {
         const review = this.reviews.find(r => r.id === reviewId);
         if (!review) return;
 
-        if (type === 'helpful') {
-            review.helpful++;
-        } else {
-            review.notHelpful++;
-        }
+        const btn = button;
+        btn.disabled = true;
 
-        // Save to database
-        this.updateReviewHelpfulness(review.id, type);
-
+        const delta = type === 'helpful' ? { key: 'helpful', amount: 1 } : { key: 'notHelpful', amount: 1 };
+        review[delta.key] += delta.amount;
         this.displayReviews();
+
+        try {
+            await this.updateReviewHelpfulness(review.id, type);
+        } catch (err) {
+            // Roll back on failure
+            review[delta.key] -= delta.amount;
+            console.warn('Failed to update review helpfulness:', err);
+            this.displayReviews();
+        } finally {
+            btn.disabled = false;
+        }
     }
 
     async updateReviewHelpfulness(reviewId, type) {
@@ -431,7 +425,7 @@ class ProductReviewsManager {
             if (updateError) throw updateError;
         } catch (error) {
             console.warn('Failed to update review helpfulness:', error);
-            // Data is already updated in local array, that's good enough
+            throw error;
         }
     }
 
