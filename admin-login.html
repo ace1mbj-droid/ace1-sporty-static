@@ -237,7 +237,10 @@
 
             const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value;
-            if (!window.databaseAuth) {
+
+            // Check if Supabase is available
+            const supabase = window.getSupabase ? window.getSupabase() : null;
+            if (!supabase) {
                 errorMessage.textContent = 'Authentication service unavailable.';
                 errorMessage.style.display = 'block';
                 return;
@@ -264,23 +267,60 @@
             }
 
             try {
-                const result = await window.databaseAuth.login(email, password);
+                // Use Supabase Auth for admin login
+                const { data, error } = await supabase.auth.signInWithPassword({
+                    email: email,
+                    password: password
+                });
 
-                if (result.success) {
-                    if (result.user.role === 'admin' || result.user.email === 'hello@ace1.in') {
-                        window.location.href = 'admin.html';
+                if (error) {
+                    throw error;
+                }
+
+                if (data.user) {
+                    // Check if user is admin by querying the public.users table
+                    const { data: userData, error: userError } = await supabase
+                        .from('users')
+                        .select('role, email')
+                        .eq('id', data.user.id)
+                        .single();
+
+                    if (userError) {
+                        console.error('Error fetching user role:', userError);
+                        // Allow hello@ace1.in to proceed even if role lookup fails
+                        if (data.user.email === 'hello@ace1.in') {
+                            window.location.href = 'admin.html';
+                            return;
+                        }
+                        throw new Error('Unable to verify admin access');
+                    }
+
+                    // Check if user has admin role
+                    if (userData.role === 'admin' || data.user.email === 'hello@ace1.in') {
+                        window.showNotification('Welcome, Admin!', 'success');
+                        setTimeout(() => {
+                            window.location.href = 'admin.html';
+                        }, 500);
                     } else {
                         errorMessage.textContent = 'Access denied. This login is for administrators only.';
                         errorMessage.style.display = 'block';
-                        await window.databaseAuth.logout();
+                        await supabase.auth.signOut();
                     }
                 } else {
-                    errorMessage.textContent = result.message || 'Invalid credentials';
+                    errorMessage.textContent = 'Invalid credentials';
                     errorMessage.style.display = 'block';
                 }
             } catch (error) {
                 console.error('Login error:', error);
-                errorMessage.textContent = 'An error occurred. Please try again.';
+                
+                // Provide specific error messages
+                if (error.message?.includes('Invalid login credentials')) {
+                    errorMessage.textContent = 'Invalid email or password';
+                } else if (error.message?.includes('Email not confirmed')) {
+                    errorMessage.textContent = 'Please confirm your email before logging in';
+                } else {
+                    errorMessage.textContent = error.message || 'An error occurred. Please try again.';
+                }
                 errorMessage.style.display = 'block';
             } finally {
                 if (typeof window.resetHCaptchaToken === 'function') {
