@@ -54,14 +54,13 @@ class ProductReviewsManager {
     }
 
     async loadReviews() {
-        // Load from database first
+        // Load from database; no localStorage fallback
         if (window.getSupabase?.()) {
             await this.loadReviewsFromDatabase();
         } else {
-            // Fallback to localStorage if database not available
-            const stored = JSON.parse(localStorage.getItem('ace1_reviews') || '{}');
-            this.allReviews = stored[this.productId] || this.getDefaultReviews();
-            this.reviews = [...this.allReviews];
+            // No fallback: require Supabase
+            this.reviews = [];
+            console.warn('Supabase not available; reviews disabled.');
         }
     }
 
@@ -93,9 +92,8 @@ class ProductReviewsManager {
             }));
         } catch (error) {
             console.warn('Failed to load reviews from database:', error);
-            // Fallback to localStorage
-            const stored = JSON.parse(localStorage.getItem('ace1_reviews') || '{}');
-            this.allReviews = stored[this.productId] || this.getDefaultReviews();
+            // No fallback to localStorage; reviews unavailable
+            this.allReviews = [];
         }
         this.reviews = [...this.allReviews];
     }
