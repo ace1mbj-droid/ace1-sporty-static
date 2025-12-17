@@ -3,6 +3,7 @@ name: Build & FTP Deploy
 on:
   push:
     branches: [ main ]
+  workflow_dispatch:
 
 jobs:
   build-and-deploy:
@@ -10,6 +11,14 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: CI guard — prevent accidental production deploys
+        if: github.event_name != 'workflow_dispatch'
+        run: |
+          if [ "${{ secrets.ALLOW_PRODUCTION_DEPLOY }}" != "true" ]; then
+            echo "Automatic production deploys are disabled. Re-run via 'workflow_dispatch' or set 'ALLOW_PRODUCTION_DEPLOY=true' temporarily."
+            exit 1
+          fi
 
       - name: Use Node
         uses: actions/setup-node@v4
@@ -55,6 +64,32 @@ jobs:
           find dist-public -type f | sort > public-files.txt || true
           find dist-private -type f | sort > private-files.txt || true
 
+      - name: Validate public files allowlist
+        run: |
+          set -e
+          echo "Validating file types in dist-public against allowlist"
+          DISALLOWED=$(find dist-public -type f \
+            ! -name '*.html' \
+            ! -name '*.css' \
+            ! -name '*.js' \
+            ! -name '*.png' \
+            ! -name '*.jpg' \
+            ! -name '*.jpeg' \
+            ! -name '*.webp' \
+            ! -name '*.gif' \
+            ! -name '*.svg' \
+            ! -name '*.ico' \
+            ! -name '*.woff' \
+            ! -name '*.woff2' \
+            ! -name '*.ttf' \
+            ! -name '*.eot' -print)
+          if [ -n "$DISALLOWED" ]; then
+            echo "Found disallowed files in dist-public:"
+            echo "$DISALLOWED"
+            exit 1
+          fi
+          echo "Allowlist validation passed."
+
       - name: Inject ADMIN_API_URL into built admin.html (optional)
         # Run only when either admin API secret is provided
         env:
@@ -82,12 +117,14 @@ jobs:
           FTP_USER: ${{ secrets.FTP_USER }}
           FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
           FTP_PORT: ${{ secrets.FTP_PORT }}
+          FTP_SSL_VERIFY: ${{ secrets.FTP_SSL_VERIFY }}
         run: |
           sudo apt-get update && sudo apt-get install -y lftp
           set -e
           PORT=${FTP_PORT:-21}
+          VERIFY=${FTP_SSL_VERIFY:-true}
           echo "Running FTP health check against ${FTP_HOST}:${PORT}"
-          lftp -p "$PORT" -e "set net:max-retries 1; set net:timeout 20; set ftp:ssl-force true; set ftp:ssl-protect-data true; set cmd:fail-exit true; open -u $FTP_USER,$FTP_PASSWORD $FTP_HOST; pwd; ls; bye" | tee ftp-healthcheck.log
+          lftp -p "$PORT" -e "set net:max-retries 1; set net:timeout 20; set ftp:ssl-force true; set ftp:ssl-protect-data true; set ssl:verify-certificate $VERIFY; set cmd:fail-exit true; open -u $FTP_USER,$FTP_PASSWORD $FTP_HOST; pwd; ls; bye" | tee ftp-healthcheck.log
           echo "FTP health check complete."
 
       - name: Upload healthcheck & manifests
@@ -98,6 +135,13 @@ jobs:
             ftp-healthcheck.log
             public-files.txt
             private-files.txt
+
+      - name: Generate checksums for public files
+        run: |
+          set -e
+          find dist-public -type f -exec sha256sum {} \; | sort > dist-public-checksums.sha256
+          cp dist-public-checksums.sha256 dist-private/checksums-public.sha256 || true
+        shell: bash
 
       - name: Set FTP target directories
         run: |
@@ -121,6 +165,8 @@ jobs:
             **/.github/**
             **/node_modules/**
             dist/**
+            **/*.map
+            **/*.ts
 
       - name: FTP Deploy (private)
         if: ${{ hashFiles('dist-private/**') != '' }}
@@ -140,7 +186,10 @@ jobs:
             **/.github/**
             **/node_modules/**
             dist/**
+            **/*.map
+            **/*.ts
 
 # Secrets to set: FTP_HOST, FTP_USER, FTP_PASSWORD
 # Optional secrets: FTP_PUBLIC_DIR (default '/'), FTP_PRIVATE_DIR (default '/_private'), FTP_PORT (default 21)
+# Optional hardening: ALLOW_PRODUCTION_DEPLOY (require manual approval), FTP_SSL_VERIFY (default 'true')
 # Alternative: use SSH key or other deployment action if host requires it.
