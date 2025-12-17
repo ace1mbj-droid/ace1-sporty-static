@@ -1722,17 +1722,13 @@ class AdminPanel {
     }
 
     async clearLogs() {
-        if (!confirm('Are you sure you want to clear logs older than 30 days?')) {
+        if (!confirm('Are you sure you want to clear ALL security logs?')) {
             return;
         }
 
-        const thirtyDaysAgo = new Date();
-        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-
         const { error } = await this.supabase
             .from('security_logs')
-            .delete()
-            .lt('timestamp', thirtyDaysAgo.toISOString());
+            .delete();
 
         if (error) {
             console.error('Error clearing logs:', error);
@@ -1740,7 +1736,7 @@ class AdminPanel {
             return;
         }
 
-        alert('Old logs cleared successfully');
+        alert('All security logs cleared successfully');
         await this.loadLogs();
     }
 }
