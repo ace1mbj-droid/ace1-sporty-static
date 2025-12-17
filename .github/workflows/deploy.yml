@@ -29,10 +29,8 @@ jobs:
         run: |
           rm -rf dist || true
           rm -rf dist-public || true
-          rm -rf dist-private || true
           mkdir -p dist
           mkdir -p dist-public
-          mkdir -p dist-private
           # Copy only what we need for the static site; drop tooling/docs/tests/server content before FTP
           rsync -av \
             --exclude='.git' \
@@ -53,16 +51,9 @@ jobs:
             --exclude='**/*.txt' \
             ./ dist-public/ || true
 
-          # Prepare non-public artifacts (kept outside web-accessible root on FTP)
-          for d in docs sql supabase server scripts package reproduction; do
-            if [ -d "$d" ]; then
-              rsync -av "$d" dist-private/ || true
-            fi
-          done
 
           # Generate manifests for visibility
           find dist-public -type f | sort > public-files.txt || true
-          find dist-private -type f | sort > private-files.txt || true
 
       - name: Validate public files allowlist
         run: |
@@ -134,29 +125,17 @@ jobs:
           path: |
             ftp-healthcheck.log
             public-files.txt
-            private-files.txt
 
       - name: Generate checksums for public files
         run: |
           set -e
           find dist-public -type f -exec sha256sum {} \; | sort > dist-public-checksums.sha256
-          cp dist-public-checksums.sha256 dist-private/checksums-public.sha256 || true
         shell: bash
 
-      - name: Flag private content presence
-        run: |
-          if [ -d dist-private ] && [ "$(find dist-private -type f | wc -l)" -gt 0 ]; then
-            echo "HAS_PRIVATE=true" >> $GITHUB_ENV
-            echo "Private content detected for upload."
-          else
-            echo "HAS_PRIVATE=false" >> $GITHUB_ENV
-            echo "No private content to upload."
-          fi
 
       - name: Set FTP target directories
         run: |
           if [ -n "${{ secrets.FTP_PUBLIC_DIR }}" ]; then echo "PUBLIC_DIR=${{ secrets.FTP_PUBLIC_DIR }}" >> $GITHUB_ENV; else echo "PUBLIC_DIR=/public_html" >> $GITHUB_ENV; fi
-          if [ -n "${{ secrets.FTP_PRIVATE_DIR }}" ]; then echo "PRIVATE_DIR=${{ secrets.FTP_PRIVATE_DIR }}" >> $GITHUB_ENV; else echo "PRIVATE_DIR=/private" >> $GITHUB_ENV; fi
 
       - name: FTP Deploy (public)
         uses: 
@@ -178,28 +157,8 @@ jobs:
             **/*.map
             **/*.ts
 
-      - name: FTP Deploy (private)
-        if: ${{ env.HAS_PRIVATE == 'true' }}
-        uses: 
-        with:
-          server: ${{ secrets.FTP_HOST }}
-          username: ${{ secrets.FTP_USER }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          local-dir: ./dist-private/
-          server-dir: ${{ env.PRIVATE_DIR }}
-          protocol: ftps
-          port: 21
-          dangerous-clean-slate: false
-          state-name: ace1-private-deploy-state.json
-          exclude: |
-            **/.git*
-            **/.github/**
-            **/node_modules/**
-            dist/**
-            **/*.map
-            **/*.ts
 
 # Secrets to set: FTP_HOST, FTP_USER, FTP_PASSWORD
-# Optional secrets: FTP_PUBLIC_DIR (default '/public_html'), FTP_PRIVATE_DIR (default '/private'), FTP_PORT (default 21)
+# Optional secrets: FTP_PUBLIC_DIR (default '/public_html'), FTP_PORT (default 21)
 # Optional hardening: ALLOW_PRODUCTION_DEPLOY (require manual approval), FTP_SSL_VERIFY (default 'true')
 # Alternative: use SSH key or other deployment action if host requires it.
