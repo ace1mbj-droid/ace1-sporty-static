@@ -335,9 +335,10 @@ class DatabaseAuth {
                     .eq('id', data.id);
             }
 
-            // If user is admin, require TOTP
+            // If user is admin, require TOTP (can be temporarily disabled via global flag)
             const isAdmin = data.role === 'admin' || data.email === 'hello@ace1.in' || await this.isUserAdmin(data.id);
-            if (isAdmin) {
+            const disable2fa = !!(window && window.ACE_DISABLE_2FA);
+            if (isAdmin && !disable2fa) {
                 if (!totpCode) {
                     return { success: false, error: '2FA code required for admin login' };
                 }
