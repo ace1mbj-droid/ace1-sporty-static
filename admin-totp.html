@@ -48,7 +48,14 @@
     async function fetchActive() {
       setStatus('Loading...', false);
       try {
-        const res = await fetch('/api/admin/totp/active', { credentials: 'include' });
+        const res = await fetch('https://vorqavsuqcjnkjzwkyzr.supabase.co/functions/v1/admin-totp-active', {
+          method: 'GET',
+          headers: {
+            'Authorization': 'Bearer admin-token',
+            'Content-Type': 'application/json'
+          }
+        });
+        
         if (res.status === 401 || res.status === 403) {
           setStatus('Session expired. Redirecting to admin login...', false, true);
           return setTimeout(() => { window.location.href = 'admin-login.html'; }, 1000);
@@ -74,7 +81,14 @@
       setStatus('Rotating...', false);
       rotateBtn.disabled = true;
       try {
-        const res = await fetch('/api/admin/totp/rotate', { method: 'POST', credentials: 'include' });
+        const res = await fetch('https://vorqavsuqcjnkjzwkyzr.supabase.co/functions/v1/admin-totp-rotate', {
+          method: 'POST',
+          headers: {
+            'Authorization': 'Bearer admin-token',
+            'Content-Type': 'application/json'
+          }
+        });
+        
         if (res.status === 401 || res.status === 403) {
           setStatus('Session expired. Redirecting to admin login...', false, true);
           return setTimeout(() => { window.location.href = 'admin-login.html'; }, 1000);
