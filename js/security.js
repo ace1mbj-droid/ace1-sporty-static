@@ -6,6 +6,7 @@
 class SecurityManager {
     constructor() {
         this.csrfToken = null;
+        this.supabase = null;
         this.loginAttempts = new Map(); // IP/email -> {count, timestamp}
         this.maxAttempts = 5;
         this.lockoutDuration = 15 * 60 * 1000; // 15 minutes
@@ -13,9 +14,10 @@ class SecurityManager {
     }
 
     init() {
+        this.supabase = window.getSupabase();
+        
         // Generate CSRF token for this session
-        this.csrfToken = this.generateCSRFToken();
-        sessionStorage.setItem('csrf_token', this.csrfToken);
+        this.generateAndStoreCSRFToken();
         
         // Add CSRF token to all forms
         this.addCSRFTokensToForms();
@@ -31,6 +33,37 @@ class SecurityManager {
         const array = new Uint8Array(32);
         crypto.getRandomValues(array);
         return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
+    }
+
+    async generateAndStoreCSRFToken() {
+        // Generate token
+        const token = this.generateCSRFToken();
+        this.csrfToken = token;
+        
+        // Store in database
+        if (this.supabase) {
+            try {
+                const sessionId = localStorage.getItem('ace1_session_id') || crypto.randomUUID();
+                const expiresAt = new Date();
+                expiresAt.setHours(expiresAt.getHours() + 1); // 1 hour expiry
+                
+                await this.supabase
+                    .from('csrf_tokens')
+                    .insert([{
+                        token: token,
+                        session_id: sessionId,
+                        expires_at: expiresAt.toISOString()
+                    }]);
+                
+                console.log('✅ CSRF token stored in database');
+            } catch (err) {
+                console.warn('⚠️ Could not store CSRF token in database:', err);
+                // Fall back to sessionStorage
+            }
+        }
+        
+        // Also store in sessionStorage for quick access
+        sessionStorage.setItem('csrf_token', token);
     }
 
     getCSRFToken() {
@@ -56,7 +89,7 @@ class SecurityManager {
         });
     }
 
-    validateCSRFToken(token) {
+    async validateCSRFToken(token) {
         const validToken = this.getCSRFToken();
         if (!validToken || !token) {
             console.error('❌ CSRF token missing');
@@ -66,6 +99,26 @@ class SecurityManager {
         if (token !== validToken) {
             console.error('❌ CSRF token mismatch');
             return false;
+        }
+        
+        // Verify token exists in database and is not expired
+        if (this.supabase) {
+            try {
+                const { data, error } = await this.supabase
+                    .from('csrf_tokens')
+                    .select('id')
+                    .eq('token', token)
+                    .gt('expires_at', new Date().toISOString())
+                    .single();
+                
+                if (error || !data) {
+                    console.error('❌ CSRF token not found or expired in database');
+                    return false;
+                }
+            } catch (err) {
+                console.warn('⚠️ Could not verify CSRF token in database:', err);
+                // Fall back to local check
+            }
         }
         
         return true;
