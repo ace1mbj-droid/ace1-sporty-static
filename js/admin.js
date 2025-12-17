@@ -1688,7 +1688,8 @@ class AdminPanel {
 
         const { error } = await this.supabase
             .from('security_logs')
-            .delete();
+            .delete()
+            .neq('id', '00000000-0000-0000-0000-000000000000'); // PostgREST requires WHERE clause
 
         if (error) {
             console.error('Error clearing logs:', error);
