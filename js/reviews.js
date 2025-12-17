@@ -53,10 +53,44 @@ class ProductReviewsManager {
     }
 
     async loadReviews() {
-        // Try loading from Supabase first
-        if (window.supabaseService && window.supabaseService.supabase) {
-            await this.loadReviewsFromSupabase();
+        // Load from database first
+        if (window.getSupabase?.()) {
+            await this.loadReviewsFromDatabase();
         } else {
+            // Fallback to localStorage if database not available
+            const allReviews = JSON.parse(localStorage.getItem('ace1_reviews') || '{}');
+            this.reviews = allReviews[this.productId] || this.getDefaultReviews();
+        }
+    }
+
+    async loadReviewsFromDatabase() {
+        try {
+            const supabase = window.getSupabase?.();
+            if (!supabase) throw new Error('Supabase not available');
+            
+            const { data, error } = await supabase
+                .from('reviews')
+                .select('*')
+                .eq('product_id', this.productId)
+                .order('created_at', { ascending: false });
+            
+            if (error) throw error;
+            
+            // Convert database format to display format
+            this.reviews = (data || []).map(review => ({
+                id: review.id,
+                userId: review.user_id,
+                userName: review.user_name,
+                rating: review.rating,
+                title: review.title,
+                comment: review.comment,
+                date: new Date(review.created_at).toISOString().split('T')[0],
+                helpful: review.helpful_count || 0,
+                notHelpful: review.unhelpful_count || 0,
+                verified: review.verified_purchase || false
+            }));
+        } catch (error) {
+            console.warn('Failed to load reviews from database:', error);
             // Fallback to localStorage
             const allReviews = JSON.parse(localStorage.getItem('ace1_reviews') || '{}');
             this.reviews = allReviews[this.productId] || this.getDefaultReviews();
@@ -109,10 +143,9 @@ class ProductReviewsManager {
         e.preventDefault();
 
         // Check if user is logged in
-        const isAuthenticated = window.supabaseService?.currentUser || 
-                               (typeof AuthManager !== 'undefined' && AuthManager?.isAuthenticated());
+        const user = window.AuthManager?.getCurrentUser();
         
-        if (!isAuthenticated) {
+        if (!user) {
             this.showNotification('Please login to submit a review', 'error');
             setTimeout(() => {
                 window.location.href = 'login.html?redirect=' + encodeURIComponent(window.location.pathname);
@@ -129,55 +162,54 @@ class ProductReviewsManager {
         }
 
         try {
-            // Use Supabase if available
-            if (window.supabaseService && window.supabaseService.supabase && window.supabaseService.currentUser) {
-                const result = await window.supabaseService.submitReview(this.productId, {
+            const supabase = window.getSupabase?.();
+            if (!supabase) throw new Error('Database not available');
+            
+            // Save to database
+            const { data, error } = await supabase
+                .from('reviews')
+                .insert({
+                    product_id: this.productId,
+                    user_id: user.id,
+                    user_email: user.email,
+                    user_name: user.firstName + ' ' + user.lastName,
                     rating: rating,
                     title: formData.get('title'),
                     comment: formData.get('comment'),
-                    verifiedPurchase: true
-                });
+                    verified_purchase: true
+                })
+                .select()
+                .single();
 
-                if (result.success) {
-                    // Reload reviews from Supabase
-                    await this.loadReviewsFromSupabase();
-                    this.showNotification('Review submitted successfully!', 'success');
-                } else {
-                    this.showNotification(result.error || 'Failed to submit review', 'error');
-                    return;
-                }
-            } else {
-                // Fallback to localStorage
-                const user = AuthManager.getCurrentUser();
-                const review = {
-                    id: Date.now(),
-                    userId: user.id,
-                    userName: `${user.firstName} ${user.lastName}`,
-                    rating: rating,
-                    title: formData.get('title'),
-                    comment: formData.get('comment'),
-                    date: new Date().toISOString().split('T')[0],
-                    helpful: 0,
-                    notHelpful: 0,
-                    verified: true
-                };
+            if (error) throw error;
 
-                // Add review to list
-                this.reviews.unshift(review);
+            // Add to local list
+            const newReview = {
+                id: data.id,
+                userId: data.user_id,
+                userName: data.user_name,
+                rating: data.rating,
+                title: data.title,
+                comment: data.comment,
+                date: new Date(data.created_at).toISOString().split('T')[0],
+                helpful: 0,
+                notHelpful: 0,
+                verified: true
+            };
 
-                // Save to localStorage
-                const allReviews = JSON.parse(localStorage.getItem('ace1_reviews') || '{}');
-                allReviews[this.productId] = this.reviews;
-                localStorage.setItem('ace1_reviews', JSON.stringify(allReviews));
+            this.reviews.unshift(newReview);
+            this.showNotification('Review submitted successfully!', 'success');
+        } catch (error) {
+            console.error('Error submitting review:', error);
+            this.showNotification('Failed to submit review. Please try again.', 'error');
+            return;
+        }
 
-                this.showNotification('Review submitted successfully!', 'success');
-            }
+        // Reset form
+        e.target.reset();
+        document.querySelectorAll('.star-rating-btn').forEach(star => star.classList.remove('selected'));
 
-            // Reset form
-            e.target.reset();
-            document.querySelectorAll('.star-rating-btn').forEach(star => star.classList.remove('selected'));
-
-            // Update display
+        // Update display
             this.displayReviews();
             this.calculateRatingSummary();
 
@@ -367,12 +399,40 @@ class ProductReviewsManager {
             review.notHelpful++;
         }
 
-        // Save to localStorage
-        const allReviews = JSON.parse(localStorage.getItem('ace1_reviews') || '{}');
-        allReviews[this.productId] = this.reviews;
-        localStorage.setItem('ace1_reviews', JSON.stringify(allReviews));
+        // Save to database
+        this.updateReviewHelpfulness(review.id, type);
 
         this.displayReviews();
+    }
+
+    async updateReviewHelpfulness(reviewId, type) {
+        try {
+            const supabase = window.getSupabase?.();
+            if (!supabase) throw new Error('Database not available');
+            
+            const column = type === 'helpful' ? 'helpful_count' : 'unhelpful_count';
+            
+            // Get current review
+            const { data: currentReview, error: selectError } = await supabase
+                .from('reviews')
+                .select(column)
+                .eq('id', reviewId)
+                .single();
+            
+            if (selectError) throw selectError;
+            
+            // Update with incremented count
+            const newCount = (currentReview[column] || 0) + 1;
+            const { error: updateError } = await supabase
+                .from('reviews')
+                .update({ [column]: newCount })
+                .eq('id', reviewId);
+            
+            if (updateError) throw updateError;
+        } catch (error) {
+            console.warn('Failed to update review helpfulness:', error);
+            // Data is already updated in local array, that's good enough
+        }
     }
 
     formatDate(dateStr) {
