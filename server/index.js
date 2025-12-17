@@ -14,12 +14,17 @@
 const express = require('express');
 const fetch = require('node-fetch');
 const bodyParser = require('body-parser');
+const { authenticator } = require('otplib');
+
+const COOKIE_SECURE = process.env.COOKIE_SECURE !== 'false';
+const COOKIE_NAME = 'ace1_session_token';
 
 const app = express();
 app.use(bodyParser.json());
 
 const SUPABASE_URL = process.env.SUPABASE_URL || process.env.SUPABASE_PROJECT_URL;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const ADMIN_TOTP_SECRET = process.env.ADMIN_TOTP_SECRET; // base32 TOTP secret for admin
 
 if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
   console.error('Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY in environment');
@@ -43,6 +48,94 @@ async function getUserFromAccessToken(token) {
   }
   return res.json();
 }
+
+async function getSessionById(sessionId) {
+  const url = `${SUPABASE_URL.replace(/\/$/, '')}/rest/v1/sessions?session_id=eq.${encodeURIComponent(sessionId)}&select=jwt_token,expires_at&limit=1`;
+  const res = await fetch(url, {
+    method: 'GET',
+    headers: {
+      apikey: SUPABASE_SERVICE_ROLE_KEY,
+      Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+      'Content-Type': 'application/json'
+    }
+  });
+
+  if (!res.ok) {
+    const body = await res.text().catch(() => '');
+    console.error('Failed to fetch session', res.status, body);
+    return null;
+  }
+
+  const data = await res.json().catch(() => []);
+  return Array.isArray(data) && data.length > 0 ? data[0] : null;
+}
+
+// Issue httpOnly cookie for session
+app.post('/api/session/set-cookie', async (req, res) => {
+  try {
+    const { sessionId } = req.body || {};
+    if (!sessionId) return res.status(400).json({ error: 'Missing sessionId' });
+    if (!SUPABASE_SERVICE_ROLE_KEY) return res.status(500).json({ error: 'Server missing configuration' });
+
+    const session = await getSessionById(sessionId);
+    if (!session || !session.jwt_token) {
+      return res.status(404).json({ error: 'Session not found' });
+    }
+
+    // Check expiry
+    if (session.expires_at && new Date(session.expires_at) < new Date()) {
+      return res.status(401).json({ error: 'Session expired' });
+    }
+
+    res.cookie(COOKIE_NAME, session.jwt_token, {
+      httpOnly: true,
+      secure: COOKIE_SECURE,
+      sameSite: 'lax',
+      path: '/',
+      expires: session.expires_at ? new Date(session.expires_at) : undefined
+    });
+
+    return res.json({ success: true });
+  } catch (err) {
+    console.error('set-cookie error', err);
+    return res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// Clear httpOnly cookie
+app.post('/api/session/clear-cookie', (req, res) => {
+  try {
+    res.clearCookie(COOKIE_NAME, {
+      httpOnly: true,
+      secure: COOKIE_SECURE,
+      sameSite: 'lax',
+      path: '/'
+    });
+    return res.json({ success: true });
+  } catch (err) {
+    console.error('clear-cookie error', err);
+    return res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// Admin TOTP verification (server-side, uses env secret)
+app.post('/api/admin/verify-totp', async (req, res) => {
+  try {
+    const { code } = req.body || {};
+    if (!ADMIN_TOTP_SECRET) return res.status(500).json({ error: 'TOTP not configured' });
+    if (!code || typeof code !== 'string' || code.trim().length < 6) {
+      return res.status(400).json({ error: 'Invalid code' });
+    }
+
+    const ok = authenticator.check(code.trim(), ADMIN_TOTP_SECRET);
+    if (!ok) return res.status(401).json({ error: 'Invalid or expired code' });
+
+    return res.json({ success: true });
+  } catch (err) {
+    console.error('verify-totp error', err);
+    return res.status(500).json({ error: 'Server error' });
+  }
+});
 
 app.post('/api/admin/reset-user-password', async (req, res) => {
   try {

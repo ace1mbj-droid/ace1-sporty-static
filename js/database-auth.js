@@ -91,6 +91,10 @@ class DatabaseAuth {
                         if (session.jwt_token) {
                             this.setSessionToken(session.jwt_token);
                         }
+                        // Ensure httpOnly cookie is set for downstream API calls
+                        if (sessionId) {
+                            this.setHttpOnlyCookie(sessionId);
+                        }
                         
                         console.log('✅ Database session restored:', user.email);
                     }
@@ -246,6 +250,7 @@ class DatabaseAuth {
             // Store only session_id in localStorage (reference to database session)
             localStorage.setItem('ace1_session_id', sessionId);
             this.setSessionToken(sessionToken);
+            this.setHttpOnlyCookie(sessionId);
 
             console.log('✅ Registration successful with secure password hashing');
             return { success: true, user: user };
@@ -256,7 +261,7 @@ class DatabaseAuth {
     }
 
     // Login user
-    async login(email, password) {
+    async login(email, password, totpCode = '') {
         try {
             // Validate email format
             if (window.securityManager && !window.securityManager.validateEmail(email)) {
@@ -330,6 +335,18 @@ class DatabaseAuth {
                     .eq('id', data.id);
             }
 
+            // If user is admin, require TOTP
+            const isAdmin = data.role === 'admin' || data.email === 'hello@ace1.in' || await this.isUserAdmin(data.id);
+            if (isAdmin) {
+                if (!totpCode) {
+                    return { success: false, error: '2FA code required for admin login' };
+                }
+                const totpOk = await this.verifyAdminTotp(totpCode);
+                if (!totpOk) {
+                    return { success: false, error: 'Invalid 2FA code' };
+                }
+            }
+
             // Reset rate limit on successful login
             if (window.securityManager) {
                 const clientId = window.securityManager.getClientIdentifier();
@@ -381,6 +398,7 @@ class DatabaseAuth {
             // Store only session_id in localStorage (reference to database session)
             localStorage.setItem('ace1_session_id', sessionId);
             this.setSessionToken(sessionToken);
+            this.setHttpOnlyCookie(sessionId);
 
             // Log successful login
             if (window.securityManager) {
@@ -649,6 +667,7 @@ class DatabaseAuth {
         this.currentUser = null;
 
         this.setSessionToken(null);
+        this.clearHttpOnlyCookie();
         
         // Clear localStorage (only session-related data)
         localStorage.removeItem('ace1_session_id');
@@ -721,6 +740,46 @@ class DatabaseAuth {
             return data.ip || 'unknown';
         } catch (err) {
             return 'unknown';
+        }
+    }
+
+    async setHttpOnlyCookie(sessionId) {
+        try {
+            await fetch('/api/session/set-cookie', {
+                method: 'POST',
+                credentials: 'include',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ sessionId })
+            });
+        } catch (err) {
+            console.warn('Could not set httpOnly cookie', err);
+        }
+    }
+
+    async clearHttpOnlyCookie() {
+        try {
+            await fetch('/api/session/clear-cookie', {
+                method: 'POST',
+                credentials: 'include'
+            });
+        } catch (err) {
+            console.warn('Could not clear httpOnly cookie', err);
+        }
+    }
+
+    async verifyAdminTotp(code) {
+        try {
+            const res = await fetch('/api/admin/verify-totp', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ code })
+            });
+            if (!res.ok) return false;
+            const body = await res.json().catch(() => ({}));
+            return !!body.success;
+        } catch (err) {
+            console.warn('TOTP verification error', err);
+            return false;
         }
     }
 }
