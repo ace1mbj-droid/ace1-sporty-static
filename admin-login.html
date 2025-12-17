@@ -278,6 +278,11 @@
                 }
 
                 if (data.user) {
+                    // Store session token in localStorage for admin requests
+                    if (data.session?.access_token) {
+                        localStorage.setItem('ace1_token', data.session.access_token);
+                    }
+
                     // Check if user is admin by querying the public.users table
                     const { data: userData, error: userError } = await supabase
                         .from('users')
@@ -297,6 +302,14 @@
 
                     // Check if user has admin role
                     if (userData.role === 'admin' || data.user.email === 'hello@ace1.in') {
+                        // Store admin info for fallback
+                        localStorage.setItem('ace1_admin', 'true');
+                        localStorage.setItem('ace1_user', JSON.stringify({
+                            id: data.user.id,
+                            email: data.user.email,
+                            firstName: userData.firstName || ''
+                        }));
+                        
                         window.showNotification('Welcome, Admin!', 'success');
                         setTimeout(() => {
                             window.location.href = 'admin.html';
@@ -304,6 +317,7 @@
                     } else {
                         errorMessage.textContent = 'Access denied. This login is for administrators only.';
                         errorMessage.style.display = 'block';
+                        localStorage.removeItem('ace1_token');
                         await supabase.auth.signOut();
                     }
                 } else {
