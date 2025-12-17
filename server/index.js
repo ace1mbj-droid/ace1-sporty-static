@@ -12,8 +12,6 @@
  */
 
 const express = require('express');
-const fetch = require('node-fetch');
-const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const { authenticator } = require('otplib');
 const QRCode = require('qrcode');
@@ -22,7 +20,7 @@ const COOKIE_SECURE = process.env.COOKIE_SECURE !== 'false';
 const COOKIE_NAME = 'ace1_session_token';
 
 const app = express();
-app.use(bodyParser.json());
+app.use(express.json());
 app.use(cookieParser());
 
 const SUPABASE_URL = process.env.SUPABASE_URL || process.env.SUPABASE_PROJECT_URL;
