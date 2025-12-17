@@ -1,1 +1,85 @@
-import \"jsr:@supabase/functions-js/edge-runtime.d.ts\";\nimport { createClient } from \"jsr:@supabase/supabase-js@2\";\n\nconst SUPABASE_URL = Deno.env.get(\"SUPABASE_URL\");\nconst SUPABASE_SERVICE_ROLE_KEY = Deno.env.get(\"SUPABASE_SERVICE_ROLE_KEY\");\n\nDeno.serve(async (req: Request) => {\n  // CORS\n  if (req.method === \"OPTIONS\") {\n    return new Response(\"ok\", {\n      headers: {\n        \"Access-Control-Allow-Origin\": \"*\",\n        \"Access-Control-Allow-Methods\": \"POST, OPTIONS\",\n        \"Access-Control-Allow-Headers\": \"authorization, content-type\",\n      },\n    });\n  }\n\n  try {\n    const authHeader = req.headers.get(\"Authorization\");\n    if (!authHeader || !authHeader.startsWith(\"Bearer \")) {\n      return new Response(\n        JSON.stringify({ error: \"Unauthorized\" }),\n        { status: 401, headers: { \"Content-Type\": \"application/json\", \"Access-Control-Allow-Origin\": \"*\" } }\n      );\n    }\n\n    const { userId, code } = await req.json().catch(() => ({}));\n\n    if (!userId || !code) {\n      return new Response(\n        JSON.stringify({ error: \"Missing userId or code\" }),\n        { status: 400, headers: { \"Content-Type\": \"application/json\", \"Access-Control-Allow-Origin\": \"*\" } }\n      );\n    }\n\n    const supabase = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);\n\n    // Find valid, non-expired, unused 2FA code for user\n    const { data, error } = await supabase\n      .from(\"user_2fa_codes\")\n      .select(\"id, code, expires_at, verified\")\n      .eq(\"user_id\", userId)\n      .eq(\"verified\", false)\n      .gt(\"expires_at\", new Date().toISOString())\n      .order(\"created_at\", { ascending: false })\n      .limit(1)\n      .single();\n\n    if (error || !data) {\n      return new Response(\n        JSON.stringify({ error: \"No valid 2FA code found\" }),\n        { status: 404, headers: { \"Content-Type\": \"application/json\", \"Access-Control-Allow-Origin\": \"*\" } }\n      );\n    }\n\n    // Verify code matches\n    if (data.code !== code.trim()) {\n      return new Response(\n        JSON.stringify({ error: \"Invalid code\" }),\n        { status: 401, headers: { \"Content-Type\": \"application/json\", \"Access-Control-Allow-Origin\": \"*\" } }\n      );\n    }\n\n    // Mark code as verified\n    const { error: updateError } = await supabase\n      .from(\"user_2fa_codes\")\n      .update({ verified: true })\n      .eq(\"id\", data.id);\n\n    if (updateError) {\n      throw updateError;\n    }\n\n    return new Response(\n      JSON.stringify({\n        success: true,\n        message: \"2FA verified successfully\",\n      }),\n      {\n        status: 200,\n        headers: {\n          \"Content-Type\": \"application/json\",\n          \"Access-Control-Allow-Origin\": \"*\",\n        },\n      }\n    );\n  } catch (error) {\n    console.error(\"Error:\", error);\n    return new Response(\n      JSON.stringify({ error: \"Server error\" }),\n      { status: 500, headers: { \"Content-Type\": \"application/json\", \"Access-Control-Allow-Origin\": \"*\" } }\n    );\n  }\n});\n
+import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import { createClient } from "jsr:@supabase/supabase-js@2";
+
+const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
+const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+
+Deno.serve(async (req: Request) => {
+  if (req.method === "OPTIONS") {
+    return new Response("ok", {
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "POST, OPTIONS",
+        "Access-Control-Allow-Headers": "authorization, content-type",
+      },
+    });
+  }
+
+  try {
+    const authHeader = req.headers.get("Authorization") || "";
+    const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : "";
+    if (!token) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
+      });
+    }
+
+    const { userId, code } = await req.json().catch(() => ({}));
+    if (!userId || !code) {
+      return new Response(JSON.stringify({ error: "Missing userId or code" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
+      });
+    }
+
+    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+    const { data, error } = await supabase
+      .from("user_2fa_codes")
+      .select("id, code, expires_at, verified")
+      .eq("user_id", userId)
+      .eq("verified", false)
+      .gt("expires_at", new Date().toISOString())
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .single();
+
+    if (error || !data) {
+      return new Response(JSON.stringify({ error: "No valid 2FA code found" }), {
+        status: 404,
+        headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
+      });
+    }
+
+    if (data.code !== String(code).trim()) {
+      return new Response(JSON.stringify({ error: "Invalid code" }), {
+        status: 401,
+        headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
+      });
+    }
+
+    const { error: updateError } = await supabase
+      .from("user_2fa_codes")
+      .update({ verified: true })
+      .eq("id", data.id);
+
+    if (updateError) {
+      console.error("Verify update error:", updateError);
+      return new Response(JSON.stringify({ error: "Server error" }), {
+        status: 500,
+        headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
+      });
+    }
+
+    return new Response(JSON.stringify({ success: true, message: "2FA verified successfully" }), {
+      status: 200,
+      headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
+    });
+  } catch (error) {
+    console.error("Error:", error);
+    return new Response(JSON.stringify({ error: "Server error" }), {
+      status: 500,
+      headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
+    });
+  }
+});
