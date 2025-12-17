@@ -1,1 +1,72 @@
-import \"jsr:@supabase/functions-js/edge-runtime.d.ts\";\nimport { createClient } from \"jsr:@supabase/supabase-js@2\";\n\nconst SUPABASE_URL = Deno.env.get(\"SUPABASE_URL\");\nconst SUPABASE_SERVICE_ROLE_KEY = Deno.env.get(\"SUPABASE_SERVICE_ROLE_KEY\");\n\n// Generate 6-digit code\nfunction generate2FACode(): string {\n  return Math.floor(100000 + Math.random() * 900000).toString();\n}\n\nDeno.serve(async (req: Request) => {\n  // CORS\n  if (req.method === \"OPTIONS\") {\n    return new Response(\"ok\", {\n      headers: {\n        \"Access-Control-Allow-Origin\": \"*\",\n        \"Access-Control-Allow-Methods\": \"POST, OPTIONS\",\n        \"Access-Control-Allow-Headers\": \"authorization, content-type\",\n      },\n    });\n  }\n\n  try {\n    const authHeader = req.headers.get(\"Authorization\");\n    if (!authHeader || !authHeader.startsWith(\"Bearer \")) {\n      return new Response(\n        JSON.stringify({ error: \"Unauthorized\" }),\n        { status: 401, headers: { \"Content-Type\": \"application/json\", \"Access-Control-Allow-Origin\": \"*\" } }\n      );\n    }\n\n    const { userId, email } = await req.json().catch(() => ({}));\n\n    if (!userId || !email) {\n      return new Response(\n        JSON.stringify({ error: \"Missing userId or email\" }),\n        { status: 400, headers: { \"Content-Type\": \"application/json\", \"Access-Control-Allow-Origin\": \"*\" } }\n      );\n    }\n\n    const code = generate2FACode();\n    const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString(); // 10 minutes\n\n    const supabase = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);\n\n    // Store 2FA code in database\n    const { error: storeError } = await supabase\n      .from(\"user_2fa_codes\")\n      .insert([\n        {\n          user_id: userId,\n          code,\n          email,\n          expires_at: expiresAt,\n          verified: false,\n        },\n      ]);\n\n    if (storeError) {\n      console.error(\"Error storing 2FA code:\", storeError);\n      return new Response(\n        JSON.stringify({ error: \"Failed to generate code\" }),\n        { status: 500, headers: { \"Content-Type\": \"application/json\", \"Access-Control-Allow-Origin\": \"*\" } }\n      );\n    }\n\n    // Send email with code\n    // Note: Requires Supabase email service configured or custom email provider\n    console.log(`2FA code for ${email}: ${code}`);\n\n    return new Response(\n      JSON.stringify({\n        success: true,\n        message: \"2FA code sent to email\",\n        expiresAt,\n      }),\n      {\n        status: 200,\n        headers: {\n          \"Content-Type\": \"application/json\",\n          \"Access-Control-Allow-Origin\": \"*\",\n        },\n      }\n    );\n  } catch (error) {\n    console.error(\"Error:\", error);\n    return new Response(\n      JSON.stringify({ error: \"Server error\" }),\n      { status: 500, headers: { \"Content-Type\": \"application/json\", \"Access-Control-Allow-Origin\": \"*\" } }\n    );\n  }\n});\n
+import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import { createClient } from "jsr:@supabase/supabase-js@2";
+
+const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
+const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+
+function generate2FACode(): string {
+  return Math.floor(100000 + Math.random() * 900000).toString();
+}
+
+Deno.serve(async (req: Request) => {
+  if (req.method === "OPTIONS") {
+    return new Response("ok", {
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "POST, OPTIONS",
+        "Access-Control-Allow-Headers": "authorization, content-type",
+      },
+    });
+  }
+
+  try {
+    const authHeader = req.headers.get("Authorization") || "";
+    const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : "";
+    if (!token) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
+      });
+    }
+
+    const { userId, email } = await req.json().catch(() => ({}));
+    if (!userId || !email) {
+      return new Response(JSON.stringify({ error: "Missing userId or email" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
+      });
+    }
+
+    const code = generate2FACode();
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString();
+
+    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+    const { error: storeError } = await supabase.from("user_2fa_codes").insert({
+      user_id: userId,
+      code,
+      email,
+      expires_at: expiresAt,
+      verified: false,
+    });
+    if (storeError) {
+      console.error("Error storing 2FA code:", storeError);
+      return new Response(JSON.stringify({ error: "Failed to generate code" }), {
+        status: 500,
+        headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
+      });
+    }
+
+    console.log(`2FA code for ${email}: ${code}`);
+
+    return new Response(JSON.stringify({ success: true, message: "2FA code sent to email", expiresAt }), {
+      status: 200,
+      headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
+    });
+  } catch (error) {
+    console.error("Error:", error);
+    return new Response(JSON.stringify({ error: "Server error" }), {
+      status: 500,
+      headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
+    });
+  }
+});
