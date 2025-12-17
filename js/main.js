@@ -79,10 +79,10 @@ const userLink = document.querySelector('a.icon-btn[href="login.html"]');
 userBtn?.addEventListener('click', async (e) => {
     e.preventDefault();
     
-    // First check if we have a database token
-    const hasToken = localStorage.getItem('ace1_token');
+    // Check if we have a database session
+    const hasSession = localStorage.getItem('ace1_session_id');
     
-    if (hasToken) {
+    if (hasSession) {
         // Has token, go to profile/admin
         const user = window.databaseAuth?.getCurrentUser();
         if (user?.role === 'admin' || user?.email === 'hello@ace1.in') {
