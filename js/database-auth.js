@@ -769,9 +769,12 @@ class DatabaseAuth {
 
     async verifyAdminTotp(code) {
         try {
-            const res = await fetch('/api/admin/verify-totp', {
+            const res = await fetch('https://vorqavsuqcjnkjzwkyzr.supabase.co/functions/v1/admin-verify-totp', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer admin-token'
+                },
                 body: JSON.stringify({ code })
             });
             if (!res.ok) return false;
