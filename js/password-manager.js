@@ -252,9 +252,15 @@ class PasswordManager {
 
         try {
             // Use Supabase auth reset password email flow (safe from client)
-            const { error } = await this.supabase.auth.resetPasswordForEmail(this.currentUser.email, {
+            let { error } = await this.supabase.auth.resetPasswordForEmail(this.currentUser.email, {
                 redirectTo: `${window.location.origin}/reset-password.html`
             });
+
+            // Fallback: if redirect validation fails, retry without redirectTo (uses Supabase site URL)
+            if (error && /redirect/i.test(error.message || '')) {
+                console.warn('Retrying reset email without redirectTo due to redirect validation error');
+                ({ error } = await this.supabase.auth.resetPasswordForEmail(this.currentUser.email));
+            }
 
             if (error) throw error;
 
