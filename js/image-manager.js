@@ -121,19 +121,17 @@ class WebsiteImageManager {
                         <form id="image-edit-form">
                             <div class="form-group">
                                 <label>Image URL</label>
-                                <input type="url" id="edit-url" required>
+                                <input type="url" id="edit-url" required placeholder="https://example.com/image.jpg">
+                                <small>Enter the full URL to the image</small>
                             </div>
                             <div class="form-group">
                                 <label>Alt Text</label>
-                                <input type="text" id="edit-alt">
-                            </div>
-                            <div class="form-group">
-                                <label>Replace Image File</label>
-                                <input type="file" id="edit-file" accept="image/*">
+                                <input type="text" id="edit-alt" placeholder="Image description">
                             </div>
                             <input type="hidden" id="edit-selector">
+                            <input type="hidden" id="edit-id">
                             <button type="submit" class="btn-submit">
-                                <i class="fas fa-save"></i> Save Changes
+                                <i class="fas fa-save"></i> Save URL
                             </button>
                         </form>
                     </div>
@@ -260,9 +258,10 @@ class WebsiteImageManager {
         const preview = document.getElementById('edit-preview');
         
         preview.innerHTML = `<img src="${imageData.src}" alt="${imageData.alt}">`;
-        document.getElementById('edit-url').value = imageData.src;
+        document.getElementById('edit-url').value = imageData.src || '';
         document.getElementById('edit-alt').value = imageData.alt || '';
         document.getElementById('edit-selector').value = imageData.selector || '';
+        document.getElementById('edit-id').value = imageData.id || '';
         
         modal.style.display = 'block';
         this.currentEditImage = imageData;
@@ -528,9 +527,52 @@ class WebsiteImageManager {
         if (editForm) {
             editForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
-                // Handle edit
-                this.showNotification('Changes saved!', 'success');
-                this.closeEditModal();
+                
+                const url = document.getElementById('edit-url').value;
+                const alt = document.getElementById('edit-alt').value;
+                const selector = document.getElementById('edit-selector').value;
+                const id = document.getElementById('edit-id').value;
+                
+                try {
+                    if (!this.supabase) this.supabase = window.getSupabase && window.getSupabase();
+                    
+                    // Save to database if it's a product image
+                    if (id) {
+                        const { error } = await this.supabase
+                            .from('product_images')
+                            .update({
+                                storage_path: url,
+                                alt: alt
+                            })
+                            .eq('product_id', id);
+                        
+                        if (error) throw error;
+                    }
+                    
+                    // Update the DOM element if selector exists
+                    if (selector) {
+                        const elements = document.querySelectorAll(selector);
+                        elements.forEach(el => {
+                            if (el.tagName === 'IMG') {
+                                el.src = url;
+                                if (alt) el.alt = alt;
+                            } else {
+                                el.style.backgroundImage = `url('${url}')`;
+                            }
+                        });
+                    }
+                    
+                    this.showNotification('Image URL saved successfully!', 'success');
+                    this.closeEditModal();
+                    
+                    // Refresh the grid
+                    const category = this.getCurrentCategory();
+                    await this.scanImages(category);
+                    
+                } catch (error) {
+                    console.error('Save error:', error);
+                    this.showNotification('Failed to save image URL', 'error');
+                }
             });
         }
 
