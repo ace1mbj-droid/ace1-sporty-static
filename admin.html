@@ -401,7 +401,12 @@
 
         <!-- Orders Tab -->
         <div class="admin-content" id="orders-content">
-            <h2 style="margin-bottom: 20px;">Recent Orders</h2>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2>Recent Orders</h2>
+                <button onclick="window.adminPanel?.testAdminAccess()" class="btn btn-primary" style="padding: 10px 20px;">
+                    <i class="fas fa-bug"></i> Debug Access
+                </button>
+            </div>
             <div class="orders-table">
                 <table>
                     <thead>
