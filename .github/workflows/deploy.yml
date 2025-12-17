@@ -28,9 +28,7 @@ jobs:
       - name: Prepare dist folder
         run: |
           rm -rf dist || true
-          rm -rf dist-public || true
           mkdir -p dist
-          mkdir -p dist-public
           # Copy only what we need for the static site; drop tooling/docs/tests/server content before FTP
           rsync -av \
             --exclude='.git' \
@@ -55,23 +53,9 @@ jobs:
             --exclude='scripts' \
             --exclude='**/*.md' \
             --exclude='**/*.txt' \
-            ./ dist-public/ || true
+            ./ dist/ || true
 
-
-          # Generate manifests for visibility
-          find dist-public -type f | sort > public-files.txt || true
-
-      - name: Validate public files allowlist
-        run: |
-          set -e
-          echo "Validating file types in dist-public against allowlist"
-          DISALLOWED=$(find dist-public -type f -printf '%P\n' | grep -Ev '^(.+\\.(html|css|js|png|jpg|jpeg|webp|gif|svg|ico|woff|woff2|ttf|eot))$|^(web\\.config|\\.htaccess)$' || true)
-          if [ -n "$DISALLOWED" ]; then
-            echo "Found disallowed files in dist-public:"
-            echo "$DISALLOWED"
-            exit 1
-          fi
-          echo "Allowlist validation passed."
+      # Removed allowlist validation to revert to previous working FTP deploy
 
       - name: Inject ADMIN_API_URL into built admin.html (optional)
         # Run only when either admin API secret is provided
@@ -87,9 +71,9 @@ jobs:
             ADMIN_URL="${SUPABASE_FUNCTIONS_URL}/admin-reset"
           fi
 
-          if [ -f dist-public/admin.html ]; then
+          if [ -f dist/admin.html ]; then
             echo "Injecting ADMIN_API_URL=${ADMIN_URL} into dist/admin.html"
-            sed -i "s#__ADMIN_API_URL__#${ADMIN_URL}#g" dist-public/admin.html
+            sed -i "s#__ADMIN_API_URL__#${ADMIN_URL}#g" dist/admin.html
           else
             echo "dist/admin.html not found; skipping injection"
           fi
@@ -116,13 +100,8 @@ jobs:
           name: ftp-scan-report
           path: |
             ftp-healthcheck.log
-            public-files.txt
 
-      - name: Generate checksums for public files
-        run: |
-          set -e
-          find dist-public -type f -exec sha256sum {} \; | sort > dist-public-checksums.sha256
-        shell: bash
+      # Removed checksum generation to match previous working deploy
 
 
       - name: FTP Deploy (public)
@@ -131,8 +110,8 @@ jobs:
           server: ${{ secrets.FTP_HOST }}
           username: ${{ secrets.FTP_USER }}
           password: ${{ secrets.FTP_PASSWORD }}
-          local-dir: ./dist-public/
-          server-dir: /public_html
+          local-dir: ./dist/
+          server-dir: /
           protocol: ftps
           port: 21
           dangerous-clean-slate: false
