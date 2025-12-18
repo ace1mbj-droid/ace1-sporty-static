@@ -1618,10 +1618,20 @@ class AdminPanel {
         const status = document.getElementById('order-status-select').value;
         const notes = document.getElementById('order-notes').value.trim();
 
+        console.log('🔄 Updating order:', orderId, 'with status:', status);
+
         try {
+            // Use 'status' column, not 'payment_status' - align with DB schema
+            const updateData = { status: status };
+            
+            // Only update notes if the field exists and has content
+            if (notes) {
+                updateData.admin_notes = notes;
+            }
+
             const { error } = await this.supabase
                 .from('orders')
-                .update({ payment_status: status, admin_notes: notes, updated_at: new Date().toISOString() })
+                .update(updateData)
                 .eq('id', orderId);
 
             if (error) {
@@ -1630,6 +1640,7 @@ class AdminPanel {
                 return;
             }
 
+            console.log('✅ Order updated successfully');
             if (window.showNotification) window.showNotification('Order updated', 'success');
             await this.loadOrders();
             modal.classList.remove('active');
@@ -1646,7 +1657,7 @@ class AdminPanel {
         try {
             const { error } = await this.supabase
                 .from('orders')
-                .update({ payment_status: 'cancelled', updated_at: new Date().toISOString() })
+                .update({ status: 'cancelled' })
                 .eq('id', orderId);
             if (error) return this.showInlineError('order-form-error', error.message || 'Failed to cancel order');
             if (window.showNotification) window.showNotification('Order cancelled', 'success');
@@ -1666,7 +1677,7 @@ class AdminPanel {
         try {
             const { error } = await this.supabase
                 .from('orders')
-                .update({ payment_status: 'refunded', updated_at: new Date().toISOString() })
+                .update({ status: 'refunded' })
                 .eq('id', orderId);
             if (error) return this.showInlineError('order-form-error', error.message || 'Failed to mark refunded');
             if (window.showNotification) window.showNotification('Order marked refunded', 'success');
