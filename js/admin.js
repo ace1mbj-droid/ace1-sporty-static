@@ -1,3 +1,70 @@
+// ===================================
+// NOTIFICATION HELPER
+// ===================================
+// Admin-specific notification function (since main.js is not included)
+function showNotification(message, type = 'info') {
+    // Remove existing notification
+    const existing = document.querySelector('.notification');
+    if (existing) {
+        existing.remove();
+    }
+    
+    const notification = document.createElement('div');
+    notification.className = `notification notification-${type}`;
+    notification.innerHTML = `
+        <div class="notification-content">
+            <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
+            <span>${message}</span>
+        </div>
+    `;
+    
+    // Add styles if not present
+    if (!document.getElementById('notification-styles')) {
+        const styles = document.createElement('style');
+        styles.id = 'notification-styles';
+        styles.textContent = `
+            .notification {
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 15px 25px;
+                border-radius: 8px;
+                background: white;
+                box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+                z-index: 10000;
+                animation: slideIn 0.3s ease;
+            }
+            .notification-content {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+            .notification-success { border-left: 4px solid #00C853; }
+            .notification-success i { color: #00C853; }
+            .notification-error { border-left: 4px solid #FF3D00; }
+            .notification-error i { color: #FF3D00; }
+            .notification-info { border-left: 4px solid #2196F3; }
+            .notification-info i { color: #2196F3; }
+            @keyframes slideIn {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+        `;
+        document.head.appendChild(styles);
+    }
+    
+    document.body.appendChild(notification);
+    
+    // Remove after 4 seconds
+    setTimeout(() => {
+        notification.style.animation = 'slideIn 0.3s ease reverse';
+        setTimeout(() => notification.remove(), 300);
+    }, 4000);
+}
+
+// Expose globally
+window.showNotification = showNotification;
+
 // Admin Panel Manager
 class AdminPanel {
     constructor() {
