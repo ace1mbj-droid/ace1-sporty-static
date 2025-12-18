@@ -11,12 +11,17 @@ function showNotification(message, type = 'info') {
     
     const notification = document.createElement('div');
     notification.className = `notification notification-${type}`;
-    notification.innerHTML = `
-        <div class="notification-content">
-            <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
-            <span>${message}</span>
-        </div>
-    `;
+    
+    // Use safe DOM manipulation instead of innerHTML to prevent XSS
+    const content = document.createElement('div');
+    content.className = 'notification-content';
+    const icon = document.createElement('i');
+    icon.className = `fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}`;
+    const span = document.createElement('span');
+    span.textContent = message;
+    content.appendChild(icon);
+    content.appendChild(span);
+    notification.appendChild(content);
     
     // Add styles if not present
     if (!document.getElementById('notification-styles')) {
