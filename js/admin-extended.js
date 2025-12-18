@@ -1449,6 +1449,17 @@ class AdminExtended {
 
     async saveCategory(id, data) {
         try {
+            // If editing, detect slug changes and update products.category accordingly
+            let previous = null;
+            if (id) {
+                const prevRes = await this.supabase
+                    .from('categories')
+                    .select('id, slug, name')
+                    .eq('id', id)
+                    .single();
+                previous = prevRes?.data || null;
+            }
+
             let result;
             if (id) {
                 result = await this.supabase.from('categories').update(data).eq('id', id);
@@ -1459,6 +1470,24 @@ class AdminExtended {
             if (result.error) throw result.error;
             
             showNotification('Category saved successfully', 'success');
+
+            // If slug changed, update any products that used the old slug (or old name)
+            if (previous && previous.slug && data?.slug && previous.slug !== data.slug) {
+                const oldSlug = String(previous.slug);
+                const newSlug = String(data.slug);
+                await this.supabase
+                    .from('products')
+                    .update({ category: newSlug })
+                    .eq('category', oldSlug);
+
+                // Best-effort: also migrate products that stored the old name
+                if (previous.name) {
+                    await this.supabase
+                        .from('products')
+                        .update({ category: newSlug })
+                        .eq('category', previous.name);
+                }
+            }
             
             // Reload categories
             await this.loadCategoriesFromDB();
@@ -1466,6 +1495,11 @@ class AdminExtended {
             // Sync with products tab - reload product form category dropdown
             if (window.adminPanel) {
                 window.adminPanel.loadProducts();
+                const productModal = document.getElementById('product-modal');
+                const categorySelect = document.getElementById('product-category');
+                if (productModal?.classList.contains('active') && typeof window.adminPanel.populateProductCategorySelect === 'function') {
+                    window.adminPanel.populateProductCategorySelect(categorySelect?.value || '');
+                }
             }
             
             return true;
@@ -1485,6 +1519,28 @@ class AdminExtended {
     async deleteCategory(id) {
         if (!confirm('Delete this category? Products using this category will need to be updated.')) return;
         try {
+            // Fetch slug/name so we can update products.category before deleting
+            const { data: cat, error: catErr } = await this.supabase
+                .from('categories')
+                .select('id, slug, name')
+                .eq('id', id)
+                .single();
+            if (catErr) throw catErr;
+
+            // Remove category reference from products to avoid orphaned categories
+            if (cat?.slug) {
+                await this.supabase
+                    .from('products')
+                    .update({ category: null })
+                    .eq('category', cat.slug);
+            }
+            if (cat?.name) {
+                await this.supabase
+                    .from('products')
+                    .update({ category: null })
+                    .eq('category', cat.name);
+            }
+
             const { error } = await this.supabase.from('categories').delete().eq('id', id);
             if (error) throw error;
             
@@ -1496,6 +1552,11 @@ class AdminExtended {
             // Sync with products tab
             if (window.adminPanel) {
                 window.adminPanel.loadProducts();
+                const productModal = document.getElementById('product-modal');
+                const categorySelect = document.getElementById('product-category');
+                if (productModal?.classList.contains('active') && typeof window.adminPanel.populateProductCategorySelect === 'function') {
+                    window.adminPanel.populateProductCategorySelect(categorySelect?.value || '');
+                }
             }
         } catch (error) {
             console.error('Error deleting category:', error);
