@@ -31,6 +31,21 @@
             margin: 100px auto 50px;
             padding: 20px;
         }
+        .refresh-spinner {
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            border: 2.5px solid #FF6B00;
+            border-top: 2.5px solid #fff;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+            vertical-align: middle;
+            margin-left: 8px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
         .admin-header {
             display: flex;
             justify-content: space-between;
