@@ -32,14 +32,15 @@ jobs:
           echo "SUPABASE_ACCESS_TOKEN=${{ secrets.SUPABASE_ACCESS_TOKEN }}" >> $GITHUB_ENV
 
       - name: Link to Supabase project (non-fatal)
+        id: link-supabase
         run: |
           set +e
           npx supabase link --project-ref ${{ secrets.SUPABASE_PROJECT_REF }}
           rc=$?
           if [ $rc -eq 0 ]; then
-            echo "LINK_OK=true" >> $GITHUB_ENV
+            echo "link_ok=true" >> $GITHUB_OUTPUT
           else
-            echo "LINK_OK=false" >> $GITHUB_ENV
+            echo "link_ok=false" >> $GITHUB_OUTPUT
             echo "Warning: supabase link failed (exit $rc). Runner may not be able to reach project; continuing to deploy functions using API mode."
           fi
           set -e
