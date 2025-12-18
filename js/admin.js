@@ -728,8 +728,6 @@ class AdminPanel {
 
             const normalizedSelected = this.slugifyCategory(selectedValue);
 
-            const normalizedSelected = this.slugifyCategory(selectedValue);
-
             const byId = new Map();
             (categories || []).forEach(c => byId.set(c.id, c));
 
