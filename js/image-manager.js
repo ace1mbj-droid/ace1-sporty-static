@@ -449,10 +449,14 @@ class WebsiteImageManager {
     showNotification(message, type) {
         const notification = document.createElement('div');
         notification.className = `notification notification-${type}`;
-        notification.innerHTML = `
-            <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
-            <span>${message}</span>
-        `;
+        
+        // Use safe DOM manipulation instead of innerHTML to prevent XSS
+        const icon = document.createElement('i');
+        icon.className = `fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}`;
+        const span = document.createElement('span');
+        span.textContent = message;
+        notification.appendChild(icon);
+        notification.appendChild(span);
         
         document.body.appendChild(notification);
         setTimeout(() => notification.classList.add('show'), 100);
