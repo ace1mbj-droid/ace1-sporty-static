@@ -1759,7 +1759,23 @@ window.categoryManager = {
 };
 
 window.customerManager = {
-    load: () => adminExtended.loadCustomers(),
+    load: async () => {
+        const btn = document.getElementById('refresh-customers');
+        if (btn) {
+            btn.disabled = true;
+            const spinner = document.createElement('span');
+            spinner.className = 'refresh-spinner';
+            btn.appendChild(spinner);
+            try {
+                await adminExtended.loadCustomers();
+            } finally {
+                btn.disabled = false;
+                if (spinner.parentNode) spinner.parentNode.removeChild(spinner);
+            }
+        } else {
+            await adminExtended.loadCustomers();
+        }
+    },
     searchCustomers: (query) => adminExtended.searchCustomers(query)
 };
 
