@@ -392,24 +392,60 @@ class AdminPanel {
     }
 
     async loadDashboard() {
-        // Load statistics
-        const { data: products } = await this.supabase
-            .from('products')
-            .select('*');
+        try {
+            // Load products with inventory for accurate stock count
+            const { data: products } = await this.supabase
+                .from('products')
+                .select(`
+                    id, name, is_active,
+                    inventory(stock)
+                `);
 
-        const { data: orders } = await this.supabase
-            .from('orders')
-            .select('*');
+            const { data: orders } = await this.supabase
+                .from('orders')
+                .select('*');
 
-        const totalProducts = products?.length || 0;
-        const outOfStock = products?.filter(p => p.stock_quantity === 0).length || 0;
-        const totalOrders = orders?.length || 0;
-        const totalRevenue = orders?.reduce((sum, order) => sum + (order.total_amount || 0), 0) || 0;
+            // Calculate total products (active only)
+            const totalProducts = products?.filter(p => p.is_active)?.length || 0;
+            
+            // Calculate out of stock - products where total inventory stock is 0
+            const outOfStock = products?.filter(p => {
+                const totalStock = (p.inventory || []).reduce((sum, inv) => sum + (inv.stock || 0), 0);
+                return p.is_active && totalStock === 0;
+            }).length || 0;
+            
+            // Calculate low stock items (stock between 1-10)
+            const lowStock = products?.filter(p => {
+                const totalStock = (p.inventory || []).reduce((sum, inv) => sum + (inv.stock || 0), 0);
+                return p.is_active && totalStock > 0 && totalStock <= 10;
+            }).length || 0;
+            
+            const totalOrders = orders?.length || 0;
+            
+            // Use total_cents if available, fallback to total_amount
+            const totalRevenue = orders?.reduce((sum, order) => {
+                const amount = order.total_cents || order.total_amount || 0;
+                // If total_cents, divide by 100
+                return sum + (order.total_cents ? amount / 100 : amount);
+            }, 0) || 0;
 
-        document.getElementById('total-products').textContent = totalProducts;
-        document.getElementById('out-of-stock').textContent = outOfStock;
-        document.getElementById('total-orders').textContent = totalOrders;
-        document.getElementById('total-revenue').textContent = `₹${totalRevenue.toLocaleString('en-IN')}`;
+            // Update dashboard elements
+            const totalProductsEl = document.getElementById('total-products');
+            const outOfStockEl = document.getElementById('out-of-stock');
+            const lowStockEl = document.getElementById('low-stock');
+            const totalOrdersEl = document.getElementById('total-orders');
+            const totalRevenueEl = document.getElementById('total-revenue');
+            
+            if (totalProductsEl) totalProductsEl.textContent = totalProducts;
+            if (outOfStockEl) outOfStockEl.textContent = outOfStock;
+            if (lowStockEl) lowStockEl.textContent = lowStock;
+            if (totalOrdersEl) totalOrdersEl.textContent = totalOrders;
+            if (totalRevenueEl) totalRevenueEl.textContent = `₹${totalRevenue.toLocaleString('en-IN')}`;
+            
+            console.log('📊 Dashboard loaded:', { totalProducts, outOfStock, lowStock, totalOrders, totalRevenue });
+        } catch (error) {
+            console.error('Error loading dashboard:', error);
+        }
     }
 
     async loadProducts() {
