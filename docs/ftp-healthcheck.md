@@ -17,31 +17,30 @@ When an FTP deploy successfully places your static files on the host (index.html
 
 How to run (manual workflow)
 ----------------------------
+FTP health-check is integrated into the main deploy workflow. To run a health check:
+
 1. In the GitHub UI, open the Actions tab for this repository.
-2. Find "FTP health-check + temporary .htaccess test (manual)".
-3. Click "Run workflow" (manually dispatch) and set:
-   - domain: https://ace1.in (or any domain you want to test)
-   - run_rename: true (will perform the rename+restore); set false for dry-run health-check only.
-   - use_ftps: true (recommended; falls back to plain ftp if false)
-4. Start the job. Wait until it completes.
+2. Find "Build & FTP Deploy" workflow.
+3. Click "Run workflow" (manually dispatch).
+4. The workflow includes automatic FTP health-check after deployment.
 
 Outputs you'll get
 ------------------
-- INITIAL_STATUS  — HTTP status code before any change
-- AFTER_RENAME_STATUS — HTTP status code right after the .htaccess rename
-- Final status — after restore
+- FTP connection test results
+- File listing verification
+- HTTP status checks
 
 How to interpret results
 ------------------------
-- If INITIAL_STATUS is 403 and AFTER_RENAME_STATUS is 200 (or another non-403): .htaccess was likely blocking access — review the .htaccess rules with your host.
-- If both INITIAL_STATUS and AFTER_RENAME_STATUS stay 403: the restriction is likely server-level (e.g., hosting panel domain mapping, virtualhost, or platform firewall) — you'll need host logs or panel access.
- - Also check GET status outputs (ROOT_GET_STATUS, INDEX_GET_STATUS). Some hosts block HEAD while GET is fine; GET status 200 indicates origin is serving content.
+- If FTP connection succeeds but site returns 403: Check .htaccess rules with your host
+- If FTP connection fails: Verify FTP credentials and server details
+- If files are listed but site doesn't load: Check file permissions and server configuration
 
 Safety & guarantees
 --------------------
-- The workflow makes a timestamped backup (e.g., .htaccess.bak-20251121T120000Z) and restores it automatically.
-- The workflow uses the repo's FTP secrets: FTP_HOST, FTP_USER, FTP_PASSWORD. It will not modify any files other than the single /.htaccess (rename + restore).
-- The `FTP health-check autorun (push)` variant runs automatically on pushes to `main` with the default domain; a chained workflow can normalize permissions after a successful run.
+- The workflow uses the repo's FTP secrets: FTP_HOST, FTP_USER, FTP_PASSWORD
+- No files are modified during health-check operations
+- Health-check runs after successful FTP deployment
 
 Next steps after a run
 ----------------------
@@ -49,7 +48,5 @@ Next steps after a run
 
 Related workflows
 -----------------
-- `.github/workflows/ftp_healthcheck_htaccess_test.yml` — manual health-check and .htaccess rename/restore.
-- `.github/workflows/ftp_healthcheck_autorun.yml` — autorun health-check on push to `main`.
-- `.github/workflows/chain_normalize_on_healthcheck.yml` — automatically normalize permissions (dirs 755, files 644) after autorun health-check completes.
-- `.github/workflows/ftp_permissions_normalize.yml` — run permissions normalization manually for any remote directory.
+- `.github/workflows/deploy.yml` — Main deployment workflow with integrated FTP health-check
+- `.github/workflows/ftp_deploy_only.yml` — Manual FTP-only deployment
