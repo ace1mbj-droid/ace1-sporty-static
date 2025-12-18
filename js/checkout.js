@@ -57,7 +57,7 @@ class CheckoutManager {
     }
 
     loadUserInfo() {
-        const user = AuthManager?.getCurrentUser();
+        const user = window.databaseAuth?.getCurrentUser();
         if (user) {
             const firstNameInput = document.getElementById('first-name');
             const lastNameInput = document.getElementById('last-name');
@@ -361,7 +361,7 @@ class CheckoutManager {
         // Use Supabase to save order
         if (window.supabaseService && window.supabaseService.supabase) {
             try {
-                const user = window.AuthManager?.getCurrentUser();
+                const user = window.databaseAuth?.getCurrentUser();
                 const userId = user?.id || null;
                 
                 const orderItems = orderData.items.map(item => ({
@@ -406,10 +406,10 @@ class CheckoutManager {
     async clearCart() {
         try {
             // Clear from database if authenticated
-            if (window.AuthManager?.getCurrentUser()) {
+            if (window.databaseAuth?.getCurrentUser()) {
                 const supabase = window.getSupabase?.();
                 if (supabase) {
-                    const user = window.AuthManager.getCurrentUser();
+                    const user = window.databaseAuth.getCurrentUser();
                     await supabase
                         .from('shopping_carts')
                         .delete()
