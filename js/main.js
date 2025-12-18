@@ -83,7 +83,74 @@ async function syncFooterShopLinks() {
 document.addEventListener('DOMContentLoaded', () => {
     // Best-effort sync; if Supabase is unavailable on a page, it simply no-ops.
     syncFooterShopLinks();
+    // Track page view for analytics
+    trackPageView();
 });
+
+// ===================================
+// PAGE VIEW TRACKING (FOOTFALL ANALYTICS)
+// ===================================
+function getVisitorId() {
+    // Get or create persistent visitor ID (stored in localStorage for cross-session tracking)
+    let visitorId = localStorage.getItem('ace1_visitor_id');
+    if (!visitorId) {
+        visitorId = 'v_' + Date.now() + '_' + Math.random().toString(36).substr(2, 12);
+        localStorage.setItem('ace1_visitor_id', visitorId);
+    }
+    return visitorId;
+}
+
+function getDeviceType() {
+    const width = window.innerWidth;
+    if (width < 768) return 'mobile';
+    if (width < 1024) return 'tablet';
+    return 'desktop';
+}
+
+async function trackPageView() {
+    try {
+        const supabase = window.getSupabase ? window.getSupabase() : null;
+        if (!supabase) return;
+
+        // Skip tracking for admin pages
+        if (window.location.pathname.includes('admin')) return;
+
+        const visitorId = getVisitorId();
+        const sessionId = sessionStorage.getItem('ace1_session_id') || generateSessionId();
+        
+        // Get current user if logged in
+        let userId = null;
+        try {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session?.user?.id) {
+                userId = session.user.id;
+            }
+        } catch (e) {
+            // User not logged in, that's fine
+        }
+
+        // Record page view
+        const { error } = await supabase
+            .from('page_views')
+            .insert({
+                visitor_id: visitorId,
+                page_url: window.location.pathname + window.location.search,
+                page_title: document.title,
+                referrer: document.referrer || null,
+                user_agent: navigator.userAgent,
+                session_id: sessionId,
+                device_type: getDeviceType(),
+                user_id: userId
+            });
+
+        if (error) {
+            console.debug('Page view tracking skipped:', error.message);
+        }
+    } catch (err) {
+        // Silent fail - tracking shouldn't break the site
+        console.debug('Page view tracking error:', err);
+    }
+}
 
 // Generate session ID for anonymous users (stored in sessionStorage for current tab)
 function generateSessionId() {
