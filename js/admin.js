@@ -1309,18 +1309,10 @@ class AdminPanel {
             let selectQuery = `
                 id,
                 created_at,
-                updated_at,
                 user_id,
-                total_amount,
-                subtotal,
-                tax,
-                shipping,
-                discount,
-                payment_method,
-                payment_status,
+                total_cents,
                 status,
-                shipping_address,
-                admin_notes
+                shipping_address
             `;
             
             if (includeItems) {
@@ -1348,7 +1340,7 @@ class AdminPanel {
                 query = query.lte('created_at', toDate + 'T23:59:59');
             }
             if (status && status !== 'all') {
-                query = query.eq('payment_status', status);
+                query = query.eq('status', status);
             }
             
             const { data: orders, error } = await query;
@@ -1368,6 +1360,7 @@ class AdminPanel {
             // Create Orders Summary sheet
             const ordersData = orders.map(order => {
                 const addr = order.shipping_address || {};
+                const totalRupees = (order.total_cents || 0) / 100;
                 return {
                     'Order ID': order.id,
                     'Date': new Date(order.created_at).toLocaleString('en-IN'),
@@ -1375,16 +1368,8 @@ class AdminPanel {
                     'Email': addr.email || 'N/A',
                     'Phone': addr.phone || 'N/A',
                     'Address': `${addr.address || ''}, ${addr.city || ''}, ${addr.state || ''} ${addr.zipCode || ''}`.trim(),
-                    'Subtotal (₹)': parseFloat(order.subtotal || 0).toFixed(2),
-                    'Tax (₹)': parseFloat(order.tax || 0).toFixed(2),
-                    'Shipping (₹)': parseFloat(order.shipping || 0).toFixed(2),
-                    'Discount (₹)': parseFloat(order.discount || 0).toFixed(2),
-                    'Total (₹)': parseFloat(order.total_amount || 0).toFixed(2),
-                    'Payment Method': order.payment_method || 'N/A',
-                    'Payment Status': order.payment_status || 'N/A',
-                    'Order Status': order.status || 'N/A',
-                    'Admin Notes': order.admin_notes || '',
-                    'Last Updated': order.updated_at ? new Date(order.updated_at).toLocaleString('en-IN') : 'N/A'
+                    'Total (₹)': totalRupees.toFixed(2),
+                    'Order Status': order.status || 'N/A'
                 };
             });
             
@@ -1398,16 +1383,8 @@ class AdminPanel {
                 { wch: 25 }, // Email
                 { wch: 15 }, // Phone
                 { wch: 40 }, // Address
-                { wch: 12 }, // Subtotal
-                { wch: 10 }, // Tax
-                { wch: 12 }, // Shipping
-                { wch: 12 }, // Discount
                 { wch: 12 }, // Total
-                { wch: 15 }, // Payment Method
-                { wch: 15 }, // Payment Status
-                { wch: 15 }, // Order Status
-                { wch: 30 }, // Admin Notes
-                { wch: 20 }  // Last Updated
+                { wch: 15 }  // Order Status
             ];
             
             XLSX.utils.book_append_sheet(wb, wsOrders, 'Orders Summary');
@@ -1417,6 +1394,7 @@ class AdminPanel {
                 const itemsData = [];
                 orders.forEach(order => {
                     const addr = order.shipping_address || {};
+                    const orderTotalRupees = (order.total_cents || 0) / 100;
                     (order.order_items || []).forEach(item => {
                         itemsData.push({
                             'Order ID': order.id,
@@ -1425,10 +1403,9 @@ class AdminPanel {
                             'Product Name': item.products?.name || 'Unknown Product',
                             'Size': item.size || 'N/A',
                             'Quantity': item.qty || 1,
-                            'Unit Price (₹)': (item.price_cents || 0 / 100).toFixed(2),
-                            'Line Total (₹)': ((item.price_cents || 0) / 100 * (item.qty || 1)).toFixed(2),
-                            'Order Total (₹)': parseFloat(order.total_amount || 0).toFixed(2),
-                            'Payment Status': order.payment_status || 'N/A'
+                            'Unit Price (₹)': ((item.price_cents || 0) / 100).toFixed(2),
+                            'Line Total (₹)': (((item.price_cents || 0) / 100) * (item.qty || 1)).toFixed(2),
+                            'Order Total (₹)': orderTotalRupees.toFixed(2)
                         });
                     });
                 });
@@ -1444,8 +1421,7 @@ class AdminPanel {
                         { wch: 10 }, // Quantity
                         { wch: 15 }, // Unit Price
                         { wch: 15 }, // Line Total
-                        { wch: 15 }, // Order Total
-                        { wch: 15 }  // Payment Status
+                        { wch: 15 }  // Order Total
                     ];
                     XLSX.utils.book_append_sheet(wb, wsItems, 'Order Items');
                 }
@@ -1453,10 +1429,10 @@ class AdminPanel {
             
             // Create Statistics sheet
             const totalOrders = orders.length;
-            const totalRevenue = orders.reduce((sum, o) => sum + parseFloat(o.total_amount || 0), 0);
+            const totalRevenue = orders.reduce((sum, o) => sum + ((o.total_cents || 0) / 100), 0);
             const statusCounts = {};
             orders.forEach(o => {
-                const st = o.payment_status || 'unknown';
+                const st = o.status || 'unknown';
                 statusCounts[st] = (statusCounts[st] || 0) + 1;
             });
             
