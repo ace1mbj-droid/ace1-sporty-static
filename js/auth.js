@@ -359,8 +359,7 @@ class AuthManager {
         if (window.databaseAuth) {
             window.databaseAuth.logout();
         } else {
-            // Fallback manual logout
-            localStorage.clear();
+            // Fallback manual logout - clear sessionStorage only
             sessionStorage.clear();
         }
         
@@ -446,12 +445,13 @@ window.AuthManager = AuthManager;
 
 // Attach helper methods without using class static syntax for older browser support
 AuthManager.isAuthenticated = function () {
-    return !!localStorage.getItem('ace1_token');
+    // Check if databaseAuth has a current user
+    return window.databaseAuth?.isAuthenticated?.() || false;
 };
 
 AuthManager.getCurrentUser = function () {
-    const user = localStorage.getItem('ace1_user');
-    return user ? JSON.parse(user) : null;
+    // Get user from databaseAuth (loaded from database session)
+    return window.databaseAuth?.getCurrentUser?.() || null;
 };
 
 AuthManager.requireAuth = function () {
