@@ -70,7 +70,13 @@ class ProductFilterManager {
             const processedProducts = (products || []).map(product => ({
                 ...product,
                 image_url: getImageUrl(product.product_images?.[0]?.storage_path) || null,
-                stock_quantity: product.inventory?.[0]?.stock || 0,
+                // Sum stock across all sizes for total availability
+                stock_quantity: (product.inventory || []).reduce((sum, inv) => sum + (inv.stock || 0), 0),
+                // Also keep per-size inventory for detailed view
+                inventory_by_size: (product.inventory || []).reduce((acc, inv) => {
+                    acc[inv.size] = inv.stock || 0;
+                    return acc;
+                }, {}),
                 price: (product.price_cents / 100).toFixed(2) // Convert cents to rupees
             }));
             
