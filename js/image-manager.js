@@ -227,8 +227,8 @@ class WebsiteImageManager {
             html += `
                 <div class="image-card">
                     <div class="image-preview">
-                        <img src="${img.src || 'placeholder.jpg'}" alt="${img.alt || 'Image'}" 
-                             onerror="this.src='https://via.placeholder.com/300x200?text=Image+Not+Found'">
+                        <img src="${img.src || 'images/placeholder.jpg'}" alt="${img.alt || 'Image'}" 
+                             onerror="this.src='images/placeholder.jpg'">
                     </div>
                     <div class="image-info">
                         <p class="image-location"><i class="fas fa-map-marker-alt"></i> ${img.location}</p>
@@ -419,17 +419,12 @@ class WebsiteImageManager {
     // PLACEHOLDER DATA
     // ===================================
     getPlaceholderImages(category) {
+        // Return empty arrays - images should be loaded from database/storage
+        // This prevents 404 errors from non-existent placeholder files
         const placeholders = {
-            hero: [
-                { src: 'images/hero-banner.jpg', alt: 'Hero Banner', location: 'Homepage Hero Section' }
-            ],
-            logos: [
-                { src: 'images/logo.png', alt: 'Ace#1 Logo', location: 'Header Navigation' }
-            ],
-            features: [
-                { src: 'images/feature1.jpg', alt: 'Feature 1', location: 'Homepage Features' },
-                { src: 'images/feature2.jpg', alt: 'Feature 2', location: 'Homepage Features' }
-            ]
+            hero: [],
+            logos: [],
+            features: []
         };
 
         return placeholders[category] || [];
