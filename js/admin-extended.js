@@ -1769,7 +1769,7 @@ class AdminExtended {
     async loadAdminRoles() {
         try {
             const { data, error } = await this.supabase
-                .from('admin_roles')
+                .from('roles')
                 .select('*')
                 .order('name');
 
@@ -1920,9 +1920,9 @@ class AdminExtended {
     async saveRole(id, data) {
         try {
             if (id) {
-                await this.supabase.from('admin_roles').update(data).eq('id', id);
+                await this.supabase.from('roles').update(data).eq('id', id);
             } else {
-                await this.supabase.from('admin_roles').insert(data);
+                await this.supabase.from('roles').insert(data);
             }
             showNotification('Role saved successfully', 'success');
             this.loadAdminRoles();
@@ -1935,7 +1935,7 @@ class AdminExtended {
     async deleteRole(id) {
         if (!confirm('Delete this role?')) return;
         try {
-            await this.supabase.from('admin_roles').delete().eq('id', id);
+            await this.supabase.from('roles').delete().eq('id', id);
             showNotification('Role deleted', 'success');
             this.loadAdminRoles();
         } catch (error) {
