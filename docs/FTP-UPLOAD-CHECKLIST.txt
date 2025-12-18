@@ -1,4 +1,4 @@
-# ✅ FTP Upload Checklist
+# ✅ FTP Upload Checklist (Updated for Current Structure)
 
 ## Files Ready for Upload
 
@@ -7,20 +7,21 @@
 - [x] login.html
 - [x] register.html
 - [x] products.html
-- [x] cart.html
 - [x] checkout.html
-- [x] profile.html
-- [x] orders.html
-- [x] wishlist.html
+- [x] user-profile.html
+- [x] order-confirmation.html
 - [x] contact.html
 - [x] about.html
-- [x] terms.html
-- [x] privacy.html
+- [x] terms-of-service.html
+- [x] privacy-policy.html
 - [x] faq.html
-- [x] test-social-login.html
-- [x] security-validation.html
-- [x] test-sql-injection.html
-- [x] admin-password-migration.html
+- [x] size-guide.html
+- [x] technology.html
+- [x] admin.html
+- [x] admin-login.html
+- [x] auth-callback.html
+- [x] forgot-password.html
+- [x] data-deletion.html
 - [x] .htaccess (for Apache)
 - [x] web.config (for IIS/Windows)
 
@@ -29,11 +30,23 @@
 - [x] database-auth.js
 - [x] password-hasher.js
 - [x] security.js
-- [x] api.js
-- [x] cart.js
+- [x] main.js
 - [x] products.js
 - [x] checkout.js
-- [x] profile.js
+- [x] user-profile.js
+- [x] admin.js
+- [x] admin-extended.js
+- [x] reviews.js
+- [x] contact.js
+
+### CSS Files (css/ folder)
+- [x] All CSS files in your css/ directory
+
+### Images (images/ folder)
+- [x] All product images
+- [x] Logos
+- [x] Icons
+- [x] Banners
 
 ### CSS Files (css/ folder)
 - [x] All CSS files in your css/ directory
