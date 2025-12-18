@@ -273,12 +273,37 @@ class AdminExtended {
                 .order('created_at', { ascending: false });
 
             if (error) throw error;
+            
+            // Update customer stats
+            this.updateCustomerStats(data);
+            
             this.renderCustomersTable(data);
             return data;
         } catch (error) {
             console.error('Error loading customers:', error);
             showNotification('Failed to load customers', 'error');
         }
+    }
+    
+    updateCustomerStats(customers) {
+        const now = new Date();
+        const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+        
+        const total = customers?.length || 0;
+        const newThisMonth = customers?.filter(c => new Date(c.created_at) >= startOfMonth).length || 0;
+        const activeRecently = customers?.filter(c => c.last_login && new Date(c.last_login) >= thirtyDaysAgo).length || 0;
+        const withOrders = customers?.filter(c => c.orders?.[0]?.count > 0).length || 0;
+        
+        const totalEl = document.getElementById('customers-total');
+        const newEl = document.getElementById('customers-new');
+        const activeEl = document.getElementById('customers-active');
+        const ordersEl = document.getElementById('customers-with-orders');
+        
+        if (totalEl) totalEl.textContent = total;
+        if (newEl) newEl.textContent = newThisMonth;
+        if (activeEl) activeEl.textContent = activeRecently;
+        if (ordersEl) ordersEl.textContent = withOrders;
     }
 
     renderCustomersTable(customers) {
@@ -354,44 +379,73 @@ class AdminExtended {
             const modal = document.getElementById('customer-details-modal');
             const body = document.getElementById('customer-details-body');
 
-            const totalSpent = orders?.reduce((sum, o) => sum + (o.total_cents || 0), 0) || 0;
+            const totalSpent = orders?.reduce((sum, o) => sum + (o.total_amount || o.total_cents || 0), 0) || 0;
+            const isCents = orders?.[0]?.total_cents !== undefined;
 
             body.innerHTML = `
+                <style>
+                    .customer-profile { margin-bottom: 20px; }
+                    .profile-header { display: flex; align-items: center; gap: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px; margin-bottom: 15px; }
+                    .profile-avatar { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 3px solid #fff; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+                    .profile-header h3 { margin: 0 0 5px 0; font-size: 1.3em; }
+                    .profile-header p { margin: 3px 0; color: #666; }
+                    .profile-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; }
+                    .profile-stats .stat { text-align: center; padding: 15px; background: #fff; border: 1px solid #eee; border-radius: 8px; }
+                    .profile-stats .stat strong { display: block; font-size: 1.5em; color: #333; }
+                    .profile-stats .stat span { font-size: 0.85em; color: #666; }
+                    .customer-tabs { display: flex; gap: 5px; margin: 20px 0 15px; border-bottom: 2px solid #eee; }
+                    .customer-tabs .tab-btn { padding: 10px 20px; border: none; background: none; cursor: pointer; font-weight: 500; color: #666; border-bottom: 2px solid transparent; margin-bottom: -2px; }
+                    .customer-tabs .tab-btn.active { color: #007bff; border-bottom-color: #007bff; }
+                    .customer-tab h4 { margin: 0 0 15px 0; }
+                    .order-item { padding: 12px; background: #f8f9fa; border-radius: 6px; margin-bottom: 10px; }
+                    .order-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+                    .order-header .badge { padding: 4px 10px; border-radius: 12px; font-size: 0.8em; }
+                    .badge-pending { background: #ffc107; color: #000; }
+                    .badge-processing { background: #17a2b8; color: #fff; }
+                    .badge-shipped { background: #007bff; color: #fff; }
+                    .badge-delivered { background: #28a745; color: #fff; }
+                    .badge-cancelled { background: #dc3545; color: #fff; }
+                    .note-item { padding: 12px; background: #fff8e1; border-left: 3px solid #ffc107; margin: 10px 0; border-radius: 0 6px 6px 0; }
+                    .note-item .badge { font-size: 0.75em; padding: 2px 8px; border-radius: 10px; background: #e0e0e0; }
+                    .note-item p { margin: 8px 0; }
+                    .note-item small { color: #999; }
+                </style>
                 <div class="customer-profile">
                     <div class="profile-header">
-                        <img src="${customer.avatar || 'images/placeholder.jpg'}" alt="" class="profile-avatar">
+                        <img src="${customer.avatar || 'images/placeholder.jpg'}" alt="" class="profile-avatar" onerror="this.src='images/placeholder.jpg'">
                         <div>
                             <h3>${customer.first_name || ''} ${customer.last_name || ''}</h3>
-                            <p>${customer.email}</p>
-                            <p>${customer.phone || 'No phone'}</p>
+                            <p><i class="fas fa-envelope" style="width:20px;color:#666;"></i> ${customer.email}</p>
+                            <p><i class="fas fa-phone" style="width:20px;color:#666;"></i> ${customer.phone || 'No phone'}</p>
+                            <p><i class="fas fa-calendar" style="width:20px;color:#666;"></i> Joined ${new Date(customer.created_at).toLocaleDateString()}</p>
                         </div>
                     </div>
                     <div class="profile-stats">
                         <div class="stat"><strong>${orders?.length || 0}</strong><span>Orders</span></div>
-                        <div class="stat"><strong>₹${(totalSpent/100).toLocaleString()}</strong><span>Total Spent</span></div>
+                        <div class="stat"><strong>₹${isCents ? (totalSpent/100).toLocaleString() : totalSpent.toLocaleString()}</strong><span>Total Spent</span></div>
                         <div class="stat"><strong>${customer.role || 'customer'}</strong><span>Role</span></div>
                     </div>
                 </div>
                 <div class="customer-tabs">
-                    <button class="tab-btn active" onclick="adminExtended.showCustomerTab('orders')">Orders</button>
-                    <button class="tab-btn" onclick="adminExtended.showCustomerTab('notes')">Notes</button>
+                    <button class="tab-btn active" onclick="adminExtended.showCustomerTab('orders')">Orders (${orders?.length || 0})</button>
+                    <button class="tab-btn" onclick="adminExtended.showCustomerTab('notes')">Notes (${notes?.length || 0})</button>
                 </div>
                 <div id="customer-orders-tab" class="customer-tab active">
                     <h4>Order History</h4>
                     ${orders?.length ? orders.map(order => `
                         <div class="order-item">
                             <div class="order-header">
-                                <span>#${order.id.slice(0,8)}</span>
-                                <span class="badge badge-${order.status}">${order.status}</span>
-                                <span>₹${(order.total_cents/100).toLocaleString()}</span>
+                                <span><strong>#${order.id.slice(0,8)}...</strong></span>
+                                <span class="badge badge-${order.payment_status || order.status || 'pending'}">${order.payment_status || order.status || 'pending'}</span>
+                                <span>₹${parseFloat(order.total_amount || (order.total_cents/100) || 0).toLocaleString()}</span>
                                 <span>${new Date(order.created_at).toLocaleDateString()}</span>
                             </div>
                         </div>
-                    `).join('') : '<p>No orders yet</p>'}
+                    `).join('') : '<p style="color:#666;text-align:center;padding:20px;">No orders yet</p>'}
                 </div>
                 <div id="customer-notes-tab" class="customer-tab" style="display:none;">
                     <h4>Notes</h4>
-                    <button class="btn btn-sm btn-primary" onclick="adminExtended.addCustomerNote('${customerId}')">
+                    <button class="btn btn-sm btn-primary" onclick="adminExtended.addCustomerNote('${customerId}')" style="margin-bottom:15px;">
                         <i class="fas fa-plus"></i> Add Note
                     </button>
                     ${notes?.length ? notes.map(note => `
@@ -404,9 +458,68 @@ class AdminExtended {
                 </div>
             `;
 
-            modal.style.display = 'block';
+            modal.classList.add('active');
+            // Store customer ID for email functionality
+            modal.dataset.customerId = customerId;
+            modal.dataset.customerEmail = customer.email;
         } catch (error) {
             console.error('Error loading customer details:', error);
+            showNotification('Failed to load customer details', 'error');
+        }
+    }
+    
+    sendCustomerEmail() {
+        const modal = document.getElementById('customer-details-modal');
+        const email = modal?.dataset.customerEmail;
+        if (email) {
+            window.open(`mailto:${email}`, '_blank');
+        } else {
+            showNotification('No email address available', 'error');
+        }
+    }
+    
+    showCustomerTab(tab) {
+        // Hide all tabs
+        document.querySelectorAll('.customer-tab').forEach(t => t.style.display = 'none');
+        document.querySelectorAll('.customer-tabs .tab-btn').forEach(b => b.classList.remove('active'));
+        
+        // Show selected tab
+        const tabEl = document.getElementById(`customer-${tab}-tab`);
+        if (tabEl) tabEl.style.display = 'block';
+        
+        // Update button state
+        event.target.classList.add('active');
+    }
+    
+    async addCustomerNote(customerId) {
+        const noteType = prompt('Note type (general, support, order, vip):', 'general');
+        if (!noteType) return;
+        
+        const note = prompt('Enter note:');
+        if (!note) return;
+        
+        try {
+            const { error } = await this.supabase
+                .from('customer_notes')
+                .insert({
+                    customer_id: customerId,
+                    note_type: noteType,
+                    note: note,
+                    created_by: window.adminPanel?.currentUser?.email || 'admin'
+                });
+            
+            if (error) throw error;
+            
+            showNotification('Note added successfully', 'success');
+            
+            // Refresh customer details if modal is open
+            const modal = document.getElementById('customer-details-modal');
+            if (modal?.classList.contains('active') && modal?.dataset.customerId === customerId) {
+                this.viewCustomerDetails(customerId);
+            }
+        } catch (error) {
+            console.error('Error adding note:', error);
+            showNotification('Failed to add note', 'error');
         }
     }
 
