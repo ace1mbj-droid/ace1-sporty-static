@@ -353,11 +353,20 @@
         <div class="admin-tabs">
             <button class="admin-tab active" data-tab="dashboard">Dashboard</button>
             <button class="admin-tab" data-tab="products">Products</button>
+            <button class="admin-tab" data-tab="inventory">Inventory</button>
+            <button class="admin-tab" data-tab="categories">Categories</button>
             <button class="admin-tab" data-tab="orders">Orders</button>
+            <button class="admin-tab" data-tab="customers">Customers</button>
+            <button class="admin-tab" data-tab="coupons">Coupons</button>
+            <button class="admin-tab" data-tab="shipping">Shipping</button>
+            <button class="admin-tab" data-tab="content">Content</button>
+            <button class="admin-tab" data-tab="analytics">Analytics</button>
+            <button class="admin-tab" data-tab="communications">Communications</button>
             <button class="admin-tab" data-tab="users">Users</button>
+            <button class="admin-tab" data-tab="roles">Roles</button>
             <button class="admin-tab" data-tab="images">Site Images</button>
             <button class="admin-tab" data-tab="settings">Settings</button>
-            <button class="admin-tab" data-tab="logs">Security Logs</button>
+            <button class="admin-tab" data-tab="logs">Audit Logs</button>
             <button class="admin-tab" data-tab="password">Change Password</button>
         </div>
 
@@ -442,6 +451,173 @@
                     </tbody>
                 </table>
             </div>
+        </div>
+
+        <!-- Inventory Tab -->
+        <div class="admin-content" id="inventory-content">
+            <div class="admin-section-header">
+                <h2><i class="fas fa-boxes"></i> Inventory Management</h2>
+                <button onclick="window.inventoryManager?.showAdjustmentModal()" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> New Adjustment
+                </button>
+            </div>
+            <div class="inventory-summary" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 20px;">
+                <div class="stat-card">
+                    <h4>Total Products</h4>
+                    <span id="inv-total-products">-</span>
+                </div>
+                <div class="stat-card">
+                    <h4>Low Stock Items</h4>
+                    <span id="inv-low-stock" style="color: orange;">-</span>
+                </div>
+                <div class="stat-card">
+                    <h4>Out of Stock</h4>
+                    <span id="inv-out-of-stock" style="color: red;">-</span>
+                </div>
+                <div class="stat-card">
+                    <h4>Recent Adjustments</h4>
+                    <span id="inv-recent-adj">-</span>
+                </div>
+            </div>
+            <div id="inventory-table-container">Loading inventory...</div>
+        </div>
+
+        <!-- Categories Tab -->
+        <div class="admin-content" id="categories-content">
+            <div class="admin-section-header">
+                <h2><i class="fas fa-tags"></i> Category Management</h2>
+                <button onclick="window.categoryManager?.showCategoryModal()" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Add Category
+                </button>
+            </div>
+            <div id="categories-container">Loading categories...</div>
+        </div>
+
+        <!-- Customers Tab -->
+        <div class="admin-content" id="customers-content">
+            <div class="admin-section-header">
+                <h2><i class="fas fa-users"></i> Customer Management</h2>
+                <div class="search-box">
+                    <input type="text" id="customer-search" placeholder="Search customers..." onkeyup="window.customerManager?.searchCustomers(this.value)">
+                </div>
+            </div>
+            <div id="customers-container">Loading customers...</div>
+        </div>
+
+        <!-- Coupons Tab -->
+        <div class="admin-content" id="coupons-content">
+            <div class="admin-section-header">
+                <h2><i class="fas fa-ticket-alt"></i> Coupons & Promotions</h2>
+                <button onclick="window.couponManager?.showCouponModal()" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Create Coupon
+                </button>
+            </div>
+            <div class="coupons-summary" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 20px;">
+                <div class="stat-card">
+                    <h4>Active Coupons</h4>
+                    <span id="coupons-active">-</span>
+                </div>
+                <div class="stat-card">
+                    <h4>Total Uses</h4>
+                    <span id="coupons-uses">-</span>
+                </div>
+                <div class="stat-card">
+                    <h4>Total Discounts</h4>
+                    <span id="coupons-discounts">-</span>
+                </div>
+            </div>
+            <div id="coupons-container">Loading coupons...</div>
+        </div>
+
+        <!-- Shipping Tab -->
+        <div class="admin-content" id="shipping-content">
+            <div class="admin-section-header">
+                <h2><i class="fas fa-truck"></i> Shipping Methods</h2>
+                <button onclick="window.shippingManager?.showShippingModal()" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Add Method
+                </button>
+            </div>
+            <div id="shipping-container">Loading shipping methods...</div>
+        </div>
+
+        <!-- Content Tab -->
+        <div class="admin-content" id="content-content">
+            <div class="admin-section-header">
+                <h2><i class="fas fa-file-alt"></i> Content Management</h2>
+                <button onclick="window.contentManager?.showContentModal()" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Add Content Block
+                </button>
+            </div>
+            <div class="content-filters" style="margin-bottom: 20px;">
+                <select id="content-location-filter" onchange="window.contentManager?.filterByLocation(this.value)">
+                    <option value="">All Locations</option>
+                    <option value="homepage_hero">Homepage Hero</option>
+                    <option value="homepage_promo">Homepage Promo</option>
+                    <option value="products_banner">Products Banner</option>
+                    <option value="announcement">Announcement Bar</option>
+                </select>
+            </div>
+            <div id="content-container">Loading content blocks...</div>
+        </div>
+
+        <!-- Analytics Tab -->
+        <div class="admin-content" id="analytics-content">
+            <div class="admin-section-header">
+                <h2><i class="fas fa-chart-line"></i> Analytics & Reports</h2>
+                <div class="date-range-picker">
+                    <input type="date" id="analytics-start" onchange="window.analyticsManager?.loadAnalytics()">
+                    <span>to</span>
+                    <input type="date" id="analytics-end" onchange="window.analyticsManager?.loadAnalytics()">
+                </div>
+            </div>
+            <div class="analytics-summary" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 20px;">
+                <div class="stat-card">
+                    <h4>Total Revenue</h4>
+                    <span id="analytics-revenue">-</span>
+                </div>
+                <div class="stat-card">
+                    <h4>Total Orders</h4>
+                    <span id="analytics-orders">-</span>
+                </div>
+                <div class="stat-card">
+                    <h4>Avg Order Value</h4>
+                    <span id="analytics-aov">-</span>
+                </div>
+                <div class="stat-card">
+                    <h4>Conversion Rate</h4>
+                    <span id="analytics-conversion">-</span>
+                </div>
+            </div>
+            <div id="analytics-charts-container">
+                <canvas id="revenue-chart" height="200"></canvas>
+            </div>
+            <div id="analytics-table-container" style="margin-top: 20px;">Loading analytics...</div>
+        </div>
+
+        <!-- Communications Tab -->
+        <div class="admin-content" id="communications-content">
+            <div class="admin-section-header">
+                <h2><i class="fas fa-envelope"></i> Communications</h2>
+                <button onclick="window.communicationManager?.showTemplateModal()" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> New Template
+                </button>
+            </div>
+            <div class="comm-tabs" style="margin-bottom: 20px;">
+                <button class="comm-tab active" onclick="window.communicationManager?.showTab('templates')">Email Templates</button>
+                <button class="comm-tab" onclick="window.communicationManager?.showTab('history')">Send History</button>
+            </div>
+            <div id="communications-container">Loading templates...</div>
+        </div>
+
+        <!-- Roles Tab -->
+        <div class="admin-content" id="roles-content">
+            <div class="admin-section-header">
+                <h2><i class="fas fa-user-shield"></i> User Roles & Permissions</h2>
+                <button onclick="window.rolesManager?.showRoleModal()" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Create Role
+                </button>
+            </div>
+            <div id="roles-container">Loading roles...</div>
         </div>
 
         <!-- Site Images Tab -->
@@ -854,6 +1030,8 @@
     <script src="js/database-auth.js"></script>
     <script src="js/supabase-service.js"></script>
     <script src="js/admin.js"></script>
+    <!-- Extended Admin Features -->
+    <script src="js/admin-extended.js"></script>
     <!-- Image Optimization -->
     <script src="js/image-optimizer.js"></script>
     <!-- Image Manager -->
@@ -881,6 +1059,41 @@
                     }
                 });
             }
+
+            // Initialize Extended Admin Managers when their tabs are clicked
+            const tabManagerMap = {
+                'inventory': 'inventoryManager',
+                'categories': 'categoryManager',
+                'customers': 'customerManager',
+                'coupons': 'couponManager',
+                'shipping': 'shippingManager',
+                'content': 'contentManager',
+                'analytics': 'analyticsManager',
+                'communications': 'communicationManager',
+                'roles': 'rolesManager'
+            };
+
+            Object.entries(tabManagerMap).forEach(([tabName, managerName]) => {
+                const tab = document.querySelector(`[data-tab="${tabName}"]`);
+                if (tab) {
+                    tab.addEventListener('click', () => {
+                        const manager = window[managerName];
+                        if (manager && typeof manager.load === 'function') {
+                            manager.load();
+                        }
+                    });
+                }
+            });
+
+            // Set default date range for analytics (last 30 days)
+            const endDate = new Date();
+            const startDate = new Date();
+            startDate.setDate(startDate.getDate() - 30);
+            
+            const analyticsStart = document.getElementById('analytics-start');
+            const analyticsEnd = document.getElementById('analytics-end');
+            if (analyticsStart) analyticsStart.value = startDate.toISOString().split('T')[0];
+            if (analyticsEnd) analyticsEnd.value = endDate.toISOString().split('T')[0];
         });
     </script>
 
