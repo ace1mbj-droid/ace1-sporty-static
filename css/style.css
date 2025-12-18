@@ -937,7 +937,43 @@ button {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    flex-wrap: wrap;
+    gap: 20px;
     opacity: 0.7;
+}
+
+.footer-login-cta {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    opacity: 1;
+}
+
+.footer-login-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    background: rgba(255, 255, 255, 0.08);
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    transition: var(--transition);
+}
+
+.footer-login-btn:hover {
+    background: var(--secondary-color);
+    border-color: var(--secondary-color);
+    color: #ffffff;
+    transform: translateY(-2px);
+}
+
+.footer-login-btn.admin {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(255, 255, 255, 0.35);
 }
 
 .footer-links {
@@ -1189,6 +1225,18 @@ button {
         flex-direction: column;
         gap: 20px;
         text-align: center;
+    }
+
+    .footer-login-cta {
+        width: 100%;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .footer-login-btn {
+        width: 100%;
+        justify-content: center;
     }
     
     .newsletter-form {
@@ -4287,6 +4335,16 @@ button {
     .footer-section p,
     .footer-section a {
         font-size: 11px;
+    }
+
+    .footer-login-cta {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .footer-login-btn {
+        width: 100%;
+        justify-content: center;
     }
 
     .btn,

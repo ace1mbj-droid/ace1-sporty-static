@@ -1141,3 +1141,60 @@ if (document.readyState === 'loading') {
 window.openQuickView = openQuickView;
 window.closeQuickView = closeQuickView;
 window.attachQuickViewHandlers = attachQuickViewHandlers;
+
+// ===================================
+// FOOTER LOGIN BUTTONS
+// ===================================
+const FOOTER_LOGIN_EXCLUSIONS = new Set([
+    'admin.html',
+    'admin-login.html',
+    'login.html',
+    'register.html',
+    'forgot-password.html',
+    'update-password.html',
+    'auth-callback.html',
+    'auth-test.html'
+]);
+
+function injectFooterLoginButtons() {
+    const pathName = (window.location.pathname.split('/').pop() || '').toLowerCase();
+    if (FOOTER_LOGIN_EXCLUSIONS.has(pathName)) {
+        return;
+    }
+
+    const footer = document.querySelector('.footer');
+    if (!footer) {
+        return;
+    }
+
+    const footerBottom = footer.querySelector('.footer-bottom') || footer;
+    if (!footerBottom || footerBottom.querySelector('.footer-login-cta')) {
+        return;
+    }
+
+    const wrapper = document.createElement('div');
+    wrapper.className = 'footer-login-cta';
+    wrapper.innerHTML = `
+        <a class="footer-login-btn" href="login.html" aria-label="User login">
+            <i class="fas fa-user-circle"></i>
+            <span>User Login</span>
+        </a>
+        <a class="footer-login-btn admin" href="admin-login.html" aria-label="Admin login">
+            <i class="fas fa-user-shield"></i>
+            <span>Admin Login</span>
+        </a>
+    `;
+
+    const footerLinks = footerBottom.querySelector('.footer-links');
+    if (footerLinks) {
+        footerBottom.insertBefore(wrapper, footerLinks);
+    } else {
+        footerBottom.appendChild(wrapper);
+    }
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', injectFooterLoginButtons);
+} else {
+    injectFooterLoginButtons();
+}
