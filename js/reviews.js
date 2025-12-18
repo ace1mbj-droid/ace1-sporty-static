@@ -371,7 +371,7 @@ class ProductReviewsManager {
         this.displayReviews();
     }
 
-    markHelpful(button) {
+    async markHelpful(button) {
         const reviewId = parseInt(button.dataset.reviewId);
         const type = button.dataset.type;
         
