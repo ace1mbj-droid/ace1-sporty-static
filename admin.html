@@ -971,6 +971,104 @@
         </div>
     </div>
 
+    <!-- Category Modal -->
+    <div class="modal" id="category-modal" style="display:none;">
+        <div class="modal-content" style="max-width:450px;">
+            <div class="modal-header">
+                <h2 id="category-modal-title">Add Category</h2>
+                <button class="modal-close" onclick="adminExtended.closeModal('category-modal')">&times;</button>
+            </div>
+            <form onsubmit="event.preventDefault(); adminExtended.saveCategoryFromModal();">
+                <input type="hidden" id="category-id">
+                <div class="form-group" style="margin-bottom:15px;">
+                    <label style="display:block;margin-bottom:5px;font-weight:600;">Category Name *</label>
+                    <input type="text" id="category-name" required style="width:100%;padding:10px;border:1px solid #ddd;border-radius:4px;" placeholder="e.g., Running Shoes">
+                </div>
+                <div class="form-group" style="margin-bottom:15px;">
+                    <label style="display:block;margin-bottom:5px;font-weight:600;">Slug</label>
+                    <input type="text" id="category-slug" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:4px;" placeholder="e.g., running-shoes (auto-generated)">
+                </div>
+                <div class="form-group" style="margin-bottom:15px;">
+                    <label style="display:block;margin-bottom:5px;font-weight:600;">Description</label>
+                    <textarea id="category-description" rows="3" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:4px;" placeholder="Category description..."></textarea>
+                </div>
+                <div class="form-group" style="margin-bottom:20px;">
+                    <label style="display:block;margin-bottom:5px;font-weight:600;">Parent Category</label>
+                    <select id="category-parent" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:4px;">
+                        <option value="">None (Top Level)</option>
+                    </select>
+                </div>
+                <div style="display:flex;gap:10px;justify-content:flex-end;">
+                    <button type="button" class="btn btn-secondary" onclick="adminExtended.closeModal('category-modal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Category</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Content Block Modal -->
+    <div class="modal" id="content-block-modal" style="display:none;">
+        <div class="modal-content" style="max-width:550px;">
+            <div class="modal-header">
+                <h2 id="content-modal-title">Add Content</h2>
+                <button class="modal-close" onclick="adminExtended.closeModal('content-block-modal')">&times;</button>
+            </div>
+            <form id="content-block-form" onsubmit="event.preventDefault(); adminExtended.saveContentBlock();">
+                <input type="hidden" id="content-block-id">
+                <input type="hidden" id="content-block-type">
+                <div class="form-group" style="margin-bottom:15px;">
+                    <label style="display:block;margin-bottom:5px;font-weight:600;">Title *</label>
+                    <input type="text" id="content-title" required style="width:100%;padding:10px;border:1px solid #ddd;border-radius:4px;" placeholder="Content title">
+                </div>
+                <div class="form-group" style="margin-bottom:15px;">
+                    <label style="display:block;margin-bottom:5px;font-weight:600;">Content</label>
+                    <textarea id="content-body" rows="4" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:4px;" placeholder="Content body text..."></textarea>
+                </div>
+                <div class="form-group" style="margin-bottom:15px;">
+                    <label style="display:block;margin-bottom:5px;font-weight:600;">Image URL</label>
+                    <input type="url" id="content-image" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:4px;" placeholder="https://...">
+                </div>
+                <div class="form-group" style="margin-bottom:15px;">
+                    <label style="display:block;margin-bottom:5px;font-weight:600;">Link URL</label>
+                    <input type="url" id="content-link" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:4px;" placeholder="https://...">
+                </div>
+                <div class="form-group" style="margin-bottom:15px;">
+                    <label style="display:block;margin-bottom:5px;font-weight:600;">Position</label>
+                    <select id="content-position" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:4px;">
+                        <option value="homepage-hero">Homepage Hero</option>
+                        <option value="homepage-banner">Homepage Banner</option>
+                        <option value="sidebar">Sidebar</option>
+                        <option value="footer">Footer</option>
+                        <option value="product-page">Product Page</option>
+                    </select>
+                </div>
+                <div class="form-group" style="margin-bottom:20px;">
+                    <label style="display:flex;align-items:center;gap:10px;cursor:pointer;">
+                        <input type="checkbox" id="content-active" checked style="width:18px;height:18px;">
+                        <span style="font-weight:600;">Active</span>
+                    </label>
+                </div>
+                <div style="display:flex;gap:10px;justify-content:flex-end;">
+                    <button type="button" class="btn btn-secondary" onclick="adminExtended.closeModal('content-block-modal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Content</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Customer Details Modal -->
+    <div class="modal" id="customer-details-modal" style="display:none;">
+        <div class="modal-content" style="max-width:700px;max-height:80vh;overflow:auto;">
+            <div class="modal-header">
+                <h2>Customer Details</h2>
+                <button class="modal-close" onclick="adminExtended.closeModal('customer-details-modal')">&times;</button>
+            </div>
+            <div id="customer-details-body">
+                <!-- Dynamically populated -->
+            </div>
+        </div>
+    </div>
+
     <!-- Coupon Modal -->
     <div class="modal" id="coupon-modal">
         <div class="modal-content" style="max-width:500px;">

@@ -906,7 +906,10 @@ class AdminPanel {
             await this.loadDashboard();
         }
         
-        // Products are always loaded fresh from database - no cache to clear
+        // Sync inventory tab if it exists
+        if (window.inventoryManager?.load) {
+            window.inventoryManager.load();
+        }
     }
 
     async syncProductStockQuantity(productId, totalStock) {
