@@ -8,18 +8,8 @@ const SUPABASE_CONFIG = {
 };
 
 // Keep a session token for admin use; attach it only to Supabase requests
+// Token is set by databaseAuth when session is created
 let sessionToken = null;
-const storedToken = (() => {
-    try {
-        return localStorage.getItem('ace1_token');
-    } catch (error) {
-        return null;
-    }
-})();
-
-if (storedToken) {
-    sessionToken = storedToken;
-}
 
 const sessionAwareFetch = async (input, init = {}) => {
     const headers = new Headers(init.headers || {});

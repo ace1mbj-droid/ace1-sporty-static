@@ -550,12 +550,10 @@ class DatabaseAuth {
 
             if (error) throw error;
 
-            // Update local user object
+            // Update local user object (in memory only, not localStorage)
             this.currentUser.firstName = data.first_name;
             this.currentUser.lastName = data.last_name;
             this.currentUser.phone = data.phone;
-
-            localStorage.setItem('ace1_user', JSON.stringify(this.currentUser));
 
             return { success: true, user: this.currentUser };
         } catch (error) {
@@ -647,7 +645,7 @@ class DatabaseAuth {
             try {
                 const supabase = window.getSupabase();
                 await supabase.auth.signOut();
-                console.log('✅ OAuth session clarified');
+                console.log('✅ OAuth session cleared');
             } catch (err) {
                 console.error('OAuth signout error:', err);
             }
@@ -659,11 +657,10 @@ class DatabaseAuth {
         this.setSessionToken(null);
         this.clearHttpOnlyCookie();
         
-        // Clear localStorage (only session-related data)
+        // Clear auth session reference from localStorage
         localStorage.removeItem('ace1_session_id');
-        localStorage.removeItem('csrf_token');
         
-        // Clear session storage
+        // Clear session storage (cart, wishlist for anonymous users)
         sessionStorage.clear();
         
         // Clear all cookies
@@ -676,24 +673,19 @@ class DatabaseAuth {
         return true;
     }
 
-    // Check if authenticated
+    // Check if authenticated (based on in-memory user loaded from database session)
     isAuthenticated() {
-        return !!this.currentUser || !!localStorage.getItem('ace1_token');
+        return !!this.currentUser;
     }
 
-    // Get current user
+    // Get current user (from memory only - session verified on page load)
     getCurrentUser() {
-        if (this.currentUser) {
-            return this.currentUser;
-        }
-        
-        const stored = localStorage.getItem('ace1_user');
-        if (stored) {
-            this.currentUser = JSON.parse(stored);
-            return this.currentUser;
-        }
-        
-        return null;
+        return this.currentUser || null;
+    }
+
+    // Get session token for API calls
+    getSessionToken() {
+        return sessionStorage.getItem('ace1_admin_token') || null;
     }
 
     // Generate cryptographically secure session token
