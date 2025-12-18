@@ -6,6 +6,35 @@ let cart = JSON.parse(localStorage.getItem('ace1_cart') || '[]');
 let cartTotal = 0;
 let cartSessionId = localStorage.getItem('ace1_session_id') || generateSessionId();
 
+// Ensure global header/footer elements are present across all pages
+(function ensureGlobalLayoutElements() {
+    const nav = document.getElementById('navbar');
+    if (nav && !document.getElementById('search-overlay')) {
+        nav.insertAdjacentHTML('afterend', `
+    <!-- Search Overlay -->
+    <div class="search-overlay" id="search-overlay">
+        <div class="search-container">
+            <input type="text" class="search-input" placeholder="Search for products...">
+            <button class="search-close" id="search-close">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    </div>`);
+    }
+
+    const footerLinks = document.querySelector('.footer .footer-links');
+    if (footerLinks && !footerLinks.querySelector('#clearCacheBtn')) {
+        const cacheLink = document.createElement('a');
+        cacheLink.href = '#';
+        cacheLink.id = 'clearCacheBtn';
+        cacheLink.title = 'Clear browser cache';
+        cacheLink.textContent = '🧹 Clear Cache';
+        cacheLink.style.color = '#ff8c00';
+        cacheLink.style.fontWeight = '600';
+        footerLinks.appendChild(cacheLink);
+    }
+})();
+
 // Generate session ID for anonymous users
 function generateSessionId() {
     const sessionId = 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
@@ -1197,4 +1226,28 @@ if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', injectFooterLoginButtons);
 } else {
     injectFooterLoginButtons();
+}
+
+function bindClearCacheButton() {
+    const btn = document.getElementById('clearCacheBtn');
+    if (!btn || btn.dataset.bound === 'true') {
+        return;
+    }
+
+    btn.dataset.bound = 'true';
+    btn.addEventListener('click', (event) => {
+        event.preventDefault();
+        if (window.CacheBuster && typeof window.CacheBuster.forceReload === 'function') {
+            alert('🧹 Clearing cache and reloading...');
+            window.CacheBuster.forceReload();
+        } else {
+            window.location.reload();
+        }
+    });
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', bindClearCacheButton);
+} else {
+    bindClearCacheButton();
 }
