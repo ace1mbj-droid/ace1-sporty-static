@@ -2161,6 +2161,11 @@ document.addEventListener('DOMContentLoaded', () => {
         adminPanel = new AdminPanel();
         console.log('✅ AdminPanel initialized successfully');
         window.adminPanel = adminPanel; // Make globally accessible for debugging
+        
+        // Expose order-related functions globally for onclick handlers
+        window.showExportOrdersModal = () => adminPanel.showExportOrdersModal();
+        window.loadOrders = () => adminPanel.loadOrders();
+        window.exportOrdersToExcel = () => adminPanel.exportOrdersToExcel();
     } catch (err) {
         console.error('❌ Error initializing AdminPanel:', err);
     }

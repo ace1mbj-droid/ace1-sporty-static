@@ -430,13 +430,13 @@
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                 <h2>Recent Orders</h2>
                 <div style="display: flex; gap: 10px;">
-                    <button onclick="window.adminPanel?.showExportOrdersModal()" class="btn btn-success" style="padding: 10px 20px; background: #28a745;">
+                    <button onclick="if(window.adminPanel) window.adminPanel.showExportOrdersModal(); else alert('Admin panel not loaded yet');" class="btn btn-success" style="padding: 10px 20px; background: #28a745;">
                         <i class="fas fa-file-excel"></i> Export Excel
                     </button>
-                    <button onclick="window.adminPanel?.loadOrders()" class="btn btn-secondary" style="padding: 10px 20px;">
+                    <button onclick="if(window.adminPanel) window.adminPanel.loadOrders(); else alert('Admin panel not loaded yet');" class="btn btn-secondary" style="padding: 10px 20px;">
                         <i class="fas fa-sync-alt"></i> Refresh
                     </button>
-                    <button onclick="window.adminPanel?.testAdminAccess()" class="btn btn-primary" style="padding: 10px 20px;">
+                    <button onclick="if(window.adminPanel) window.adminPanel.testAdminAccess(); else alert('Admin panel not loaded yet');" class="btn btn-primary" style="padding: 10px 20px;">
                         <i class="fas fa-bug"></i> Debug
                     </button>
                 </div>
@@ -895,7 +895,7 @@
                         <div id="export-form-error" style="display:none;color:#b00020;margin-bottom:8px;"></div>
                         <div style="display: flex; gap: 10px; justify-content: flex-end;">
                             <button type="button" class="btn btn-secondary" onclick="document.getElementById('export-orders-modal').classList.remove('active')">Cancel</button>
-                            <button type="button" class="btn btn-success" style="background: #28a745;" onclick="window.adminPanel?.exportOrdersToExcel()">
+                            <button type="button" id="export-download-btn" class="btn btn-success" style="background: #28a745;" onclick="if(window.adminPanel) window.adminPanel.exportOrdersToExcel(); else alert('Admin panel not loaded');">
                                 <i class="fas fa-download"></i> Download Excel
                             </button>
                         </div>
