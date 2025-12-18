@@ -199,8 +199,23 @@
         }
     };
 
-    // Run on page load
-    init();
+    // ===================================
+    // DELAYED INITIALIZATION
+    // ===================================
+    // Wait for page to be fully loaded before initializing
+    // This prevents "Layout was forced before the page was fully loaded" warnings
+    function delayedInit() {
+        if (document.readyState === 'loading') {
+            // Still loading, wait for DOMContentLoaded
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            // DOM already loaded, run immediately
+            init();
+        }
+    }
+
+    // Run delayed initialization
+    delayedInit();
 
     console.log('✅ Cache Buster loaded - using ETag/Last-Modified headers for versioning');
 })();
