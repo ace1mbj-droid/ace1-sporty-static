@@ -22,6 +22,8 @@
     <link rel="stylesheet" href="css/image-manager.css">
     <link rel="stylesheet" href="css/password-manager.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- SheetJS for Excel Export -->
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         .admin-container {
@@ -428,6 +430,9 @@
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                 <h2>Recent Orders</h2>
                 <div style="display: flex; gap: 10px;">
+                    <button onclick="window.adminPanel?.showExportOrdersModal()" class="btn btn-success" style="padding: 10px 20px; background: #28a745;">
+                        <i class="fas fa-file-excel"></i> Export Excel
+                    </button>
                     <button onclick="window.adminPanel?.loadOrders()" class="btn btn-secondary" style="padding: 10px 20px;">
                         <i class="fas fa-sync-alt"></i> Refresh
                     </button>
@@ -822,6 +827,56 @@
                             <button class="btn btn-secondary" id="order-refund-btn" type="button">Refund</button>
                         </div>
                     </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Export Orders Modal -->
+        <div class="modal" id="export-orders-modal">
+            <div class="modal-content" style="max-width: 500px;">
+                <div class="modal-header">
+                    <h2><i class="fas fa-file-excel"></i> Export Orders to Excel</h2>
+                    <button class="modal-close" onclick="document.getElementById('export-orders-modal').classList.remove('active')">&times;</button>
+                </div>
+                <div class="modal-body" style="padding: 20px;">
+                    <form id="export-orders-form">
+                        <div class="form-group">
+                            <label for="export-date-from">From Date</label>
+                            <input type="date" id="export-date-from" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label for="export-date-to">To Date</label>
+                            <input type="date" id="export-date-to" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label for="export-status-filter">Order Status</label>
+                            <select id="export-status-filter" class="form-control">
+                                <option value="all">All Statuses</option>
+                                <option value="pending">Pending</option>
+                                <option value="processing">Processing</option>
+                                <option value="shipped">Shipped</option>
+                                <option value="delivered">Delivered</option>
+                                <option value="cancelled">Cancelled</option>
+                                <option value="refunded">Refunded</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="export-include-items" checked>
+                                Include Order Items (Detailed)
+                            </label>
+                        </div>
+                        <div id="export-preview" style="background: #f5f5f5; padding: 10px; border-radius: 5px; margin-bottom: 15px;">
+                            <strong>Preview:</strong> <span id="export-count">0</span> orders will be exported
+                        </div>
+                        <div id="export-form-error" style="display:none;color:#b00020;margin-bottom:8px;"></div>
+                        <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                            <button type="button" class="btn btn-secondary" onclick="document.getElementById('export-orders-modal').classList.remove('active')">Cancel</button>
+                            <button type="button" class="btn btn-success" style="background: #28a745;" onclick="window.adminPanel?.exportOrdersToExcel()">
+                                <i class="fas fa-download"></i> Download Excel
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
