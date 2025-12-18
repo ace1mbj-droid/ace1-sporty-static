@@ -43,57 +43,33 @@ class DatabaseAuth {
         if (sessionId) {
             console.log('🔍 Found session_id in localStorage, verifying with database...');
             try {
-                // Verify session exists in database and is not expired
-                const { data: session, error } = await this.supabase
-                    .from('sessions')
-                    .select(`
-                        id,
-                        user_id,
-                        jwt_token,
-                        user_data,
-                        expires_at,
-                        users (
-                            id,
-                            email,
-                            first_name,
-                            last_name,
-                            phone,
-                            role,
-                            avatar
-                        )
-                    `)
-                    .eq('session_id', sessionId)
-                    .gt('expires_at', new Date().toISOString())
-                    .single();
+                // Use RPC function to verify session (bypasses RLS)
+                const { data: sessions, error } = await this.supabase
+                    .rpc('verify_session', { p_session_id: sessionId });
                 
                 if (error) {
-                    // Check if it's an RLS/permission error (406) vs actual not found
-                    if (error.code === 'PGRST116' || error.message?.includes('406')) {
-                        // RLS restriction - session might still be valid but we can't verify
-                        // Don't logout, just clear the invalid session_id
-                        console.warn('⚠️ Cannot verify session (RLS restriction), clearing local session');
-                        localStorage.removeItem('ace1_session_id');
-                        return;
-                    }
-                    // Other errors - session is genuinely invalid
-                    console.log('⚠️ Session expired or invalid, logging out...');
-                    this.logout();
+                    console.error('Session verification error:', error);
+                    // Clear invalid session
+                    console.log('⚠️ Session verification failed, clearing local session...');
+                    localStorage.removeItem('ace1_session_id');
                     return;
                 }
                 
+                const session = sessions && sessions.length > 0 ? sessions[0] : null;
+                
                 if (session) {
                     // Session is valid, restore user
-                    const user = session.user_data ? session.user_data : (session.users ? {
-                        id: session.users.id,
-                        email: session.users.email,
-                        firstName: session.users.first_name,
-                        lastName: session.users.last_name,
-                        phone: session.users.phone,
-                        role: session.users.role,
-                        avatar: session.users.avatar
-                    } : null);
+                    const user = session.user_data ? session.user_data : {
+                        id: session.user_id,
+                        email: session.user_email,
+                        firstName: session.user_first_name,
+                        lastName: session.user_last_name,
+                        phone: session.user_phone,
+                        role: session.user_role,
+                        avatar: session.user_avatar
+                    };
                     
-                    if (user) {
+                    if (user && user.email) {
                         this.currentUser = user;
                         
                         // Update last activity in database (silently fail if RLS blocks)
@@ -113,7 +89,7 @@ class DatabaseAuth {
                     }
                 } else {
                     // No session found
-                    console.log('⚠️ Session not found, clearing local storage...');
+                    console.log('⚠️ Session not found or expired, clearing local storage...');
                     localStorage.removeItem('ace1_session_id');
                 }
             } catch (err) {
