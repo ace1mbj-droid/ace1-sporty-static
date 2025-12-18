@@ -14,8 +14,10 @@ jobs:
 
       - name: CI guard — prevent accidental production deploys
         if: github.event_name != 'workflow_dispatch'
+        env:
+          ALLOW_DEPLOY: ${{ secrets.ALLOW_PRODUCTION_DEPLOY }}
         run: |
-          if [ "${{ secrets.ALLOW_PRODUCTION_DEPLOY }}" != "true" ]; then
+          if [ "$ALLOW_DEPLOY" != "true" ]; then
             echo "Automatic production deploys are disabled. Re-run via 'workflow_dispatch' or set 'ALLOW_PRODUCTION_DEPLOY=true' temporarily."
             exit 1
           fi

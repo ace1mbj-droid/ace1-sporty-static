@@ -10,19 +10,15 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       supabase_enabled: ${{ steps.check-supabase.outputs.enabled }}
-    env:
-      # Optional secret with fallback - may be undefined
-      ENABLE_SUPABASE_DEPLOY: ${{ secrets.ENABLE_SUPABASE_DEPLOY || 'false' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: CI guard — prevent accidental production deploys
         if: github.ref == 'refs/heads/main' && github.event_name != 'workflow_dispatch'
+        env:
+          ALLOW_DEPLOY: ${{ secrets.ALLOW_PRODUCTION_DEPLOY }}
         run: |
-          # Note: 'secrets' cannot be referenced in the workflow-level 'if' expression (parser error).
-          # Instead evaluate the repository secret at runtime in this step.
-          ALLOW_DEPLOY="${{ secrets.ALLOW_PRODUCTION_DEPLOY }}"
           if [ "$ALLOW_DEPLOY" != "true" ]; then
             echo "Automatic production deploys are disabled for safety. To allow a deploy, re-run as 'workflow_dispatch' or temporarily set the secret 'ALLOW_PRODUCTION_DEPLOY=true'."
             exit 1
@@ -30,8 +26,9 @@ jobs:
 
       - name: Check Supabase deploy enabled
         id: check-supabase
+        env:
+          ENABLE_DEPLOY: ${{ secrets.ENABLE_SUPABASE_DEPLOY }}
         run: |
-          ENABLE_DEPLOY="${ENABLE_SUPABASE_DEPLOY}"
           if [ "$ENABLE_DEPLOY" = "true" ]; then
             echo "enabled=true" >> $GITHUB_OUTPUT
             echo "Supabase deploy is enabled."
@@ -46,38 +43,35 @@ jobs:
         with:
           node-version: 20
 
-      # Removed DB client install and migrations to reduce CI failures and complexity
-
-      # Use npx instead of installing the Supabase CLI globally in CI
-      # global install via npm is not supported on the Supabase package; using npx keeps the steps reproducible
-
       - name: Supply SUPABASE_ACCESS_TOKEN to job env
         if: steps.check-supabase.outputs.enabled == 'true'
+        env:
+          TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
         run: |
-          echo "SUPABASE_ACCESS_TOKEN=${{ secrets.SUPABASE_ACCESS_TOKEN }}" >> $GITHUB_ENV
-
-      # Removed 'supabase link' and migrations; deploy functions via API bundling using project ref
-
-      # Removed migrations step
+          echo "SUPABASE_ACCESS_TOKEN=$TOKEN" >> $GITHUB_ENV
 
       - name: Deploy Edge Functions
         if: steps.check-supabase.outputs.enabled == 'true'
+        env:
+          PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
         run: |
           for f in supabase/functions/*; do
             if [ -d "$f" ]; then
               fn=$(basename "$f")
               echo "Deploying $fn"
-              npx supabase functions deploy "$fn" --project-ref ${{ secrets.SUPABASE_PROJECT_REF }} --use-api --no-verify-jwt
+              npx supabase functions deploy "$fn" --project-ref "$PROJECT_REF" --use-api --no-verify-jwt
             fi
           done
 
       - name: Set function secrets (Razorpay)
         if: steps.check-supabase.outputs.enabled == 'true'
+        env:
+          RZ_KEY: ${{ secrets.RZ_KEY }}
+          RZ_SECRET: ${{ secrets.RZ_SECRET }}
+          PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
         run: |
-          RZ_KEY="${{ secrets.RZ_KEY }}"
-          RZ_SECRET="${{ secrets.RZ_SECRET }}"
           if [ -n "$RZ_KEY" ] && [ -n "$RZ_SECRET" ]; then
-            npx supabase secrets set RZ_KEY="$RZ_KEY" RZ_SECRET="$RZ_SECRET" --project-ref ${{ secrets.SUPABASE_PROJECT_REF }}
+            npx supabase secrets set RZ_KEY="$RZ_KEY" RZ_SECRET="$RZ_SECRET" --project-ref "$PROJECT_REF"
           else
             echo "RZ_KEY / RZ_SECRET not set; skipping secret set"
           fi
@@ -91,8 +85,9 @@ jobs:
 
       - name: CI guard — prevent accidental production deploys
         if: github.event_name != 'workflow_dispatch'
+        env:
+          ALLOW_DEPLOY: ${{ secrets.ALLOW_PRODUCTION_DEPLOY }}
         run: |
-          ALLOW_DEPLOY="${{ secrets.ALLOW_PRODUCTION_DEPLOY }}"
           if [ "$ALLOW_DEPLOY" != "true" ]; then
             echo "Automatic production deploys are disabled. Re-run via 'workflow_dispatch' or set 'ALLOW_PRODUCTION_DEPLOY=true' temporarily."
             exit 1
@@ -127,16 +122,13 @@ jobs:
             --exclude='**/*.txt' \
             ./ dist/
 
-      # Removed allowlist validation to revert to previous working FTP deploy
-
       - name: FTP Health Check (FTPS)
         env:
           FTP_HOST: ${{ secrets.FTP_HOST }}
           FTP_USER: ${{ secrets.FTP_USER }}
           FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
           FTP_PORT: ${{ secrets.FTP_PORT }}
-          # Optional secret with fallback - may be undefined
-          FTP_SSL_VERIFY: ${{ secrets.FTP_SSL_VERIFY || 'true' }}
+          FTP_SSL_VERIFY: ${{ secrets.FTP_SSL_VERIFY }}
         run: |
           sudo apt-get update && sudo apt-get install -y lftp
           set -e
@@ -152,8 +144,6 @@ jobs:
           name: ftp-scan-report
           path: |
             ftp-healthcheck.log
-
-      # Removed checksum generation to match previous working deploy
 
       - name: FTP Deploy
         uses: 
@@ -174,11 +164,3 @@ jobs:
             dist/**
             **/*.map
             **/*.ts
-
-# Secrets for the workflow:
-# - SUPABASE_ACCESS_TOKEN (supabase CLI token)
-# - SUPABASE_PROJECT_REF (project ref id)
-# - RZ_KEY, RZ_SECRET (Razorpay keys) - stored as GitHub secrets
-# - FTP_HOST, FTP_USER, FTP_PASSWORD
-# Optional FTP secrets: FTP_PUBLIC_DIR (default '/public_html'), FTP_PORT (default 21)
-# Optional hardening: ALLOW_PRODUCTION_DEPLOY (require manual approval), FTP_SSL_VERIFY (default 'true'), ENABLE_SUPABASE_DEPLOY (default 'false')

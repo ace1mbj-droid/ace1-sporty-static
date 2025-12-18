@@ -14,10 +14,10 @@ jobs:
 
       - name: CI guard — prevent accidental production deploys
         if: github.ref == 'refs/heads/main' && github.event_name != 'workflow_dispatch'
+        env:
+          ALLOW_DEPLOY: ${{ secrets.ALLOW_PRODUCTION_DEPLOY }}
         run: |
-          # 'secrets' can't be used in the job/step 'if' expression (causes parse-time errors).
-          # Evaluate the ALLOW_PRODUCTION_DEPLOY secret at runtime instead.
-          if [ "${{ secrets.ALLOW_PRODUCTION_DEPLOY }}" != "true" ]; then
+          if [ "$ALLOW_DEPLOY" != "true" ]; then
             echo "Automatic production deploys are disabled for safety. To allow a deploy, re-run manually as 'workflow_dispatch' or temporarily set the secret 'ALLOW_PRODUCTION_DEPLOY=true'."
             exit 1
           fi
@@ -28,14 +28,18 @@ jobs:
           node-version: 20
 
       - name: Supply SUPABASE_ACCESS_TOKEN to job env
+        env:
+          TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
         run: |
-          echo "SUPABASE_ACCESS_TOKEN=${{ secrets.SUPABASE_ACCESS_TOKEN }}" >> $GITHUB_ENV
+          echo "SUPABASE_ACCESS_TOKEN=$TOKEN" >> $GITHUB_ENV
 
       - name: Link to Supabase project (non-fatal)
         id: link-supabase
+        env:
+          PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
         run: |
           set +e
-          npx supabase link --project-ref ${{ secrets.SUPABASE_PROJECT_REF }}
+          npx supabase link --project-ref "$PROJECT_REF"
           rc=$?
           if [ $rc -eq 0 ]; then
             echo "link_ok=true" >> $GITHUB_OUTPUT
@@ -46,27 +50,32 @@ jobs:
           set -e
 
       - name: Deploy admin-reset function
+        env:
+          PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
         run: |
           echo "Deploying supabase/functions/admin-reset"
-          # Use API based deployment (no Docker) and ensure ref is supplied
-          npx supabase functions deploy admin-reset --project-ref ${{ secrets.SUPABASE_PROJECT_REF }} --use-api --no-verify-jwt
+          npx supabase functions deploy admin-reset --project-ref "$PROJECT_REF" --use-api --no-verify-jwt
 
       - name: Set function secrets (service role key etc.)
+        env:
+          SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          SENDGRID_KEY: ${{ secrets.SENDGRID_API_KEY }}
+          SENDGRID_FROM_ADDR: ${{ secrets.SENDGRID_FROM }}
+          PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
         run: |
-          if [ -n "${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}" ]; then
+          if [ -n "$SERVICE_ROLE_KEY" ]; then
             echo "Setting SUPABASE_SERVICE_ROLE_KEY as function secret"
-            npx supabase secrets set SUPABASE_SERVICE_ROLE_KEY="${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}" --project-ref ${{ secrets.SUPABASE_PROJECT_REF }} || echo "Failed to set SUPABASE_SERVICE_ROLE_KEY"
+            npx supabase secrets set SUPABASE_SERVICE_ROLE_KEY="$SERVICE_ROLE_KEY" --project-ref "$PROJECT_REF" || echo "Failed to set SUPABASE_SERVICE_ROLE_KEY"
           else
             echo "SUPABASE_SERVICE_ROLE_KEY not provided in GitHub secrets; skipping secret set."
           fi
-          # Optionally set SendGrid secrets for post-reset notifications
-          if [ -n "${{ secrets.SENDGRID_API_KEY }}" ]; then
+          if [ -n "$SENDGRID_KEY" ]; then
             echo "Setting SENDGRID_API_KEY as function secret"
-            npx supabase secrets set SENDGRID_API_KEY="${{ secrets.SENDGRID_API_KEY }}" --project-ref ${{ secrets.SUPABASE_PROJECT_REF }} || echo "Failed to set SENDGRID_API_KEY"
+            npx supabase secrets set SENDGRID_API_KEY="$SENDGRID_KEY" --project-ref "$PROJECT_REF" || echo "Failed to set SENDGRID_API_KEY"
           fi
-          if [ -n "${{ secrets.SENDGRID_FROM }}" ]; then
+          if [ -n "$SENDGRID_FROM_ADDR" ]; then
             echo "Setting SENDGRID_FROM as function secret"
-            npx supabase secrets set SENDGRID_FROM="${{ secrets.SENDGRID_FROM }}" --project-ref ${{ secrets.SUPABASE_PROJECT_REF }} || echo "Failed to set SENDGRID_FROM"
+            npx supabase secrets set SENDGRID_FROM="$SENDGRID_FROM_ADDR" --project-ref "$PROJECT_REF" || echo "Failed to set SENDGRID_FROM"
           fi
 
       - name: Update site settings with ADMIN_API_URL (optional)
