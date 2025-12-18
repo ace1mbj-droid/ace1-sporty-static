@@ -5,9 +5,15 @@ on:
     branches: [ main ]
   workflow_dispatch:
 
+env:
+  # Define optional secrets with defaults to avoid linter warnings
+  ENABLE_SUPABASE_DEPLOY: ${{ secrets.ENABLE_SUPABASE_DEPLOY || 'false' }}
+
 jobs:
   supabase:
     runs-on: ubuntu-latest
+    env:
+      SUPABASE_ENABLED: 'false'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -17,14 +23,14 @@ jobs:
         run: |
           # Note: 'secrets' cannot be referenced in the workflow-level 'if' expression (parser error).
           # Instead evaluate the repository secret at runtime in this step.
-          if [ "${{ secrets.ALLOW_PRODUCTION_DEPLOY }}" != "true" ]; then
+          if [ "${{ secrets.ALLOW_PRODUCTION_DEPLOY || 'false' }}" != "true" ]; then
             echo "Automatic production deploys are disabled for safety. To allow a deploy, re-run as 'workflow_dispatch' or temporarily set the secret 'ALLOW_PRODUCTION_DEPLOY=true'."
             exit 1
           fi
 
       - name: Check Supabase deploy enabled
         run: |
-          if [ "${{ secrets.ENABLE_SUPABASE_DEPLOY }}" = "true" ]; then
+          if [ "${{ secrets.ENABLE_SUPABASE_DEPLOY || 'false' }}" = "true" ]; then
             echo "SUPABASE_ENABLED=true" >> $GITHUB_ENV
             echo "Supabase deploy is enabled."
           else
@@ -33,7 +39,7 @@ jobs:
           fi
 
       - name: Use Node
-        if: ${{ env.SUPABASE_ENABLED == 'true' }}
+        if: env.SUPABASE_ENABLED == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: 20
@@ -44,7 +50,7 @@ jobs:
       # global install via npm is not supported on the Supabase package; using npx keeps the steps reproducible
 
       - name: Supply SUPABASE_ACCESS_TOKEN to job env
-        if: ${{ env.SUPABASE_ENABLED == 'true' }}
+        if: env.SUPABASE_ENABLED == 'true'
         run: |
           echo "SUPABASE_ACCESS_TOKEN=${{ secrets.SUPABASE_ACCESS_TOKEN }}" >> $GITHUB_ENV
 
@@ -53,7 +59,7 @@ jobs:
       # Removed migrations step
 
       - name: Deploy Edge Functions
-        if: ${{ env.SUPABASE_ENABLED == 'true' }}
+        if: env.SUPABASE_ENABLED == 'true'
         run: |
           for f in supabase/functions/*; do
             if [ -d "$f" ]; then
@@ -64,7 +70,7 @@ jobs:
           done
 
       - name: Set function secrets (Razorpay)
-        if: ${{ env.SUPABASE_ENABLED == 'true' }}
+        if: env.SUPABASE_ENABLED == 'true'
         run: |
           if [ -n "${{ secrets.RZ_KEY }}" ] && [ -n "${{ secrets.RZ_SECRET }}" ]; then
             npx supabase secrets set RZ_KEY="${{ secrets.RZ_KEY }}" RZ_SECRET="${{ secrets.RZ_SECRET }}" --project-ref ${{ secrets.SUPABASE_PROJECT_REF }}
@@ -123,8 +129,8 @@ jobs:
           FTP_HOST: ${{ secrets.FTP_HOST }}
           FTP_USER: ${{ secrets.FTP_USER }}
           FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
-          FTP_PORT: ${{ secrets.FTP_PORT }}
-          FTP_SSL_VERIFY: ${{ secrets.FTP_SSL_VERIFY }}
+          FTP_PORT: ${{ secrets.FTP_PORT || '21' }}
+          FTP_SSL_VERIFY: ${{ secrets.FTP_SSL_VERIFY || 'true' }}
         run: |
           sudo apt-get update && sudo apt-get install -y lftp
           set -e
