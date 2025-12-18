@@ -1232,6 +1232,288 @@ class AdminPanel {
         }
     }
 
+    // ==================== EXCEL EXPORT ====================
+    
+    showExportOrdersModal() {
+        const modal = document.getElementById('export-orders-modal');
+        if (!modal) {
+            console.error('Export modal not found');
+            return;
+        }
+        
+        // Set default dates (last 30 days)
+        const today = new Date();
+        const thirtyDaysAgo = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
+        
+        document.getElementById('export-date-to').value = today.toISOString().split('T')[0];
+        document.getElementById('export-date-from').value = thirtyDaysAgo.toISOString().split('T')[0];
+        document.getElementById('export-status-filter').value = 'all';
+        document.getElementById('export-include-items').checked = true;
+        
+        // Update preview count
+        this.updateExportPreview();
+        
+        // Add event listeners for live preview
+        document.getElementById('export-date-from').onchange = () => this.updateExportPreview();
+        document.getElementById('export-date-to').onchange = () => this.updateExportPreview();
+        document.getElementById('export-status-filter').onchange = () => this.updateExportPreview();
+        
+        modal.classList.add('active');
+    }
+    
+    async updateExportPreview() {
+        const fromDate = document.getElementById('export-date-from').value;
+        const toDate = document.getElementById('export-date-to').value;
+        const status = document.getElementById('export-status-filter').value;
+        
+        try {
+            let query = this.supabase
+                .from('orders')
+                .select('id', { count: 'exact', head: true });
+            
+            if (fromDate) {
+                query = query.gte('created_at', fromDate + 'T00:00:00');
+            }
+            if (toDate) {
+                query = query.lte('created_at', toDate + 'T23:59:59');
+            }
+            if (status && status !== 'all') {
+                query = query.eq('payment_status', status);
+            }
+            
+            const { count, error } = await query;
+            
+            if (error) throw error;
+            
+            document.getElementById('export-count').textContent = count || 0;
+        } catch (err) {
+            console.error('Error getting export preview:', err);
+            document.getElementById('export-count').textContent = '?';
+        }
+    }
+    
+    async exportOrdersToExcel() {
+        const fromDate = document.getElementById('export-date-from').value;
+        const toDate = document.getElementById('export-date-to').value;
+        const status = document.getElementById('export-status-filter').value;
+        const includeItems = document.getElementById('export-include-items').checked;
+        
+        try {
+            // Show loading state
+            const downloadBtn = document.querySelector('#export-orders-modal .btn-success');
+            const originalText = downloadBtn.innerHTML;
+            downloadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
+            downloadBtn.disabled = true;
+            
+            // Build query with order items if requested
+            let selectQuery = `
+                id,
+                created_at,
+                updated_at,
+                user_id,
+                total_amount,
+                subtotal,
+                tax,
+                shipping,
+                discount,
+                payment_method,
+                payment_status,
+                status,
+                shipping_address,
+                admin_notes
+            `;
+            
+            if (includeItems) {
+                selectQuery += `,
+                    order_items(
+                        id,
+                        product_id,
+                        quantity,
+                        price,
+                        size,
+                        color,
+                        products(name)
+                    )
+                `;
+            }
+            
+            let query = this.supabase
+                .from('orders')
+                .select(selectQuery)
+                .order('created_at', { ascending: false });
+            
+            if (fromDate) {
+                query = query.gte('created_at', fromDate + 'T00:00:00');
+            }
+            if (toDate) {
+                query = query.lte('created_at', toDate + 'T23:59:59');
+            }
+            if (status && status !== 'all') {
+                query = query.eq('payment_status', status);
+            }
+            
+            const { data: orders, error } = await query;
+            
+            if (error) throw error;
+            
+            if (!orders || orders.length === 0) {
+                alert('No orders found for the selected criteria');
+                downloadBtn.innerHTML = originalText;
+                downloadBtn.disabled = false;
+                return;
+            }
+            
+            // Create workbook
+            const wb = XLSX.utils.book_new();
+            
+            // Create Orders Summary sheet
+            const ordersData = orders.map(order => {
+                const addr = order.shipping_address || {};
+                return {
+                    'Order ID': order.id,
+                    'Date': new Date(order.created_at).toLocaleString('en-IN'),
+                    'Customer Name': `${addr.firstName || ''} ${addr.lastName || ''}`.trim() || 'N/A',
+                    'Email': addr.email || 'N/A',
+                    'Phone': addr.phone || 'N/A',
+                    'Address': `${addr.address || ''}, ${addr.city || ''}, ${addr.state || ''} ${addr.zipCode || ''}`.trim(),
+                    'Subtotal (₹)': parseFloat(order.subtotal || 0).toFixed(2),
+                    'Tax (₹)': parseFloat(order.tax || 0).toFixed(2),
+                    'Shipping (₹)': parseFloat(order.shipping || 0).toFixed(2),
+                    'Discount (₹)': parseFloat(order.discount || 0).toFixed(2),
+                    'Total (₹)': parseFloat(order.total_amount || 0).toFixed(2),
+                    'Payment Method': order.payment_method || 'N/A',
+                    'Payment Status': order.payment_status || 'N/A',
+                    'Order Status': order.status || 'N/A',
+                    'Admin Notes': order.admin_notes || '',
+                    'Last Updated': order.updated_at ? new Date(order.updated_at).toLocaleString('en-IN') : 'N/A'
+                };
+            });
+            
+            const wsOrders = XLSX.utils.json_to_sheet(ordersData);
+            
+            // Set column widths
+            wsOrders['!cols'] = [
+                { wch: 38 }, // Order ID
+                { wch: 20 }, // Date
+                { wch: 20 }, // Customer Name
+                { wch: 25 }, // Email
+                { wch: 15 }, // Phone
+                { wch: 40 }, // Address
+                { wch: 12 }, // Subtotal
+                { wch: 10 }, // Tax
+                { wch: 12 }, // Shipping
+                { wch: 12 }, // Discount
+                { wch: 12 }, // Total
+                { wch: 15 }, // Payment Method
+                { wch: 15 }, // Payment Status
+                { wch: 15 }, // Order Status
+                { wch: 30 }, // Admin Notes
+                { wch: 20 }  // Last Updated
+            ];
+            
+            XLSX.utils.book_append_sheet(wb, wsOrders, 'Orders Summary');
+            
+            // Create Order Items sheet if requested
+            if (includeItems) {
+                const itemsData = [];
+                orders.forEach(order => {
+                    const addr = order.shipping_address || {};
+                    (order.order_items || []).forEach(item => {
+                        itemsData.push({
+                            'Order ID': order.id,
+                            'Order Date': new Date(order.created_at).toLocaleString('en-IN'),
+                            'Customer Name': `${addr.firstName || ''} ${addr.lastName || ''}`.trim() || 'N/A',
+                            'Product Name': item.products?.name || 'Unknown Product',
+                            'Size': item.size || 'N/A',
+                            'Color': item.color || 'N/A',
+                            'Quantity': item.quantity || 1,
+                            'Unit Price (₹)': parseFloat(item.price || 0).toFixed(2),
+                            'Line Total (₹)': (parseFloat(item.price || 0) * (item.quantity || 1)).toFixed(2),
+                            'Order Total (₹)': parseFloat(order.total_amount || 0).toFixed(2),
+                            'Payment Status': order.payment_status || 'N/A'
+                        });
+                    });
+                });
+                
+                if (itemsData.length > 0) {
+                    const wsItems = XLSX.utils.json_to_sheet(itemsData);
+                    wsItems['!cols'] = [
+                        { wch: 38 }, // Order ID
+                        { wch: 20 }, // Order Date
+                        { wch: 20 }, // Customer Name
+                        { wch: 30 }, // Product Name
+                        { wch: 10 }, // Size
+                        { wch: 10 }, // Color
+                        { wch: 10 }, // Quantity
+                        { wch: 15 }, // Unit Price
+                        { wch: 15 }, // Line Total
+                        { wch: 15 }, // Order Total
+                        { wch: 15 }  // Payment Status
+                    ];
+                    XLSX.utils.book_append_sheet(wb, wsItems, 'Order Items');
+                }
+            }
+            
+            // Create Statistics sheet
+            const totalOrders = orders.length;
+            const totalRevenue = orders.reduce((sum, o) => sum + parseFloat(o.total_amount || 0), 0);
+            const statusCounts = {};
+            orders.forEach(o => {
+                const st = o.payment_status || 'unknown';
+                statusCounts[st] = (statusCounts[st] || 0) + 1;
+            });
+            
+            const statsData = [
+                { 'Metric': 'Total Orders', 'Value': totalOrders },
+                { 'Metric': 'Total Revenue (₹)', 'Value': totalRevenue.toFixed(2) },
+                { 'Metric': 'Average Order Value (₹)', 'Value': (totalRevenue / totalOrders).toFixed(2) },
+                { 'Metric': '---', 'Value': '---' },
+                { 'Metric': 'Status Breakdown', 'Value': '' },
+                ...Object.entries(statusCounts).map(([status, count]) => ({
+                    'Metric': `  ${status}`,
+                    'Value': count
+                })),
+                { 'Metric': '---', 'Value': '---' },
+                { 'Metric': 'Export Date', 'Value': new Date().toLocaleString('en-IN') },
+                { 'Metric': 'Date Range', 'Value': `${fromDate || 'All'} to ${toDate || 'All'}` },
+                { 'Metric': 'Status Filter', 'Value': status || 'All' }
+            ];
+            
+            const wsStats = XLSX.utils.json_to_sheet(statsData);
+            wsStats['!cols'] = [{ wch: 25 }, { wch: 20 }];
+            XLSX.utils.book_append_sheet(wb, wsStats, 'Statistics');
+            
+            // Generate filename
+            const dateStr = new Date().toISOString().split('T')[0];
+            const filename = `Ace1_Orders_${dateStr}.xlsx`;
+            
+            // Download file
+            XLSX.writeFile(wb, filename);
+            
+            // Reset button
+            downloadBtn.innerHTML = originalText;
+            downloadBtn.disabled = false;
+            
+            // Close modal
+            document.getElementById('export-orders-modal').classList.remove('active');
+            
+            if (window.showNotification) {
+                window.showNotification(`Exported ${orders.length} orders to ${filename}`, 'success');
+            }
+            
+        } catch (err) {
+            console.error('Error exporting orders:', err);
+            alert('Error exporting orders: ' + (err.message || 'Unknown error'));
+            
+            // Reset button
+            const downloadBtn = document.querySelector('#export-orders-modal .btn-success');
+            if (downloadBtn) {
+                downloadBtn.innerHTML = '<i class="fas fa-download"></i> Download Excel';
+                downloadBtn.disabled = false;
+            }
+        }
+    }
+
     async viewOrder(orderId) {
         const order = this.orders.find(o => o.id === orderId);
         if (!order) return;
