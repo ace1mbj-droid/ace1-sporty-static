@@ -264,34 +264,37 @@ class AdminExtended {
     // ========================================
     async loadCustomers() {
         try {
-            // Get users from auth.users and count their orders
-            const { data: authUsers, error: authError } = await this.supabase.auth.admin.listUsers();
-            
-            if (authError) throw authError;
-            
-            // Get order counts per user
+            // Get all orders with customer email from shipping address
             const { data: orders, error: ordersError } = await this.supabase
                 .from('orders')
-                .select('user_id, id');
+                .select('id, user_id, created_at, shipping_address, total_cents')
+                .order('created_at', { ascending: false });
             
             if (ordersError) throw ordersError;
             
-            // Map orders count to users
-            const orderCounts = {};
+            // Group orders by user_id and extract unique customers
+            const customersMap = {};
             (orders || []).forEach(order => {
-                if (order.user_id) {
-                    orderCounts[order.user_id] = (orderCounts[order.user_id] || 0) + 1;
+                const userId = order.user_id || 'guest';
+                const email = order.shipping_address?.email || 'Unknown';
+                
+                if (!customersMap[userId]) {
+                    customersMap[userId] = {
+                        id: userId,
+                        email: email,
+                        created_at: order.created_at,
+                        last_order_date: order.created_at,
+                        order_count: 0,
+                        total_spent: 0
+                    };
                 }
+                
+                customersMap[userId].order_count += 1;
+                customersMap[userId].total_spent += (order.total_cents || 0) / 100;
+                customersMap[userId].last_order_date = order.created_at;
             });
             
-            // Combine user data with order counts
-            const customersData = (authUsers?.users || []).map(user => ({
-                id: user.id,
-                email: user.email,
-                created_at: user.created_at,
-                last_sign_in_at: user.last_sign_in_at,
-                order_count: orderCounts[user.id] || 0
-            }));
+            const customersData = Object.values(customersMap);
             
             // Update customer stats
             this.updateCustomerStats(customersData);
@@ -311,7 +314,7 @@ class AdminExtended {
         
         const total = customers?.length || 0;
         const newThisMonth = customers?.filter(c => new Date(c.created_at) >= startOfMonth).length || 0;
-        const activeRecently = customers?.filter(c => c.last_sign_in_at && new Date(c.last_sign_in_at) >= thirtyDaysAgo).length || 0;
+        const activeRecently = customers?.filter(c => c.last_order_date && new Date(c.last_order_date) >= thirtyDaysAgo).length || 0;
         const withOrders = customers?.filter(c => c.order_count > 0).length || 0;
         
         const totalEl = document.getElementById('customers-total');
@@ -332,16 +335,12 @@ class AdminExtended {
         const rows = customers.map(customer => `
             <tr>
                 <td style="padding:12px;border-bottom:1px solid #eee;">
-                    <div class="customer-info" style="display:flex;align-items:center;gap:10px;">
-                        <div>
-                            <strong>${customer.email}</strong><br>
-                            <small style="color:#666;">${customer.email}</small>
-                        </div>
-                    </div>
+                    <strong>${customer.email}</strong>
                 </td>
-                <td style="padding:12px;border-bottom:1px solid #eee;">${customer.order_count} orders</td>
+                <td style="padding:12px;border-bottom:1px solid #eee;">${customer.order_count}</td>
+                <td style="padding:12px;border-bottom:1px solid #eee;">₹${customer.total_spent.toLocaleString('en-IN', {maximumFractionDigits: 2})}</td>
                 <td style="padding:12px;border-bottom:1px solid #eee;">${new Date(customer.created_at).toLocaleDateString()}</td>
-                <td style="padding:12px;border-bottom:1px solid #eee;">${customer.last_sign_in_at ? new Date(customer.last_sign_in_at).toLocaleDateString() : 'Never'}</td>
+                <td style="padding:12px;border-bottom:1px solid #eee;">${new Date(customer.last_order_date).toLocaleDateString()}</td>
                 <td style="padding:12px;border-bottom:1px solid #eee;">
                     <button class="btn-sm btn-primary" onclick="adminExtended.viewCustomerDetails('${customer.id}')" style="padding:5px 10px;margin:2px;cursor:pointer;">
                         <i class="fas fa-eye"></i>
@@ -356,13 +355,14 @@ class AdminExtended {
                     <tr style="background:#f5f5f5;">
                         <th style="padding:12px;text-align:left;border-bottom:2px solid #ddd;">Email</th>
                         <th style="padding:12px;text-align:left;border-bottom:2px solid #ddd;">Orders</th>
-                        <th style="padding:12px;text-align:left;border-bottom:2px solid #ddd;">Joined</th>
-                        <th style="padding:12px;text-align:left;border-bottom:2px solid #ddd;">Last Login</th>
+                        <th style="padding:12px;text-align:left;border-bottom:2px solid #ddd;">Total Spent</th>
+                        <th style="padding:12px;text-align:left;border-bottom:2px solid #ddd;">First Order</th>
+                        <th style="padding:12px;text-align:left;border-bottom:2px solid #ddd;">Last Order</th>
                         <th style="padding:12px;text-align:left;border-bottom:2px solid #ddd;">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
-                    ${rows || '<tr><td colspan="5" style="padding:20px;text-align:center;">No customers found</td></tr>'}
+                    ${rows || '<tr><td colspan="6" style="padding:20px;text-align:center;">No customers found</td></tr>'}
                 </tbody>
             </table>
         `;
