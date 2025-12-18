@@ -1328,10 +1328,9 @@ class AdminPanel {
                     order_items(
                         id,
                         product_id,
-                        quantity,
-                        price,
+                        qty,
+                        price_cents,
                         size,
-                        color,
                         products(name)
                     )
                 `;
@@ -1425,10 +1424,9 @@ class AdminPanel {
                             'Customer Name': `${addr.firstName || ''} ${addr.lastName || ''}`.trim() || 'N/A',
                             'Product Name': item.products?.name || 'Unknown Product',
                             'Size': item.size || 'N/A',
-                            'Color': item.color || 'N/A',
-                            'Quantity': item.quantity || 1,
-                            'Unit Price (₹)': parseFloat(item.price || 0).toFixed(2),
-                            'Line Total (₹)': (parseFloat(item.price || 0) * (item.quantity || 1)).toFixed(2),
+                            'Quantity': item.qty || 1,
+                            'Unit Price (₹)': (item.price_cents || 0 / 100).toFixed(2),
+                            'Line Total (₹)': ((item.price_cents || 0) / 100 * (item.qty || 1)).toFixed(2),
                             'Order Total (₹)': parseFloat(order.total_amount || 0).toFixed(2),
                             'Payment Status': order.payment_status || 'N/A'
                         });
@@ -1443,7 +1441,6 @@ class AdminPanel {
                         { wch: 20 }, // Customer Name
                         { wch: 30 }, // Product Name
                         { wch: 10 }, // Size
-                        { wch: 10 }, // Color
                         { wch: 10 }, // Quantity
                         { wch: 15 }, // Unit Price
                         { wch: 15 }, // Line Total
