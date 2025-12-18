@@ -5,15 +5,11 @@ on:
     branches: [ main ]
   workflow_dispatch:
 
-env:
-  # Define optional secrets with defaults to avoid linter warnings
-  ENABLE_SUPABASE_DEPLOY: ${{ secrets.ENABLE_SUPABASE_DEPLOY || 'false' }}
-
 jobs:
   supabase:
     runs-on: ubuntu-latest
-    env:
-      SUPABASE_ENABLED: 'false'
+    outputs:
+      supabase_enabled: ${{ steps.check-supabase.outputs.enabled }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -23,23 +19,24 @@ jobs:
         run: |
           # Note: 'secrets' cannot be referenced in the workflow-level 'if' expression (parser error).
           # Instead evaluate the repository secret at runtime in this step.
-          if [ "${{ secrets.ALLOW_PRODUCTION_DEPLOY || 'false' }}" != "true" ]; then
+          if [ "${{ secrets.ALLOW_PRODUCTION_DEPLOY }}" != "true" ]; then
             echo "Automatic production deploys are disabled for safety. To allow a deploy, re-run as 'workflow_dispatch' or temporarily set the secret 'ALLOW_PRODUCTION_DEPLOY=true'."
             exit 1
           fi
 
       - name: Check Supabase deploy enabled
+        id: check-supabase
         run: |
-          if [ "${{ secrets.ENABLE_SUPABASE_DEPLOY || 'false' }}" = "true" ]; then
-            echo "SUPABASE_ENABLED=true" >> $GITHUB_ENV
+          if [ "${{ secrets.ENABLE_SUPABASE_DEPLOY }}" = "true" ]; then
+            echo "enabled=true" >> $GITHUB_OUTPUT
             echo "Supabase deploy is enabled."
           else
-            echo "SUPABASE_ENABLED=false" >> $GITHUB_ENV
+            echo "enabled=false" >> $GITHUB_OUTPUT
             echo "Supabase deploy disabled; skipping Supabase steps."
           fi
 
       - name: Use Node
-        if: env.SUPABASE_ENABLED == 'true'
+        if: steps.check-supabase.outputs.enabled == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: 20
@@ -50,7 +47,7 @@ jobs:
       # global install via npm is not supported on the Supabase package; using npx keeps the steps reproducible
 
       - name: Supply SUPABASE_ACCESS_TOKEN to job env
-        if: env.SUPABASE_ENABLED == 'true'
+        if: steps.check-supabase.outputs.enabled == 'true'
         run: |
           echo "SUPABASE_ACCESS_TOKEN=${{ secrets.SUPABASE_ACCESS_TOKEN }}" >> $GITHUB_ENV
 
@@ -59,7 +56,7 @@ jobs:
       # Removed migrations step
 
       - name: Deploy Edge Functions
-        if: env.SUPABASE_ENABLED == 'true'
+        if: steps.check-supabase.outputs.enabled == 'true'
         run: |
           for f in supabase/functions/*; do
             if [ -d "$f" ]; then
@@ -70,7 +67,7 @@ jobs:
           done
 
       - name: Set function secrets (Razorpay)
-        if: env.SUPABASE_ENABLED == 'true'
+        if: steps.check-supabase.outputs.enabled == 'true'
         run: |
           if [ -n "${{ secrets.RZ_KEY }}" ] && [ -n "${{ secrets.RZ_SECRET }}" ]; then
             npx supabase secrets set RZ_KEY="${{ secrets.RZ_KEY }}" RZ_SECRET="${{ secrets.RZ_SECRET }}" --project-ref ${{ secrets.SUPABASE_PROJECT_REF }}
