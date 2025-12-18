@@ -36,6 +36,55 @@ let cartLoaded = false;
     }
 })();
 
+// ===================================
+// CATEGORY SYNC (FOOTER SHOP LINKS)
+// ===================================
+async function syncFooterShopLinks() {
+    try {
+        const supabase = window.getSupabase ? window.getSupabase() : null;
+        if (!supabase) return;
+
+        const { data: categories, error } = await supabase
+            .from('categories')
+            .select('name, slug')
+            .order('name');
+
+        if (error) throw error;
+
+        const cats = (categories || [])
+            .map(c => ({
+                name: c.name,
+                slug: String(c.slug || c.name || '').trim().toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9\-]/g, '').replace(/\-+/g, '-')
+            }))
+            .filter(c => c.slug);
+
+        // If products page provides an explicit hook, prefer that
+        const explicit = document.getElementById('footer-shop-links');
+        if (explicit) {
+            explicit.innerHTML = `<li><a href="products.html">All Products</a></li>` +
+                cats.map(c => `<li><a href="products.html?category=${encodeURIComponent(c.slug)}">${c.name || c.slug}</a></li>`).join('');
+        }
+
+        // Otherwise, update any footer column titled "Shop"
+        document.querySelectorAll('.footer .footer-column').forEach(col => {
+            const title = col.querySelector('h4');
+            const ul = col.querySelector('ul');
+            if (!title || !ul) return;
+            if (title.textContent.trim().toLowerCase() !== 'shop') return;
+
+            ul.innerHTML = `<li><a href="products.html">All Products</a></li>` +
+                cats.map(c => `<li><a href="products.html?category=${encodeURIComponent(c.slug)}">${c.name || c.slug}</a></li>`).join('');
+        });
+    } catch (err) {
+        console.warn('⚠️ Footer category sync skipped:', err);
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    // Best-effort sync; if Supabase is unavailable on a page, it simply no-ops.
+    syncFooterShopLinks();
+});
+
 // Generate session ID for anonymous users (stored in sessionStorage for current tab)
 function generateSessionId() {
     const sessionId = 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
