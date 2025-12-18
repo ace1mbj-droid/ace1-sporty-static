@@ -264,21 +264,40 @@ class AdminExtended {
     // ========================================
     async loadCustomers() {
         try {
-            const { data, error } = await this.supabase
-                .from('users')
-                .select(`
-                    *,
-                    orders(count)
-                `)
-                .order('created_at', { ascending: false });
-
-            if (error) throw error;
+            // Get users from auth.users and count their orders
+            const { data: authUsers, error: authError } = await this.supabase.auth.admin.listUsers();
+            
+            if (authError) throw authError;
+            
+            // Get order counts per user
+            const { data: orders, error: ordersError } = await this.supabase
+                .from('orders')
+                .select('user_id, id');
+            
+            if (ordersError) throw ordersError;
+            
+            // Map orders count to users
+            const orderCounts = {};
+            (orders || []).forEach(order => {
+                if (order.user_id) {
+                    orderCounts[order.user_id] = (orderCounts[order.user_id] || 0) + 1;
+                }
+            });
+            
+            // Combine user data with order counts
+            const customersData = (authUsers?.users || []).map(user => ({
+                id: user.id,
+                email: user.email,
+                created_at: user.created_at,
+                last_sign_in_at: user.last_sign_in_at,
+                order_count: orderCounts[user.id] || 0
+            }));
             
             // Update customer stats
-            this.updateCustomerStats(data);
+            this.updateCustomerStats(customersData);
             
-            this.renderCustomersTable(data);
-            return data;
+            this.renderCustomersTable(customersData);
+            return customersData;
         } catch (error) {
             console.error('Error loading customers:', error);
             showNotification('Failed to load customers', 'error');
@@ -292,8 +311,8 @@ class AdminExtended {
         
         const total = customers?.length || 0;
         const newThisMonth = customers?.filter(c => new Date(c.created_at) >= startOfMonth).length || 0;
-        const activeRecently = customers?.filter(c => c.last_login && new Date(c.last_login) >= thirtyDaysAgo).length || 0;
-        const withOrders = customers?.filter(c => c.orders?.[0]?.count > 0).length || 0;
+        const activeRecently = customers?.filter(c => c.last_sign_in_at && new Date(c.last_sign_in_at) >= thirtyDaysAgo).length || 0;
+        const withOrders = customers?.filter(c => c.order_count > 0).length || 0;
         
         const totalEl = document.getElementById('customers-total');
         const newEl = document.getElementById('customers-new');
@@ -314,23 +333,18 @@ class AdminExtended {
             <tr>
                 <td style="padding:12px;border-bottom:1px solid #eee;">
                     <div class="customer-info" style="display:flex;align-items:center;gap:10px;">
-                        <img src="${customer.avatar || 'images/placeholder.jpg'}" alt="" class="customer-avatar" style="width:40px;height:40px;border-radius:50%;object-fit:cover;">
                         <div>
-                            <strong>${customer.first_name || ''} ${customer.last_name || ''}</strong><br>
+                            <strong>${customer.email}</strong><br>
                             <small style="color:#666;">${customer.email}</small>
                         </div>
                     </div>
                 </td>
-                <td style="padding:12px;border-bottom:1px solid #eee;">${customer.phone || '-'}</td>
-                <td style="padding:12px;border-bottom:1px solid #eee;">${customer.orders?.[0]?.count || 0} orders</td>
+                <td style="padding:12px;border-bottom:1px solid #eee;">${customer.order_count} orders</td>
                 <td style="padding:12px;border-bottom:1px solid #eee;">${new Date(customer.created_at).toLocaleDateString()}</td>
-                <td style="padding:12px;border-bottom:1px solid #eee;">${customer.last_login ? new Date(customer.last_login).toLocaleDateString() : 'Never'}</td>
+                <td style="padding:12px;border-bottom:1px solid #eee;">${customer.last_sign_in_at ? new Date(customer.last_sign_in_at).toLocaleDateString() : 'Never'}</td>
                 <td style="padding:12px;border-bottom:1px solid #eee;">
                     <button class="btn-sm btn-primary" onclick="adminExtended.viewCustomerDetails('${customer.id}')" style="padding:5px 10px;margin:2px;cursor:pointer;">
                         <i class="fas fa-eye"></i>
-                    </button>
-                    <button class="btn-sm btn-secondary" onclick="adminExtended.addCustomerNote('${customer.id}')" style="padding:5px 10px;margin:2px;cursor:pointer;">
-                        <i class="fas fa-sticky-note"></i>
                     </button>
                 </td>
             </tr>
@@ -340,8 +354,7 @@ class AdminExtended {
             <table class="admin-table" style="width:100%;border-collapse:collapse;">
                 <thead>
                     <tr style="background:#f5f5f5;">
-                        <th style="padding:12px;text-align:left;border-bottom:2px solid #ddd;">Customer</th>
-                        <th style="padding:12px;text-align:left;border-bottom:2px solid #ddd;">Phone</th>
+                        <th style="padding:12px;text-align:left;border-bottom:2px solid #ddd;">Email</th>
                         <th style="padding:12px;text-align:left;border-bottom:2px solid #ddd;">Orders</th>
                         <th style="padding:12px;text-align:left;border-bottom:2px solid #ddd;">Joined</th>
                         <th style="padding:12px;text-align:left;border-bottom:2px solid #ddd;">Last Login</th>
@@ -349,7 +362,7 @@ class AdminExtended {
                     </tr>
                 </thead>
                 <tbody>
-                    ${rows || '<tr><td colspan="6" style="padding:20px;text-align:center;">No customers found</td></tr>'}
+                    ${rows || '<tr><td colspan="5" style="padding:20px;text-align:center;">No customers found</td></tr>'}
                 </tbody>
             </table>
         `;
