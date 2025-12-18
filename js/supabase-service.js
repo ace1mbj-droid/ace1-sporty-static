@@ -352,26 +352,28 @@ class SupabaseService {
                     return { success: true, cart: [] };
                 }
                 
-                const { data, error } = await this.supabase
-                    .from('shopping_carts')
-                    .select(`
-                        *,
-                        products (
-                            id,
-                            name,
-                            price_cents,
-                            image_url,
-                            product_images (
-                                storage_path
-                            ),
-                            inventory (
-                                stock
-                            )
-                        )
-                    `)
-                    .eq('session_id', sessionId);
+                // Use Edge Function to properly handle session variables for RLS
+                const response = await fetch('https://vorqavsuqcjnkjzwkyzr.supabase.co/functions/v1/get_cart_with_session', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${this.supabase.supabaseKey}`
+                    },
+                    body: JSON.stringify({ session_id: sessionId })
+                });
                 
-                return { success: true, cart: [] };
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result.success) {
+                        return { success: true, cart: result.data };
+                    } else {
+                        console.error('Cart load error:', result.error);
+                        return { success: true, cart: [] };
+                    }
+                } else {
+                    console.error('Cart load failed:', response.status);
+                    return { success: true, cart: [] };
+                }
             }
 
             const { data, error } = await this.supabase

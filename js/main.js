@@ -840,14 +840,35 @@ async function loadCartFromDatabase() {
                 data = result.data;
             }
         } else {
-            // Anonymous user - load by session_id
-            const result = await supabase
-                .from('shopping_carts')
-                .select(`
-                    *,
-                    products (id, name, price_cents, image_url, inventory(stock, size))
-                `)
-                .eq('session_id', cartSessionId);
+            // Anonymous user - load by session_id using Edge Function
+            const cartSessionId = sessionStorage.getItem('ace1_session_id');
+            
+            if (!cartSessionId) {
+                data = [];
+            } else {
+                // Use Edge Function to properly handle session variables for RLS
+                const response = await fetch(`https://vorqavsuqcjnkjzwkyzr.supabase.co/functions/v1/get_cart_with_session`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${supabase.supabaseKey}`
+                    },
+                    body: JSON.stringify({ session_id: cartSessionId })
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result.success) {
+                        data = result.data;
+                    } else {
+                        console.error('Cart load error:', result.error);
+                        data = [];
+                    }
+                } else {
+                    console.error('Cart load failed:', response.status);
+                    data = [];
+                }
+            }
         }
         
         if (data && data.length > 0) {
