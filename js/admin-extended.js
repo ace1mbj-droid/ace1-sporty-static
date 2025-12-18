@@ -696,26 +696,56 @@ class AdminExtended {
     // ========================================
     async loadAnalytics() {
         try {
+            const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+            
             // Get orders for analytics
             const { data: orders } = await this.supabase
                 .from('orders')
                 .select('*')
-                .gte('created_at', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString());
+                .gte('created_at', thirtyDaysAgo);
 
             const { data: products } = await this.supabase
                 .from('order_items')
                 .select('product_id, qty, product:products(name, category)')
-                .gte('created_at', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString());
+                .gte('created_at', thirtyDaysAgo);
 
-            this.renderAnalytics(orders, products);
+            // Get page views for footfall analytics
+            const { data: pageViews, error: pvError } = await this.supabase
+                .from('page_views')
+                .select('visitor_id, device_type, page_url, created_at')
+                .gte('created_at', thirtyDaysAgo);
+
+            if (pvError) {
+                console.warn('Could not load page views:', pvError.message);
+            }
+
+            this.renderAnalytics(orders, products, pageViews);
         } catch (error) {
             console.error('Error loading analytics:', error);
         }
     }
 
-    renderAnalytics(orders, products) {
+    renderAnalytics(orders, products, pageViews) {
         const container = document.getElementById('analytics-table-container');
         if (!container) return;
+
+        // Calculate footfall metrics
+        const totalPageViews = pageViews?.length || 0;
+        const uniqueVisitors = new Set(pageViews?.map(pv => pv.visitor_id) || []).size;
+        const mobileViews = pageViews?.filter(pv => pv.device_type === 'mobile').length || 0;
+        const mobilePercentage = totalPageViews > 0 ? ((mobileViews / totalPageViews) * 100).toFixed(1) : 0;
+        const avgPagesPerVisit = uniqueVisitors > 0 ? (totalPageViews / uniqueVisitors).toFixed(1) : 0;
+
+        // Update footfall stat cards
+        const pvEl = document.getElementById('analytics-pageviews');
+        const visitorsEl = document.getElementById('analytics-visitors');
+        const mobileEl = document.getElementById('analytics-mobile');
+        const pagesPerVisitEl = document.getElementById('analytics-pages-per-visit');
+
+        if (pvEl) pvEl.textContent = totalPageViews.toLocaleString();
+        if (visitorsEl) visitorsEl.textContent = uniqueVisitors.toLocaleString();
+        if (mobileEl) mobileEl.textContent = `${mobilePercentage}%`;
+        if (pagesPerVisitEl) pagesPerVisitEl.textContent = avgPagesPerVisit;
 
         const totalRevenue = orders?.reduce((sum, o) => sum + (o.total_cents || 0), 0) || 0;
         const avgOrderValue = orders?.length ? totalRevenue / orders.length : 0;
@@ -738,6 +768,24 @@ class AdminExtended {
             .sort((a, b) => b[1] - a[1])
             .slice(0, 5);
 
+        // Top pages by views
+        const pageViewCounts = {};
+        pageViews?.forEach(pv => {
+            const url = pv.page_url || '/';
+            pageViewCounts[url] = (pageViewCounts[url] || 0) + 1;
+        });
+        const topPages = Object.entries(pageViewCounts)
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 5);
+
+        // Device breakdown
+        const deviceCounts = { desktop: 0, mobile: 0, tablet: 0 };
+        pageViews?.forEach(pv => {
+            if (pv.device_type && deviceCounts.hasOwnProperty(pv.device_type)) {
+                deviceCounts[pv.device_type]++;
+            }
+        });
+
         container.innerHTML = `
             <div class="analytics-grid" style="display:grid;grid-template-columns:repeat(4, 1fr);gap:15px;margin-bottom:25px;">
                 <div class="analytics-card" style="border:1px solid #eee;border-radius:8px;padding:20px;text-align:center;background:white;">
@@ -758,7 +806,7 @@ class AdminExtended {
                 </div>
             </div>
             
-            <div class="analytics-charts" style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+            <div class="analytics-charts" style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px;">
                 <div class="chart-card" style="border:1px solid #eee;border-radius:8px;padding:20px;background:white;">
                     <h4 style="margin:0 0 15px 0;">Sales by Category</h4>
                     <div class="category-bars">
@@ -778,6 +826,40 @@ class AdminExtended {
                             <li style="padding:8px 0;border-bottom:1px solid #eee;display:flex;justify-content:space-between;"><span>${name}</span><span style="color:#4caf50;font-weight:bold;">${qty} sold</span></li>
                         `).join('') : '<li style="color:#666;">No sales data available</li>'}
                     </ol>
+                </div>
+            </div>
+
+            <!-- Footfall Analytics Section -->
+            <div class="analytics-charts" style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+                <div class="chart-card" style="border:1px solid #eee;border-radius:8px;padding:20px;background:white;">
+                    <h4 style="margin:0 0 15px 0;"><i class="fas fa-file-alt" style="color:#1976d2;margin-right:8px;"></i>Top Pages (30 days)</h4>
+                    <ol class="top-pages" style="margin:0;padding-left:20px;">
+                        ${topPages.length ? topPages.map(([url, views]) => `
+                            <li style="padding:8px 0;border-bottom:1px solid #eee;display:flex;justify-content:space-between;">
+                                <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:200px;" title="${url}">${url}</span>
+                                <span style="color:#1976d2;font-weight:bold;">${views.toLocaleString()} views</span>
+                            </li>
+                        `).join('') : '<li style="color:#666;">No page view data yet</li>'}
+                    </ol>
+                </div>
+                <div class="chart-card" style="border:1px solid #eee;border-radius:8px;padding:20px;background:white;">
+                    <h4 style="margin:0 0 15px 0;"><i class="fas fa-laptop" style="color:#7b1fa2;margin-right:8px;"></i>Device Breakdown</h4>
+                    <div class="device-bars">
+                        ${Object.entries(deviceCounts).map(([device, count]) => {
+                            const percentage = totalPageViews > 0 ? ((count / totalPageViews) * 100).toFixed(1) : 0;
+                            const colors = { desktop: '#1976d2', mobile: '#f57c00', tablet: '#7b1fa2' };
+                            const icons = { desktop: 'fas fa-desktop', mobile: 'fas fa-mobile-alt', tablet: 'fas fa-tablet-alt' };
+                            return `
+                                <div class="bar-item" style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+                                    <span style="width:80px;display:flex;align-items:center;gap:5px;"><i class="${icons[device]}" style="color:${colors[device]};"></i>${device.charAt(0).toUpperCase() + device.slice(1)}</span>
+                                    <div class="bar" style="flex:1;height:20px;background:#eee;border-radius:4px;overflow:hidden;">
+                                        <div style="width:${percentage}%;height:100%;background:${colors[device]};"></div>
+                                    </div>
+                                    <span style="color:#666;min-width:80px;">${count.toLocaleString()} (${percentage}%)</span>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
                 </div>
             </div>
         `;
