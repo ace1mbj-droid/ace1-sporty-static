@@ -26,9 +26,9 @@ jobs:
 
       - name: Check Supabase deploy enabled
         id: check-supabase
-        env:
-          ENABLE_DEPLOY: ${{ secrets.ENABLE_SUPABASE_DEPLOY }}
         run: |
+          # Set to 'true' to enable Supabase deployment, or keep 'false' to skip
+          ENABLE_DEPLOY="false"
           if [ "$ENABLE_DEPLOY" = "true" ]; then
             echo "enabled=true" >> $GITHUB_OUTPUT
             echo "Supabase deploy is enabled."
@@ -128,14 +128,12 @@ jobs:
           FTP_USER: ${{ secrets.FTP_USER }}
           FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
           FTP_PORT: ${{ secrets.FTP_PORT }}
-          FTP_SSL_VERIFY: ${{ secrets.FTP_SSL_VERIFY }}
         run: |
           sudo apt-get update && sudo apt-get install -y lftp
           set -e
           PORT=${FTP_PORT:-21}
-          VERIFY=${FTP_SSL_VERIFY:-true}
           echo "Running FTP health check against ${FTP_HOST}:${PORT}"
-          lftp -p "$PORT" -e "set net:max-retries 1; set net:timeout 20; set ftp:ssl-force true; set ftp:ssl-protect-data true; set ssl:verify-certificate $VERIFY; set cmd:fail-exit true; open -u $FTP_USER,$FTP_PASSWORD $FTP_HOST; pwd; ls; bye" | tee ftp-healthcheck.log
+          lftp -p "$PORT" -e "set net:max-retries 1; set net:timeout 20; set ftp:ssl-force true; set ftp:ssl-protect-data true; set ssl:verify-certificate true; set cmd:fail-exit true; open -u $FTP_USER,$FTP_PASSWORD $FTP_HOST; pwd; ls; bye" | tee ftp-healthcheck.log
           echo "FTP health check complete."
 
       - name: Upload healthcheck

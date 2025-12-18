@@ -59,45 +59,18 @@ jobs:
 
       # Removed allowlist validation to revert to previous working FTP deploy
 
-      - name: Inject ADMIN_API_URL into built admin.html (optional)
-        # Run only when either admin API secret is provided
-        env:
-          ADMIN_API_URL: ${{ secrets.ADMIN_API_URL }}
-          SUPABASE_FUNCTIONS_URL: ${{ secrets.SUPABASE_FUNCTIONS_URL }}
-        run: |
-          # prefer ADMIN_API_URL secret (explicit); fall back to SUPABASE_FUNCTIONS_URL + /admin-reset
-          if [ -n "$ADMIN_API_URL" ]; then
-            ADMIN_URL="$ADMIN_API_URL"
-          elif [ -n "$SUPABASE_FUNCTIONS_URL" ]; then
-            ADMIN_URL="${SUPABASE_FUNCTIONS_URL}/admin-reset"
-          else
-            echo "No ADMIN_API_URL or SUPABASE_FUNCTIONS_URL provided; skipping injection"
-            exit 0
-          fi
-
-          if [ -f dist/admin.html ]; then
-            echo "Injecting ADMIN_API_URL=${ADMIN_URL} into dist/admin.html"
-            sed -i "s#__ADMIN_API_URL__#${ADMIN_URL}#g" dist/admin.html
-          else
-            echo "dist/admin.html not found; skipping injection"
-          fi
-
       - name: FTP Health Check (FTPS)
         env:
           FTP_HOST: ${{ secrets.FTP_HOST }}
           FTP_USER: ${{ secrets.FTP_USER }}
           FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
           FTP_PORT: ${{ secrets.FTP_PORT }}
-          FTP_SSL_VERIFY: ${{ secrets.FTP_SSL_VERIFY }}
         run: |
           sudo apt-get update && sudo apt-get install -y lftp
           set -e
           PORT=${FTP_PORT:-21}
-          VERIFY=${FTP_SSL_VERIFY:-true}
-          PORT=${FTP_PORT:-21}
-          VERIFY=${FTP_SSL_VERIFY:-true}
           echo "Running FTP health check against ${FTP_HOST}:${PORT}"
-          lftp -p "$PORT" -e "set net:max-retries 1; set net:timeout 20; set ftp:ssl-force true; set ftp:ssl-protect-data true; set ssl:verify-certificate $VERIFY; set cmd:fail-exit true; open -u $FTP_USER,$FTP_PASSWORD $FTP_HOST; pwd; ls; bye" | tee ftp-healthcheck.log
+          lftp -p "$PORT" -e "set net:max-retries 1; set net:timeout 20; set ftp:ssl-force true; set ftp:ssl-protect-data true; set ssl:verify-certificate true; set cmd:fail-exit true; open -u $FTP_USER,$FTP_PASSWORD $FTP_HOST; pwd; ls; bye" | tee ftp-healthcheck.log
           echo "FTP health check complete."
 
       - name: Upload healthcheck & manifests
