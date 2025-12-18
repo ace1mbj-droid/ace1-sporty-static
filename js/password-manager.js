@@ -43,19 +43,6 @@ class PasswordManager {
             }
 
             return null;
-            }
-
-            const userEmail = sessionStorage.getItem('userEmail');
-            if (userEmail && this.supabase) {
-                const { data } = await this.supabase
-                    .from('users')
-                    .select('*')
-                    .eq('email', userEmail)
-                    .single();
-                return data;
-            }
-
-            return null;
         } catch (error) {
             console.error('Get user error:', error);
             return null;
