@@ -370,36 +370,33 @@ class AdminExtended {
 
     async viewCustomerDetails(customerId) {
         try {
-            // Load customer with orders
-            const { data: customer } = await this.supabase
-                .from('users')
-                .select('*')
-                .eq('id', customerId)
-                .single();
-
+            // Get orders for this customer to extract customer info
             const { data: orders } = await this.supabase
                 .from('orders')
                 .select('*, order_items(*, product:products(name))')
                 .eq('user_id', customerId)
                 .order('created_at', { ascending: false });
 
-            const { data: notes } = await this.supabase
-                .from('customer_notes')
-                .select('*')
-                .eq('customer_id', customerId)
-                .order('created_at', { ascending: false });
+            if (!orders || orders.length === 0) {
+                showNotification('No orders found for this customer', 'info');
+                return;
+            }
+
+            // Extract customer email from first order's shipping address
+            const firstOrder = orders[0];
+            const customerEmail = firstOrder.shipping_address?.email || 'Unknown';
+            const customerName = `${firstOrder.shipping_address?.firstName || ''} ${firstOrder.shipping_address?.lastName || ''}`.trim() || 'Unknown';
 
             const modal = document.getElementById('customer-details-modal');
             const body = document.getElementById('customer-details-body');
 
-            const totalSpent = orders?.reduce((sum, o) => sum + (o.total_amount || o.total_cents || 0), 0) || 0;
-            const isCents = orders?.[0]?.total_cents !== undefined;
+            const totalSpent = orders?.reduce((sum, o) => sum + ((o.total_cents || 0) / 100), 0) || 0;
 
             body.innerHTML = `
                 <style>
                     .customer-profile { margin-bottom: 20px; }
                     .profile-header { display: flex; align-items: center; gap: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px; margin-bottom: 15px; }
-                    .profile-avatar { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 3px solid #fff; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+                    .profile-avatar { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 3px solid #fff; box-shadow: 0 2px 10px rgba(0,0,0,0.1); background: #ddd; display: flex; align-items: center; justify-content: center; font-size: 2em; color: #999; }
                     .profile-header h3 { margin: 0 0 5px 0; font-size: 1.3em; }
                     .profile-header p { margin: 3px 0; color: #666; }
                     .profile-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; }
@@ -418,30 +415,24 @@ class AdminExtended {
                     .badge-shipped { background: #007bff; color: #fff; }
                     .badge-delivered { background: #28a745; color: #fff; }
                     .badge-cancelled { background: #dc3545; color: #fff; }
-                    .note-item { padding: 12px; background: #fff8e1; border-left: 3px solid #ffc107; margin: 10px 0; border-radius: 0 6px 6px 0; }
-                    .note-item .badge { font-size: 0.75em; padding: 2px 8px; border-radius: 10px; background: #e0e0e0; }
-                    .note-item p { margin: 8px 0; }
-                    .note-item small { color: #999; }
                 </style>
                 <div class="customer-profile">
                     <div class="profile-header">
-                        <img src="${customer.avatar || 'images/placeholder.jpg'}" alt="" class="profile-avatar" onerror="this.src='images/placeholder.jpg'">
+                        <div class="profile-avatar"><i class="fas fa-user"></i></div>
                         <div>
-                            <h3>${customer.first_name || ''} ${customer.last_name || ''}</h3>
-                            <p><i class="fas fa-envelope" style="width:20px;color:#666;"></i> ${customer.email}</p>
-                            <p><i class="fas fa-phone" style="width:20px;color:#666;"></i> ${customer.phone || 'No phone'}</p>
-                            <p><i class="fas fa-calendar" style="width:20px;color:#666;"></i> Joined ${new Date(customer.created_at).toLocaleDateString()}</p>
+                            <h3>${customerName}</h3>
+                            <p><i class="fas fa-envelope" style="width:20px;color:#666;"></i> ${customerEmail}</p>
+                            <p><i class="fas fa-calendar" style="width:20px;color:#666;"></i> First order ${new Date(firstOrder.created_at).toLocaleDateString()}</p>
                         </div>
                     </div>
                     <div class="profile-stats">
                         <div class="stat"><strong>${orders?.length || 0}</strong><span>Orders</span></div>
-                        <div class="stat"><strong>₹${isCents ? (totalSpent/100).toLocaleString() : totalSpent.toLocaleString()}</strong><span>Total Spent</span></div>
-                        <div class="stat"><strong>${customer.role || 'customer'}</strong><span>Role</span></div>
+                        <div class="stat"><strong>₹${totalSpent.toLocaleString('en-IN', {maximumFractionDigits: 2})}</strong><span>Total Spent</span></div>
+                        <div class="stat"><strong>${firstOrder.status || 'pending'}</strong><span>Status</span></div>
                     </div>
                 </div>
                 <div class="customer-tabs">
                     <button class="tab-btn active" onclick="adminExtended.showCustomerTab('orders')">Orders (${orders?.length || 0})</button>
-                    <button class="tab-btn" onclick="adminExtended.showCustomerTab('notes')">Notes (${notes?.length || 0})</button>
                 </div>
                 <div id="customer-orders-tab" class="customer-tab active">
                     <h4>Order History</h4>
@@ -449,32 +440,19 @@ class AdminExtended {
                         <div class="order-item">
                             <div class="order-header">
                                 <span><strong>#${order.id.slice(0,8)}...</strong></span>
-                                <span class="badge badge-${order.payment_status || order.status || 'pending'}">${order.payment_status || order.status || 'pending'}</span>
-                                <span>₹${parseFloat(order.total_amount || (order.total_cents/100) || 0).toLocaleString()}</span>
+                                <span class="badge badge-${order.status || 'pending'}">${order.status || 'pending'}</span>
+                                <span>₹${((order.total_cents || 0) / 100).toLocaleString('en-IN')}</span>
                                 <span>${new Date(order.created_at).toLocaleDateString()}</span>
                             </div>
                         </div>
                     `).join('') : '<p style="color:#666;text-align:center;padding:20px;">No orders yet</p>'}
                 </div>
-                <div id="customer-notes-tab" class="customer-tab" style="display:none;">
-                    <h4>Notes</h4>
-                    <button class="btn btn-sm btn-primary" onclick="adminExtended.addCustomerNote('${customerId}')" style="margin-bottom:15px;">
-                        <i class="fas fa-plus"></i> Add Note
-                    </button>
-                    ${notes?.length ? notes.map(note => `
-                        <div class="note-item">
-                            <span class="badge badge-${note.note_type}">${note.note_type}</span>
-                            <p>${note.note}</p>
-                            <small>${new Date(note.created_at).toLocaleString()}</small>
-                        </div>
-                    `).join('') : '<p>No notes</p>'}
-                </div>
             `;
 
             modal.classList.add('active');
-            // Store customer ID for email functionality
+            // Store customer info for email functionality
             modal.dataset.customerId = customerId;
-            modal.dataset.customerEmail = customer.email;
+            modal.dataset.customerEmail = customerEmail;
         } catch (error) {
             console.error('Error loading customer details:', error);
             showNotification('Failed to load customer details', 'error');
