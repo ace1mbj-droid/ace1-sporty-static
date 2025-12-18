@@ -1654,7 +1654,7 @@ class AdminExtended {
             const { data, error } = await this.supabase
                 .from('email_templates')
                 .select('*')
-                .order('name');
+                .order('template_type');
 
             if (error) throw error;
             this.renderEmailTemplates(data);
@@ -1680,7 +1680,7 @@ class AdminExtended {
         container.innerHTML = `<div style="display:grid;grid-template-columns:repeat(auto-fill, minmax(350px, 1fr));gap:15px;">${templates.map(template => `
             <div class="template-card" style="border:1px solid #eee;border-radius:8px;padding:15px;background:white;">
                 <div class="template-header" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-                    <span class="template-name" style="font-weight:bold;font-size:1.1em;">${template.name}</span>
+                    <span class="template-name" style="font-weight:bold;font-size:1.1em;">${template.template_type}</span>
                     <div class="template-actions" style="display:flex;gap:5px;">
                         <button onclick="adminExtended.showTemplateModal(${JSON.stringify(template).replace(/"/g, '&quot;')})" class="btn btn-sm btn-secondary" style="padding:5px 10px;cursor:pointer;">
                             <i class="fas fa-edit"></i>
@@ -1691,22 +1691,22 @@ class AdminExtended {
                     </div>
                 </div>
                 <div class="template-subject" style="color:#666;font-size:0.9em;margin-bottom:8px;"><strong>Subject:</strong> ${template.subject}</div>
-                <div class="template-preview" style="color:#888;font-size:0.85em;max-height:80px;overflow:hidden;">${template.body?.substring(0, 200) || ''}...</div>
+                <div class="template-preview" style="color:#888;font-size:0.85em;max-height:80px;overflow:hidden;">${template.body_html?.substring(0, 200) || ''}...</div>
             </div>
         `).join('')}</div>`;
     }
 
     showTemplateModal(template = null) {
-        const name = prompt('Template Name:', template?.name || '');
-        if (!name) return;
+        const templateType = prompt('Template Type (e.g., order_confirmation, welcome):', template?.template_type || '');
+        if (!templateType) return;
 
         const subject = prompt('Email Subject:', template?.subject || '');
         if (!subject) return;
 
-        const body = prompt('Email Body (HTML):', template?.body || '');
-        if (!body) return;
+        const bodyHtml = prompt('Email Body (HTML):', template?.body_html || '');
+        if (!bodyHtml) return;
 
-        this.saveTemplate(template?.id, { name, subject, body });
+        this.saveTemplate(template?.id, { template_type: templateType, subject, body_html: bodyHtml });
     }
 
     async saveTemplate(id, data) {
