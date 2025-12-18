@@ -352,26 +352,24 @@ class SupabaseService {
                     return { success: true, cart: [] };
                 }
                 
-                const { data, error } = await this.supabase.rpc('get_cart_by_session', { p_session_id: sessionId });
-                if (error) throw error;
-                
-                // Fetch product details for cart items
-                if (data && data.length > 0) {
-                    const productIds = Array.isArray(data) 
-                        ? data.map(item => item.product_id)
-                        : [data.product_id];
-                    const { data: products } = await this.supabase
-                        .from('products')
-                        .select('*')
-                        .in('id', productIds);
-                    
-                    const enrichedCart = data.map(item => ({
-                        ...item,
-                        product: products?.find(p => p.id === item.product_id)
-                    }));
-                    
-                    return { success: true, cart: enrichedCart };
-                }
+                const { data, error } = await this.supabase
+                    .from('shopping_carts')
+                    .select(`
+                        *,
+                        products (
+                            id,
+                            name,
+                            price_cents,
+                            image_url,
+                            product_images (
+                                storage_path
+                            ),
+                            inventory (
+                                stock
+                            )
+                        )
+                    `)
+                    .eq('session_id', sessionId);
                 
                 return { success: true, cart: [] };
             }
@@ -867,26 +865,24 @@ class SupabaseService {
                     return { success: true, wishlist: [] };
                 }
                 
-                const { data, error } = await this.supabase.rpc('get_wishlist_by_session', { p_session_id: sessionId });
-                if (error) throw error;
-                
-                // Fetch product details for wishlist items
-                if (data && data.length > 0) {
-                    const productIds = Array.isArray(data) 
-                        ? data.map(item => item.product_id)
-                        : [data.product_id];
-                    const { data: products } = await this.supabase
-                        .from('products')
-                        .select('*')
-                        .in('id', productIds);
-                    
-                    const enrichedWishlist = data.map(item => ({
-                        ...item,
-                        product: products?.find(p => p.id === item.product_id)
-                    }));
-                    
-                    return { success: true, wishlist: enrichedWishlist };
-                }
+                const { data, error } = await this.supabase
+                    .from('wishlists')
+                    .select(`
+                        *,
+                        products (
+                            id,
+                            name,
+                            price_cents,
+                            image_url,
+                            product_images (
+                                storage_path
+                            ),
+                            inventory (
+                                stock
+                            )
+                        )
+                    `)
+                    .eq('session_id', sessionId);
                 
                 return { success: true, wishlist: [] };
             }
