@@ -371,7 +371,14 @@ class AdminPanel {
         const orderCancelBtn = document.getElementById('order-cancel-btn');
         if (orderCancelBtn) orderCancelBtn.addEventListener('click', () => orderModal.classList.remove('active'));
         const orderUpdateBtn = document.getElementById('order-update-btn');
-        if (orderUpdateBtn) orderUpdateBtn.addEventListener('click', () => this.updateOrderFromModal());
+        if (orderUpdateBtn) {
+            orderUpdateBtn.addEventListener('click', () => {
+                console.log('🔄 Order update button clicked!');
+                this.updateOrderFromModal();
+            });
+        } else {
+            console.warn('⚠️ order-update-btn not found in DOM');
+        }
         const orderCancelOrderBtn = document.getElementById('order-cancel-order-btn');
         if (orderCancelOrderBtn) orderCancelOrderBtn.addEventListener('click', () => this.cancelOrderFromModal());
         const orderRefundBtn = document.getElementById('order-refund-btn');
@@ -1613,12 +1620,20 @@ class AdminPanel {
 
     // Order actions
     async updateOrderFromModal() {
+        console.log('📝 updateOrderFromModal called');
+        
         const modal = document.getElementById('order-modal');
         const orderId = modal.dataset.orderId;
         const status = document.getElementById('order-status-select').value;
         const notes = document.getElementById('order-notes').value.trim();
 
-        console.log('🔄 Updating order:', orderId, 'with status:', status);
+        console.log('🔄 Updating order:', orderId, 'with status:', status, 'notes:', notes);
+
+        if (!orderId) {
+            console.error('❌ No order ID found in modal dataset');
+            this.showInlineError('order-form-error', 'No order ID found');
+            return;
+        }
 
         try {
             // Use 'status' column, not 'payment_status' - align with DB schema
@@ -1629,23 +1644,26 @@ class AdminPanel {
                 updateData.admin_notes = notes;
             }
 
-            const { error } = await this.supabase
+            console.log('📤 Sending update to Supabase:', updateData);
+
+            const { data, error } = await this.supabase
                 .from('orders')
                 .update(updateData)
-                .eq('id', orderId);
+                .eq('id', orderId)
+                .select();
 
             if (error) {
-                console.error('Error updating order:', error);
+                console.error('❌ Supabase error updating order:', error);
                 this.showInlineError('order-form-error', error.message || 'Failed to update order');
                 return;
             }
 
-            console.log('✅ Order updated successfully');
+            console.log('✅ Order updated successfully, response:', data);
             if (window.showNotification) window.showNotification('Order updated', 'success');
             await this.loadOrders();
             modal.classList.remove('active');
         } catch (err) {
-            console.error('updateOrderFromModal error:', err);
+            console.error('❌ Exception in updateOrderFromModal:', err);
             this.showInlineError('order-form-error', err.message || 'Failed to update order');
         }
     }
