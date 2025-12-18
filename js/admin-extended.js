@@ -213,6 +213,11 @@ class AdminExtended {
             showNotification('Stock updated successfully', 'success');
             this.closeModal('stock-adjust-modal');
             this.loadInventory();
+            
+            // Sync products tab if adminPanel exists
+            if (window.adminPanel?.loadProducts) {
+                window.adminPanel.loadProducts();
+            }
         } catch (error) {
             console.error('Error adjusting stock:', error);
             showNotification('Failed to update stock', 'error');
@@ -499,6 +504,67 @@ class AdminExtended {
         } catch (error) {
             console.error('Error saving content:', error);
             showNotification('Failed to save content', 'error');
+        }
+    }
+
+    async editContentBlock(id) {
+        try {
+            const { data, error } = await this.supabase
+                .from('content_blocks')
+                .select('*')
+                .eq('id', id)
+                .single();
+            
+            if (error) throw error;
+            
+            const modal = document.getElementById('content-block-modal');
+            document.getElementById('content-block-id').value = data.id;
+            document.getElementById('content-block-type').value = data.block_type;
+            document.getElementById('content-title').value = data.title || '';
+            document.getElementById('content-body').value = data.content || '';
+            document.getElementById('content-image').value = data.image_url || '';
+            document.getElementById('content-link').value = data.link_url || '';
+            document.getElementById('content-position').value = data.position || '';
+            document.getElementById('content-active').checked = data.is_active;
+            document.getElementById('content-modal-title').textContent = `Edit ${data.block_type}`;
+            modal.style.display = 'flex';
+        } catch (error) {
+            console.error('Error loading content block:', error);
+            showNotification('Failed to load content', 'error');
+        }
+    }
+
+    async toggleContentBlock(id, active) {
+        try {
+            const { error } = await this.supabase
+                .from('content_blocks')
+                .update({ is_active: active })
+                .eq('id', id);
+            
+            if (error) throw error;
+            showNotification(`Content ${active ? 'enabled' : 'disabled'}`, 'success');
+            this.loadContentBlocks();
+        } catch (error) {
+            console.error('Error toggling content:', error);
+            showNotification('Failed to update content', 'error');
+        }
+    }
+
+    async deleteContentBlock(id) {
+        if (!confirm('Are you sure you want to delete this content block?')) return;
+        
+        try {
+            const { error } = await this.supabase
+                .from('content_blocks')
+                .delete()
+                .eq('id', id);
+            
+            if (error) throw error;
+            showNotification('Content deleted successfully', 'success');
+            this.loadContentBlocks();
+        } catch (error) {
+            console.error('Error deleting content:', error);
+            showNotification('Failed to delete content', 'error');
         }
     }
 
@@ -1144,14 +1210,38 @@ class AdminExtended {
     }
 
     showCategoryModal(category = null) {
-        // Simple prompt-based category creation for now
-        const name = prompt('Category Name:', category?.name || '');
-        if (!name) return;
+        const modal = document.getElementById('category-modal');
+        if (!modal) {
+            // Fallback to prompts if modal not available
+            const name = prompt('Category Name:', category?.name || '');
+            if (!name) return;
+            const slug = prompt('Category Slug:', category?.slug || name.toLowerCase().replace(/\s+/g, '-'));
+            if (!slug) return;
+            this.saveCategory(category?.id, { name, slug, parent_id: category?.parent_id || null });
+            return;
+        }
+        
+        document.getElementById('category-id').value = category?.id || '';
+        document.getElementById('category-name').value = category?.name || '';
+        document.getElementById('category-slug').value = category?.slug || '';
+        document.getElementById('category-description').value = category?.description || '';
+        document.getElementById('category-parent').value = category?.parent_id || '';
+        document.getElementById('category-modal-title').textContent = category ? 'Edit Category' : 'Add Category';
+        modal.style.display = 'flex';
+    }
 
-        const slug = prompt('Category Slug:', category?.slug || name.toLowerCase().replace(/\s+/g, '-'));
-        if (!slug) return;
-
-        this.saveCategory(category?.id, { name, slug, parent_id: category?.parent_id || null });
+    async saveCategoryFromModal() {
+        const id = document.getElementById('category-id').value;
+        const name = document.getElementById('category-name').value;
+        const data = {
+            name,
+            slug: document.getElementById('category-slug').value || name.toLowerCase().replace(/\s+/g, '-'),
+            description: document.getElementById('category-description').value || null,
+            parent_id: document.getElementById('category-parent').value || null
+        };
+        
+        await this.saveCategory(id || null, data);
+        this.closeModal('category-modal');
     }
 
     async saveCategory(id, data) {
