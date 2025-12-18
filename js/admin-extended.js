@@ -11,6 +11,18 @@ class AdminExtended {
 
     async init() {
         console.log('✅ Admin Extended module initialized');
+
+        // Add role form submit handler
+        const roleForm = document.getElementById('role-form');
+        if (roleForm) {
+            roleForm.addEventListener('submit', (event) => this.handleRoleFormSubmit(event));
+        }
+
+        // Add modal close handlers
+        const roleModalClose = document.getElementById('role-modal-close');
+        if (roleModalClose) {
+            roleModalClose.addEventListener('click', () => this.closeModal('role-modal'));
+        }
     }
 
     // ========================================
@@ -1823,18 +1835,86 @@ class AdminExtended {
     }
 
     showRoleModal(role = null) {
-        const name = prompt('Role Name:', role?.name || '');
-        if (!name) return;
+        const modal = document.getElementById('role-modal');
+        const form = document.getElementById('role-form');
+        const title = document.getElementById('role-modal-title');
+        const nameInput = document.getElementById('role-name');
+        const descInput = document.getElementById('role-description');
+        const errorDiv = document.getElementById('role-form-error');
 
-        const description = prompt('Role Description:', role?.description || '');
+        // Reset form
+        form.reset();
+        errorDiv.style.display = 'none';
 
-        // Simple permissions selection
+        if (role) {
+            title.textContent = 'Edit Role';
+            nameInput.value = role.name || '';
+            descInput.value = role.description || '';
+
+            // Set permissions checkboxes
+            if (role.permissions) {
+                Object.keys(role.permissions).forEach(perm => {
+                    const checkbox = document.getElementById(`perm-${perm}`);
+                    if (checkbox) {
+                        checkbox.checked = role.permissions[perm] || false;
+                    }
+                });
+            }
+
+            // Store role ID for editing
+            form.dataset.roleId = role.id;
+        } else {
+            title.textContent = 'Create Role';
+            delete form.dataset.roleId;
+        }
+
+        // Show modal
+        modal.classList.add('active');
+
+        // Focus on name input
+        setTimeout(() => nameInput.focus(), 100);
+    }
+
+    handleRoleFormSubmit(event) {
+        event.preventDefault();
+
+        const form = event.target;
+        const nameInput = document.getElementById('role-name');
+        const descInput = document.getElementById('role-description');
+        const errorDiv = document.getElementById('role-form-error');
+
+        const name = nameInput.value.trim().toLowerCase();
+        const description = descInput.value.trim();
+
+        // Validation
+        if (!name) {
+            errorDiv.textContent = 'Role name is required';
+            errorDiv.style.display = 'block';
+            nameInput.focus();
+            return;
+        }
+
+        if (!/^[a-z0-9-]+$/.test(name)) {
+            errorDiv.textContent = 'Role name can only contain lowercase letters, numbers, and hyphens';
+            errorDiv.style.display = 'block';
+            nameInput.focus();
+            return;
+        }
+
+        // Collect permissions
         const permissions = {};
         ['products', 'orders', 'customers', 'analytics', 'settings', 'users'].forEach(perm => {
-            permissions[perm] = confirm(`Allow ${perm} access?`);
+            const checkbox = document.getElementById(`perm-${perm}`);
+            permissions[perm] = checkbox ? checkbox.checked : false;
         });
 
-        this.saveRole(role?.id, { name: name.toLowerCase(), description, permissions });
+        const roleData = { name, description, permissions };
+        const roleId = form.dataset.roleId;
+
+        this.saveRole(roleId, roleData);
+
+        // Close modal
+        this.closeModal('role-modal');
     }
 
     async saveRole(id, data) {
