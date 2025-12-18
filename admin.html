@@ -980,6 +980,89 @@
             </div>
         </div>
 
+        <!-- Role Modal -->
+        <div class="modal" id="role-modal">
+            <div class="modal-content" style="max-width: 600px;">
+                <div class="modal-header">
+                    <h2 id="role-modal-title">Create Role</h2>
+                    <button class="modal-close" id="role-modal-close">&times;</button>
+                </div>
+                <div class="modal-body" style="padding: 20px;">
+                    <form id="role-form">
+                        <div class="form-group">
+                            <label for="role-name">Role Name *</label>
+                            <input type="text" id="role-name" class="form-control" placeholder="e.g., manager, editor, support" required>
+                            <small class="form-hint">Use lowercase letters, numbers, and hyphens only</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="role-description">Description</label>
+                            <textarea id="role-description" class="form-control" placeholder="Describe what this role can do..." rows="3"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Permissions</label>
+                            <div class="permissions-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 10px;">
+                                <div class="permission-item">
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="perm-products" class="permission-checkbox">
+                                        <span class="checkmark"></span>
+                                        <i class="fas fa-box"></i> Products Management
+                                    </label>
+                                    <small>Manage products, inventory, categories</small>
+                                </div>
+                                <div class="permission-item">
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="perm-orders" class="permission-checkbox">
+                                        <span class="checkmark"></span>
+                                        <i class="fas fa-shopping-cart"></i> Orders Management
+                                    </label>
+                                    <small>View and manage customer orders</small>
+                                </div>
+                                <div class="permission-item">
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="perm-customers" class="permission-checkbox">
+                                        <span class="checkmark"></span>
+                                        <i class="fas fa-users"></i> Customer Management
+                                    </label>
+                                    <small>View customer data and interactions</small>
+                                </div>
+                                <div class="permission-item">
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="perm-analytics" class="permission-checkbox">
+                                        <span class="checkmark"></span>
+                                        <i class="fas fa-chart-bar"></i> Analytics & Reports
+                                    </label>
+                                    <small>Access analytics and reporting tools</small>
+                                </div>
+                                <div class="permission-item">
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="perm-settings" class="permission-checkbox">
+                                        <span class="checkmark"></span>
+                                        <i class="fas fa-cog"></i> Site Settings
+                                    </label>
+                                    <small>Modify site configuration and settings</small>
+                                </div>
+                                <div class="permission-item">
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="perm-users" class="permission-checkbox">
+                                        <span class="checkmark"></span>
+                                        <i class="fas fa-user-shield"></i> User Management
+                                    </label>
+                                    <small>Manage user accounts and roles</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="role-form-error" style="display:none;color:#b00020;margin-bottom:8px;"></div>
+                        <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
+                            <button type="button" class="btn btn-secondary" onclick="adminExtended.closeModal('role-modal')">Cancel</button>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Save Role
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
         <!-- Settings Tab -->
         <div class="admin-content" id="settings-content">
             <h2 style="margin-bottom: 20px;">Site Settings</h2>
