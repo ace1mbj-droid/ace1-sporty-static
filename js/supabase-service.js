@@ -701,6 +701,68 @@ class SupabaseService {
         }
     }
 
+    async createReviewFromOrder({ orderId, productId, rating, title, comment }) {
+        try {
+            if (!this.currentUser) throw new Error('User not authenticated');
+            if (!orderId || !productId) throw new Error('Order and product are required');
+
+            // Ensure the order belongs to the user and contains the product
+            const { data: orderItem, error: orderError } = await this.supabase
+                .from('order_items')
+                .select('id, order:orders(user_id, status)')
+                .eq('order_id', orderId)
+                .eq('product_id', productId)
+                .eq('orders.user_id', this.currentUser.id)
+                .single();
+
+            if (orderError || !orderItem) {
+                throw new Error('You can only review products you purchased');
+            }
+
+            if (orderItem.order?.status !== 'delivered') {
+                throw new Error('You can review after the order is delivered');
+            }
+
+            // Prevent duplicate reviews for the same order/product
+            const { data: existing } = await this.supabase
+                .from('reviews')
+                .select('id')
+                .eq('user_id', this.currentUser.id)
+                .eq('product_id', productId)
+                .eq('order_id', orderId)
+                .maybeSingle();
+
+            if (existing) {
+                throw new Error('You have already reviewed this product for this order');
+            }
+
+            const userMeta = this.currentUser.user_metadata || {};
+            const reviewerName = `${userMeta.first_name || userMeta.given_name || ''} ${userMeta.last_name || userMeta.family_name || ''}`.trim();
+
+            const { data, error: insertError } = await this.supabase
+                .from('reviews')
+                .insert({
+                    product_id: productId,
+                    order_id: orderId,
+                    user_id: this.currentUser.id,
+                    user_email: this.currentUser.email || null,
+                    user_name: reviewerName || this.currentUser.email || 'User',
+                    rating: parseInt(rating, 10),
+                    title: title || null,
+                    comment,
+                    verified_purchase: true
+                })
+                .select()
+                .single();
+
+            if (insertError) throw insertError;
+            return { success: true, review: data };
+        } catch (error) {
+            console.error('Create review error:', error);
+            return { success: false, error: error.message };
+        }
+    }
+
     async cancelOrder(orderId) {
         try {
             if (!this.currentUser) throw new Error('User not authenticated');
@@ -745,28 +807,8 @@ class SupabaseService {
     }
 
     async submitReview(productId, reviewData) {
-        try {
-            if (!this.currentUser) throw new Error('User not authenticated');
-
-            const { data, error } = await this.supabase
-                .from('reviews')
-                .insert([{
-                    user_id: this.currentUser.id,
-                    product_id: productId,
-                    rating: reviewData.rating,
-                    title: reviewData.title,
-                    comment: reviewData.comment,
-                    verified_purchase: reviewData.verifiedPurchase || false
-                }])
-                .select()
-                .single();
-
-            if (error) throw error;
-            return { success: true, review: data };
-        } catch (error) {
-            console.error('Submit review error:', error);
-            return { success: false, error: error.message };
-        }
+        // Direct submissions are disabled; enforce order-linked reviews only
+        return { success: false, error: 'Please submit reviews from your delivered orders (Profile > Orders)' };
     }
 
     async voteReview(reviewId, helpful) {

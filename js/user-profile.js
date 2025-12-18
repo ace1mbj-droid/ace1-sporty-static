@@ -1,6 +1,8 @@
 // User Profile Management
 class UserProfileManager {
     constructor() {
+        this.orders = [];
+        this.ordersReviewBound = false;
         this.init();
     }
 
@@ -430,6 +432,7 @@ class UserProfileManager {
                 const result = await window.supabaseService.getOrders();
                 
                 if (result.success && result.orders && result.orders.length > 0) {
+                    this.orders = result.orders;
                     // Render real orders from database
                     ordersList.innerHTML = result.orders.map(order => {
                         const statusClass = order.status === 'delivered' ? 'status-delivered' : 
@@ -454,23 +457,29 @@ class UserProfileManager {
                                     <span class="order-status ${statusClass}">${order.status.charAt(0).toUpperCase() + order.status.slice(1)}</span>
                                 </div>
                                 <div class="order-items">
-                                    ${orderItems.map(item => `
-                                        <div class="order-item">
-                                            <img src="${item.product?.image || 'https://via.placeholder.com/80'}" alt="${item.product?.name || 'Product'}">
-                                            <div class="order-item-info">
-                                                <h5>${item.product?.name || 'Product'}</h5>
-                                                <p>${item.size ? `Size: ${item.size} | ` : ''}Qty: ${item.quantity}</p>
-                                                <p class="order-item-price">₹${item.price?.toLocaleString()}</p>
+                                    ${orderItems.map(item => {
+                                        const productName = item.product?.name || 'Product';
+                                        const productId = item.product_id || item.product?.id || '';
+                                        return `
+                                            <div class="order-item" data-order-id="${order.id}" data-product-id="${productId}">
+                                                <img src="${item.product?.image || 'https://via.placeholder.com/80'}" alt="${productName}">
+                                                <div class="order-item-info">
+                                                    <h5>${productName}</h5>
+                                                    <p>${item.size ? `Size: ${item.size} | ` : ''}Qty: ${item.quantity}</p>
+                                                    <p class="order-item-price">₹${item.price?.toLocaleString()}</p>
+                                                    ${order.status === 'delivered' ? `
+                                                        <button class="btn btn-outline btn-sm write-review-btn" data-order-id="${order.id}" data-product-id="${productId}" data-product-name="${productName}">Write Review</button>
+                                                    ` : ''}
+                                                </div>
                                             </div>
-                                        </div>
-                                    `).join('')}
+                                        `;
+                                    }).join('')}
                                 </div>
                                 <div class="order-footer">
                                     <p class="order-total">Total: ₹${order.total_amount?.toLocaleString()}</p>
                                     <div class="order-actions">
                                         ${order.status === 'delivered' ? 
-                                            `<button class="btn btn-secondary btn-sm">View Details</button>
-                                             <button class="btn btn-outline btn-sm">Write Review</button>` :
+                                            `<button class="btn btn-secondary btn-sm">View Details</button>` :
                                             `<button class="btn btn-secondary btn-sm">Track Order</button>`
                                         }
                                     </div>
@@ -478,6 +487,8 @@ class UserProfileManager {
                             </div>
                         `;
                     }).join('');
+
+                    this.bindOrderReviewHandlers();
                 } else {
                     // No orders found
                     ordersList.innerHTML = `
@@ -530,6 +541,161 @@ class UserProfileManager {
                 </div>
             </div>
         `;
+    }
+
+    bindOrderReviewHandlers() {
+        const ordersList = document.querySelector('#tab-orders .orders-list');
+        if (!ordersList || this.ordersReviewBound) return;
+        this.ordersReviewBound = true;
+
+        // Handle review button clicks
+        ordersList.addEventListener('click', (e) => {
+            const reviewBtn = e.target.closest('.write-review-btn');
+            if (reviewBtn) {
+                e.preventDefault();
+                this.showInlineReviewForm({
+                    orderId: reviewBtn.dataset.orderId,
+                    productId: reviewBtn.dataset.productId,
+                    productName: reviewBtn.dataset.productName,
+                    triggerButton: reviewBtn
+                });
+                return;
+            }
+
+            const cancelBtn = e.target.closest('.cancel-inline-review');
+            if (cancelBtn) {
+                e.preventDefault();
+                cancelBtn.closest('.inline-review-form')?.remove();
+            }
+        });
+
+        // Handle inline review submit
+        ordersList.addEventListener('submit', async (e) => {
+            const form = e.target.closest('.review-inline-form');
+            if (form) {
+                e.preventDefault();
+                await this.submitInlineReviewForm(form);
+            }
+        });
+    }
+
+    showInlineReviewForm({ orderId, productId, productName, triggerButton }) {
+        // Remove any existing inline form before showing a new one
+        document.querySelectorAll('.inline-review-form').forEach(el => el.remove());
+
+        const host = triggerButton?.closest('.order-item') || triggerButton?.closest('.order-card');
+        if (!host) return;
+
+        const safeName = (productName || 'Product').replace(/[<>]/g, '');
+        const wrapper = document.createElement('div');
+        wrapper.className = 'inline-review-form';
+        wrapper.dataset.orderId = orderId;
+        wrapper.dataset.productId = productId;
+        wrapper.style.border = '1px solid #eee';
+        wrapper.style.padding = '12px';
+        wrapper.style.marginTop = '10px';
+        wrapper.style.background = '#f9f9f9';
+        wrapper.style.borderRadius = '8px';
+
+        wrapper.innerHTML = `
+            <form class="review-inline-form">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                    <strong>Review ${safeName}</strong>
+                    <span style="font-size:12px;color:#666;">Delivered orders only</span>
+                </div>
+                <div class="form-group" style="margin-bottom:8px;">
+                    <label style="display:block;margin-bottom:4px;">Rating *</label>
+                    <select name="rating" required style="width:100%;padding:8px;border:1px solid #ddd;border-radius:6px;">
+                        <option value="">Select rating</option>
+                        <option value="5">5 - Excellent</option>
+                        <option value="4">4 - Good</option>
+                        <option value="3">3 - Average</option>
+                        <option value="2">2 - Poor</option>
+                        <option value="1">1 - Very Poor</option>
+                    </select>
+                </div>
+                <div class="form-group" style="margin-bottom:8px;">
+                    <label style="display:block;margin-bottom:4px;">Title (optional)</label>
+                    <input name="title" type="text" maxlength="80" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:6px;">
+                </div>
+                <div class="form-group" style="margin-bottom:12px;">
+                    <label style="display:block;margin-bottom:4px;">Comment *</label>
+                    <textarea name="comment" rows="3" minlength="10" required style="width:100%;padding:8px;border:1px solid #ddd;border-radius:6px;"></textarea>
+                    <small style="color:#666;">Minimum 10 characters</small>
+                </div>
+                <div style="display:flex;gap:10px;align-items:center;">
+                    <button type="submit" class="btn btn-primary btn-sm submit-inline-review">Submit Review</button>
+                    <button type="button" class="btn btn-link btn-sm cancel-inline-review">Cancel</button>
+                </div>
+            </form>
+        `;
+
+        host.appendChild(wrapper);
+    }
+
+    async submitInlineReviewForm(form) {
+        const wrapper = form.closest('.inline-review-form');
+        if (!wrapper) return;
+
+        const orderId = wrapper.dataset.orderId;
+        const productId = wrapper.dataset.productId;
+        const rating = parseInt(form.querySelector('select[name="rating"]')?.value || '0', 10);
+        const title = form.querySelector('input[name="title"]')?.value?.trim() || '';
+        const comment = form.querySelector('textarea[name="comment"]')?.value?.trim() || '';
+
+        if (!rating) {
+            this.showNotification('Please select a rating', 'error');
+            return;
+        }
+
+        if (comment.length < 10) {
+            this.showNotification('Please add at least 10 characters', 'error');
+            return;
+        }
+
+        const submitBtn = form.querySelector('.submit-inline-review');
+        const originalText = submitBtn?.textContent;
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Submitting...';
+        }
+
+        if (!window.supabaseService) {
+            this.showNotification('Unable to submit review right now', 'error');
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalText;
+            }
+            return;
+        }
+
+        const result = await window.supabaseService.createReviewFromOrder({
+            orderId,
+            productId,
+            rating,
+            title,
+            comment
+        });
+
+        if (result?.success) {
+            this.showNotification('Review submitted successfully!', 'success');
+            wrapper.remove();
+
+            const btn = document.querySelector(`.write-review-btn[data-order-id="${orderId}"][data-product-id="${productId}"]`);
+            if (btn) {
+                btn.textContent = 'Review submitted';
+                btn.disabled = true;
+            }
+
+            // Refresh reviews tab
+            this.loadReviews();
+        } else {
+            this.showNotification(result?.error || 'Unable to submit review', 'error');
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalText;
+            }
+        }
     }
 
     async loadReviews() {
