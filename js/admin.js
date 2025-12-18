@@ -450,10 +450,24 @@ class AdminPanel {
             
             const totalOrders = orders?.length || 0;
             
-            // Calculate total revenue from total_cents
+            // Calculate total revenue from total_cents (exclude cancelled and refunded orders)
             const totalRevenue = orders?.reduce((sum, order) => {
+                // Don't count cancelled or refunded orders in revenue
+                const status = (order.status || '').toLowerCase();
+                if (status === 'cancelled' || status === 'refunded') {
+                    return sum;
+                }
                 const amount = order.total_cents || 0;
                 return sum + (amount / 100);
+            }, 0) || 0;
+
+            // Count refunded orders separately for display
+            const refundedOrders = orders?.filter(o => (o.status || '').toLowerCase() === 'refunded').length || 0;
+            const refundedAmount = orders?.reduce((sum, order) => {
+                if ((order.status || '').toLowerCase() === 'refunded') {
+                    return sum + ((order.total_cents || 0) / 100);
+                }
+                return sum;
             }, 0) || 0;
 
             // Update dashboard elements
@@ -469,7 +483,11 @@ class AdminPanel {
             if (totalOrdersEl) totalOrdersEl.textContent = totalOrders;
             if (totalRevenueEl) totalRevenueEl.textContent = `₹${totalRevenue.toLocaleString('en-IN')}`;
             
-            console.log('📊 Dashboard loaded:', { totalProducts, outOfStock, lowStock, totalOrders, totalRevenue });
+            // Update refunded amount if element exists
+            const refundedAmountEl = document.getElementById('refunded-amount');
+            if (refundedAmountEl) refundedAmountEl.textContent = `₹${refundedAmount.toLocaleString('en-IN')}`;
+            
+            console.log('📊 Dashboard loaded:', { totalProducts, outOfStock, lowStock, totalOrders, totalRevenue, refundedOrders, refundedAmount });
         } catch (error) {
             console.error('Error loading dashboard:', error);
         }
