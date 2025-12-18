@@ -342,7 +342,7 @@ class AdminExtended {
                 <td style="padding:12px;border-bottom:1px solid #eee;">${new Date(customer.created_at).toLocaleDateString()}</td>
                 <td style="padding:12px;border-bottom:1px solid #eee;">${new Date(customer.last_order_date).toLocaleDateString()}</td>
                 <td style="padding:12px;border-bottom:1px solid #eee;">
-                    <button class="btn-sm btn-primary" onclick="adminExtended.viewCustomerDetails('${customer.id}')" style="padding:5px 10px;margin:2px;cursor:pointer;">
+                    <button class="btn-sm btn-primary" onclick="adminExtended.viewCustomerDetails('${customer.id}', '${customer.email}')" style="padding:5px 10px;margin:2px;cursor:pointer;">
                         <i class="fas fa-eye"></i>
                     </button>
                 </td>
@@ -368,23 +368,37 @@ class AdminExtended {
         `;
     }
 
-    async viewCustomerDetails(customerId) {
+    async viewCustomerDetails(customerId, customerEmail) {
         try {
-            // Get orders for this customer to extract customer info
-            const { data: orders } = await this.supabase
-                .from('orders')
-                .select('*, order_items(*, product:products(name))')
-                .eq('user_id', customerId)
-                .order('created_at', { ascending: false });
+            // Query orders by user_id when available, otherwise by shipping email for guest customers
+            let ordersResult;
+            if (customerId && !customerId.startsWith('guest')) {
+                ordersResult = await this.supabase
+                    .from('orders')
+                    .select('*, order_items(*, product:products(name))')
+                    .eq('user_id', customerId)
+                    .order('created_at', { ascending: false });
+            } else if (customerEmail) {
+                ordersResult = await this.supabase
+                    .from('orders')
+                    .select('*, order_items(*, product:products(name))')
+                    .filter("shipping_address->>email", 'eq', customerEmail)
+                    .order('created_at', { ascending: false });
+            } else {
+                showNotification('No identifier available to load customer orders', 'error');
+                return;
+            }
+
+            const orders = ordersResult?.data || [];
 
             if (!orders || orders.length === 0) {
                 showNotification('No orders found for this customer', 'info');
                 return;
             }
 
-            // Extract customer email from first order's shipping address
+            // Extract customer email and name from first order's shipping address
             const firstOrder = orders[0];
-            const customerEmail = firstOrder.shipping_address?.email || 'Unknown';
+            const extractedEmail = customerEmail || firstOrder.shipping_address?.email || 'Unknown';
             const customerName = `${firstOrder.shipping_address?.firstName || ''} ${firstOrder.shipping_address?.lastName || ''}`.trim() || 'Unknown';
 
             const modal = document.getElementById('customer-details-modal');
