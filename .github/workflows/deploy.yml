@@ -60,9 +60,9 @@ jobs:
       - name: Inject ADMIN_API_URL into built admin.html (optional)
         # Run only when either admin API secret is provided
         env:
-          ADMIN_API_URL: ${{ secrets.ADMIN_API_URL }}
-          SUPABASE_FUNCTIONS_URL: ${{ secrets.SUPABASE_FUNCTIONS_URL }}
-        if: ${{ env.ADMIN_API_URL != '' || env.SUPABASE_FUNCTIONS_URL != '' }}
+          ADMIN_API_URL: ${{ secrets.ADMIN_API_URL || '' }}
+          SUPABASE_FUNCTIONS_URL: ${{ secrets.SUPABASE_FUNCTIONS_URL || '' }}
+        if: env.ADMIN_API_URL != '' || env.SUPABASE_FUNCTIONS_URL != ''
         run: |
           # prefer ADMIN_API_URL secret (explicit); fall back to SUPABASE_FUNCTIONS_URL + /admin-reset
           if [ -n "$ADMIN_API_URL" ]; then
@@ -83,8 +83,8 @@ jobs:
           FTP_HOST: ${{ secrets.FTP_HOST }}
           FTP_USER: ${{ secrets.FTP_USER }}
           FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
-          FTP_PORT: ${{ secrets.FTP_PORT }}
-          FTP_SSL_VERIFY: ${{ secrets.FTP_SSL_VERIFY }}
+          FTP_PORT: ${{ secrets.FTP_PORT || '21' }}
+          FTP_SSL_VERIFY: ${{ secrets.FTP_SSL_VERIFY || 'true' }}
         run: |
           sudo apt-get update && sudo apt-get install -y lftp
           set -e
