@@ -154,7 +154,11 @@ async function trackPageView() {
 
 // Generate session ID for anonymous users (stored in sessionStorage for current tab)
 function generateSessionId() {
-    const sessionId = 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    // Use a cryptographically secure random value as the unpredictable component (16 bytes => 32 hex chars)
+    const randomBytes = new Uint8Array(16);
+    window.crypto.getRandomValues(randomBytes);
+    const hex = Array.from(randomBytes).map(b => b.toString(16).padStart(2, '0')).join('');
+    const sessionId = 'session_' + Date.now() + '_' + hex;
     sessionStorage.setItem('ace1_session_id', sessionId);
     return sessionId;
 }
