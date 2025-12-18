@@ -266,11 +266,10 @@ class CheckoutManager {
             }
         }
         // Get Razorpay config
-        const config = window.RAZORPAY_CONFIG || {
-            KEY_ID: 'rzp_test_your_key_here',
-            COMPANY_NAME: 'Ace#1',
-            THEME_COLOR: '#FF6B00'
-        };
+        const config = window.RAZORPAY_CONFIG;
+        if (!config || !config.KEY_ID) {
+            throw new Error('Razorpay configuration not loaded. Please check RAZORPAY_CONFIG.');
+        }
 
         // Razorpay configuration
         const options = {
