@@ -10,6 +10,8 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       supabase_enabled: ${{ steps.check-supabase.outputs.enabled }}
+    env:
+      ENABLE_SUPABASE_DEPLOY: ${{ secrets.ENABLE_SUPABASE_DEPLOY || 'false' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -28,7 +30,7 @@ jobs:
       - name: Check Supabase deploy enabled
         id: check-supabase
         run: |
-          ENABLE_DEPLOY="${{ secrets.ENABLE_SUPABASE_DEPLOY }}"
+          ENABLE_DEPLOY="${ENABLE_SUPABASE_DEPLOY}"
           if [ "$ENABLE_DEPLOY" = "true" ]; then
             echo "enabled=true" >> $GITHUB_OUTPUT
             echo "Supabase deploy is enabled."
@@ -132,7 +134,7 @@ jobs:
           FTP_USER: ${{ secrets.FTP_USER }}
           FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
           FTP_PORT: ${{ secrets.FTP_PORT }}
-          FTP_SSL_VERIFY: ${{ secrets.FTP_SSL_VERIFY }}
+          FTP_SSL_VERIFY: ${{ secrets.FTP_SSL_VERIFY || 'true' }}
         run: |
           sudo apt-get update && sudo apt-get install -y lftp
           set -e
