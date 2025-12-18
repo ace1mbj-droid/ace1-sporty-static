@@ -117,19 +117,32 @@ class ImageOptimizer {
 
     // Utility: Convert image URLs to optimized versions
     optimizeImageUrl(url, width = 800) {
+        // Validate URL and check hostname for proper URL sanitization
+        let parsedUrl;
+        try {
+            parsedUrl = new URL(url);
+        } catch {
+            // Invalid URL, return as-is
+            return url;
+        }
+        
+        const hostname = parsedUrl.hostname;
+        
         // For external images (like i.ibb.co), add width parameter if supported
-        if (url.includes('i.ibb.co')) {
+        if (hostname === 'i.ibb.co' || hostname.endsWith('.ibb.co')) {
             // ImgBB doesn't support URL parameters, images load as-is
             return url;
         }
         
-        if (url.includes('unsplash.com')) {
+        if (hostname === 'unsplash.com' || hostname.endsWith('.unsplash.com')) {
             // Unsplash supports width parameter
-            const separator = url.includes('?') ? '&' : '?';
-            return `${url}${separator}w=${width}&auto=format&q=75`;
+            parsedUrl.searchParams.set('w', String(width));
+            parsedUrl.searchParams.set('auto', 'format');
+            parsedUrl.searchParams.set('q', '75');
+            return parsedUrl.toString();
         }
         
-        if (url.includes('ui-avatars.com')) {
+        if (hostname === 'ui-avatars.com') {
             // Already optimized
             return url;
         }

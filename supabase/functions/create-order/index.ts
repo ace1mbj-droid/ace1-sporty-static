@@ -155,7 +155,8 @@ export async function handler(req: Request): Promise<Response> {
         // Timeout
         return new Response(JSON.stringify({ error: 'Payment provider timeout' }), { status: 504 });
       }
-      return new Response(JSON.stringify({ error: 'Payment provider error', details: String(e) }), { status: 502 });
+      // Return generic error message to avoid exposing stack traces to clients
+      return new Response(JSON.stringify({ error: 'Payment provider error' }), { status: 502 });
     } finally {
       clearTimeout(timeout);
     }
@@ -166,12 +167,14 @@ export async function handler(req: Request): Promise<Response> {
     } catch (e) {
       console.error('create-order: failed to insert payment record', String(e));
       // continue — we already created the order; surface a 500 so caller knows about partial failure
-      return new Response(JSON.stringify({ error: 'failed to record payment', details: String(e) }), { status: 500 });
+      // Return generic error message to avoid exposing stack traces to clients
+      return new Response(JSON.stringify({ error: 'Failed to record payment' }), { status: 500 });
     }
 
     return new Response(JSON.stringify({ orderId: order.id, razor: razorData }), { status: 200 });
   } catch (err) {
     console.error('create-order: unhandled exception', String(err));
-    return new Response(JSON.stringify({ error: String(err) }), { status: 500 });
+    // Return generic error message to avoid exposing stack traces to clients
+    return new Response(JSON.stringify({ error: 'Internal server error' }), { status: 500 });
   }
 }

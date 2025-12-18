@@ -43,6 +43,7 @@ export async function handler(req: Request): Promise<Response> {
     return new Response(JSON.stringify({ ok: true }), { status: 200 });
   } catch (err) {
     console.error(err);
-    return new Response(JSON.stringify({ error: String(err) }), { status: 500 });
+    // Return generic error message to avoid exposing stack traces to clients
+    return new Response(JSON.stringify({ error: 'Internal server error' }), { status: 500 });
   }
 }
