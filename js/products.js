@@ -48,14 +48,17 @@ class ProductFilterManager {
 
             const { data, error } = await supabase
                 .from('categories')
-                .select('name, slug')
-                .order('name');
+                .select('name, slug, parent_id, sort_order, is_active')
+                .eq('is_active', true)
+                .order('sort_order', { ascending: true })
+                .order('name', { ascending: true });
 
             if (error) throw error;
 
             this.categories = data || [];
             this.categorySlugByAny = new Map();
 
+            // Build slug mappings for backward compatibility
             (this.categories || []).forEach(c => {
                 const slug = this.slugifyCategory(c.slug || c.name);
                 const nameKey = String(c.name || '').trim().toLowerCase();
@@ -79,22 +82,74 @@ class ProductFilterManager {
         if (!container) return;
         if (!this.categories?.length) return;
 
-        container.innerHTML = this.categories
+        // Organize categories hierarchically
+        const primaryCategories = this.categories.filter(c => !c.parent_id);
+        const subcategoriesByParent = new Map();
+
+        // Group subcategories by parent_id
+        this.categories.filter(c => c.parent_id).forEach(sub => {
+            if (!subcategoriesByParent.has(sub.parent_id)) {
+                subcategoriesByParent.set(sub.parent_id, []);
+            }
+            subcategoriesByParent.get(sub.parent_id).push(sub);
+        });
+
+        // Generate HTML for hierarchical categories
+        const categoryHtml = primaryCategories
             .filter(c => this.slugifyCategory(c.slug || c.name))
-            .map(c => {
-                const slug = this.slugifyCategory(c.slug || c.name);
-                const label = c.name || slug;
-                return `
-                    <label class="filter-checkbox">
-                        <input type="checkbox" name="category" value="${slug}" checked>
-                        <span>${label}</span>
-                    </label>
-                `;
+            .map(primary => {
+                const primarySlug = this.slugifyCategory(primary.slug || primary.name);
+                const primaryLabel = primary.name || primarySlug;
+                const subcategories = subcategoriesByParent.get(primary.id) || [];
+
+                if (subcategories.length > 0) {
+                    // Primary category with subcategories
+                    const subcategoryCheckboxes = subcategories
+                        .filter(sub => this.slugifyCategory(sub.slug || sub.name))
+                        .map(sub => {
+                            const subSlug = this.slugifyCategory(sub.slug || sub.name);
+                            const subLabel = sub.name || subSlug;
+                            return `
+                                <label class="filter-checkbox subcategory-checkbox">
+                                    <input type="checkbox" name="category" value="${subSlug}" checked>
+                                    <span>${subLabel}</span>
+                                </label>
+                            `;
+                        })
+                        .join('');
+
+                    return `
+                        <div class="category-group">
+                            <div class="primary-category">
+                                <label class="filter-checkbox primary-checkbox">
+                                    <input type="checkbox" name="category" value="${primarySlug}" checked>
+                                    <span><strong>${primaryLabel}</strong></span>
+                                </label>
+                            </div>
+                            <div class="subcategories">
+                                ${subcategoryCheckboxes}
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    // Primary category without subcategories
+                    return `
+                        <label class="filter-checkbox">
+                            <input type="checkbox" name="category" value="${primarySlug}" checked>
+                            <span>${primaryLabel}</span>
+                        </label>
+                    `;
+                }
             })
             .join('');
 
+        container.innerHTML = categoryHtml;
+
         // Default: all categories selected
         this.updateCategoryFilterFromCheckboxes();
+
+        // Re-attach event listeners for the new checkboxes
+        this.attachCategoryEventListeners();
     }
 
     async loadProductsFromSupabase() {
@@ -291,11 +346,38 @@ class ProductFilterManager {
         return stars.length;
     }
 
-    setupEventListeners() {
-        // Category filters (sidebar checkboxes)
+    attachCategoryEventListeners() {
+        // Category filters (sidebar checkboxes) - hierarchical handling
         document.querySelectorAll('input[type="checkbox"][name="category"]').forEach(cb => {
-            cb.addEventListener('change', () => this.updateCategoryFilterFromCheckboxes());
+            cb.addEventListener('change', (e) => {
+                const checkbox = e.target;
+                const slug = checkbox.value;
+
+                // Find the category
+                const category = this.categories.find(c =>
+                    this.slugifyCategory(c.slug || c.name) === slug
+                );
+
+                if (category && !category.parent_id) {
+                    // This is a primary category - check/uncheck all subcategories
+                    const subcategories = this.categories.filter(c => c.parent_id === category.id);
+                    subcategories.forEach(sub => {
+                        const subSlug = this.slugifyCategory(sub.slug || sub.name);
+                        const subCheckbox = document.querySelector(`input[type="checkbox"][name="category"][value="${subSlug}"]`);
+                        if (subCheckbox) {
+                            subCheckbox.checked = checkbox.checked;
+                        }
+                    });
+                }
+
+                this.updateCategoryFilterFromCheckboxes();
+            });
         });
+    }
+
+    setupEventListeners() {
+        // Attach category event listeners
+        this.attachCategoryEventListeners();
 
         // Price range slider
         const priceMin = document.getElementById('price-min');
@@ -369,10 +451,76 @@ class ProductFilterManager {
     }
 
     updateCategoryFilterFromCheckboxes() {
-        const checkboxes = Array.from(document.querySelectorAll('input[type="checkbox"][name="category"]'));
-        const selected = checkboxes.filter(cb => cb.checked).map(cb => cb.value);
-        this.filters.categories = selected;
+        // Build hierarchical mappings
+        const primaryCategories = this.categories.filter(c => !c.parent_id);
+        const subcategoriesByParent = new Map();
+        const parentBySubcategory = new Map();
+
+        this.categories.filter(c => c.parent_id).forEach(sub => {
+            if (!subcategoriesByParent.has(sub.parent_id)) {
+                subcategoriesByParent.set(sub.parent_id, []);
+            }
+            subcategoriesByParent.get(sub.parent_id).push(sub);
+            parentBySubcategory.set(sub.id, sub.parent_id);
+        });
+
+        // Get all category checkboxes
+        const allCheckboxes = Array.from(document.querySelectorAll('input[type="checkbox"][name="category"]'));
+        const selectedSlugs = new Set();
+
+        // Process each checkbox
+        allCheckboxes.forEach(checkbox => {
+            if (checkbox.checked) {
+                const slug = checkbox.value;
+                selectedSlugs.add(slug);
+
+                // If this is a primary category, add all its subcategories
+                const primaryCategory = primaryCategories.find(pc =>
+                    this.slugifyCategory(pc.slug || pc.name) === slug
+                );
+                if (primaryCategory) {
+                    const subcategories = subcategoriesByParent.get(primaryCategory.id) || [];
+                    subcategories.forEach(sub => {
+                        const subSlug = this.slugifyCategory(sub.slug || sub.name);
+                        selectedSlugs.add(subSlug);
+                    });
+                }
+            }
+        });
+
+        this.filters.categories = Array.from(selectedSlugs);
         this.applyFilters();
+
+        // Update checkbox states based on hierarchical logic
+        this.updateCheckboxStates(primaryCategories, subcategoriesByParent);
+    }
+
+    updateCheckboxStates(primaryCategories, subcategoriesByParent) {
+        primaryCategories.forEach(primary => {
+            const primarySlug = this.slugifyCategory(primary.slug || primary.name);
+            const primaryCheckbox = document.querySelector(`input[type="checkbox"][name="category"][value="${primarySlug}"]`);
+            const subcategories = subcategoriesByParent.get(primary.id) || [];
+
+            if (subcategories.length > 0) {
+                // Check if all subcategories are selected
+                const allSubSelected = subcategories.every(sub => {
+                    const subSlug = this.slugifyCategory(sub.slug || sub.name);
+                    return this.filters.categories.includes(subSlug);
+                });
+
+                // Check if any subcategories are selected
+                const anySubSelected = subcategories.some(sub => {
+                    const subSlug = this.slugifyCategory(sub.slug || sub.name);
+                    return this.filters.categories.includes(subSlug);
+                });
+
+                // Update primary checkbox state
+                if (primaryCheckbox) {
+                    primaryCheckbox.checked = allSubSelected;
+                    primaryCheckbox.indeterminate = anySubSelected && !allSubSelected;
+                }
+            }
+        });
     }
 
     updateSizeFilter() {
