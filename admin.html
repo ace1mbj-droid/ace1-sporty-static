@@ -920,6 +920,174 @@
         </div>
     </div>
 
+    <!-- Stock Adjustment Modal -->
+    <div class="modal" id="stock-adjust-modal" style="display:none;">
+        <div class="modal-content" style="max-width:450px;">
+            <div class="modal-header">
+                <h2>Adjust Stock</h2>
+                <button class="modal-close" onclick="adminExtended.closeModal('stock-adjust-modal')">&times;</button>
+            </div>
+            <form onsubmit="event.preventDefault(); adminExtended.saveStockAdjustment();">
+                <input type="hidden" id="adjust-product-id">
+                <div class="form-group" style="margin-bottom:15px;">
+                    <label style="display:block;margin-bottom:5px;font-weight:600;">Product</label>
+                    <p id="adjust-product-name" style="font-size:1.1em;font-weight:500;margin:0;">-</p>
+                </div>
+                <div class="form-group" style="margin-bottom:15px;">
+                    <label style="display:block;margin-bottom:5px;font-weight:600;">Size *</label>
+                    <select id="adjust-size" required style="width:100%;padding:10px;border:1px solid #ddd;border-radius:4px;">
+                        <option>Loading sizes...</option>
+                    </select>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;margin-bottom:15px;">
+                    <div class="form-group">
+                        <label style="display:block;margin-bottom:5px;font-weight:600;">Type *</label>
+                        <select id="adjust-type" required style="width:100%;padding:10px;border:1px solid #ddd;border-radius:4px;">
+                            <option value="add">Add Stock</option>
+                            <option value="remove">Remove Stock</option>
+                            <option value="set">Set Stock</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label style="display:block;margin-bottom:5px;font-weight:600;">Quantity *</label>
+                        <input type="number" id="adjust-quantity" required min="0" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:4px;" placeholder="0">
+                    </div>
+                </div>
+                <div class="form-group" style="margin-bottom:20px;">
+                    <label style="display:block;margin-bottom:5px;font-weight:600;">Reason</label>
+                    <select id="adjust-reason" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:4px;">
+                        <option value="restock">Restock</option>
+                        <option value="return">Customer Return</option>
+                        <option value="damage">Damaged/Lost</option>
+                        <option value="correction">Inventory Correction</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                <div style="display:flex;gap:10px;justify-content:flex-end;">
+                    <button type="button" class="btn btn-secondary" onclick="adminExtended.closeModal('stock-adjust-modal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Adjustment</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Coupon Modal -->
+    <div class="modal" id="coupon-modal">
+        <div class="modal-content" style="max-width:500px;">
+            <div class="modal-header">
+                <h2 id="coupon-modal-title">Create Coupon</h2>
+                <button class="modal-close" onclick="adminExtended.closeModal('coupon-modal')">&times;</button>
+            </div>
+            <form onsubmit="event.preventDefault(); adminExtended.saveCoupon();">
+                <input type="hidden" id="coupon-id">
+                <div class="form-group" style="margin-bottom:15px;">
+                    <label style="display:block;margin-bottom:5px;font-weight:600;">Coupon Code *</label>
+                    <input type="text" id="coupon-code" required style="width:100%;padding:10px;border:1px solid #ddd;border-radius:4px;" placeholder="e.g., SAVE20">
+                </div>
+                <div class="form-group" style="margin-bottom:15px;">
+                    <label style="display:block;margin-bottom:5px;font-weight:600;">Description</label>
+                    <input type="text" id="coupon-description" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:4px;" placeholder="e.g., 20% off your order">
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;margin-bottom:15px;">
+                    <div class="form-group">
+                        <label style="display:block;margin-bottom:5px;font-weight:600;">Discount Type</label>
+                        <select id="coupon-type" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:4px;">
+                            <option value="percentage">Percentage</option>
+                            <option value="fixed">Fixed Amount</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label style="display:block;margin-bottom:5px;font-weight:600;">Discount Value *</label>
+                        <input type="number" id="coupon-value" required min="0" step="0.01" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:4px;" placeholder="e.g., 20">
+                    </div>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;margin-bottom:15px;">
+                    <div class="form-group">
+                        <label style="display:block;margin-bottom:5px;font-weight:600;">Min Order (₹)</label>
+                        <input type="number" id="coupon-min-order" min="0" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:4px;" placeholder="0">
+                    </div>
+                    <div class="form-group">
+                        <label style="display:block;margin-bottom:5px;font-weight:600;">Usage Limit</label>
+                        <input type="number" id="coupon-usage-limit" min="0" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:4px;" placeholder="Unlimited">
+                    </div>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;margin-bottom:15px;">
+                    <div class="form-group">
+                        <label style="display:block;margin-bottom:5px;font-weight:600;">Start Date</label>
+                        <input type="date" id="coupon-start" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:4px;">
+                    </div>
+                    <div class="form-group">
+                        <label style="display:block;margin-bottom:5px;font-weight:600;">End Date</label>
+                        <input type="date" id="coupon-end" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:4px;">
+                    </div>
+                </div>
+                <div class="form-group" style="margin-bottom:20px;">
+                    <label style="display:flex;align-items:center;gap:10px;cursor:pointer;">
+                        <input type="checkbox" id="coupon-active" checked style="width:18px;height:18px;">
+                        <span style="font-weight:600;">Active</span>
+                    </label>
+                </div>
+                <div style="display:flex;gap:10px;justify-content:flex-end;">
+                    <button type="button" class="btn btn-secondary" onclick="adminExtended.closeModal('coupon-modal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Coupon</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Shipping Modal -->
+    <div class="modal" id="shipping-modal">
+        <div class="modal-content" style="max-width:500px;">
+            <div class="modal-header">
+                <h2 id="shipping-modal-title">Add Shipping Method</h2>
+                <button class="modal-close" onclick="adminExtended.closeModal('shipping-modal')">&times;</button>
+            </div>
+            <form onsubmit="event.preventDefault(); adminExtended.saveShippingMethod();">
+                <input type="hidden" id="shipping-id">
+                <div class="form-group" style="margin-bottom:15px;">
+                    <label style="display:block;margin-bottom:5px;font-weight:600;">Method Name *</label>
+                    <input type="text" id="shipping-name" required style="width:100%;padding:10px;border:1px solid #ddd;border-radius:4px;" placeholder="e.g., Standard Shipping">
+                </div>
+                <div class="form-group" style="margin-bottom:15px;">
+                    <label style="display:block;margin-bottom:5px;font-weight:600;">Description</label>
+                    <input type="text" id="shipping-description" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:4px;" placeholder="e.g., Delivery in 5-7 business days">
+                </div>
+                <div class="form-group" style="margin-bottom:15px;">
+                    <label style="display:block;margin-bottom:5px;font-weight:600;">Carrier</label>
+                    <input type="text" id="shipping-carrier" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:4px;" placeholder="e.g., India Post, BlueDart">
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:15px;margin-bottom:15px;">
+                    <div class="form-group">
+                        <label style="display:block;margin-bottom:5px;font-weight:600;">Rate (₹) *</label>
+                        <input type="number" id="shipping-rate" required min="0" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:4px;" placeholder="99">
+                    </div>
+                    <div class="form-group">
+                        <label style="display:block;margin-bottom:5px;font-weight:600;">Min Days</label>
+                        <input type="number" id="shipping-days-min" min="1" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:4px;" placeholder="3">
+                    </div>
+                    <div class="form-group">
+                        <label style="display:block;margin-bottom:5px;font-weight:600;">Max Days</label>
+                        <input type="number" id="shipping-days-max" min="1" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:4px;" placeholder="7">
+                    </div>
+                </div>
+                <div class="form-group" style="margin-bottom:15px;">
+                    <label style="display:block;margin-bottom:5px;font-weight:600;">Free Shipping Above (₹)</label>
+                    <input type="number" id="shipping-free-threshold" min="0" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:4px;" placeholder="e.g., 999 (leave empty for no free shipping)">
+                </div>
+                <div class="form-group" style="margin-bottom:20px;">
+                    <label style="display:flex;align-items:center;gap:10px;cursor:pointer;">
+                        <input type="checkbox" id="shipping-active" checked style="width:18px;height:18px;">
+                        <span style="font-weight:600;">Active</span>
+                    </label>
+                </div>
+                <div style="display:flex;gap:10px;justify-content:flex-end;">
+                    <button type="button" class="btn btn-secondary" onclick="adminExtended.closeModal('shipping-modal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Method</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- History Modal -->
     <div class="modal" id="history-modal">
         <div class="modal-content">

@@ -693,6 +693,63 @@ class AdminExtended {
         }
     }
 
+    showCouponModal(coupon = null) {
+        const modal = document.getElementById('coupon-modal');
+        if (!modal) {
+            showNotification('Coupon modal not found', 'error');
+            return;
+        }
+        
+        // Reset form
+        document.getElementById('coupon-id').value = coupon?.id || '';
+        document.getElementById('coupon-code').value = coupon?.code || '';
+        document.getElementById('coupon-description').value = coupon?.description || '';
+        document.getElementById('coupon-type').value = coupon?.discount_type || 'percentage';
+        document.getElementById('coupon-value').value = coupon?.discount_value || '';
+        document.getElementById('coupon-min-order').value = coupon?.min_order_value_cents ? (coupon.min_order_value_cents / 100) : '';
+        document.getElementById('coupon-usage-limit').value = coupon?.usage_limit || '';
+        document.getElementById('coupon-start').value = coupon?.start_date || '';
+        document.getElementById('coupon-end').value = coupon?.end_date || '';
+        document.getElementById('coupon-active').checked = coupon?.is_active !== false;
+        
+        document.getElementById('coupon-modal-title').textContent = coupon ? 'Edit Coupon' : 'Create Coupon';
+        modal.style.display = 'flex';
+    }
+
+    async editCoupon(id) {
+        try {
+            const { data, error } = await this.supabase
+                .from('coupons')
+                .select('*')
+                .eq('id', id)
+                .single();
+            
+            if (error) throw error;
+            this.showCouponModal(data);
+        } catch (error) {
+            console.error('Error loading coupon:', error);
+            showNotification('Failed to load coupon', 'error');
+        }
+    }
+
+    async deleteCoupon(id) {
+        if (!confirm('Are you sure you want to delete this coupon?')) return;
+        
+        try {
+            const { error } = await this.supabase
+                .from('coupons')
+                .delete()
+                .eq('id', id);
+            
+            if (error) throw error;
+            showNotification('Coupon deleted successfully', 'success');
+            this.loadCoupons();
+        } catch (error) {
+            console.error('Error deleting coupon:', error);
+            showNotification('Failed to delete coupon', 'error');
+        }
+    }
+
     // ========================================
     // SHIPPING MANAGEMENT
     // ========================================
@@ -736,6 +793,90 @@ class AdminExtended {
                 </div>
             </div>
         `).join('') || '<p style="text-align:center;padding:20px;color:#666;">No shipping methods configured</p>';
+    }
+
+    showShippingModal(method = null) {
+        const modal = document.getElementById('shipping-modal');
+        if (!modal) {
+            showNotification('Shipping modal not found', 'error');
+            return;
+        }
+        
+        // Reset form
+        document.getElementById('shipping-id').value = method?.id || '';
+        document.getElementById('shipping-name').value = method?.name || '';
+        document.getElementById('shipping-description').value = method?.description || '';
+        document.getElementById('shipping-carrier').value = method?.carrier || '';
+        document.getElementById('shipping-rate').value = method?.base_rate_cents ? (method.base_rate_cents / 100) : '';
+        document.getElementById('shipping-days-min').value = method?.estimated_days_min || '';
+        document.getElementById('shipping-days-max').value = method?.estimated_days_max || '';
+        document.getElementById('shipping-free-threshold').value = method?.free_shipping_threshold_cents ? (method.free_shipping_threshold_cents / 100) : '';
+        document.getElementById('shipping-active').checked = method?.is_active !== false;
+        
+        document.getElementById('shipping-modal-title').textContent = method ? 'Edit Shipping Method' : 'Add Shipping Method';
+        modal.style.display = 'flex';
+    }
+
+    async editShippingMethod(id) {
+        try {
+            const { data, error } = await this.supabase
+                .from('shipping_methods')
+                .select('*')
+                .eq('id', id)
+                .single();
+            
+            if (error) throw error;
+            this.showShippingModal(data);
+        } catch (error) {
+            console.error('Error loading shipping method:', error);
+            showNotification('Failed to load shipping method', 'error');
+        }
+    }
+
+    async saveShippingMethod() {
+        const id = document.getElementById('shipping-id').value;
+        const data = {
+            name: document.getElementById('shipping-name').value,
+            description: document.getElementById('shipping-description').value,
+            carrier: document.getElementById('shipping-carrier').value,
+            base_rate_cents: parseInt(document.getElementById('shipping-rate').value || 0) * 100,
+            estimated_days_min: parseInt(document.getElementById('shipping-days-min').value) || 3,
+            estimated_days_max: parseInt(document.getElementById('shipping-days-max').value) || 7,
+            free_shipping_threshold_cents: document.getElementById('shipping-free-threshold').value ? parseInt(document.getElementById('shipping-free-threshold').value) * 100 : null,
+            is_active: document.getElementById('shipping-active').checked
+        };
+
+        try {
+            if (id) {
+                await this.supabase.from('shipping_methods').update(data).eq('id', id);
+            } else {
+                const { data: lastMethod } = await this.supabase.from('shipping_methods').select('sort_order').order('sort_order', { ascending: false }).limit(1).single();
+                data.sort_order = (lastMethod?.sort_order || 0) + 1;
+                await this.supabase.from('shipping_methods').insert(data);
+            }
+            showNotification('Shipping method saved successfully', 'success');
+            this.closeModal('shipping-modal');
+            this.loadShippingMethods();
+        } catch (error) {
+            console.error('Error saving shipping method:', error);
+            showNotification('Failed to save shipping method', 'error');
+        }
+    }
+
+    async toggleShippingMethod(id, active) {
+        try {
+            const { error } = await this.supabase
+                .from('shipping_methods')
+                .update({ is_active: active })
+                .eq('id', id);
+            
+            if (error) throw error;
+            showNotification(`Shipping method ${active ? 'enabled' : 'disabled'}`, 'success');
+            this.loadShippingMethods();
+        } catch (error) {
+            console.error('Error toggling shipping method:', error);
+            showNotification('Failed to update shipping method', 'error');
+        }
     }
 
     // ========================================
