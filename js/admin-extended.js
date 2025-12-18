@@ -1266,15 +1266,54 @@ class AdminExtended {
                 .order('name');
 
             if (error) throw error;
+            
+            // Update category stats
+            this.updateCategoryStats(data);
+            
             this.renderCategories(data);
+            
+            // Also populate parent category dropdown
+            this.populateCategoryDropdown(data);
+            
             return data;
         } catch (error) {
             console.error('Error loading categories:', error);
             const container = document.getElementById('categories-container');
             if (container) {
-                container.innerHTML = '<p class="error">Failed to load categories</p>';
+                container.innerHTML = '<p class="error" style="color:#dc3545;padding:20px;text-align:center;">Failed to load categories. Check database connection.</p>';
             }
         }
+    }
+    
+    updateCategoryStats(categories) {
+        const total = categories?.length || 0;
+        const parents = categories?.filter(c => !c.parent_id).length || 0;
+        const subs = categories?.filter(c => c.parent_id).length || 0;
+        
+        const totalEl = document.getElementById('categories-total');
+        const parentEl = document.getElementById('categories-parent');
+        const subEl = document.getElementById('categories-sub');
+        
+        if (totalEl) totalEl.textContent = total;
+        if (parentEl) parentEl.textContent = parents;
+        if (subEl) subEl.textContent = subs;
+    }
+    
+    populateCategoryDropdown(categories) {
+        const select = document.getElementById('category-parent');
+        if (!select) return;
+        
+        // Keep first option (None)
+        select.innerHTML = '<option value="">None (Top Level)</option>';
+        
+        // Add categories (only top-level as parents)
+        const parents = categories?.filter(c => !c.parent_id) || [];
+        parents.forEach(cat => {
+            const option = document.createElement('option');
+            option.value = cat.id;
+            option.textContent = cat.name;
+            select.appendChild(option);
+        });
     }
 
     renderCategories(categories) {
@@ -1282,7 +1321,12 @@ class AdminExtended {
         if (!container) return;
 
         if (!categories?.length) {
-            container.innerHTML = '<p>No categories found. Create your first category!</p>';
+            container.innerHTML = `
+                <div style="text-align:center;padding:40px;color:#666;">
+                    <i class="fas fa-tags" style="font-size:48px;margin-bottom:15px;opacity:0.5;"></i>
+                    <p>No categories found. Create your first category!</p>
+                </div>
+            `;
             return;
         }
 
@@ -1297,6 +1341,22 @@ class AdminExtended {
         });
 
         container.innerHTML = `
+            <style>
+                .category-tree { display: flex; flex-direction: column; gap: 8px; }
+                .category-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 15px; background: #fff; border: 1px solid #eee; border-radius: 8px; transition: all 0.2s; }
+                .category-item:hover { border-color: #007bff; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+                .category-name { display: flex; align-items: center; gap: 10px; }
+                .category-name i { color: #666; width: 20px; }
+                .category-name span { font-weight: 500; }
+                .category-name small { color: #999; font-size: 0.85em; }
+                .category-actions { display: flex; gap: 5px; }
+                .category-actions button { padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer; font-size: 0.85em; }
+                .category-actions .btn-secondary { background: #e9ecef; color: #495057; }
+                .category-actions .btn-secondary:hover { background: #dee2e6; }
+                .category-actions .btn-danger { background: #dc3545; color: #fff; }
+                .category-actions .btn-danger:hover { background: #c82333; }
+                .subcategory { margin-left: 30px; border-left: 2px solid #e9ecef; }
+            </style>
             <div class="category-tree">
                 ${rootCategories.map(cat => this.renderCategoryItem(cat, childMap)).join('')}
             </div>
@@ -1305,18 +1365,20 @@ class AdminExtended {
 
     renderCategoryItem(category, childMap, level = 0) {
         const children = childMap[category.id] || [];
+        const isSubcategory = level > 0;
         return `
-            <div class="category-item" style="margin-left: ${level * 20}px;">
+            <div class="category-item ${isSubcategory ? 'subcategory' : ''}" style="margin-left: ${level * 25}px;">
                 <div class="category-name">
-                    <i class="fas fa-${children.length ? 'folder' : 'tag'}"></i>
+                    <i class="fas fa-${children.length ? 'folder-open' : 'tag'}" style="color: ${children.length ? '#ffc107' : '#007bff'};"></i>
                     <span>${category.name}</span>
-                    <small class="text-muted">(${category.slug})</small>
+                    <small>(${category.slug})</small>
+                    ${category.description ? `<small style="color:#888;margin-left:10px;" title="${category.description}"><i class="fas fa-info-circle"></i></small>` : ''}
                 </div>
                 <div class="category-actions">
-                    <button onclick="adminExtended.showCategoryModal(${JSON.stringify(category).replace(/"/g, '&quot;')})" class="btn btn-sm btn-secondary">
+                    <button onclick="adminExtended.showCategoryModal(${JSON.stringify(category).replace(/"/g, '&quot;')})" class="btn btn-sm btn-secondary" title="Edit">
                         <i class="fas fa-edit"></i>
                     </button>
-                    <button onclick="adminExtended.deleteCategory('${category.id}')" class="btn btn-sm btn-danger">
+                    <button onclick="adminExtended.deleteCategory('${category.id}')" class="btn btn-sm btn-danger" title="Delete">
                         <i class="fas fa-trash"></i>
                     </button>
                 </div>
@@ -1337,53 +1399,100 @@ class AdminExtended {
             return;
         }
         
+        // Clear form error
+        const errorEl = document.getElementById('category-form-error');
+        if (errorEl) errorEl.style.display = 'none';
+        
         document.getElementById('category-id').value = category?.id || '';
         document.getElementById('category-name').value = category?.name || '';
         document.getElementById('category-slug').value = category?.slug || '';
         document.getElementById('category-description').value = category?.description || '';
         document.getElementById('category-parent').value = category?.parent_id || '';
         document.getElementById('category-modal-title').textContent = category ? 'Edit Category' : 'Add Category';
-        modal.style.display = 'flex';
+        
+        // Use active class for modal
+        modal.classList.add('active');
     }
 
     async saveCategoryFromModal() {
         const id = document.getElementById('category-id').value;
-        const name = document.getElementById('category-name').value;
+        const name = document.getElementById('category-name').value.trim();
+        
+        if (!name) {
+            const errorEl = document.getElementById('category-form-error');
+            if (errorEl) {
+                errorEl.textContent = 'Category name is required';
+                errorEl.style.display = 'block';
+            }
+            return;
+        }
+        
         const data = {
             name,
-            slug: document.getElementById('category-slug').value || name.toLowerCase().replace(/\s+/g, '-'),
-            description: document.getElementById('category-description').value || null,
+            slug: document.getElementById('category-slug').value.trim() || name.toLowerCase().replace(/\s+/g, '-'),
+            description: document.getElementById('category-description').value.trim() || null,
             parent_id: document.getElementById('category-parent').value || null
         };
         
-        await this.saveCategory(id || null, data);
-        this.closeModal('category-modal');
+        const success = await this.saveCategory(id || null, data);
+        if (success) {
+            document.getElementById('category-modal').classList.remove('active');
+        }
     }
 
     async saveCategory(id, data) {
         try {
+            let result;
             if (id) {
-                await this.supabase.from('categories').update(data).eq('id', id);
+                result = await this.supabase.from('categories').update(data).eq('id', id);
             } else {
-                await this.supabase.from('categories').insert(data);
+                result = await this.supabase.from('categories').insert(data);
             }
+            
+            if (result.error) throw result.error;
+            
             showNotification('Category saved successfully', 'success');
-            this.loadCategoriesFromDB();
+            
+            // Reload categories
+            await this.loadCategoriesFromDB();
+            
+            // Sync with products tab - reload product form category dropdown
+            if (window.adminPanel) {
+                window.adminPanel.loadProducts();
+            }
+            
+            return true;
         } catch (error) {
             console.error('Error saving category:', error);
-            showNotification('Failed to save category', 'error');
+            showNotification('Failed to save category: ' + (error.message || 'Unknown error'), 'error');
+            
+            const errorEl = document.getElementById('category-form-error');
+            if (errorEl) {
+                errorEl.textContent = error.message || 'Failed to save category';
+                errorEl.style.display = 'block';
+            }
+            return false;
         }
     }
 
     async deleteCategory(id) {
-        if (!confirm('Delete this category?')) return;
+        if (!confirm('Delete this category? Products using this category will need to be updated.')) return;
         try {
-            await this.supabase.from('categories').delete().eq('id', id);
+            const { error } = await this.supabase.from('categories').delete().eq('id', id);
+            if (error) throw error;
+            
             showNotification('Category deleted', 'success');
-            this.loadCategoriesFromDB();
+            
+            // Reload categories
+            await this.loadCategoriesFromDB();
+            
+            // Sync with products tab
+            if (window.adminPanel) {
+                window.adminPanel.loadProducts();
+            }
         } catch (error) {
             console.error('Error deleting category:', error);
-            showNotification('Failed to delete category', 'error');
+            showNotification('Failed to delete category: ' + (error.message || 'Unknown error'), 'error');
         }
     }
 
