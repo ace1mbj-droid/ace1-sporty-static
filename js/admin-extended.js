@@ -214,9 +214,12 @@ class AdminExtended {
             this.closeModal('stock-adjust-modal');
             this.loadInventory();
             
-            // Sync products tab if adminPanel exists
+            // Sync products tab and dashboard if adminPanel exists
             if (window.adminPanel?.loadProducts) {
                 window.adminPanel.loadProducts();
+            }
+            if (window.adminPanel?.loadDashboard) {
+                window.adminPanel.loadDashboard();
             }
         } catch (error) {
             console.error('Error adjusting stock:', error);
