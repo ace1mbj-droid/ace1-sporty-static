@@ -627,6 +627,9 @@ class AdminPanel {
         const form = document.getElementById('product-form');
         
         form.reset();
+
+        // Always refresh category options from DB so admin category changes sync everywhere
+        this.populateProductCategorySelect(product?.category || '');
         
         if (product) {
             document.getElementById('modal-title').textContent = 'Edit Product';
@@ -634,7 +637,7 @@ class AdminPanel {
             document.getElementById('product-name').value = product.name;
             document.getElementById('product-description').value = product.description || '';
             document.getElementById('product-price').value = product.price;
-            document.getElementById('product-category').value = product.category || 'Running';
+            // category select value is set by populateProductCategorySelect()
             // Render inventory rows (size + stock)
             this.renderInventoryRows(product.inventory || []);
             document.getElementById('product-image').value = product.product_images?.[0]?.storage_path || '';
@@ -698,6 +701,84 @@ class AdminPanel {
         modal.classList.add('active');
     }
 
+    slugifyCategory(value) {
+        return String(value || '')
+            .trim()
+            .toLowerCase()
+            .replace(/\s+/g, '-')
+            .replace(/[^a-z0-9\-]/g, '')
+            .replace(/\-+/g, '-');
+    }
+
+    async populateProductCategorySelect(selectedValue) {
+        const select = document.getElementById('product-category');
+        if (!select || !this.supabase) return;
+
+        // Preserve the placeholder option
+        const placeholder = select.querySelector('option[value=""]')?.outerHTML || '<option value="">-- Select Category --</option>';
+        select.innerHTML = placeholder;
+
+        try {
+            const { data: categories, error } = await this.supabase
+                .from('categories')
+                .select('id, name, slug, parent_id')
+                .order('name');
+
+            if (error) throw error;
+
+            const normalizedSelected = this.slugifyCategory(selectedValue);
+
+            const normalizedSelected = this.slugifyCategory(selectedValue);
+
+            const byId = new Map();
+            (categories || []).forEach(c => byId.set(c.id, c));
+
+            const roots = (categories || []).filter(c => !c.parent_id);
+            const childrenByParent = new Map();
+            (categories || []).forEach(c => {
+                if (!c.parent_id) return;
+                if (!childrenByParent.has(c.parent_id)) childrenByParent.set(c.parent_id, []);
+                childrenByParent.get(c.parent_id).push(c);
+            });
+
+            const appendOption = (valueSlug, label) => {
+                const slug = this.slugifyCategory(valueSlug);
+                if (!slug) return;
+                const option = document.createElement('option');
+                option.value = slug;
+                option.textContent = label || slug;
+                select.appendChild(option);
+            };
+
+            roots
+                .sort((a, b) => String(a.name || '').localeCompare(String(b.name || '')))
+                .forEach(parent => {
+                    const parentSlug = this.slugifyCategory(parent.slug || parent.name);
+                    appendOption(parentSlug, parent.name || parentSlug);
+
+                    const kids = (childrenByParent.get(parent.id) || [])
+                        .sort((a, b) => String(a.name || '').localeCompare(String(b.name || '')));
+
+                    kids.forEach(child => {
+                        const childSlug = this.slugifyCategory(child.slug || child.name);
+                        const childLabel = child.name || childSlug;
+                        // Indent subcategory under its parent (value remains child slug)
+                        appendOption(childSlug, `↳ ${childLabel}`);
+                    });
+                });
+
+            // Try to match stored values that might be either slug or name
+            if (normalizedSelected) select.value = normalizedSelected;
+        } catch (err) {
+            console.warn('⚠️ Failed to load categories for product form; keeping existing options.', err);
+            // Best-effort: still set selection if option exists
+            const normalizedSelected = this.slugifyCategory(selectedValue);
+            if (normalizedSelected) {
+                select.value = normalizedSelected;
+            }
+        }
+    }
+
     closeProductModal() {
         document.getElementById('product-modal').classList.remove('active');
     }
@@ -736,7 +817,7 @@ class AdminPanel {
             name: document.getElementById('product-name').value,
             description: sanitizedDescription,
             price_cents: priceInCents,
-            category: document.getElementById('product-category').value,
+            category: this.slugifyCategory(document.getElementById('product-category').value),
             is_active: document.getElementById('product-active').checked,
             show_on_index: document.getElementById('product-featured').checked
         };
