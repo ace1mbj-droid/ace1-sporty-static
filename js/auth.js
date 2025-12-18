@@ -436,23 +436,6 @@ class AuthManager {
         }
     }
 
-    static isAuthenticated() {
-        return !!localStorage.getItem('ace1_token');
-    }
-
-    static getCurrentUser() {
-        const user = localStorage.getItem('ace1_user');
-        return user ? JSON.parse(user) : null;
-    }
-
-    static requireAuth() {
-        if (!this.isAuthenticated()) {
-            const currentPage = window.location.pathname;
-            window.location.href = `login.html?redirect=${encodeURIComponent(currentPage)}`;
-            return false;
-        }
-        return true;
-    }
 }
 
 // Initialize auth manager
@@ -460,3 +443,22 @@ const authManager = new AuthManager();
 
 // Export for use in other modules
 window.AuthManager = AuthManager;
+
+// Attach helper methods without using class static syntax for older browser support
+AuthManager.isAuthenticated = function () {
+    return !!localStorage.getItem('ace1_token');
+};
+
+AuthManager.getCurrentUser = function () {
+    const user = localStorage.getItem('ace1_user');
+    return user ? JSON.parse(user) : null;
+};
+
+AuthManager.requireAuth = function () {
+    if (!AuthManager.isAuthenticated()) {
+        const currentPage = window.location.pathname;
+        window.location.href = `login.html?redirect=${encodeURIComponent(currentPage)}`;
+        return false;
+    }
+    return true;
+};
