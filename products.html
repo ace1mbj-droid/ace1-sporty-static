@@ -93,18 +93,7 @@
                 <aside class="shop-sidebar">
                     <div class="filter-group">
                         <h3>Categories</h3>
-                        <label class="filter-checkbox">
-                            <input type="checkbox" name="category" value="runners" checked>
-                            <span>Runners</span>
-                        </label>
-                        <label class="filter-checkbox">
-                            <input type="checkbox" name="category" value="sneakers" checked>
-                            <span>Sneakers</span>
-                        </label>
-                        <label class="filter-checkbox">
-                            <input type="checkbox" name="category" value="trekking" checked>
-                            <span>Trekking</span>
-                        </label>
+                        <div id="category-filters"></div>
                     </div>
 
                     <div class="filter-group">
@@ -144,18 +133,18 @@
                         </div>
                     </div>
 
-                    <button class="btn btn-secondary btn-block">Reset Filters</button>
+                    <button class="btn btn-secondary btn-block" id="clear-filters">Reset Filters</button>
                 </aside>
 
                 <div class="shop-content">
                     <div class="shop-header">
-                        <p class="results-count">Showing 15 products</p>
-                        <select class="sort-select">
-                            <option>Featured</option>
-                            <option>Price: Low to High</option>
-                            <option>Price: High to Low</option>
-                            <option>Newest</option>
-                            <option>Best Selling</option>
+                        <p class="results-count" id="results-count">Showing 15 products</p>
+                        <select class="sort-select" id="sort-select">
+                            <option value="featured">Featured</option>
+                            <option value="price-low">Price: Low to High</option>
+                            <option value="price-high">Price: High to Low</option>
+                            <option value="name-az">Name: A to Z</option>
+                            <option value="rating">Top Rated</option>
                         </select>
                     </div>
 
@@ -192,11 +181,8 @@
                 </div>
                 <div class="footer-column">
                     <h4>Shop</h4>
-                    <ul>
+                    <ul id="footer-shop-links">
                         <li><a href="products.html">All Products</a></li>
-                        <li><a href="products.html?category=runners">Runners</a></li>
-                        <li><a href="products.html?category=sneakers">Sneakers</a></li>
-                        <li><a href="products.html?category=trekking">Trekking</a></li>
                     </ul>
                 </div>
                 <div class="footer-column">

@@ -7,6 +7,6 @@
   },
   "scripts": {
     "test:e2e": "npx playwright test --workers=1",
-    "test:e2e:headless": "npx playwright test --headed=false --workers=1"
+    "test:e2e:headless": "npx playwright test --workers=1"
   }
 }

@@ -5,8 +5,10 @@ class ProductFilterManager {
     constructor() {
         this.products = [];
         this.filteredProducts = [];
+        this.categories = [];
+        this.categorySlugByAny = new Map();
         this.filters = {
-            category: 'all',
+            categories: [],
             priceRange: [0, 15000],
             sizes: [],
             colors: [],
@@ -17,10 +19,82 @@ class ProductFilterManager {
         this.init();
     }
 
-    init() {
-        this.loadProductsFromSupabase();
+    async init() {
+        await this.loadCategoriesFromSupabase();
+        await this.loadProductsFromSupabase();
         this.setupEventListeners();
-        // Note: applyURLFilters() is now called after products load in loadProductsFromSupabase()
+    }
+
+    slugifyCategory(value) {
+        return String(value || '')
+            .trim()
+            .toLowerCase()
+            .replace(/\s+/g, '-')
+            .replace(/[^a-z0-9\-]/g, '')
+            .replace(/\-+/g, '-');
+    }
+
+    normalizeCategoryToSlug(value) {
+        const raw = String(value || '').trim();
+        if (!raw) return '';
+        const key = raw.toLowerCase();
+        return this.categorySlugByAny.get(key) || this.slugifyCategory(raw);
+    }
+
+    async loadCategoriesFromSupabase() {
+        try {
+            const supabase = window.getSupabase ? window.getSupabase() : null;
+            if (!supabase) return;
+
+            const { data, error } = await supabase
+                .from('categories')
+                .select('name, slug')
+                .order('name');
+
+            if (error) throw error;
+
+            this.categories = data || [];
+            this.categorySlugByAny = new Map();
+
+            (this.categories || []).forEach(c => {
+                const slug = this.slugifyCategory(c.slug || c.name);
+                const nameKey = String(c.name || '').trim().toLowerCase();
+                if (slug) {
+                    this.categorySlugByAny.set(slug, slug);
+                    this.categorySlugByAny.set(slug.toLowerCase(), slug);
+                }
+                if (nameKey && slug) {
+                    this.categorySlugByAny.set(nameKey, slug);
+                }
+            });
+
+            this.renderCategoryCheckboxes();
+        } catch (err) {
+            console.warn('⚠️ Failed to load categories for products page; using existing markup.', err);
+        }
+    }
+
+    renderCategoryCheckboxes() {
+        const container = document.getElementById('category-filters');
+        if (!container) return;
+        if (!this.categories?.length) return;
+
+        container.innerHTML = this.categories
+            .filter(c => this.slugifyCategory(c.slug || c.name))
+            .map(c => {
+                const slug = this.slugifyCategory(c.slug || c.name);
+                const label = c.name || slug;
+                return `
+                    <label class="filter-checkbox">
+                        <input type="checkbox" name="category" value="${slug}" checked>
+                        <span>${label}</span>
+                    </label>
+                `;
+            })
+            .join('');
+
+        // Default: all categories selected
+        this.updateCategoryFilterFromCheckboxes();
     }
 
     async loadProductsFromSupabase() {
@@ -77,7 +151,8 @@ class ProductFilterManager {
                     acc[inv.size] = inv.stock || 0;
                     return acc;
                 }, {}),
-                price: (product.price_cents / 100).toFixed(2) // Convert cents to rupees
+                price: (product.price_cents / 100).toFixed(2), // Convert cents to rupees
+                category: this.normalizeCategoryToSlug(product.category)
             }));
             
             // Log first product to verify stock_quantity
@@ -133,7 +208,7 @@ class ProductFilterManager {
         }
 
         grid.innerHTML = products.map(product => `
-            <div class="product-card" data-product-id="${product.id}" data-category="${(product.category || 'casual').toLowerCase()}">
+            <div class="product-card" data-product-id="${product.id}" data-category="${this.normalizeCategoryToSlug(product.category || 'casual')}">
                 <div class="product-image">
                     <img src="${product.image_url || 'images/placeholder.jpg'}" alt="${product.name}" onerror="this.src='images/placeholder.jpg'">
                     ${product.is_locked ? '<div class="product-badge bg-gray">Locked</div>' : ''}
@@ -217,17 +292,9 @@ class ProductFilterManager {
     }
 
     setupEventListeners() {
-        // Category filters
-        const categoryBtns = document.querySelectorAll('[data-filter]');
-        categoryBtns.forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const filter = e.currentTarget.dataset.filter;
-                this.setFilter('category', filter);
-                
-                // Update active state
-                categoryBtns.forEach(b => b.classList.remove('active'));
-                e.currentTarget.classList.add('active');
-            });
+        // Category filters (sidebar checkboxes)
+        document.querySelectorAll('input[type="checkbox"][name="category"]').forEach(cb => {
+            cb.addEventListener('change', () => this.updateCategoryFilterFromCheckboxes());
         });
 
         // Price range slider
@@ -281,7 +348,8 @@ class ProductFilterManager {
         }
 
         // Search input
-        const searchInput = document.getElementById('search-input');
+        // Optional: hook the global search overlay input into filtering on this page
+        const searchInput = document.querySelector('.search-input');
         if (searchInput) {
             searchInput.addEventListener('input', (e) => {
                 this.setFilter('search', e.target.value);
@@ -300,6 +368,13 @@ class ProductFilterManager {
         this.applyFilters();
     }
 
+    updateCategoryFilterFromCheckboxes() {
+        const checkboxes = Array.from(document.querySelectorAll('input[type="checkbox"][name="category"]'));
+        const selected = checkboxes.filter(cb => cb.checked).map(cb => cb.value);
+        this.filters.categories = selected;
+        this.applyFilters();
+    }
+
     updateSizeFilter() {
         const activeSizes = Array.from(document.querySelectorAll('.size-btn.active'))
             .map(btn => btn.textContent.trim());
@@ -314,9 +389,14 @@ class ProductFilterManager {
 
     applyFilters() {
         this.filteredProducts = this.products.filter(product => {
-            // Category filter
-            if (this.filters.category !== 'all' && product.category !== this.filters.category) {
-                return false;
+            // Category filter (checkboxes)
+            if (this.filters.categories && this.filters.categories.length > 0) {
+                // If all categories are selected, don't filter.
+                const allCheckboxes = document.querySelectorAll('input[type="checkbox"][name="category"]');
+                const allSelected = allCheckboxes.length > 0 && this.filters.categories.length === allCheckboxes.length;
+                if (!allSelected && !this.filters.categories.includes(product.category)) {
+                    return false;
+                }
             }
 
             // Price range filter
@@ -439,7 +519,7 @@ class ProductFilterManager {
 
     clearAllFilters() {
         this.filters = {
-            category: 'all',
+            categories: [],
             priceRange: [0, 15000],
             sizes: [],
             colors: [],
@@ -449,11 +529,8 @@ class ProductFilterManager {
         };
 
         // Reset UI
-        document.querySelectorAll('.filter-btn').forEach(btn => {
-            btn.classList.remove('active');
-            if (btn.dataset.filter === 'all') {
-                btn.classList.add('active');
-            }
+        document.querySelectorAll('input[type="checkbox"][name="category"]').forEach(cb => {
+            cb.checked = true;
         });
 
         document.querySelectorAll('.size-btn, .color-btn, .rating-filter').forEach(btn => {
@@ -471,10 +548,8 @@ class ProductFilterManager {
             sortSelect.value = 'featured';
         }
 
-        const searchInput = document.getElementById('search-input');
-        if (searchInput) {
-            searchInput.value = '';
-        }
+        const searchInput = document.querySelector('.search-input');
+        if (searchInput) searchInput.value = '';
 
         this.applyFilters();
     }
@@ -485,9 +560,17 @@ class ProductFilterManager {
         const searchQuery = urlParams.get('search');
         
         if (category) {
-            const categoryBtn = document.querySelector(`[data-filter="${category}"]`);
-            if (categoryBtn) {
-                categoryBtn.click();
+            const normalized = this.normalizeCategoryToSlug(category);
+            const checkboxes = Array.from(document.querySelectorAll('input[type="checkbox"][name="category"]'));
+            if (checkboxes.length) {
+                // Select only the requested category if it exists; otherwise leave all checked
+                const exists = checkboxes.some(cb => cb.value === normalized);
+                if (exists) {
+                    checkboxes.forEach(cb => {
+                        cb.checked = cb.value === normalized;
+                    });
+                    this.updateCategoryFilterFromCheckboxes();
+                }
             }
         }
         
@@ -495,10 +578,8 @@ class ProductFilterManager {
         if (searchQuery) {
             this.filters.search = searchQuery.toLowerCase();
             // Update the search input if it exists
-            const searchInput = document.getElementById('filter-search');
-            if (searchInput) {
-                searchInput.value = searchQuery;
-            }
+            const searchInput = document.querySelector('.search-input');
+            if (searchInput) searchInput.value = searchQuery;
             // Apply filters will be called after products load
             console.log(`🔍 Applying search filter from URL: "${searchQuery}"`);
         }
