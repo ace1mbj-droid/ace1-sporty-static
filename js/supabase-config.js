@@ -7,9 +7,8 @@ const SUPABASE_CONFIG = {
     anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZvcnFhdnN1cWNqbmtqendreXpyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM2NTYwMTMsImV4cCI6MjA3OTIzMjAxM30.HhExWu9XMFm2CBhoZUnHyYI0D0-smScXb_pSzCGkMvI'
 };
 
-// Session-aware headers passed to every Supabase request (used for custom admin auth)
-const sessionHeaders = {};
-
+// Keep a session token for admin use; attach it only to Supabase requests
+let sessionToken = null;
 const storedToken = (() => {
     try {
         return localStorage.getItem('ace1_token');
@@ -19,18 +18,24 @@ const storedToken = (() => {
 })();
 
 if (storedToken) {
-    sessionHeaders['ace1-session'] = storedToken;
+    sessionToken = storedToken;
 }
 
 const sessionAwareFetch = async (input, init = {}) => {
     const headers = new Headers(init.headers || {});
-    Object.entries(sessionHeaders).forEach(([key, value]) => {
-        if (value) {
-            headers.set(key, value);
-        } else {
-            headers.delete(key);
+
+    // Attach Authorization only for requests to the Supabase project URL
+    try {
+        const requestUrl = (typeof input === 'string') ? input : (input && input.url) || '';
+        if (sessionToken && requestUrl.startsWith(SUPABASE_CONFIG.url)) {
+            headers.set('Authorization', `Bearer ${sessionToken}`);
+            // Ensure API key header is present for REST requests
+            headers.set('apikey', SUPABASE_CONFIG.anonKey);
         }
-    });
+    } catch (e) {
+        // Ignore URL parsing issues and proceed without session header
+    }
+
     return fetch(input, { ...init, headers });
 };
 
@@ -72,9 +77,9 @@ window.getSupabase = () => {
 
 window.setSupabaseSessionToken = (token) => {
     if (token) {
-        sessionHeaders['ace1-session'] = token;
+        sessionToken = token;
     } else {
-        delete sessionHeaders['ace1-session'];
+        sessionToken = null;
     }
 };
 

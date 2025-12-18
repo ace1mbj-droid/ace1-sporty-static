@@ -19,6 +19,20 @@ class WebsiteImageManager {
         this.init();
     }
 
+    // Static helper for sanitizing user-supplied image URLs
+    static sanitizeImageUrl(url) {
+        try {
+            // Only allow http and https URLs, disallow javascript:, data:, blob: etc.
+            const parsed = new URL(url, window.location.origin);
+            if (parsed.protocol === "http:" || parsed.protocol === "https:") {
+                return parsed.href;
+            }
+            return null;
+        } catch (e) {
+            // Invalid URL, reject
+            return null;
+        }
+    }
     async init() {
         this.supabase = window.getSupabase();
         console.log('✅ Website Image Manager initialized');
@@ -575,21 +589,6 @@ class WebsiteImageManager {
                     // Refresh the grid
                     const category = this.getCurrentCategory();
                     await this.scanImages(category);
-
-    // Static helper for sanitizing user-supplied image URLs
-    static sanitizeImageUrl(url) {
-        try {
-            // Only allow http and https URLs, disallow javascript:, data:, blob: etc.
-            const parsed = new URL(url, window.location.origin);
-            if (parsed.protocol === "http:" || parsed.protocol === "https:") {
-                return parsed.href;
-            }
-            return null;
-        } catch (e) {
-            // Invalid URL, reject
-            return null;
-        }
-    }
                 } catch (error) {
                     console.error('Save error:', error);
                     this.showNotification('Failed to save image URL', 'error');
