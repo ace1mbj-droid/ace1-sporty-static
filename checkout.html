@@ -3,15 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
+    <title>Checkout - Ace#1</title>
+
+    <!-- Cache Control Meta Tags -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+
     <!-- Security Meta Tags -->
     <meta http-equiv="X-Content-Type-Options" content="nosniff">
     <meta http-equiv="X-XSS-Protection" content="1; mode=block">
     <meta name="referrer" content="strict-origin-when-cross-origin">
-    <title>Checkout - Ace#1</title>
+
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Bebas+Neue&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
     <!-- Development Notice Banner -->
@@ -22,32 +30,35 @@
     </div>
 
     <!-- Navigation -->
-    <nav class="navbar">
-        <div class="nav-logo">
-            <a href="index.html">
-                <span class="logo-text">ACE<span class="logo-accent">#1</span></span>
-            </a>
-        </div>
-            <ul class="nav-menu">
-                <li><a href="index.html">Home</a></li>
-                <li><a href="products.html">Products</a></li>
-                <li><a href="technology.html">Technology</a></li>
-                <li><a href="about.html">About</a></li>
-                <li><a href="contact.html">Contact</a></li>
+    <nav class="navbar" id="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <a href="index.html">
+                    <span class="logo-text">ACE<span class="logo-accent">#1</span></span>
+                </a>
+            </div>
+            <ul class="nav-menu" id="nav-menu">
+                <li><a href="index.html" class="nav-link">Home</a></li>
+                <li><a href="products.html" class="nav-link">Shop</a></li>
+                <li><a href="technology.html" class="nav-link">Technology</a></li>
+                <li><a href="about.html" class="nav-link">About</a></li>
+                <li><a href="contact.html" class="nav-link">Contact</a></li>
             </ul>
             <div class="nav-icons">
-                <button class="icon-btn" id="search-btn">
+                <button class="icon-btn search-btn" id="search-btn">
                     <i class="fas fa-search"></i>
+                </button>
+                <button class="icon-btn cart-btn" id="cart-btn">
+                    <i class="fas fa-shopping-bag"></i>
+                    <span class="cart-count" id="cart-count">0</span>
                 </button>
                 <button class="icon-btn user-btn">
                     <i class="fas fa-user"></i>
                 </button>
-                <button class="icon-btn" id="cart-btn">
-                    <i class="fas fa-shopping-bag"></i>
-                    <span class="cart-count">0</span>
-                </button>
-                <button class="mobile-menu-btn">
-                    <i class="fas fa-bars"></i>
+                <button class="hamburger" id="hamburger">
+                    <span></span>
+                    <span></span>
+                    <span></span>
                 </button>
             </div>
         </div>
@@ -286,7 +297,7 @@
         <div class="container">
             <div class="footer-content">
                 <div class="footer-column">
-                    <h3>ACE#1</h3>
+                    <h3 class="footer-logo">ACE<span class="logo-accent">#1</span></h3>
                     <p>Revolutionary footwear integrated with terahertz technology for enhanced wellness and lifestyle.</p>
                     <div class="social-icons">
                         <a href="https://instagram.com/ace_1_official/" target="_blank"><i class="fab fa-instagram"></i></a>
@@ -323,8 +334,9 @@
             <div class="footer-bottom">
                 <p>&copy; 2025 Ace#1. All rights reserved.</p>
                 <div class="footer-links">
-                    <a href="#">Privacy Policy</a>
+                    <a href="privacy-policy.html">Privacy Policy</a>
                     <a href="#">Terms of Service</a>
+                    <a href="#" id="clearCacheBtn" style="color: #ff8c00; font-weight: 600;" title="Clear browser cache">🧹 Clear Cache</a>
                 </div>
             </div>
         </div>
