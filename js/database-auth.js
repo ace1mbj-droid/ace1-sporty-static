@@ -66,7 +66,22 @@ class DatabaseAuth {
                     .gt('expires_at', new Date().toISOString())
                     .single();
                 
-                if (session && !error) {
+                if (error) {
+                    // Check if it's an RLS/permission error (406) vs actual not found
+                    if (error.code === 'PGRST116' || error.message?.includes('406')) {
+                        // RLS restriction - session might still be valid but we can't verify
+                        // Don't logout, just clear the invalid session_id
+                        console.warn('⚠️ Cannot verify session (RLS restriction), clearing local session');
+                        localStorage.removeItem('ace1_session_id');
+                        return;
+                    }
+                    // Other errors - session is genuinely invalid
+                    console.log('⚠️ Session expired or invalid, logging out...');
+                    this.logout();
+                    return;
+                }
+                
+                if (session) {
                     // Session is valid, restore user
                     const user = session.user_data ? session.user_data : (session.users ? {
                         id: session.users.id,
@@ -81,27 +96,25 @@ class DatabaseAuth {
                     if (user) {
                         this.currentUser = user;
                         
-                        // Update last activity in database
-                        await this.supabase
+                        // Update last activity in database (silently fail if RLS blocks)
+                        this.supabase
                             .from('sessions')
                             .update({ last_activity: new Date().toISOString() })
-                            .eq('session_id', sessionId);
+                            .eq('session_id', sessionId)
+                            .then(() => {})
+                            .catch(() => {});
                         
                         // Keep JWT token for API calls (if user is authenticated)
                         if (session.jwt_token) {
                             this.setSessionToken(session.jwt_token);
                         }
-                        // Ensure httpOnly cookie is set for downstream API calls
-                        if (sessionId) {
-                            this.setHttpOnlyCookie(sessionId);
-                        }
                         
                         console.log('✅ Database session restored:', user.email);
                     }
                 } else {
-                    // Session expired or invalid, clean up
-                    console.log('⚠️ Session expired or invalid, logging out...');
-                    this.logout();
+                    // No session found
+                    console.log('⚠️ Session not found, clearing local storage...');
+                    localStorage.removeItem('ace1_session_id');
                 }
             } catch (err) {
                 console.error('Session verification error:', err);
@@ -745,26 +758,33 @@ class DatabaseAuth {
     }
 
     async setHttpOnlyCookie(sessionId) {
+        // Note: This is a static site without a backend API.
+        // True httpOnly cookies require a server endpoint.
+        // We store the session ID in a regular cookie as a fallback.
+        // For enhanced security in production, deploy with a backend.
         try {
-            await fetch('/api/session/set-cookie', {
-                method: 'POST',
-                credentials: 'include',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ sessionId })
-            });
+            // Set a regular cookie (not httpOnly since we can't do that client-side)
+            const expires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toUTCString(); // 7 days
+            document.cookie = `ace1_session=${sessionId}; expires=${expires}; path=/; SameSite=Strict; Secure`;
         } catch (err) {
-            console.warn('Could not set httpOnly cookie', err);
+            console.warn('Could not set session cookie', err);
         }
     }
 
     async clearHttpOnlyCookie() {
+        // Note: This is a static site without a backend API.
+        // HttpOnly cookies would need a server endpoint to clear.
+        // For now, we just clear what we can from JavaScript.
         try {
-            await fetch('/api/session/clear-cookie', {
-                method: 'POST',
-                credentials: 'include'
+            // Clear any accessible cookies
+            document.cookie.split(';').forEach(cookie => {
+                const name = cookie.split('=')[0].trim();
+                if (name.startsWith('ace1_') || name.startsWith('session')) {
+                    document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/`;
+                }
             });
         } catch (err) {
-            console.warn('Could not clear httpOnly cookie', err);
+            console.warn('Could not clear cookies', err);
         }
     }
 
