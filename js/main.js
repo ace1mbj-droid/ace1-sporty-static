@@ -556,16 +556,20 @@ const cartTotalElement = document.getElementById('cart-total');
 
 // Open cart
 cartBtn?.addEventListener('click', () => {
-    cartSidebar.classList.add('active');
-    cartOverlay.classList.add('active');
-    document.body.style.overflow = 'hidden';
+    if (cartSidebar) {
+        cartSidebar.classList.add('active');
+        cartOverlay?.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
 });
 
 // Close cart
 const closeCart = () => {
-    cartSidebar.classList.remove('active');
-    cartOverlay.classList.remove('active');
-    document.body.style.overflow = '';
+    if (cartSidebar) {
+        cartSidebar.classList.remove('active');
+        cartOverlay?.classList.remove('active');
+        document.body.style.overflow = '';
+    }
 };
 
 cartClose?.addEventListener('click', closeCart);
