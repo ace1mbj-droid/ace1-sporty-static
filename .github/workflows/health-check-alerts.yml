@@ -7,16 +7,18 @@ on:
 
 jobs:
   notify-on-failure:
-    if: ${{ github.event.workflow_run.conclusion == 'failure' }}
+    if: github.event.workflow_run.conclusion == 'failure'
     runs-on: ubuntu-latest
     steps:
       - name: Notify Slack (if webhook present)
         env:
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_URL_PROD }}
+          RUN_URL: ${{ github.event.workflow_run.html_url }}
+          REPO: ${{ github.repository }}
         run: |
           if [ -z "$SLACK_WEBHOOK" ]; then
             echo "No SLACK_WEBHOOK_URL_PROD secret set; skipping Slack notification.";
             exit 0;
           fi
-          payload=$(jq -n --arg run_url "${{ github.event.workflow_run.html_url }}" --arg repo "${{ github.repository }}" '{text: ("ALERT: Production health-check FAILED for " + $repo + "\n<" + $run_url + "|Open run details>" )}')
+          payload=$(jq -n --arg run_url "$RUN_URL" --arg repo "$REPO" '{text: ("ALERT: Production health-check FAILED for " + $repo + "\n<" + $run_url + "|Open run details>" )}')
           curl -sS -X POST -H 'Content-type: application/json' --data "$payload" "$SLACK_WEBHOOK" || echo "Failed to post to Slack"
