@@ -11,6 +11,7 @@ jobs:
     outputs:
       supabase_enabled: ${{ steps.check-supabase.outputs.enabled }}
     env:
+      # Optional secret with fallback - may be undefined
       ENABLE_SUPABASE_DEPLOY: ${{ secrets.ENABLE_SUPABASE_DEPLOY || 'false' }}
     steps:
       - name: Checkout
@@ -134,6 +135,7 @@ jobs:
           FTP_USER: ${{ secrets.FTP_USER }}
           FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
           FTP_PORT: ${{ secrets.FTP_PORT }}
+          # Optional secret with fallback - may be undefined
           FTP_SSL_VERIFY: ${{ secrets.FTP_SSL_VERIFY || 'true' }}
         run: |
           sudo apt-get update && sudo apt-get install -y lftp
