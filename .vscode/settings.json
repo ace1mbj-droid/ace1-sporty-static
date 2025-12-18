@@ -2,5 +2,17 @@
   // Prefill the project ref for the Supabase extension / workspace helpers.
   // This does NOT include any API keys — users should sign in via the extension or CLI.
   "supabase.projectRef": "vorqavsuqcjnkjzwkyzr",
-  "supabase.autoLink": true
+  "supabase.autoLink": true,
+  
+  // PowerShell: Exclude .htaccess from analysis (Apache config, not PowerShell)
+  "files.exclude": {
+    "**/.htaccess": false
+  },
+  "[plaintext]": {
+    "editor.defaultFormatter": null
+  },
+  
+  // Disable PowerShell linting for non-PowerShell files
+  "powershell.linting.enable": false
 }
+
