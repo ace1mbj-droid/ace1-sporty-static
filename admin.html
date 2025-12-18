@@ -897,10 +897,10 @@
                         </div>
                         <div id="order-form-error" style="display:none;color:#b00020;margin-bottom:8px;"></div>
                         <div style="display:flex; gap:8px;">
-                            <button class="btn btn-secondary" id="order-cancel-btn" type="button">Close</button>
-                            <button class="btn btn-primary" id="order-update-btn" type="button">Save Changes</button>
-                            <button class="btn btn-danger" id="order-cancel-order-btn" type="button">Cancel Order</button>
-                            <button class="btn btn-secondary" id="order-refund-btn" type="button">Refund</button>
+                            <button class="btn btn-secondary" id="order-cancel-btn" type="button" onclick="document.getElementById('order-modal').classList.remove('active')">Close</button>
+                            <button class="btn btn-primary" id="order-update-btn" type="button" onclick="adminPanel.updateOrderFromModal()">Save Changes</button>
+                            <button class="btn btn-danger" id="order-cancel-order-btn" type="button" onclick="adminPanel.cancelOrderFromModal()">Cancel Order</button>
+                            <button class="btn btn-secondary" id="order-refund-btn" type="button" onclick="adminPanel.refundOrderFromModal()">Refund</button>
                         </div>
                     </div>
                 </div>
