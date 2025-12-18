@@ -845,7 +845,9 @@ async function loadCartFromDatabase() {
             
             if (!result.error && result.data) {
                 // Need to fetch product details
-                const productIds = result.data.map(item => item.product_id);
+                const productIds = Array.isArray(result.data) 
+                    ? result.data.map(item => item.product_id)
+                    : [result.data.product_id];
                 if (productIds.length > 0) {
                     const { data: products } = await supabase
                         .from('products')

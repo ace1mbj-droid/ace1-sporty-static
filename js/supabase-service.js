@@ -357,7 +357,9 @@ class SupabaseService {
                 
                 // Fetch product details for cart items
                 if (data && data.length > 0) {
-                    const productIds = data.map(item => item.product_id);
+                    const productIds = Array.isArray(data) 
+                        ? data.map(item => item.product_id)
+                        : [data.product_id];
                     const { data: products } = await this.supabase
                         .from('products')
                         .select('*')
@@ -870,7 +872,9 @@ class SupabaseService {
                 
                 // Fetch product details for wishlist items
                 if (data && data.length > 0) {
-                    const productIds = data.map(item => item.product_id);
+                    const productIds = Array.isArray(data) 
+                        ? data.map(item => item.product_id)
+                        : [data.product_id];
                     const { data: products } = await this.supabase
                         .from('products')
                         .select('*')
