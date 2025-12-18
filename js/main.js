@@ -82,19 +82,245 @@ document.querySelectorAll('.nav-link').forEach(link => {
 const searchBtn = document.getElementById('search-btn');
 const searchOverlay = document.getElementById('search-overlay');
 const searchClose = document.getElementById('search-close');
+const searchInput = document.querySelector('.search-input');
+
+// Search state
+let searchDebounceTimer = null;
+let searchResultsContainer = null;
+
+// Initialize search results container
+function initSearchResults() {
+    if (!searchOverlay || document.getElementById('search-results')) return;
+    
+    const searchContainer = searchOverlay.querySelector('.search-container');
+    if (searchContainer) {
+        // Add search results container
+        searchResultsContainer = document.createElement('div');
+        searchResultsContainer.id = 'search-results';
+        searchResultsContainer.className = 'search-results';
+        searchResultsContainer.innerHTML = '<p class="search-hint">Start typing to search products...</p>';
+        searchContainer.appendChild(searchResultsContainer);
+        
+        // Add styles for search results
+        if (!document.getElementById('search-results-styles')) {
+            const styles = document.createElement('style');
+            styles.id = 'search-results-styles';
+            styles.textContent = `
+                .search-results {
+                    max-height: 60vh;
+                    overflow-y: auto;
+                    padding: 20px 0;
+                }
+                .search-hint {
+                    color: #888;
+                    text-align: center;
+                    padding: 20px;
+                }
+                .search-result-item {
+                    display: flex;
+                    align-items: center;
+                    gap: 15px;
+                    padding: 15px;
+                    background: white;
+                    border-radius: 10px;
+                    margin-bottom: 10px;
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+                }
+                .search-result-item:hover {
+                    transform: translateY(-2px);
+                    box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+                }
+                .search-result-image {
+                    width: 70px;
+                    height: 70px;
+                    object-fit: cover;
+                    border-radius: 8px;
+                }
+                .search-result-info {
+                    flex: 1;
+                }
+                .search-result-name {
+                    font-weight: 600;
+                    color: #333;
+                    margin-bottom: 5px;
+                }
+                .search-result-category {
+                    font-size: 12px;
+                    color: #888;
+                    text-transform: uppercase;
+                }
+                .search-result-price {
+                    font-weight: 700;
+                    color: #FF6B00;
+                    font-size: 18px;
+                }
+                .search-no-results {
+                    text-align: center;
+                    padding: 40px 20px;
+                    color: #666;
+                }
+                .search-no-results i {
+                    font-size: 48px;
+                    color: #ddd;
+                    margin-bottom: 15px;
+                }
+                .search-loading {
+                    text-align: center;
+                    padding: 30px;
+                    color: #888;
+                }
+                .search-loading i {
+                    animation: spin 1s linear infinite;
+                }
+                @keyframes spin {
+                    to { transform: rotate(360deg); }
+                }
+            `;
+            document.head.appendChild(styles);
+        }
+    }
+}
+
+// Perform search
+async function performSearch(query) {
+    if (!searchResultsContainer) {
+        searchResultsContainer = document.getElementById('search-results');
+    }
+    if (!searchResultsContainer) return;
+    
+    query = query.trim().toLowerCase();
+    
+    if (query.length < 2) {
+        searchResultsContainer.innerHTML = '<p class="search-hint">Type at least 2 characters to search...</p>';
+        return;
+    }
+    
+    // Show loading
+    searchResultsContainer.innerHTML = '<div class="search-loading"><i class="fas fa-spinner"></i> Searching...</div>';
+    
+    try {
+        const supabase = window.getSupabase ? window.getSupabase() : null;
+        
+        if (!supabase) {
+            searchResultsContainer.innerHTML = '<p class="search-hint">Search unavailable. Please refresh the page.</p>';
+            return;
+        }
+        
+        // Search products by name, description, or category
+        const { data: products, error } = await supabase
+            .from('products')
+            .select(`
+                id,
+                name,
+                description,
+                category,
+                price_cents,
+                is_active,
+                product_images (
+                    storage_path
+                )
+            `)
+            .eq('is_active', true)
+            .or(`name.ilike.%${query}%,description.ilike.%${query}%,category.ilike.%${query}%`)
+            .limit(10);
+        
+        if (error) throw error;
+        
+        if (!products || products.length === 0) {
+            searchResultsContainer.innerHTML = `
+                <div class="search-no-results">
+                    <i class="fas fa-search"></i>
+                    <p>No products found for "<strong>${query}</strong>"</p>
+                    <p style="font-size: 14px; margin-top: 10px;">Try different keywords or browse our <a href="products.html" style="color: #FF6B00;">products page</a></p>
+                </div>
+            `;
+            return;
+        }
+        
+        // Helper function for image URLs
+        const getImageUrl = (storagePath) => {
+            if (!storagePath) return 'images/placeholder.jpg';
+            if (storagePath.startsWith('http')) return storagePath;
+            const projectUrl = 'https://vorqavsuqcjnkjzwkyzr.supabase.co';
+            return `${projectUrl}/storage/v1/object/public/Images/${storagePath}`;
+        };
+        
+        // Render results
+        searchResultsContainer.innerHTML = products.map(product => {
+            const imageUrl = getImageUrl(product.product_images?.[0]?.storage_path);
+            const price = (product.price_cents / 100).toLocaleString('en-IN');
+            
+            return `
+                <div class="search-result-item" onclick="window.location.href='products.html?search=${encodeURIComponent(product.name)}'">
+                    <img src="${imageUrl}" alt="${product.name}" class="search-result-image" onerror="this.src='images/placeholder.jpg'">
+                    <div class="search-result-info">
+                        <div class="search-result-name">${highlightMatch(product.name, query)}</div>
+                        <div class="search-result-category">${product.category || 'Footwear'}</div>
+                    </div>
+                    <div class="search-result-price">₹${price}</div>
+                </div>
+            `;
+        }).join('');
+        
+        // Add "View All" link if there might be more results
+        if (products.length >= 10) {
+            searchResultsContainer.innerHTML += `
+                <a href="products.html?search=${encodeURIComponent(query)}" style="display: block; text-align: center; padding: 15px; color: #FF6B00; font-weight: 600; text-decoration: none;">
+                    View all results <i class="fas fa-arrow-right"></i>
+                </a>
+            `;
+        }
+        
+    } catch (error) {
+        console.error('Search error:', error);
+        searchResultsContainer.innerHTML = '<p class="search-hint">Search error. Please try again.</p>';
+    }
+}
+
+// Highlight matching text
+function highlightMatch(text, query) {
+    if (!query) return text;
+    const regex = new RegExp(`(${query})`, 'gi');
+    return text.replace(regex, '<mark style="background: #FFE0B2; padding: 0 2px;">$1</mark>');
+}
 
 searchBtn?.addEventListener('click', () => {
     searchOverlay.classList.add('active');
-    document.querySelector('.search-input').focus();
+    initSearchResults();
+    document.querySelector('.search-input')?.focus();
 });
 
 searchClose?.addEventListener('click', () => {
     searchOverlay.classList.remove('active');
+    if (searchInput) searchInput.value = '';
+    if (searchResultsContainer) {
+        searchResultsContainer.innerHTML = '<p class="search-hint">Start typing to search products...</p>';
+    }
 });
 
 searchOverlay?.addEventListener('click', (e) => {
     if (e.target === searchOverlay) {
         searchOverlay.classList.remove('active');
+    }
+});
+
+// Search input handler with debounce
+searchInput?.addEventListener('input', (e) => {
+    clearTimeout(searchDebounceTimer);
+    searchDebounceTimer = setTimeout(() => {
+        performSearch(e.target.value);
+    }, 300);
+});
+
+// Handle Enter key
+searchInput?.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+        const query = e.target.value.trim();
+        if (query.length >= 2) {
+            window.location.href = `products.html?search=${encodeURIComponent(query)}`;
+        }
     }
 });
 

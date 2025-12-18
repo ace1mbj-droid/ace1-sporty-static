@@ -20,7 +20,7 @@ class ProductFilterManager {
     init() {
         this.loadProductsFromSupabase();
         this.setupEventListeners();
-        this.applyURLFilters();
+        // Note: applyURLFilters() is now called after products load in loadProductsFromSupabase()
     }
 
     async loadProductsFromSupabase() {
@@ -88,6 +88,11 @@ class ProductFilterManager {
             if (processedProducts && processedProducts.length > 0) {
                 this.renderProducts(processedProducts);
                 console.log('✅ Rendered products from Supabase');
+                
+                // Load products into the filter system and apply URL filters
+                this.loadProducts();
+                this.applyURLFilters();
+                this.applyFilters();
             } else {
                 console.warn('⚠️ No products returned from Supabase');
             }
@@ -95,6 +100,8 @@ class ProductFilterManager {
         } catch (error) {
             console.error('❌ Error loading products from Supabase:', error);
             console.warn('Fallback: Using hardcoded HTML products');
+            // Still try to load from DOM if there are fallback products
+            this.loadProducts();
         }
     }
 
@@ -316,9 +323,18 @@ class ProductFilterManager {
                 return false;
             }
 
-            // Search filter
-            if (this.filters.search && !product.name.toLowerCase().includes(this.filters.search.toLowerCase())) {
-                return false;
+            // Search filter - check name, category, and description
+            if (this.filters.search) {
+                const searchTerm = this.filters.search.toLowerCase();
+                const nameMatch = product.name?.toLowerCase().includes(searchTerm);
+                const categoryMatch = product.category?.toLowerCase().includes(searchTerm);
+                // Get description from the product card element if available
+                const descElement = product.element?.querySelector('.product-description');
+                const descMatch = descElement?.textContent?.toLowerCase().includes(searchTerm);
+                
+                if (!nameMatch && !categoryMatch && !descMatch) {
+                    return false;
+                }
             }
 
             return true;
@@ -460,12 +476,25 @@ class ProductFilterManager {
     applyURLFilters() {
         const urlParams = new URLSearchParams(window.location.search);
         const category = urlParams.get('category');
+        const searchQuery = urlParams.get('search');
         
         if (category) {
             const categoryBtn = document.querySelector(`[data-filter="${category}"]`);
             if (categoryBtn) {
                 categoryBtn.click();
             }
+        }
+        
+        // Handle search query from URL
+        if (searchQuery) {
+            this.filters.search = searchQuery.toLowerCase();
+            // Update the search input if it exists
+            const searchInput = document.getElementById('filter-search');
+            if (searchInput) {
+                searchInput.value = searchQuery;
+            }
+            // Apply filters will be called after products load
+            console.log(`🔍 Applying search filter from URL: "${searchQuery}"`);
         }
     }
 }
