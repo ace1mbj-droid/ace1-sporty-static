@@ -422,11 +422,10 @@ class AdminPanel {
             
             const totalOrders = orders?.length || 0;
             
-            // Use total_cents if available, fallback to total_amount
+            // Calculate total revenue from total_cents
             const totalRevenue = orders?.reduce((sum, order) => {
-                const amount = order.total_cents || order.total_amount || 0;
-                // If total_cents, divide by 100
-                return sum + (order.total_cents ? amount / 100 : amount);
+                const amount = order.total_cents || 0;
+                return sum + (amount / 100);
             }, 0) || 0;
 
             // Update dashboard elements
@@ -587,10 +586,10 @@ class AdminPanel {
                 <td>#${order.id}</td>
                 <td>${order.shipping_address?.firstName || 'N/A'} ${order.shipping_address?.lastName || ''}</td>
                 <td>${new Date(order.created_at).toLocaleDateString('en-IN')}</td>
-                <td>₹${parseFloat(order.total_amount || 0).toLocaleString('en-IN')}</td>
+                <td>₹${((order.total_cents || 0) / 100).toLocaleString('en-IN')}</td>
                 <td>
-                    <span class="status-badge status-${order.payment_status || 'pending'}">
-                        ${order.payment_status || 'pending'}
+                    <span class="status-badge status-${order.status || 'pending'}">
+                        ${order.status || 'pending'}
                     </span>
                 </td>
                 <td>
@@ -1494,15 +1493,15 @@ class AdminPanel {
         // Populate order modal
         const details = [];
         details.push(`Order ID: ${order.id}`);
-        details.push(`Total: ₹${order.total_amount}`);
-        details.push(`Status: ${order.payment_status || 'unknown'}`);
+        details.push(`Total: ₹${((order.total_cents || 0) / 100).toFixed(2)}`);
+        details.push(`Status: ${order.status || 'unknown'}`);
         details.push(`Created: ${new Date(order.created_at).toLocaleString()}`);
         details.push('\nShipping:');
         details.push(JSON.stringify(order.shipping_address || {}, null, 2));
 
         document.getElementById('order-details-area').textContent = details.join('\n\n');
-        document.getElementById('order-status-select').value = order.payment_status || 'pending';
-        document.getElementById('order-notes').value = order.admin_notes || '';
+        document.getElementById('order-status-select').value = order.status || 'pending';
+        document.getElementById('order-notes').value = order.notes || '';
 
         // Store current order id on the modal element
         document.getElementById('order-modal').dataset.orderId = orderId;
