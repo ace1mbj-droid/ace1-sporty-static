@@ -353,7 +353,7 @@ async function performSearch(query) {
             searchResultsContainer.innerHTML = `
                 <div class="search-no-results">
                     <i class="fas fa-search"></i>
-                    <p>No products found for "<strong>${query}</strong>"</p>
+                    <p>No products found for "<strong>${escapeHTML(query)}</strong>"</p>
                     <p style="font-size: 14px; margin-top: 10px;">Try different keywords or browse our <a href="products.html" style="color: #FF6B00;">products page</a></p>
                 </div>
             `;
@@ -398,6 +398,16 @@ async function performSearch(query) {
         console.error('Search error:', error);
         searchResultsContainer.innerHTML = '<p class="search-hint">Search error. Please try again.</p>';
     }
+}
+
+// Simple HTML escaping utility
+function escapeHTML(str) {
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
 }
 
 // Highlight matching text
