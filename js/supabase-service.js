@@ -344,14 +344,38 @@ class SupabaseService {
 
     async getCart() {
         try {
+            const sessionId = sessionStorage.getItem('ace1_session_id');
+            
             if (!this.currentUser) {
-                // Return localStorage cart for non-authenticated users
-                const localCart = JSON.parse(localStorage.getItem('ace1_cart') || '[]');
-                return { success: true, cart: localCart };
+                // Anonymous user - get cart by session_id from database
+                if (!sessionId) {
+                    return { success: true, cart: [] };
+                }
+                
+                const { data, error } = await this.supabase.rpc('get_cart_by_session', { p_session_id: sessionId });
+                if (error) throw error;
+                
+                // Fetch product details for cart items
+                if (data && data.length > 0) {
+                    const productIds = data.map(item => item.product_id);
+                    const { data: products } = await this.supabase
+                        .from('products')
+                        .select('*')
+                        .in('id', productIds);
+                    
+                    const enrichedCart = data.map(item => ({
+                        ...item,
+                        product: products?.find(p => p.id === item.product_id)
+                    }));
+                    
+                    return { success: true, cart: enrichedCart };
+                }
+                
+                return { success: true, cart: [] };
             }
 
             const { data, error } = await this.supabase
-                .from('cart_items')
+                .from('shopping_carts')
                 .select(`
                     *,
                     product:products(*)
@@ -359,7 +383,7 @@ class SupabaseService {
                 .eq('user_id', this.currentUser.id);
 
             if (error) throw error;
-            return { success: true, cart: data };
+            return { success: true, cart: data || [] };
         } catch (error) {
             console.error('Get cart error:', error);
             return { success: false, error: error.message };
@@ -368,39 +392,38 @@ class SupabaseService {
 
     async addToCart(productId, quantity = 1, size = null, color = null) {
         try {
+            const sessionId = sessionStorage.getItem('ace1_session_id');
+            
             if (!this.currentUser) {
-                // Handle localStorage cart
-                const cart = JSON.parse(localStorage.getItem('ace1_cart') || '[]');
-                const existingItem = cart.find(item => 
-                    item.productId === productId && 
-                    item.size === size && 
-                    item.color === color
-                );
-
-                if (existingItem) {
-                    existingItem.quantity += quantity;
-                } else {
-                    cart.push({ productId, quantity, size, color });
+                // Anonymous user - add to cart by session_id in database
+                if (!sessionId) {
+                    return { success: false, error: 'No session ID' };
                 }
-
-                localStorage.setItem('ace1_cart', JSON.stringify(cart));
-                return { success: true, cart };
+                
+                const { data, error } = await this.supabase.rpc('add_to_cart_by_session', {
+                    p_session_id: sessionId,
+                    p_product_id: productId,
+                    p_quantity: quantity,
+                    p_size: size
+                });
+                
+                if (error) throw error;
+                return { success: true, itemId: data };
             }
 
             // Check if item already exists
             const { data: existing } = await this.supabase
-                .from('cart_items')
+                .from('shopping_carts')
                 .select('*')
                 .eq('user_id', this.currentUser.id)
                 .eq('product_id', productId)
                 .eq('size', size || '')
-                .eq('color', color || '')
                 .single();
 
             if (existing) {
                 // Update quantity
                 const { data, error } = await this.supabase
-                    .from('cart_items')
+                    .from('shopping_carts')
                     .update({ quantity: existing.quantity + quantity })
                     .eq('id', existing.id)
                     .select()
@@ -411,13 +434,12 @@ class SupabaseService {
             } else {
                 // Insert new item
                 const { data, error } = await this.supabase
-                    .from('cart_items')
+                    .from('shopping_carts')
                     .insert([{
                         user_id: this.currentUser.id,
                         product_id: productId,
                         quantity,
-                        size: size || '',
-                        color: color || ''
+                        size: size || ''
                     }])
                     .select()
                     .single();
@@ -433,10 +455,27 @@ class SupabaseService {
 
     async updateCartItem(itemId, quantity) {
         try {
-            if (!this.currentUser) throw new Error('User not authenticated');
+            const sessionId = sessionStorage.getItem('ace1_session_id');
+            
+            if (!this.currentUser) {
+                // Anonymous user - update by session_id
+                // Note: itemId should be product_id for anonymous users
+                if (!sessionId) {
+                    return { success: false, error: 'No session ID' };
+                }
+                
+                const { data, error } = await this.supabase.rpc('update_cart_item_by_session', {
+                    p_session_id: sessionId,
+                    p_product_id: itemId, // Using product_id for anonymous
+                    p_quantity: quantity
+                });
+                
+                if (error) throw error;
+                return { success: true };
+            }
 
             const { data, error } = await this.supabase
-                .from('cart_items')
+                .from('shopping_carts')
                 .update({ quantity })
                 .eq('id', itemId)
                 .eq('user_id', this.currentUser.id)
@@ -453,10 +492,25 @@ class SupabaseService {
 
     async removeFromCart(itemId) {
         try {
-            if (!this.currentUser) throw new Error('User not authenticated');
+            const sessionId = sessionStorage.getItem('ace1_session_id');
+            
+            if (!this.currentUser) {
+                // Anonymous user - remove by session_id
+                if (!sessionId) {
+                    return { success: false, error: 'No session ID' };
+                }
+                
+                const { data, error } = await this.supabase.rpc('remove_from_cart_by_session', {
+                    p_session_id: sessionId,
+                    p_product_id: itemId // Using product_id for anonymous
+                });
+                
+                if (error) throw error;
+                return { success: true };
+            }
 
             const { error } = await this.supabase
-                .from('cart_items')
+                .from('shopping_carts')
                 .delete()
                 .eq('id', itemId)
                 .eq('user_id', this.currentUser.id);
@@ -471,13 +525,18 @@ class SupabaseService {
 
     async clearCart() {
         try {
+            const sessionId = sessionStorage.getItem('ace1_session_id');
+            
             if (!this.currentUser) {
-                localStorage.removeItem('ace1_cart');
+                // Anonymous user - clear by session_id
+                if (sessionId) {
+                    await this.supabase.rpc('clear_cart_by_session', { p_session_id: sessionId });
+                }
                 return { success: true };
             }
 
             const { error } = await this.supabase
-                .from('cart_items')
+                .from('shopping_carts')
                 .delete()
                 .eq('user_id', this.currentUser.id);
 
@@ -706,19 +765,47 @@ class SupabaseService {
 
     async getWishlist() {
         try {
-            if (!this.currentUser) throw new Error('User not authenticated');
+            const sessionId = sessionStorage.getItem('ace1_session_id');
+            
+            if (!this.currentUser) {
+                // Anonymous user - get wishlist by session_id from database
+                if (!sessionId) {
+                    return { success: true, wishlist: [] };
+                }
+                
+                const { data, error } = await this.supabase.rpc('get_wishlist_by_session', { p_session_id: sessionId });
+                if (error) throw error;
+                
+                // Fetch product details for wishlist items
+                if (data && data.length > 0) {
+                    const productIds = data.map(item => item.product_id);
+                    const { data: products } = await this.supabase
+                        .from('products')
+                        .select('*')
+                        .in('id', productIds);
+                    
+                    const enrichedWishlist = data.map(item => ({
+                        ...item,
+                        product: products?.find(p => p.id === item.product_id)
+                    }));
+                    
+                    return { success: true, wishlist: enrichedWishlist };
+                }
+                
+                return { success: true, wishlist: [] };
+            }
 
             const { data, error } = await this.supabase
-                .from('wishlist')
+                .from('wishlists')
                 .select(`
                     *,
                     product:products(*)
                 `)
                 .eq('user_id', this.currentUser.id)
-                .order('created_at', { ascending: false });
+                .order('added_at', { ascending: false });
 
             if (error) throw error;
-            return { success: true, wishlist: data };
+            return { success: true, wishlist: data || [] };
         } catch (error) {
             console.error('Get wishlist error:', error);
             return { success: false, error: error.message };
@@ -727,10 +814,25 @@ class SupabaseService {
 
     async addToWishlist(productId) {
         try {
-            if (!this.currentUser) throw new Error('User not authenticated');
+            const sessionId = sessionStorage.getItem('ace1_session_id');
+            
+            if (!this.currentUser) {
+                // Anonymous user - add to wishlist by session_id in database
+                if (!sessionId) {
+                    return { success: false, error: 'No session ID' };
+                }
+                
+                const { data, error } = await this.supabase.rpc('add_to_wishlist_by_session', {
+                    p_session_id: sessionId,
+                    p_product_id: productId
+                });
+                
+                if (error) throw error;
+                return { success: true, itemId: data };
+            }
 
             const { data, error } = await this.supabase
-                .from('wishlist')
+                .from('wishlists')
                 .insert([{
                     user_id: this.currentUser.id,
                     product_id: productId
@@ -748,10 +850,25 @@ class SupabaseService {
 
     async removeFromWishlist(productId) {
         try {
-            if (!this.currentUser) throw new Error('User not authenticated');
+            const sessionId = sessionStorage.getItem('ace1_session_id');
+            
+            if (!this.currentUser) {
+                // Anonymous user - remove from wishlist by session_id
+                if (!sessionId) {
+                    return { success: false, error: 'No session ID' };
+                }
+                
+                const { data, error } = await this.supabase.rpc('remove_from_wishlist_by_session', {
+                    p_session_id: sessionId,
+                    p_product_id: productId
+                });
+                
+                if (error) throw error;
+                return { success: true };
+            }
 
             const { error } = await this.supabase
-                .from('wishlist')
+                .from('wishlists')
                 .delete()
                 .eq('user_id', this.currentUser.id)
                 .eq('product_id', productId);

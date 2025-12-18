@@ -1,10 +1,11 @@
 // ===================================
 // GLOBAL VARIABLES
 // ===================================
-// Load cart from localStorage (will sync to database)
-let cart = JSON.parse(localStorage.getItem('ace1_cart') || '[]');
+// Cart is loaded from database (no localStorage)
+let cart = [];
 let cartTotal = 0;
-let cartSessionId = localStorage.getItem('ace1_session_id') || generateSessionId();
+let cartSessionId = sessionStorage.getItem('ace1_session_id') || generateSessionId();
+let cartLoaded = false;
 
 // Ensure global header/footer elements are present across all pages
 (function ensureGlobalLayoutElements() {
@@ -35,10 +36,10 @@ let cartSessionId = localStorage.getItem('ace1_session_id') || generateSessionId
     }
 })();
 
-// Generate session ID for anonymous users
+// Generate session ID for anonymous users (stored in sessionStorage for current tab)
 function generateSessionId() {
     const sessionId = 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-    localStorage.setItem('ace1_session_id', sessionId);
+    sessionStorage.setItem('ace1_session_id', sessionId);
     return sessionId;
 }
 
@@ -334,11 +335,11 @@ const userLink = document.querySelector('a.icon-btn[href="login.html"]');
 userBtn?.addEventListener('click', async (e) => {
     e.preventDefault();
     
-    // Check if we have a database session
-    const hasSession = localStorage.getItem('ace1_session_id');
+    // Check if we have a database session (use window.databaseAuth for proper check)
+    const isAuthenticated = window.databaseAuth?.isAuthenticated?.() || false;
     
-    if (hasSession) {
-        // Has token, go to profile/admin
+    if (isAuthenticated) {
+        // Has session, go to profile/admin
         const user = window.databaseAuth?.getCurrentUser();
         if (user?.role === 'admin' || user?.email === 'hello@ace1.in') {
             window.location.href = 'admin.html';
@@ -348,7 +349,7 @@ userBtn?.addEventListener('click', async (e) => {
         return;
     }
     
-    // No token, check if Supabase OAuth session exists
+    // No session, check if Supabase OAuth session exists
     try {
         const supabase = window.getSupabase?.();
         if (supabase) {
@@ -541,13 +542,8 @@ function addProductToCart(product) {
 }
 
 function updateCart() {
-    // Save cart to localStorage (local backup)
-    localStorage.setItem('ace1_cart', JSON.stringify(cart));
-    
-    // Sync cart to database if user is authenticated
-    if (window.AuthManager?.isLoggedIn()) {
-        syncCartToDatabase();
-    }
+    // Save cart to database (no localStorage)
+    syncCartToDatabase();
     
     // Update cart count
     const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
@@ -630,70 +626,184 @@ function removeFromCart(e) {
     showNotification('Product removed from cart');
 }
 
-// Sync cart to database for authenticated users
+// Sync cart to database (for both authenticated and anonymous users)
 async function syncCartToDatabase() {
     try {
         const supabase = window.getSupabase?.();
-        if (!supabase) return; // Fallback to localStorage if Supabase not available
+        if (!supabase) return;
         
         const user = window.AuthManager?.getCurrentUser();
-        if (!user) return; // Only sync for authenticated users
         
-        // Delete old cart entries for this user
-        await supabase
-            .from('shopping_carts')
-            .delete()
-            .eq('user_id', user.id);
-        
-        // Insert new cart items
-        if (cart.length > 0) {
-            const cartItems = cart.map(item => ({
-                user_id: user.id,
-                product_id: item.id,
-                quantity: item.quantity,
-                size: item.size || null
-            }));
-            
+        if (user) {
+            // Authenticated user - use user_id
+            // Delete old cart entries for this user
             await supabase
                 .from('shopping_carts')
-                .insert(cartItems);
+                .delete()
+                .eq('user_id', user.id);
+            
+            // Insert new cart items
+            if (cart.length > 0) {
+                const cartData = cart.map(item => ({
+                    user_id: user.id,
+                    product_id: item.id,
+                    quantity: item.quantity,
+                    size: item.size || null
+                }));
+                
+                await supabase
+                    .from('shopping_carts')
+                    .insert(cartData);
+            }
+        } else {
+            // Anonymous user - use session_id via RPC functions
+            // Clear existing session cart
+            await supabase.rpc('clear_cart_by_session', { p_session_id: cartSessionId });
+            
+            // Add items one by one (RPC function handles duplicates)
+            for (const item of cart) {
+                await supabase.rpc('add_to_cart_by_session', {
+                    p_session_id: cartSessionId,
+                    p_product_id: item.id,
+                    p_quantity: item.quantity,
+                    p_size: item.size || null
+                });
+            }
         }
     } catch (error) {
-        console.warn('Cart sync to database failed, using localStorage:', error);
-        // Fallback to localStorage is automatic
+        console.warn('Cart sync to database failed:', error);
     }
 }
 
-// Load cart from database if user is authenticated
+// Load cart from database
 async function loadCartFromDatabase() {
+    if (cartLoaded) return; // Only load once
+    
     try {
         const supabase = window.getSupabase?.();
-        if (!supabase) return; // Fallback to localStorage
+        if (!supabase) return;
         
         const user = window.AuthManager?.getCurrentUser();
-        if (!user) return; // No user, use localStorage
+        let data = null;
         
-        const { data, error } = await supabase
-            .from('shopping_carts')
-            .select('*')
-            .eq('user_id', user.id);
-        
-        if (error) throw error;
+        if (user) {
+            // Authenticated user - load by user_id
+            const result = await supabase
+                .from('shopping_carts')
+                .select(`
+                    *,
+                    products (id, name, price_cents, image_url, stock_quantity)
+                `)
+                .eq('user_id', user.id);
+            
+            if (!result.error && result.data) {
+                data = result.data;
+            }
+        } else {
+            // Anonymous user - load by session_id
+            const result = await supabase.rpc('get_cart_by_session', { p_session_id: cartSessionId });
+            
+            if (!result.error && result.data) {
+                // Need to fetch product details
+                const productIds = result.data.map(item => item.product_id);
+                if (productIds.length > 0) {
+                    const { data: products } = await supabase
+                        .from('products')
+                        .select('id, name, price_cents, image_url, stock_quantity')
+                        .in('id', productIds);
+                    
+                    // Merge product details
+                    data = result.data.map(item => ({
+                        ...item,
+                        products: products?.find(p => p.id === item.product_id)
+                    }));
+                }
+            }
+        }
         
         if (data && data.length > 0) {
             // Convert database items to cart format
             cart = data.map(item => ({
                 id: item.product_id,
+                name: item.products?.name || 'Unknown Product',
+                price: item.products?.price_cents ? item.products.price_cents / 100 : 0,
+                image: item.products?.image_url || 'images/placeholder.jpg',
+                stock_quantity: item.products?.stock_quantity || 0,
                 quantity: item.quantity,
                 size: item.size
-            }));
+            })).filter(item => item.name !== 'Unknown Product');
             
-            // Re-render cart with new data
-            updateCart();
+            cartLoaded = true;
+            // Re-render cart with database data
+            renderCart();
+        } else {
+            cart = [];
+            cartLoaded = true;
+            renderCart();
         }
     } catch (error) {
         console.warn('Failed to load cart from database:', error);
-        // Keep using localStorage fallback
+        cart = [];
+        cartLoaded = true;
+        renderCart();
+    }
+}
+
+// Render cart UI without syncing to database
+function renderCart() {
+    // Update cart count
+    const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+    if (cartCount) {
+        cartCount.textContent = totalItems;
+    }
+    
+    // If cart UI not present on this page, stop here
+    if (!cartItems || !cartTotalElement) {
+        return;
+    }
+
+    // Update cart total
+    cartTotal = cart.reduce((sum, item) => sum + ((parseFloat(item.price) || 0) * item.quantity), 0);
+    cartTotalElement.textContent = `₹${cartTotal.toLocaleString('en-IN')}`;
+    
+    // Update cart items display
+    if (cart.length === 0) {
+        cartItems.innerHTML = `
+            <div class="cart-empty">
+                <i class="fas fa-shopping-bag"></i>
+                <p>Your cart is empty</p>
+            </div>
+        `;
+    } else {
+        cartItems.innerHTML = cart.map(item => {
+            const price = parseFloat(item.price || 0);
+            return `
+            <div class="cart-item" data-id="${item.id}">
+                <img src="${item.image}" alt="${item.name}" onerror="this.src='images/placeholder.jpg'">
+                <div class="cart-item-info">
+                    <h4>${item.name}</h4>
+                    <p>₹${price.toLocaleString('en-IN')}</p>
+                    <div class="cart-item-quantity">
+                        <button class="qty-btn minus" data-id="${item.id}">-</button>
+                        <span>${item.quantity}</span>
+                        <button class="qty-btn plus" data-id="${item.id}">+</button>
+                    </div>
+                </div>
+                <button class="remove-item" data-id="${item.id}">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        `;
+        }).join('');
+        
+        // Add event listeners
+        document.querySelectorAll('.qty-btn').forEach(btn => {
+            btn.addEventListener('click', updateQuantity);
+        });
+        
+        document.querySelectorAll('.remove-item').forEach(btn => {
+            btn.addEventListener('click', removeFromCart);
+        });
     }
 }
 
@@ -952,8 +1062,9 @@ document.querySelectorAll('.quick-view-btn').forEach(btn => {
 // ===================================
 // INITIALIZE
 // ===================================
-document.addEventListener('DOMContentLoaded', () => {
-    updateCart();
+document.addEventListener('DOMContentLoaded', async () => {
+    // Load cart from database first
+    await loadCartFromDatabase();
     
     // Refresh product displays if admin updated products
     refreshProductsIfNeeded();
@@ -1150,8 +1261,7 @@ document.addEventListener('keydown', (e) => {
 const checkoutBtn = document.querySelector('.cart-footer .btn-primary');
 if (checkoutBtn) {
     checkoutBtn.addEventListener('click', () => {
-        const cart = JSON.parse(localStorage.getItem('ace1_cart') || '[]');
-        
+        // Check the in-memory cart loaded from database
         if (cart.length === 0) {
             showNotification('Your cart is empty', 'error');
             return;
@@ -1477,3 +1587,12 @@ if (document.readyState === 'loading') {
 } else {
     bindClearCacheButton();
 }
+
+// Export functions for use by other modules
+window.loadCartFromDatabase = loadCartFromDatabase;
+window.updateCartCount = function() {
+    const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+    if (cartCount) {
+        cartCount.textContent = totalItems;
+    }
+};

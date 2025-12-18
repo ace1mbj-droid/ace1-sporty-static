@@ -235,8 +235,7 @@ class AdminPanel {
                 this.closeProductModal();
                 await this.loadProducts();
                 await this.loadDashboard();
-                localStorage.removeItem('ace1_products_cache');
-                localStorage.setItem('ace1_products_updated', Date.now().toString());
+                // Products are always fresh from database, no cache to clear
             });
         // clear any active tab classes (initial state)
         document.querySelectorAll('.admin-tab').forEach(tab => tab.classList.remove('active'));
@@ -838,13 +837,9 @@ class AdminPanel {
             this.closeProductModal();
             await this.loadProducts();
             await this.loadDashboard();
-            localStorage.removeItem('ace1_products_cache');
-            localStorage.setItem('ace1_products_updated', Date.now().toString());
         }
         
-        // Force reload products on all pages by clearing localStorage cache
-        localStorage.removeItem('ace1_products_cache');
-        localStorage.setItem('ace1_products_updated', Date.now().toString());
+        // Products are always loaded fresh from database - no cache to clear
     }
 
     async syncProductStockQuantity(productId, totalStock) {
@@ -1110,9 +1105,7 @@ class AdminPanel {
 
         console.log('✅ Product deleted:', result.message);
         
-        // Force reload products on all pages by clearing cache
-        localStorage.removeItem('ace1_products_cache');
-        localStorage.setItem('ace1_products_updated', Date.now().toString());
+        // Products are always loaded fresh from database - no cache to clear
         
         // Clear products from memory and reload
         this.products = [];
@@ -1439,8 +1432,8 @@ class AdminPanel {
 
             if (!confirm(`Reset password for user ${userId}? This will invalidate their sessions.`)) return;
 
-            // Try to use a stored session token to authenticate the admin call
-            const token = localStorage.getItem('ace1_token');
+            // Get session token from database auth
+            const token = window.databaseAuth?.getSessionToken?.() || sessionStorage.getItem('ace1_admin_token');
             if (!token) {
                 this.showInlineError('user-form-error', 'Admin session missing; please log in to perform this action');
                 return;
