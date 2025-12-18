@@ -26,6 +26,7 @@ class PasswordManager {
     // ===================================
     async getCurrentUser() {
         try {
+            // Always get user from database auth (no localStorage)
             if (window.databaseAuth) {
                 const authUser = window.databaseAuth.getCurrentUser();
                 if (authUser) {
@@ -33,21 +34,15 @@ class PasswordManager {
                 }
             }
 
-            const userStr = localStorage.getItem('ace1_user');
-            if (userStr && this.supabase) {
-                const storedUser = JSON.parse(userStr);
-                const { data, error } = await this.supabase
-                    .from('users')
-                    .select('*')
-                    .eq('email', storedUser.email)
-                    .single();
-
-                if (error) {
-                    console.error('Database fetch error:', error);
-                    return storedUser;
+            // If no database auth user, check Supabase OAuth
+            if (this.supabase) {
+                const { data: { session } } = await this.supabase.auth.getSession();
+                if (session?.user) {
+                    return session.user;
                 }
+            }
 
-                return data;
+            return null;
             }
 
             const userEmail = sessionStorage.getItem('userEmail');
@@ -409,7 +404,8 @@ class PasswordManager {
             console.error('Logout error:', error);
         }
 
-        localStorage.removeItem('userEmail');
+        // Clear sessionStorage and redirect
+        sessionStorage.removeItem('userEmail');
         window.location.href = 'login.html';
     }
 

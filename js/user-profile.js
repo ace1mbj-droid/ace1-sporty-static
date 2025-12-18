@@ -23,13 +23,13 @@ class UserProfileManager {
         // First check for OAuth session before requiring auth
         const hasSupabaseSession = await this.checkForSupabaseSession();
         
-        // Check authentication
-        const hasToken = localStorage.getItem('ace1_token');
+        // Check database authentication
+        const hasDBSession = window.databaseAuth?.isAuthenticated?.() || false;
         
-        console.log('🔍 Auth check:', { hasToken: !!hasToken, hasSupabaseSession });
+        console.log('🔍 Auth check:', { hasDBSession, hasSupabaseSession });
         
-        if (!hasToken && !hasSupabaseSession) {
-            // No token and no OAuth session - redirect to login
+        if (!hasDBSession && !hasSupabaseSession) {
+            // No session found - redirect to login
             console.log('❌ No authentication found, redirecting to login');
             sessionStorage.setItem('profile_redirect_count', (redirectCount + 1).toString());
             window.location.href = 'login.html';
@@ -39,7 +39,7 @@ class UserProfileManager {
         // Reset counter on successful auth
         sessionStorage.removeItem('profile_redirect_count');
         
-        // Has token or OAuth session - proceed
+        // Has session - proceed
         console.log('✅ Authentication found, loading profile...');
         
         // Sync OAuth user if needed
@@ -67,8 +67,8 @@ class UserProfileManager {
     }
 
     isUserAuthenticated() {
-        // Just check for token - OAuth check happens in init()
-        return !!localStorage.getItem('ace1_token');
+        // Check database auth session
+        return window.databaseAuth?.isAuthenticated?.() || false;
     }
 
     async checkAdminRedirect() {
@@ -114,10 +114,10 @@ class UserProfileManager {
         console.log('👤 OAuth user data:', { email, firstName, lastName, provider: metadata.provider });
         
         // Check if we already have a valid database session
-        const existingToken = localStorage.getItem('ace1_token');
+        const hasDBSession = window.databaseAuth?.isAuthenticated?.() || false;
         
-        if (existingToken) {
-            console.log('✅ Database token exists, skipping OAuth sync');
+        if (hasDBSession) {
+            console.log('✅ Database session exists, skipping OAuth sync');
             return;
         }
         
@@ -135,7 +135,6 @@ class UserProfileManager {
             
             if (result.success) {
                 console.log('✅ OAuth user synced with database, session created');
-                console.log('📊 Session token:', localStorage.getItem('ace1_token'));
             } else {
                 console.error('❌ OAuth sync failed:', result.error);
                 // Still allow access since they have OAuth session
@@ -341,12 +340,8 @@ class UserProfileManager {
                     this.showNotification(result.error || 'Failed to update profile', 'error');
                 }
             } else {
-                // Fallback to localStorage
-                const user = AuthManager.getCurrentUser();
-                const updatedUser = { ...user, ...data };
-                localStorage.setItem('ace1_user', JSON.stringify(updatedUser));
-                this.showNotification('Profile updated successfully!', 'success');
-                this.loadUserData();
+                // No database auth - show error
+                this.showNotification('Unable to update profile. Please try again.', 'error');
             }
 
         } catch (error) {
@@ -629,7 +624,7 @@ class UserProfileManager {
         const wishlistGrid = document.querySelector('#tab-wishlist .wishlist-grid');
         if (!wishlistGrid) return;
         
-        // Check if Supabase service is available
+        // Always load from database (no localStorage fallback)
         if (window.supabaseService && window.supabaseService.supabase) {
             try {
                 const result = await window.supabaseService.getWishlist();
@@ -638,11 +633,13 @@ class UserProfileManager {
                     // Render wishlist items from database
                     wishlistGrid.innerHTML = result.wishlist.map(item => {
                         const product = item.product || {};
+                        const price = product.price_cents ? product.price_cents / 100 : (product.price || 0);
+                        const imageUrl = product.image_url || product.image || 'images/placeholder.jpg';
                         return `
                             <div class="product-card">
                                 <div class="product-image">
-                                    <img src="${product.image || 'https://via.placeholder.com/300'}" alt="${product.name || 'Product'}">
-                                    <button class="wishlist-remove" data-product-id="${product.id}" onclick="window.removeFromWishlist(${product.id})">
+                                    <img src="${imageUrl}" alt="${product.name || 'Product'}" onerror="this.src='images/placeholder.jpg'">
+                                    <button class="wishlist-remove" data-product-id="${product.id}" onclick="window.removeFromWishlist('${product.id}')">
                                         <i class="fas fa-times"></i>
                                     </button>
                                 </div>
@@ -650,8 +647,8 @@ class UserProfileManager {
                                     <h3 class="product-name">${product.name || 'Product'}</h3>
                                     <p class="product-category">${product.category || 'Category'}</p>
                                     <div class="product-footer">
-                                        <span class="product-price">₹${product.price?.toLocaleString() || '0'}</span>
-                                        <button class="add-to-cart-btn" data-product-id="${product.id}" onclick="window.addToCartFromWishlist(${product.id})">
+                                        <span class="product-price">₹${price.toLocaleString('en-IN')}</span>
+                                        <button class="add-to-cart-btn" data-product-id="${product.id}" onclick="window.addToCartFromWishlist('${product.id}')">
                                             <i class="fas fa-shopping-bag"></i>
                                         </button>
                                     </div>
@@ -683,41 +680,15 @@ class UserProfileManager {
                 `;
             }
         } else {
-            // Fallback to localStorage
-            const wishlist = JSON.parse(localStorage.getItem('ace1_wishlist') || '[]');
-            
-            if (wishlist.length === 0) {
-                wishlistGrid.innerHTML = `
-                    <div class="empty-state">
-                        <i class="fas fa-heart"></i>
-                        <h3>Your wishlist is empty</h3>
-                        <p>Save items you love for later</p>
-                        <a href="products.html" class="btn btn-primary">Browse Products</a>
-                    </div>
-                `;
-            } else {
-                // Render wishlist items from localStorage
-                wishlistGrid.innerHTML = wishlist.map(item => `
-                    <div class="product-card">
-                        <div class="product-image">
-                            <img src="${item.image}" alt="${item.name}">
-                            <button class="wishlist-remove" data-id="${item.id}">
-                                <i class="fas fa-times"></i>
-                            </button>
-                        </div>
-                        <div class="product-info">
-                            <h3 class="product-name">${item.name}</h3>
-                            <p class="product-category">${item.category}</p>
-                            <div class="product-footer">
-                                <span class="product-price">₹${item.price.toLocaleString()}</span>
-                                <button class="add-to-cart-btn" data-id="${item.id}">
-                                    <i class="fas fa-shopping-bag"></i>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                `).join('');
-            }
+            // Supabase not available - show empty state
+            wishlistGrid.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-heart"></i>
+                    <h3>Your wishlist is empty</h3>
+                    <p>Save items you love for later</p>
+                    <a href="products.html" class="btn btn-primary">Browse Products</a>
+                </div>
+            `;
         }
     }
 
@@ -737,14 +708,9 @@ class UserProfileManager {
 // Helper functions for wishlist management
 window.removeFromWishlist = async function(productId) {
     if (!window.supabaseService || !window.supabaseService.supabase) {
-        // Fallback to localStorage
-        let wishlist = JSON.parse(localStorage.getItem('ace1_wishlist') || '[]');
-        wishlist = wishlist.filter(item => item.id !== productId);
-        localStorage.setItem('ace1_wishlist', JSON.stringify(wishlist));
-        
-        // Reload wishlist display
-        const profileManager = new UserProfileManager();
-        profileManager.loadWishlist();
+        if (window.showNotification) {
+            window.showNotification('Unable to remove item. Please try again.', 'error');
+        }
         return;
     }
     
@@ -773,25 +739,8 @@ window.removeFromWishlist = async function(productId) {
 
 window.addToCartFromWishlist = async function(productId) {
     if (!window.supabaseService || !window.supabaseService.supabase) {
-        // Fallback to localStorage cart
-        const cart = JSON.parse(localStorage.getItem('ace1_cart') || '[]');
-        const existingItem = cart.find(item => item.productId === productId);
-        
-        if (existingItem) {
-            existingItem.quantity += 1;
-        } else {
-            cart.push({ productId, quantity: 1 });
-        }
-        
-        localStorage.setItem('ace1_cart', JSON.stringify(cart));
-        
         if (window.showNotification) {
-            window.showNotification('Added to cart', 'success');
-        }
-        
-        // Update cart count if function exists
-        if (window.updateCartCount) {
-            window.updateCartCount();
+            window.showNotification('Unable to add to cart. Please try again.', 'error');
         }
         return;
     }
@@ -832,6 +781,10 @@ window.addToCartFromWishlist = async function(productId) {
             // Update cart count if function exists
             if (window.updateCartCount) {
                 window.updateCartCount();
+            }
+            // Reload cart from database
+            if (window.loadCartFromDatabase) {
+                window.loadCartFromDatabase();
             }
         } else {
             if (window.showNotification) {
