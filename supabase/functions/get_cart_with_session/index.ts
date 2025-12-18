@@ -31,7 +31,13 @@ Deno.serve(async (req) => {
   try {
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
+      {
+        auth: {
+          autoRefreshToken: false,
+          persistSession: false
+        }
+      }
     )
 
     const { session_id } = await req.json()
@@ -46,10 +52,7 @@ Deno.serve(async (req) => {
       )
     }
 
-    // Set the session variable for RLS
-    await supabase.rpc('set_session_id', { session_id })
-
-    // Now query the cart with the session variable set
+    // With service role key, RLS is bypassed, so we can query directly
     const { data, error } = await supabase
       .from('shopping_carts')
       .select(`
