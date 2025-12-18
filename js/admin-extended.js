@@ -37,12 +37,30 @@ class AdminExtended {
     }
 
     renderInventoryTable(products) {
-        const container = document.getElementById('inventory-table-body');
+        const container = document.getElementById('inventory-table-container');
         if (!container) return;
 
         const lowStockThreshold = 10;
         
-        container.innerHTML = products.map(product => {
+        // Update summary stats
+        const totalProducts = products?.length || 0;
+        const lowStockItems = products?.filter(p => {
+            const total = p.inventory?.reduce((sum, inv) => sum + (inv.stock || 0), 0) || 0;
+            return total > 0 && total < lowStockThreshold;
+        }).length || 0;
+        const outOfStockItems = products?.filter(p => {
+            const total = p.inventory?.reduce((sum, inv) => sum + (inv.stock || 0), 0) || 0;
+            return total === 0;
+        }).length || 0;
+        
+        const totalEl = document.getElementById('inv-total-products');
+        const lowEl = document.getElementById('inv-low-stock');
+        const outEl = document.getElementById('inv-out-of-stock');
+        if (totalEl) totalEl.textContent = totalProducts;
+        if (lowEl) lowEl.textContent = lowStockItems;
+        if (outEl) outEl.textContent = outOfStockItems;
+        
+        const rows = products.map(product => {
             const totalStock = product.inventory?.reduce((sum, inv) => sum + (inv.stock || 0), 0) || 0;
             const isLowStock = totalStock > 0 && totalStock < lowStockThreshold;
             const isOutOfStock = totalStock === 0;
@@ -53,26 +71,80 @@ class AdminExtended {
                     <td>${product.name}</td>
                     <td>
                         ${product.inventory?.map(inv => `
-                            <span class="size-stock">${inv.size}: ${inv.stock}</span>
+                            <span class="size-stock" style="display:inline-block;margin:2px 5px;padding:2px 8px;background:#f0f0f0;border-radius:4px;">${inv.size}: ${inv.stock}</span>
                         `).join(' ') || 'No sizes'}
                     </td>
                     <td><strong>${totalStock}</strong></td>
                     <td>
-                        <span class="stock-badge ${isOutOfStock ? 'out' : isLowStock ? 'low' : 'ok'}">
+                        <span class="stock-badge ${isOutOfStock ? 'out' : isLowStock ? 'low' : 'ok'}" style="padding:4px 8px;border-radius:4px;background:${isOutOfStock ? '#ffebee' : isLowStock ? '#fff3e0' : '#e8f5e9'};color:${isOutOfStock ? '#c62828' : isLowStock ? '#ef6c00' : '#2e7d32'};">
                             ${isOutOfStock ? 'Out of Stock' : isLowStock ? 'Low Stock' : 'In Stock'}
                         </span>
                     </td>
                     <td>
-                        <button class="btn-sm btn-primary" onclick="adminExtended.adjustStock('${product.id}', '${product.name}')">
+                        <button class="btn-sm btn-primary" onclick="adminExtended.adjustStock('${product.id}', '${product.name}')" style="padding:5px 10px;margin:2px;cursor:pointer;">
                             <i class="fas fa-plus-minus"></i> Adjust
                         </button>
-                        <button class="btn-sm btn-secondary" onclick="adminExtended.viewStockHistory('${product.id}')">
+                        <button class="btn-sm btn-secondary" onclick="adminExtended.viewStockHistory('${product.id}')" style="padding:5px 10px;margin:2px;cursor:pointer;">
                             <i class="fas fa-history"></i>
                         </button>
                     </td>
                 </tr>
             `;
         }).join('');
+        
+        container.innerHTML = `
+            <table class="admin-table" style="width:100%;border-collapse:collapse;">
+                <thead>
+                    <tr style="background:#f5f5f5;">
+                        <th style="padding:12px;text-align:left;border-bottom:2px solid #ddd;">SKU</th>
+                        <th style="padding:12px;text-align:left;border-bottom:2px solid #ddd;">Product</th>
+                        <th style="padding:12px;text-align:left;border-bottom:2px solid #ddd;">Size/Stock</th>
+                        <th style="padding:12px;text-align:left;border-bottom:2px solid #ddd;">Total</th>
+                        <th style="padding:12px;text-align:left;border-bottom:2px solid #ddd;">Status</th>
+                        <th style="padding:12px;text-align:left;border-bottom:2px solid #ddd;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${rows || '<tr><td colspan="6" style="padding:20px;text-align:center;">No products found</td></tr>'}
+                </tbody>
+            </table>
+        `;
+    }
+
+    // Show adjustment modal - select product first if not provided
+    async showAdjustmentModal(productId = null) {
+        if (productId) {
+            // If product is specified, use adjustStock directly
+            const { data: product } = await this.supabase
+                .from('products')
+                .select('name')
+                .eq('id', productId)
+                .single();
+            return this.adjustStock(productId, product?.name || 'Unknown');
+        }
+        
+        // Otherwise show a product selector
+        const { data: products } = await this.supabase
+            .from('products')
+            .select('id, name')
+            .eq('is_active', true)
+            .order('name');
+        
+        if (!products?.length) {
+            showNotification('No products available for adjustment', 'info');
+            return;
+        }
+        
+        const productOptions = products.map(p => `${p.name}`).join('\n');
+        const selectedName = prompt('Select product to adjust (type product name):\n\n' + productOptions);
+        if (!selectedName) return;
+        
+        const selected = products.find(p => p.name.toLowerCase() === selectedName.toLowerCase());
+        if (selected) {
+            this.adjustStock(selected.id, selected.name);
+        } else {
+            showNotification('Product not found', 'error');
+        }
     }
 
     async adjustStock(productId, productName) {
@@ -202,34 +274,52 @@ class AdminExtended {
     }
 
     renderCustomersTable(customers) {
-        const container = document.getElementById('customers-table-body');
+        const container = document.getElementById('customers-container');
         if (!container) return;
 
-        container.innerHTML = customers.map(customer => `
+        const rows = customers.map(customer => `
             <tr>
-                <td>
-                    <div class="customer-info">
-                        <img src="${customer.avatar || 'images/placeholder.jpg'}" alt="" class="customer-avatar">
+                <td style="padding:12px;border-bottom:1px solid #eee;">
+                    <div class="customer-info" style="display:flex;align-items:center;gap:10px;">
+                        <img src="${customer.avatar || 'images/placeholder.jpg'}" alt="" class="customer-avatar" style="width:40px;height:40px;border-radius:50%;object-fit:cover;">
                         <div>
-                            <strong>${customer.first_name || ''} ${customer.last_name || ''}</strong>
-                            <small>${customer.email}</small>
+                            <strong>${customer.first_name || ''} ${customer.last_name || ''}</strong><br>
+                            <small style="color:#666;">${customer.email}</small>
                         </div>
                     </div>
                 </td>
-                <td>${customer.phone || '-'}</td>
-                <td>${customer.orders?.[0]?.count || 0} orders</td>
-                <td>${new Date(customer.created_at).toLocaleDateString()}</td>
-                <td>${customer.last_login ? new Date(customer.last_login).toLocaleDateString() : 'Never'}</td>
-                <td>
-                    <button class="btn-sm btn-primary" onclick="adminExtended.viewCustomerDetails('${customer.id}')">
+                <td style="padding:12px;border-bottom:1px solid #eee;">${customer.phone || '-'}</td>
+                <td style="padding:12px;border-bottom:1px solid #eee;">${customer.orders?.[0]?.count || 0} orders</td>
+                <td style="padding:12px;border-bottom:1px solid #eee;">${new Date(customer.created_at).toLocaleDateString()}</td>
+                <td style="padding:12px;border-bottom:1px solid #eee;">${customer.last_login ? new Date(customer.last_login).toLocaleDateString() : 'Never'}</td>
+                <td style="padding:12px;border-bottom:1px solid #eee;">
+                    <button class="btn-sm btn-primary" onclick="adminExtended.viewCustomerDetails('${customer.id}')" style="padding:5px 10px;margin:2px;cursor:pointer;">
                         <i class="fas fa-eye"></i>
                     </button>
-                    <button class="btn-sm btn-secondary" onclick="adminExtended.addCustomerNote('${customer.id}')">
+                    <button class="btn-sm btn-secondary" onclick="adminExtended.addCustomerNote('${customer.id}')" style="padding:5px 10px;margin:2px;cursor:pointer;">
                         <i class="fas fa-sticky-note"></i>
                     </button>
                 </td>
             </tr>
         `).join('');
+        
+        container.innerHTML = `
+            <table class="admin-table" style="width:100%;border-collapse:collapse;">
+                <thead>
+                    <tr style="background:#f5f5f5;">
+                        <th style="padding:12px;text-align:left;border-bottom:2px solid #ddd;">Customer</th>
+                        <th style="padding:12px;text-align:left;border-bottom:2px solid #ddd;">Phone</th>
+                        <th style="padding:12px;text-align:left;border-bottom:2px solid #ddd;">Orders</th>
+                        <th style="padding:12px;text-align:left;border-bottom:2px solid #ddd;">Joined</th>
+                        <th style="padding:12px;text-align:left;border-bottom:2px solid #ddd;">Last Login</th>
+                        <th style="padding:12px;text-align:left;border-bottom:2px solid #ddd;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${rows || '<tr><td colspan="6" style="padding:20px;text-align:center;">No customers found</td></tr>'}
+                </tbody>
+            </table>
+        `;
     }
 
     async viewCustomerDetails(customerId) {
@@ -332,7 +422,7 @@ class AdminExtended {
     }
 
     renderContentBlocks(blocks) {
-        const container = document.getElementById('content-blocks-grid');
+        const container = document.getElementById('content-container');
         if (!container) return;
 
         const grouped = blocks.reduce((acc, block) => {
@@ -342,30 +432,30 @@ class AdminExtended {
         }, {});
 
         container.innerHTML = Object.entries(grouped).map(([type, items]) => `
-            <div class="content-section">
-                <div class="section-header">
-                    <h3>${type.charAt(0).toUpperCase() + type.slice(1)}s</h3>
-                    <button class="btn btn-sm btn-primary" onclick="adminExtended.addContentBlock('${type}')">
+            <div class="content-section" style="margin-bottom:25px;">
+                <div class="section-header" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;">
+                    <h3 style="margin:0;">${type.charAt(0).toUpperCase() + type.slice(1)}s</h3>
+                    <button class="btn btn-sm btn-primary" onclick="adminExtended.addContentBlock('${type}')" style="padding:5px 15px;cursor:pointer;">
                         <i class="fas fa-plus"></i> Add
                     </button>
                 </div>
-                <div class="content-items">
+                <div class="content-items" style="display:grid;grid-template-columns:repeat(auto-fill, minmax(300px, 1fr));gap:15px;">
                     ${items.map(item => `
-                        <div class="content-card ${item.is_active ? '' : 'inactive'}">
-                            ${item.image_url ? `<img src="${item.image_url}" alt="">` : ''}
+                        <div class="content-card ${item.is_active ? '' : 'inactive'}" style="border:1px solid #eee;border-radius:8px;padding:15px;background:${item.is_active ? 'white' : '#f9f9f9'};opacity:${item.is_active ? '1' : '0.7'};">
+                            ${item.image_url ? `<img src="${item.image_url}" alt="" style="width:100%;height:120px;object-fit:cover;border-radius:4px;margin-bottom:10px;">` : ''}
                             <div class="content-info">
-                                <h4>${item.title || 'Untitled'}</h4>
-                                <p>${item.content?.substring(0, 100) || ''}...</p>
-                                <small>Position: ${item.position || 'Not set'}</small>
+                                <h4 style="margin:0 0 8px 0;">${item.title || 'Untitled'}</h4>
+                                <p style="margin:0 0 8px 0;color:#666;font-size:0.9em;">${item.content?.substring(0, 100) || ''}...</p>
+                                <small style="color:#999;">Position: ${item.position || 'Not set'}</small>
                             </div>
-                            <div class="content-actions">
-                                <button onclick="adminExtended.editContentBlock('${item.id}')" class="btn-sm">
+                            <div class="content-actions" style="margin-top:10px;display:flex;gap:5px;">
+                                <button onclick="adminExtended.editContentBlock('${item.id}')" class="btn-sm" style="padding:5px 10px;cursor:pointer;">
                                     <i class="fas fa-edit"></i>
                                 </button>
-                                <button onclick="adminExtended.toggleContentBlock('${item.id}', ${!item.is_active})" class="btn-sm">
+                                <button onclick="adminExtended.toggleContentBlock('${item.id}', ${!item.is_active})" class="btn-sm" style="padding:5px 10px;cursor:pointer;">
                                     <i class="fas fa-${item.is_active ? 'eye-slash' : 'eye'}"></i>
                                 </button>
-                                <button onclick="adminExtended.deleteContentBlock('${item.id}')" class="btn-sm btn-danger">
+                                <button onclick="adminExtended.deleteContentBlock('${item.id}')" class="btn-sm btn-danger" style="padding:5px 10px;cursor:pointer;background:#f44336;color:white;border:none;border-radius:4px;">
                                     <i class="fas fa-trash"></i>
                                 </button>
                             </div>
@@ -373,7 +463,7 @@ class AdminExtended {
                     `).join('')}
                 </div>
             </div>
-        `).join('') || '<p>No content blocks yet. Create your first one!</p>';
+        `).join('') || '<p style="text-align:center;padding:20px;color:#666;">No content blocks yet. Create your first one!</p>';
     }
 
     async addContentBlock(type) {
@@ -435,7 +525,7 @@ class AdminExtended {
     }
 
     renderAnalytics(orders, products) {
-        const container = document.getElementById('analytics-content');
+        const container = document.getElementById('analytics-table-container');
         if (!container) return;
 
         const totalRevenue = orders?.reduce((sum, o) => sum + (o.total_cents || 0), 0) || 0;
@@ -460,44 +550,44 @@ class AdminExtended {
             .slice(0, 5);
 
         container.innerHTML = `
-            <div class="analytics-grid">
-                <div class="analytics-card">
-                    <h4>Total Revenue (30 days)</h4>
-                    <div class="analytics-value">₹${(totalRevenue/100).toLocaleString()}</div>
+            <div class="analytics-grid" style="display:grid;grid-template-columns:repeat(4, 1fr);gap:15px;margin-bottom:25px;">
+                <div class="analytics-card" style="border:1px solid #eee;border-radius:8px;padding:20px;text-align:center;background:white;">
+                    <h4 style="margin:0 0 10px 0;color:#666;font-size:0.9em;">Total Revenue (30 days)</h4>
+                    <div class="analytics-value" style="font-size:1.8em;font-weight:bold;color:#2e7d32;">₹${(totalRevenue/100).toLocaleString()}</div>
                 </div>
-                <div class="analytics-card">
-                    <h4>Total Orders</h4>
-                    <div class="analytics-value">${orders?.length || 0}</div>
+                <div class="analytics-card" style="border:1px solid #eee;border-radius:8px;padding:20px;text-align:center;background:white;">
+                    <h4 style="margin:0 0 10px 0;color:#666;font-size:0.9em;">Total Orders</h4>
+                    <div class="analytics-value" style="font-size:1.8em;font-weight:bold;color:#1976d2;">${orders?.length || 0}</div>
                 </div>
-                <div class="analytics-card">
-                    <h4>Avg Order Value</h4>
-                    <div class="analytics-value">₹${(avgOrderValue/100).toFixed(0)}</div>
+                <div class="analytics-card" style="border:1px solid #eee;border-radius:8px;padding:20px;text-align:center;background:white;">
+                    <h4 style="margin:0 0 10px 0;color:#666;font-size:0.9em;">Avg Order Value</h4>
+                    <div class="analytics-value" style="font-size:1.8em;font-weight:bold;color:#7b1fa2;">₹${(avgOrderValue/100).toFixed(0)}</div>
                 </div>
-                <div class="analytics-card">
-                    <h4>Completed Orders</h4>
-                    <div class="analytics-value">${completedOrders}</div>
+                <div class="analytics-card" style="border:1px solid #eee;border-radius:8px;padding:20px;text-align:center;background:white;">
+                    <h4 style="margin:0 0 10px 0;color:#666;font-size:0.9em;">Completed Orders</h4>
+                    <div class="analytics-value" style="font-size:1.8em;font-weight:bold;color:#00796b;">${completedOrders}</div>
                 </div>
             </div>
             
-            <div class="analytics-charts">
-                <div class="chart-card">
-                    <h4>Sales by Category</h4>
+            <div class="analytics-charts" style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+                <div class="chart-card" style="border:1px solid #eee;border-radius:8px;padding:20px;background:white;">
+                    <h4 style="margin:0 0 15px 0;">Sales by Category</h4>
                     <div class="category-bars">
-                        ${Object.entries(categoryRevenue).map(([cat, qty]) => `
-                            <div class="bar-item">
-                                <span>${cat}</span>
-                                <div class="bar" style="width: ${Math.min(100, qty * 10)}%"></div>
-                                <span>${qty} items</span>
+                        ${Object.entries(categoryRevenue).length ? Object.entries(categoryRevenue).map(([cat, qty]) => `
+                            <div class="bar-item" style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+                                <span style="width:100px;">${cat}</span>
+                                <div class="bar" style="width:${Math.min(100, qty * 10)}%;height:20px;background:linear-gradient(90deg, #4caf50, #81c784);border-radius:4px;"></div>
+                                <span style="color:#666;">${qty} items</span>
                             </div>
-                        `).join('')}
+                        `).join('') : '<p style="color:#666;">No category data available</p>'}
                     </div>
                 </div>
-                <div class="chart-card">
-                    <h4>Best Selling Products</h4>
-                    <ol class="best-sellers">
-                        ${bestSellers.map(([name, qty]) => `
-                            <li><span>${name}</span><span>${qty} sold</span></li>
-                        `).join('')}
+                <div class="chart-card" style="border:1px solid #eee;border-radius:8px;padding:20px;background:white;">
+                    <h4 style="margin:0 0 15px 0;">Best Selling Products</h4>
+                    <ol class="best-sellers" style="margin:0;padding-left:20px;">
+                        ${bestSellers.length ? bestSellers.map(([name, qty]) => `
+                            <li style="padding:8px 0;border-bottom:1px solid #eee;display:flex;justify-content:space-between;"><span>${name}</span><span style="color:#4caf50;font-weight:bold;">${qty} sold</span></li>
+                        `).join('') : '<li style="color:#666;">No sales data available</li>'}
                     </ol>
                 </div>
             </div>
@@ -523,36 +613,55 @@ class AdminExtended {
     }
 
     renderCouponsTable(coupons) {
-        const container = document.getElementById('coupons-table-body');
+        const container = document.getElementById('coupons-container');
         if (!container) return;
 
-        container.innerHTML = coupons.map(coupon => {
+        const rows = coupons.map(coupon => {
             const isExpired = coupon.end_date && new Date(coupon.end_date) < new Date();
             const isExhausted = coupon.usage_limit && coupon.usage_count >= coupon.usage_limit;
             
             return `
-                <tr class="${isExpired ? 'expired' : ''} ${!coupon.is_active ? 'inactive' : ''}">
-                    <td><code>${coupon.code}</code></td>
-                    <td>${coupon.discount_type === 'percentage' ? coupon.discount_value + '%' : '₹' + coupon.discount_value}</td>
-                    <td>${coupon.usage_count}${coupon.usage_limit ? '/' + coupon.usage_limit : ''}</td>
-                    <td>${coupon.start_date ? new Date(coupon.start_date).toLocaleDateString() : '-'}</td>
-                    <td>${coupon.end_date ? new Date(coupon.end_date).toLocaleDateString() : 'No expiry'}</td>
-                    <td>
-                        <span class="badge ${coupon.is_active && !isExpired && !isExhausted ? 'badge-success' : 'badge-secondary'}">
+                <tr class="${isExpired ? 'expired' : ''} ${!coupon.is_active ? 'inactive' : ''}" style="opacity:${!coupon.is_active || isExpired ? '0.6' : '1'};">
+                    <td style="padding:12px;border-bottom:1px solid #eee;"><code style="background:#f5f5f5;padding:2px 8px;border-radius:4px;">${coupon.code}</code></td>
+                    <td style="padding:12px;border-bottom:1px solid #eee;">${coupon.discount_type === 'percentage' ? coupon.discount_value + '%' : '₹' + coupon.discount_value}</td>
+                    <td style="padding:12px;border-bottom:1px solid #eee;">${coupon.usage_count || 0}${coupon.usage_limit ? '/' + coupon.usage_limit : ''}</td>
+                    <td style="padding:12px;border-bottom:1px solid #eee;">${coupon.start_date ? new Date(coupon.start_date).toLocaleDateString() : '-'}</td>
+                    <td style="padding:12px;border-bottom:1px solid #eee;">${coupon.end_date ? new Date(coupon.end_date).toLocaleDateString() : 'No expiry'}</td>
+                    <td style="padding:12px;border-bottom:1px solid #eee;">
+                        <span style="padding:4px 8px;border-radius:4px;background:${coupon.is_active && !isExpired && !isExhausted ? '#e8f5e9' : '#f5f5f5'};color:${coupon.is_active && !isExpired && !isExhausted ? '#2e7d32' : '#666'};">
                             ${isExpired ? 'Expired' : isExhausted ? 'Exhausted' : coupon.is_active ? 'Active' : 'Inactive'}
                         </span>
                     </td>
-                    <td>
-                        <button class="btn-sm btn-primary" onclick="adminExtended.editCoupon('${coupon.id}')">
+                    <td style="padding:12px;border-bottom:1px solid #eee;">
+                        <button class="btn-sm btn-primary" onclick="adminExtended.editCoupon('${coupon.id}')" style="padding:5px 10px;margin:2px;cursor:pointer;">
                             <i class="fas fa-edit"></i>
                         </button>
-                        <button class="btn-sm btn-danger" onclick="adminExtended.deleteCoupon('${coupon.id}')">
+                        <button class="btn-sm btn-danger" onclick="adminExtended.deleteCoupon('${coupon.id}')" style="padding:5px 10px;margin:2px;cursor:pointer;background:#f44336;color:white;border:none;border-radius:4px;">
                             <i class="fas fa-trash"></i>
                         </button>
                     </td>
                 </tr>
             `;
-        }).join('') || '<tr><td colspan="7">No coupons created yet</td></tr>';
+        }).join('');
+        
+        container.innerHTML = `
+            <table class="admin-table" style="width:100%;border-collapse:collapse;">
+                <thead>
+                    <tr style="background:#f5f5f5;">
+                        <th style="padding:12px;text-align:left;border-bottom:2px solid #ddd;">Code</th>
+                        <th style="padding:12px;text-align:left;border-bottom:2px solid #ddd;">Discount</th>
+                        <th style="padding:12px;text-align:left;border-bottom:2px solid #ddd;">Usage</th>
+                        <th style="padding:12px;text-align:left;border-bottom:2px solid #ddd;">Start</th>
+                        <th style="padding:12px;text-align:left;border-bottom:2px solid #ddd;">End</th>
+                        <th style="padding:12px;text-align:left;border-bottom:2px solid #ddd;">Status</th>
+                        <th style="padding:12px;text-align:left;border-bottom:2px solid #ddd;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${rows || '<tr><td colspan="7" style="padding:20px;text-align:center;">No coupons created yet</td></tr>'}
+                </tbody>
+            </table>
+        `;
     }
 
     async saveCoupon() {
@@ -603,30 +712,30 @@ class AdminExtended {
     }
 
     renderShippingMethods(methods) {
-        const container = document.getElementById('shipping-methods-list');
+        const container = document.getElementById('shipping-container');
         if (!container) return;
 
         container.innerHTML = methods.map(method => `
-            <div class="shipping-card ${method.is_active ? '' : 'inactive'}">
+            <div class="shipping-card ${method.is_active ? '' : 'inactive'}" style="border:1px solid #eee;border-radius:8px;padding:15px;margin-bottom:15px;background:${method.is_active ? 'white' : '#f9f9f9'};opacity:${method.is_active ? '1' : '0.7'};">
                 <div class="shipping-info">
-                    <h4>${method.name}</h4>
-                    <p>${method.description || ''}</p>
-                    <p><strong>Carrier:</strong> ${method.carrier || 'Not specified'}</p>
-                    <p><strong>Rate:</strong> ₹${(method.base_rate_cents/100).toFixed(0)}</p>
-                    <p><strong>Delivery:</strong> ${method.estimated_days_min}-${method.estimated_days_max} days</p>
+                    <h4 style="margin:0 0 10px 0;">${method.name}</h4>
+                    <p style="color:#666;margin:5px 0;">${method.description || ''}</p>
+                    <p style="margin:5px 0;"><strong>Carrier:</strong> ${method.carrier || 'Not specified'}</p>
+                    <p style="margin:5px 0;"><strong>Rate:</strong> ₹${(method.base_rate_cents/100).toFixed(0)}</p>
+                    <p style="margin:5px 0;"><strong>Delivery:</strong> ${method.estimated_days_min}-${method.estimated_days_max} days</p>
                     ${method.free_shipping_threshold_cents ? 
-                        `<p><strong>Free above:</strong> ₹${(method.free_shipping_threshold_cents/100).toFixed(0)}</p>` : ''}
+                        `<p style="margin:5px 0;"><strong>Free above:</strong> ₹${(method.free_shipping_threshold_cents/100).toFixed(0)}</p>` : ''}
                 </div>
-                <div class="shipping-actions">
-                    <button class="btn-sm btn-primary" onclick="adminExtended.editShippingMethod('${method.id}')">
-                        <i class="fas fa-edit"></i>
+                <div class="shipping-actions" style="margin-top:10px;display:flex;gap:10px;">
+                    <button class="btn-sm btn-primary" onclick="adminExtended.editShippingMethod('${method.id}')" style="padding:5px 15px;cursor:pointer;">
+                        <i class="fas fa-edit"></i> Edit
                     </button>
-                    <button class="btn-sm" onclick="adminExtended.toggleShippingMethod('${method.id}', ${!method.is_active})">
-                        <i class="fas fa-${method.is_active ? 'eye-slash' : 'eye'}"></i>
+                    <button class="btn-sm" onclick="adminExtended.toggleShippingMethod('${method.id}', ${!method.is_active})" style="padding:5px 15px;cursor:pointer;">
+                        <i class="fas fa-${method.is_active ? 'eye-slash' : 'eye'}"></i> ${method.is_active ? 'Disable' : 'Enable'}
                     </button>
                 </div>
             </div>
-        `).join('') || '<p>No shipping methods configured</p>';
+        `).join('') || '<p style="text-align:center;padding:20px;color:#666;">No shipping methods configured</p>';
     }
 
     // ========================================
@@ -958,27 +1067,27 @@ class AdminExtended {
         if (!container) return;
 
         if (!templates?.length) {
-            container.innerHTML = '<p>No email templates found. Create your first template!</p>';
+            container.innerHTML = '<p style="text-align:center;padding:20px;color:#666;">No email templates found. Create your first template!</p>';
             return;
         }
 
-        container.innerHTML = templates.map(template => `
-            <div class="template-card">
-                <div class="template-header">
-                    <span class="template-name">${template.name}</span>
-                    <div class="template-actions">
-                        <button onclick="adminExtended.showTemplateModal(${JSON.stringify(template).replace(/"/g, '&quot;')})" class="btn btn-sm btn-secondary">
+        container.innerHTML = `<div style="display:grid;grid-template-columns:repeat(auto-fill, minmax(350px, 1fr));gap:15px;">${templates.map(template => `
+            <div class="template-card" style="border:1px solid #eee;border-radius:8px;padding:15px;background:white;">
+                <div class="template-header" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+                    <span class="template-name" style="font-weight:bold;font-size:1.1em;">${template.name}</span>
+                    <div class="template-actions" style="display:flex;gap:5px;">
+                        <button onclick="adminExtended.showTemplateModal(${JSON.stringify(template).replace(/"/g, '&quot;')})" class="btn btn-sm btn-secondary" style="padding:5px 10px;cursor:pointer;">
                             <i class="fas fa-edit"></i>
                         </button>
-                        <button onclick="adminExtended.deleteTemplate('${template.id}')" class="btn btn-sm btn-danger">
+                        <button onclick="adminExtended.deleteTemplate('${template.id}')" class="btn btn-sm btn-danger" style="padding:5px 10px;cursor:pointer;background:#f44336;color:white;border:none;border-radius:4px;">
                             <i class="fas fa-trash"></i>
                         </button>
                     </div>
                 </div>
-                <div class="template-subject">Subject: ${template.subject}</div>
-                <div class="template-preview">${template.body?.substring(0, 200) || ''}...</div>
+                <div class="template-subject" style="color:#666;font-size:0.9em;margin-bottom:8px;"><strong>Subject:</strong> ${template.subject}</div>
+                <div class="template-preview" style="color:#888;font-size:0.85em;max-height:80px;overflow:hidden;">${template.body?.substring(0, 200) || ''}...</div>
             </div>
-        `).join('');
+        `).join('')}</div>`;
     }
 
     showTemplateModal(template = null) {
@@ -1063,7 +1172,7 @@ class AdminExtended {
         if (!container) return;
 
         if (!roles?.length) {
-            container.innerHTML = '<p>No roles found. Create your first role!</p>';
+            container.innerHTML = '<p style="text-align:center;padding:20px;color:#666;">No roles found. Create your first role!</p>';
             return;
         }
 
@@ -1076,35 +1185,35 @@ class AdminExtended {
             users: 'User Management'
         };
 
-        container.innerHTML = roles.map(role => `
-            <div class="role-card">
-                <div class="role-header">
-                    <span class="role-name">
-                        <i class="fas fa-${role.name === 'owner' ? 'crown' : role.name === 'manager' ? 'user-tie' : 'user'}"></i>
+        container.innerHTML = `<div style="display:grid;grid-template-columns:repeat(auto-fill, minmax(300px, 1fr));gap:15px;">${roles.map(role => `
+            <div class="role-card" style="border:1px solid #eee;border-radius:8px;padding:15px;background:white;">
+                <div class="role-header" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+                    <span class="role-name" style="font-weight:bold;font-size:1.1em;">
+                        <i class="fas fa-${role.name === 'owner' ? 'crown' : role.name === 'manager' ? 'user-tie' : 'user'}" style="margin-right:5px;color:${role.name === 'owner' ? '#ffc107' : '#666'};"></i>
                         ${role.name.charAt(0).toUpperCase() + role.name.slice(1)}
                     </span>
-                    <div class="role-actions">
+                    <div class="role-actions" style="display:flex;gap:5px;">
                         ${role.name !== 'owner' ? `
-                            <button onclick="adminExtended.showRoleModal(${JSON.stringify(role).replace(/"/g, '&quot;')})" class="btn btn-sm btn-secondary">
+                            <button onclick="adminExtended.showRoleModal(${JSON.stringify(role).replace(/"/g, '&quot;')})" class="btn btn-sm btn-secondary" style="padding:5px 10px;cursor:pointer;">
                                 <i class="fas fa-edit"></i>
                             </button>
-                            <button onclick="adminExtended.deleteRole('${role.id}')" class="btn btn-sm btn-danger">
+                            <button onclick="adminExtended.deleteRole('${role.id}')" class="btn btn-sm btn-danger" style="padding:5px 10px;cursor:pointer;background:#f44336;color:white;border:none;border-radius:4px;">
                                 <i class="fas fa-trash"></i>
                             </button>
-                        ` : '<span class="badge badge-info">System Role</span>'}
+                        ` : '<span style="padding:4px 8px;background:#e3f2fd;color:#1976d2;border-radius:4px;font-size:0.8em;">System Role</span>'}
                     </div>
                 </div>
-                <p class="role-description">${role.description || 'No description'}</p>
-                <div class="permissions-grid">
+                <p class="role-description" style="color:#666;margin:10px 0;">${role.description || 'No description'}</p>
+                <div class="permissions-grid" style="display:grid;grid-template-columns:repeat(2, 1fr);gap:8px;">
                     ${Object.entries(permissionLabels).map(([key, label]) => `
-                        <div class="permission-item">
-                            <i class="fas fa-${role.permissions?.[key] ? 'check' : 'times'}"></i>
+                        <div class="permission-item" style="display:flex;align-items:center;gap:5px;font-size:0.9em;">
+                            <i class="fas fa-${role.permissions?.[key] ? 'check' : 'times'}" style="color:${role.permissions?.[key] ? '#4caf50' : '#f44336'};"></i>
                             ${label}
                         </div>
                     `).join('')}
                 </div>
             </div>
-        `).join('');
+        `).join('')}</div>`;
     }
 
     showRoleModal(role = null) {
