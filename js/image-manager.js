@@ -532,43 +532,64 @@ class WebsiteImageManager {
                 const alt = document.getElementById('edit-alt').value;
                 const selector = document.getElementById('edit-selector').value;
                 const id = document.getElementById('edit-id').value;
+
+                // Sanitize url input before using in DOM
+                const safeUrl = WebsiteImageManager.sanitizeImageUrl(url);
+                if (!safeUrl) {
+                    this.showNotification('Invalid or unsafe image URL.', 'error');
+                    return;
+                }
                 
                 try {
                     if (!this.supabase) this.supabase = window.getSupabase && window.getSupabase();
-                    
+
                     // Save to database if it's a product image
                     if (id) {
                         const { error } = await this.supabase
                             .from('product_images')
                             .update({
-                                storage_path: url,
+                                storage_path: safeUrl,
                                 alt: alt
                             })
                             .eq('product_id', id);
-                        
+
                         if (error) throw error;
                     }
-                    
+
                     // Update the DOM element if selector exists
                     if (selector) {
                         const elements = document.querySelectorAll(selector);
                         elements.forEach(el => {
                             if (el.tagName === 'IMG') {
-                                el.src = url;
+                                el.src = safeUrl;
                                 if (alt) el.alt = alt;
                             } else {
-                                el.style.backgroundImage = `url('${url}')`;
+                                el.style.backgroundImage = `url('${safeUrl}')`;
                             }
                         });
                     }
-                    
+
                     this.showNotification('Image URL saved successfully!', 'success');
                     this.closeEditModal();
-                    
+
                     // Refresh the grid
                     const category = this.getCurrentCategory();
                     await this.scanImages(category);
-                    
+
+    // Static helper for sanitizing user-supplied image URLs
+    static sanitizeImageUrl(url) {
+        try {
+            // Only allow http and https URLs, disallow javascript:, data:, blob: etc.
+            const parsed = new URL(url, window.location.origin);
+            if (parsed.protocol === "http:" || parsed.protocol === "https:") {
+                return parsed.href;
+            }
+            return null;
+        } catch (e) {
+            // Invalid URL, reject
+            return null;
+        }
+    }
                 } catch (error) {
                     console.error('Save error:', error);
                     this.showNotification('Failed to save image URL', 'error');
