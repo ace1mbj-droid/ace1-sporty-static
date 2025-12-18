@@ -44,6 +44,23 @@
             gap: 10px;
             margin-bottom: 30px;
             border-bottom: 2px solid #eee;
+            overflow-x: auto;
+            overflow-y: hidden;
+            padding-bottom: 5px;
+        }
+        .admin-tabs::-webkit-scrollbar {
+            height: 6px;
+        }
+        .admin-tabs::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 3px;
+        }
+        .admin-tabs::-webkit-scrollbar-thumb {
+            background: #FF6B00;
+            border-radius: 3px;
+        }
+        .admin-tabs::-webkit-scrollbar-thumb:hover {
+            background: #e55f00;
         }
         .admin-tab {
             padding: 15px 30px;
@@ -55,6 +72,8 @@
             color: #666;
             border-bottom: 3px solid transparent;
             transition: all 0.3s;
+            white-space: nowrap;
+            flex-shrink: 0;
         }
         .admin-tab.active {
             color: #FF6B00;
