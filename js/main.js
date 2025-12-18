@@ -841,26 +841,13 @@ async function loadCartFromDatabase() {
             }
         } else {
             // Anonymous user - load by session_id
-            const result = await supabase.rpc('get_cart_by_session', { p_session_id: cartSessionId });
-            
-            if (!result.error && result.data) {
-                // Need to fetch product details
-                const productIds = Array.isArray(result.data) 
-                    ? result.data.map(item => item.product_id)
-                    : [result.data.product_id];
-                if (productIds.length > 0) {
-                    const { data: products } = await supabase
-                        .from('products')
-                        .select('id, name, price_cents, image_url, inventory(stock, size)')
-                        .in('id', productIds);
-                    
-                    // Merge product details
-                    data = result.data.map(item => ({
-                        ...item,
-                        products: products?.find(p => p.id === item.product_id)
-                    }));
-                }
-            }
+            const result = await supabase
+                .from('shopping_carts')
+                .select(`
+                    *,
+                    products (id, name, price_cents, image_url, inventory(stock, size))
+                `)
+                .eq('session_id', cartSessionId);
         }
         
         if (data && data.length > 0) {
