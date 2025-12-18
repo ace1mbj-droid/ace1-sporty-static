@@ -19,7 +19,8 @@ jobs:
         run: |
           # Note: 'secrets' cannot be referenced in the workflow-level 'if' expression (parser error).
           # Instead evaluate the repository secret at runtime in this step.
-          if [ "${{ secrets.ALLOW_PRODUCTION_DEPLOY }}" != "true" ]; then
+          ALLOW_DEPLOY="${{ secrets.ALLOW_PRODUCTION_DEPLOY }}"
+          if [ "$ALLOW_DEPLOY" != "true" ]; then
             echo "Automatic production deploys are disabled for safety. To allow a deploy, re-run as 'workflow_dispatch' or temporarily set the secret 'ALLOW_PRODUCTION_DEPLOY=true'."
             exit 1
           fi
@@ -27,7 +28,8 @@ jobs:
       - name: Check Supabase deploy enabled
         id: check-supabase
         run: |
-          if [ "${{ secrets.ENABLE_SUPABASE_DEPLOY }}" = "true" ]; then
+          ENABLE_DEPLOY="${{ secrets.ENABLE_SUPABASE_DEPLOY }}"
+          if [ "$ENABLE_DEPLOY" = "true" ]; then
             echo "enabled=true" >> $GITHUB_OUTPUT
             echo "Supabase deploy is enabled."
           else
@@ -69,8 +71,10 @@ jobs:
       - name: Set function secrets (Razorpay)
         if: steps.check-supabase.outputs.enabled == 'true'
         run: |
-          if [ -n "${{ secrets.RZ_KEY }}" ] && [ -n "${{ secrets.RZ_SECRET }}" ]; then
-            npx supabase secrets set RZ_KEY="${{ secrets.RZ_KEY }}" RZ_SECRET="${{ secrets.RZ_SECRET }}" --project-ref ${{ secrets.SUPABASE_PROJECT_REF }}
+          RZ_KEY="${{ secrets.RZ_KEY }}"
+          RZ_SECRET="${{ secrets.RZ_SECRET }}"
+          if [ -n "$RZ_KEY" ] && [ -n "$RZ_SECRET" ]; then
+            npx supabase secrets set RZ_KEY="$RZ_KEY" RZ_SECRET="$RZ_SECRET" --project-ref ${{ secrets.SUPABASE_PROJECT_REF }}
           else
             echo "RZ_KEY / RZ_SECRET not set; skipping secret set"
           fi
@@ -85,7 +89,8 @@ jobs:
       - name: CI guard — prevent accidental production deploys
         if: github.event_name != 'workflow_dispatch'
         run: |
-          if [ "${{ secrets.ALLOW_PRODUCTION_DEPLOY }}" != "true" ]; then
+          ALLOW_DEPLOY="${{ secrets.ALLOW_PRODUCTION_DEPLOY }}"
+          if [ "$ALLOW_DEPLOY" != "true" ]; then
             echo "Automatic production deploys are disabled. Re-run via 'workflow_dispatch' or set 'ALLOW_PRODUCTION_DEPLOY=true' temporarily."
             exit 1
           fi
@@ -126,8 +131,8 @@ jobs:
           FTP_HOST: ${{ secrets.FTP_HOST }}
           FTP_USER: ${{ secrets.FTP_USER }}
           FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
-          FTP_PORT: ${{ secrets.FTP_PORT || '21' }}
-          FTP_SSL_VERIFY: ${{ secrets.FTP_SSL_VERIFY || 'true' }}
+          FTP_PORT: ${{ secrets.FTP_PORT }}
+          FTP_SSL_VERIFY: ${{ secrets.FTP_SSL_VERIFY }}
         run: |
           sudo apt-get update && sudo apt-get install -y lftp
           set -e
