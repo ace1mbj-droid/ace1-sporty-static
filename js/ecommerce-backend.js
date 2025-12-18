@@ -461,6 +461,40 @@ class EcommerceBackend {
                 return { success: false, error: 'Please login to add a review' };
             }
 
+            if (!orderId) {
+                return { success: false, error: 'Order reference required to review' };
+            }
+
+            // Verify the product exists in the user’s delivered order
+            const { data: orderItem, error: orderCheckError } = await this.supabase
+                .from('order_items')
+                .select('id, order:orders(user_id, status)')
+                .eq('order_id', orderId)
+                .eq('product_id', productId)
+                .eq('orders.user_id', userId)
+                .single();
+
+            if (orderCheckError || !orderItem) {
+                return { success: false, error: 'You can only review products you purchased' };
+            }
+
+            if (orderItem.order?.status !== 'delivered') {
+                return { success: false, error: 'You can review a product after it is delivered' };
+            }
+
+            // Prevent duplicate reviews for the same order + product
+            const { data: existingReview } = await this.supabase
+                .from('reviews')
+                .select('id')
+                .eq('user_id', userId)
+                .eq('product_id', productId)
+                .eq('order_id', orderId)
+                .maybeSingle();
+
+            if (existingReview) {
+                return { success: false, error: 'You have already reviewed this product for this order' };
+            }
+
             const { data, error } = await this.supabase
                 .from('reviews')
                 .insert([{
@@ -470,8 +504,7 @@ class EcommerceBackend {
                     rating: rating,
                     title: title,
                     comment: comment,
-                    is_verified_purchase: !!orderId,
-                    is_approved: true // Auto-approve, or set to false for moderation
+                    verified_purchase: true
                 }])
                 .select()
                 .single();
@@ -493,7 +526,6 @@ class EcommerceBackend {
                     users (first_name, last_name, avatar)
                 `)
                 .eq('product_id', productId)
-                .eq('is_approved', true)
                 .order('created_at', { ascending: false });
 
             if (error) throw error;

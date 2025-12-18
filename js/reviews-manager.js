@@ -50,7 +50,6 @@ class ReviewsManager {
                     )
                 `)
                 .eq('product_id', productId)
-                .eq('is_approved', true)
                 .order('created_at', { ascending: false });
 
             if (error) throw error;
@@ -145,7 +144,7 @@ class ReviewsManager {
                     <div class="reviewer-info">
                         <div class="reviewer-name">
                             ${userName}
-                            ${review.is_verified_purchase ? '<span class="verified-badge"><i class="fas fa-check-circle"></i> Verified Purchase</span>' : ''}
+                            ${review.verified_purchase ? '<span class="verified-badge"><i class="fas fa-check-circle"></i> Verified Purchase</span>' : ''}
                         </div>
                         <div class="review-meta">
                             <div class="review-rating">${this.renderStars(review.rating)}</div>
@@ -177,52 +176,13 @@ class ReviewsManager {
     // RENDER REVIEW FORM
     // ===================================
     renderReviewForm() {
-        if (!this.currentUser) {
-            return `
-                <div class="review-form-container">
-                    <div class="login-prompt">
-                        <i class="fas fa-user"></i>
-                        <p>Please <a href="login.html">login</a> to write a review</p>
-                    </div>
-                </div>
-            `;
-        }
-
         return `
             <div class="review-form-container">
-                <h4>Write a Review</h4>
-                <form id="review-form" class="review-form">
-                    <div class="form-group">
-                        <label>Your Rating *</label>
-                        <div class="rating-input">
-                            <input type="radio" name="rating" value="5" id="star5" required>
-                            <label for="star5"><i class="fas fa-star"></i></label>
-                            <input type="radio" name="rating" value="4" id="star4">
-                            <label for="star4"><i class="fas fa-star"></i></label>
-                            <input type="radio" name="rating" value="3" id="star3">
-                            <label for="star3"><i class="fas fa-star"></i></label>
-                            <input type="radio" name="rating" value="2" id="star2">
-                            <label for="star2"><i class="fas fa-star"></i></label>
-                            <input type="radio" name="rating" value="1" id="star1">
-                            <label for="star1"><i class="fas fa-star"></i></label>
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="review-title">Review Title (Optional)</label>
-                        <input type="text" id="review-title" placeholder="Sum up your experience" maxlength="100">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="review-comment">Your Review *</label>
-                        <textarea id="review-comment" rows="4" placeholder="Share your thoughts about this product..." required minlength="10"></textarea>
-                        <small class="char-count">Minimum 10 characters</small>
-                    </div>
-
-                    <button type="submit" class="submit-review-btn">
-                        <i class="fas fa-paper-plane"></i> Submit Review
-                    </button>
-                </form>
+                <div class="login-prompt">
+                    <i class="fas fa-user-check"></i>
+                    <p>Reviews can only be submitted from your delivered orders in <strong>My Profile &gt; Orders</strong>.</p>
+                    <a class="btn btn-primary" href="user-profile.html?tab=orders">Go to My Orders</a>
+                </div>
             </div>
         `;
     }
@@ -231,63 +191,8 @@ class ReviewsManager {
     // SUBMIT REVIEW
     // ===================================
     async submitReview(formData) {
-        try {
-            if (!this.currentUser) {
-                alert('Please login to submit a review');
-                window.location.href = 'login.html';
-                return;
-            }
-
-            if (!this.currentProductId) {
-                throw new Error('Product ID not set');
-            }
-
-            // Show loading on button
-            const submitBtn = document.querySelector('.submit-review-btn');
-            const originalText = submitBtn.innerHTML;
-            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...';
-            submitBtn.disabled = true;
-
-            // Insert review
-            const { data, error } = await this.supabase
-                .from('reviews')
-                .insert([{
-                    product_id: this.currentProductId,
-                    user_id: this.currentUser.id,
-                    rating: parseInt(formData.rating),
-                    title: formData.title || null,
-                    comment: formData.comment,
-                    is_approved: true, // Auto-approve, or set to false for moderation
-                    is_verified_purchase: false // Set to true if checking order history
-                }])
-                .select()
-                .single();
-
-            if (error) throw error;
-
-            // Reset form
-            document.getElementById('review-form').reset();
-
-            // Show success message
-            this.showNotification('Review submitted successfully!', 'success');
-
-            // Reload reviews to show new one
-            await this.loadReviews(this.currentProductId);
-
-            // Restore button
-            submitBtn.innerHTML = originalText;
-            submitBtn.disabled = false;
-
-        } catch (error) {
-            console.error('Submit review error:', error);
-            this.showNotification('Failed to submit review. Please try again.', 'error');
-            
-            const submitBtn = document.querySelector('.submit-review-btn');
-            if (submitBtn) {
-                submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Review';
-                submitBtn.disabled = false;
-            }
-        }
+        // Direct review submission is disabled on product pages
+        this.showNotification('Please review from your delivered orders in My Profile.', 'info');
     }
 
     // ===================================

@@ -143,79 +143,9 @@ class ProductReviewsManager {
     async handleReviewSubmit(e) {
         e.preventDefault();
 
-        // Check if user is logged in
-        const user = window.AuthManager?.getCurrentUser();
-        
-        if (!user) {
-            this.showNotification('Please login to submit a review', 'error');
-            setTimeout(() => {
-                window.location.href = 'login.html?redirect=' + encodeURIComponent(window.location.pathname);
-            }, 1500);
-            return;
-        }
-
-        const formData = new FormData(e.target);
-        const rating = parseInt(document.querySelector('.star-rating-btn.selected')?.dataset.rating || 0);
-
-        if (rating === 0) {
-            this.showNotification('Please select a rating', 'error');
-            return;
-        }
-
-        const submitBtn = e.target.querySelector('button[type="submit"]');
-        if (submitBtn) submitBtn.disabled = true;
-
-        try {
-            const supabase = window.getSupabase?.();
-            if (!supabase) throw new Error('Database not available');
-            
-            // Save to database
-            const { data, error } = await supabase
-                .from('reviews')
-                .insert({
-                    product_id: this.productId,
-                    user_id: user.id,
-                    user_email: user.email,
-                    user_name: `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email,
-                    rating: rating,
-                    title: formData.get('title'),
-                    comment: formData.get('comment'),
-                    verified_purchase: true
-                })
-                .select()
-                .single();
-
-            if (error) throw error;
-
-            // Add to source + view
-            const newReview = {
-                id: data.id,
-                userId: data.user_id,
-                userName: data.user_name,
-                rating: data.rating,
-                title: data.title,
-                comment: data.comment,
-                date: new Date(data.created_at).toISOString().split('T')[0],
-                helpful: 0,
-                notHelpful: 0,
-                verified: true
-            };
-
-            this.allReviews.unshift(newReview);
-            this.reviews = [newReview, ...this.reviews];
-            this.showNotification('Review submitted successfully!', 'success');
-
-            // Reset form and stars
-            e.target.reset();
-            document.querySelectorAll('.star-rating-btn').forEach(star => star.classList.remove('selected'));
-            this.displayReviews();
-            this.calculateRatingSummary();
-        } catch (error) {
-            console.error('Error submitting review:', error);
-            this.showNotification('Failed to submit review. Please try again.', 'error');
-        } finally {
-            if (submitBtn) submitBtn.disabled = false;
-        }
+        // Disable direct submissions from product page; guide users to profile orders
+        this.showNotification('Please write reviews from My Profile > Orders after delivery.', 'info');
+        return;
     }
 
     selectRating(rating) {
