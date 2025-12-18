@@ -750,7 +750,11 @@ window.addToCartFromWishlist = async function(productId) {
         try {
             const supabase = window.getSupabase ? window.getSupabase() : null;
             if (supabase) {
-                const { data: prod, error } = await supabase.from('products').select('is_locked, stock_quantity, status').eq('id', productId).single();
+                const { data: prod, error } = await supabase
+                    .from('products')
+                    .select('is_locked, status, inventory(stock)')
+                    .eq('id', productId)
+                    .single();
                 if (error || !prod) {
                     if (window.showNotification) window.showNotification('Product not available', 'error');
                     return;
@@ -759,7 +763,9 @@ window.addToCartFromWishlist = async function(productId) {
                     if (window.showNotification) window.showNotification('Product unavailable', 'error');
                     return;
                 }
-                if (typeof prod.stock_quantity === 'number' && prod.stock_quantity < 1) {
+                // Calculate total stock from inventory
+                const totalStock = (prod.inventory || []).reduce((sum, inv) => sum + (inv.stock || 0), 0);
+                if (totalStock < 1) {
                     if (window.showNotification) window.showNotification('Product out of stock', 'error');
                     return;
                 }

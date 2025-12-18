@@ -556,6 +556,26 @@ class SupabaseService {
         try {
             if (!this.currentUser) throw new Error('User not authenticated');
 
+            // First, validate stock availability for all items
+            for (const item of orderData.items) {
+                const { data: inventoryData, error: invError } = await this.supabase
+                    .from('inventory')
+                    .select('id, stock, size')
+                    .eq('product_id', item.productId)
+                    .eq('size', item.size || '')
+                    .single();
+
+                if (invError && invError.code !== 'PGRST116') {
+                    // PGRST116 is "no rows returned" - handle as out of stock
+                    throw invError;
+                }
+
+                const availableStock = inventoryData?.stock || 0;
+                if (availableStock < item.quantity) {
+                    throw new Error(`Insufficient stock for product. Available: ${availableStock}, Requested: ${item.quantity}`);
+                }
+            }
+
             // Create order
             const { data: order, error: orderError } = await this.supabase
                 .from('orders')
@@ -576,15 +596,45 @@ class SupabaseService {
 
             if (orderError) throw orderError;
 
-            // Create order items
-            const orderItems = orderData.items.map(item => ({
-                order_id: order.id,
-                product_id: item.productId,
-                quantity: item.quantity,
-                price: item.price,
-                size: item.size || '',
-                color: item.color || ''
-            }));
+            // Create order items and deduct stock
+            const orderItems = [];
+            for (const item of orderData.items) {
+                orderItems.push({
+                    order_id: order.id,
+                    product_id: item.productId,
+                    quantity: item.quantity,
+                    price: item.price,
+                    size: item.size || '',
+                    color: item.color || ''
+                });
+
+                // Deduct stock from inventory
+                const { error: updateError } = await this.supabase.rpc('decrement_stock', {
+                    p_product_id: item.productId,
+                    p_size: item.size || '',
+                    p_quantity: item.quantity
+                });
+
+                // If RPC doesn't exist, use direct update
+                if (updateError && updateError.code === '42883') {
+                    // Function doesn't exist - use direct update
+                    const { data: currentInv } = await this.supabase
+                        .from('inventory')
+                        .select('id, stock')
+                        .eq('product_id', item.productId)
+                        .eq('size', item.size || '')
+                        .single();
+
+                    if (currentInv) {
+                        await this.supabase
+                            .from('inventory')
+                            .update({ stock: Math.max(0, currentInv.stock - item.quantity) })
+                            .eq('id', currentInv.id);
+                    }
+                } else if (updateError) {
+                    console.error('Stock update error:', updateError);
+                }
+            }
 
             const { error: itemsError } = await this.supabase
                 .from('order_items')
