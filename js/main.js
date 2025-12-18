@@ -462,7 +462,10 @@ async function addToCart(productId) {
         const supabase = window.getSupabase();
         const { data: product, error } = await supabase
             .from('products')
-            .select('*')
+            .select(`
+                *,
+                inventory(stock, size)
+            `)
             .eq('id', productId)
             .single();
 
@@ -486,12 +489,15 @@ async function addToCart(productId) {
             
             addProductToCart(localProduct);
         } else {
+            // Calculate total stock from inventory table
+            const totalStock = (product.inventory || []).reduce((sum, inv) => sum + (inv.stock || 0), 0);
+            
             // Check stock and availability from Supabase
             if (product.is_locked) {
                 showNotification('This product is currently unavailable', 'error');
                 return;
             }
-            if (product.stock_quantity === 0) {
+            if (totalStock === 0) {
                 showNotification('This product is currently out of stock', 'error');
                 return;
             }
@@ -502,7 +508,7 @@ async function addToCart(productId) {
                 name: product.name,
                 price: parseFloat(product.price || product.price_cents || 0),
                 image: product.image_url || 'images/placeholder.jpg',
-                stock_quantity: product.stock_quantity
+                stock_quantity: totalStock
             };
             
             addProductToCart(cartProduct);
@@ -692,7 +698,7 @@ async function loadCartFromDatabase() {
                 .from('shopping_carts')
                 .select(`
                     *,
-                    products (id, name, price_cents, image_url, stock_quantity)
+                    products (id, name, price_cents, image_url, inventory(stock, size))
                 `)
                 .eq('user_id', user.id);
             
@@ -709,7 +715,7 @@ async function loadCartFromDatabase() {
                 if (productIds.length > 0) {
                     const { data: products } = await supabase
                         .from('products')
-                        .select('id, name, price_cents, image_url, stock_quantity')
+                        .select('id, name, price_cents, image_url, inventory(stock, size)')
                         .in('id', productIds);
                     
                     // Merge product details
@@ -723,15 +729,19 @@ async function loadCartFromDatabase() {
         
         if (data && data.length > 0) {
             // Convert database items to cart format
-            cart = data.map(item => ({
-                id: item.product_id,
-                name: item.products?.name || 'Unknown Product',
-                price: item.products?.price_cents ? item.products.price_cents / 100 : 0,
-                image: item.products?.image_url || 'images/placeholder.jpg',
-                stock_quantity: item.products?.stock_quantity || 0,
-                quantity: item.quantity,
-                size: item.size
-            })).filter(item => item.name !== 'Unknown Product');
+            cart = data.map(item => {
+                // Calculate total stock from inventory
+                const totalStock = (item.products?.inventory || []).reduce((sum, inv) => sum + (inv.stock || 0), 0);
+                return {
+                    id: item.product_id,
+                    name: item.products?.name || 'Unknown Product',
+                    price: item.products?.price_cents ? item.products.price_cents / 100 : 0,
+                    image: item.products?.image_url || 'images/placeholder.jpg',
+                    stock_quantity: totalStock,
+                    quantity: item.quantity,
+                    size: item.size
+                };
+            }).filter(item => item.name !== 'Unknown Product');
             
             cartLoaded = true;
             // Re-render cart with database data

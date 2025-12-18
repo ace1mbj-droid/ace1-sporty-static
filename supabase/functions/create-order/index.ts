@@ -34,8 +34,8 @@ export async function handler(req: Request): Promise<Response> {
     // Recalculate price server-side and validate product availability
     const ids = cart.map((c: any) => c.id);
     console.log('create-order: fetching product info for ids=', ids);
-    // include availability fields so the server enforces business rules
-    const { data: products } = await supabase.from('products').select('id, price_cents, is_locked, stock_quantity, status').in('id', ids);
+    // include availability fields and inventory so the server enforces business rules
+    const { data: products } = await supabase.from('products').select('id, price_cents, is_locked, status, inventory(stock, size)').in('id', ids);
 
     let calculatedTotal = 0;
     for (const item of cart) {
@@ -46,7 +46,20 @@ export async function handler(req: Request): Promise<Response> {
       if (product.is_locked) {
         return new Response(JSON.stringify({ error: `Product is locked/unavailable: ${item.id}` }), { status: 400 });
       }
-      if (typeof product.stock_quantity === 'number' && product.stock_quantity < item.qty) {
+      
+      // Calculate stock from inventory table (supports per-size stock)
+      const inventory = product.inventory || [];
+      let availableStock = 0;
+      if (item.size) {
+        // Check stock for specific size
+        const sizeInventory = inventory.find((inv: any) => inv.size === item.size);
+        availableStock = sizeInventory?.stock || 0;
+      } else {
+        // Total stock across all sizes
+        availableStock = inventory.reduce((sum: number, inv: any) => sum + (inv.stock || 0), 0);
+      }
+      
+      if (availableStock < item.qty) {
         return new Response(JSON.stringify({ error: `Insufficient stock for product: ${item.id}` }), { status: 400 });
       }
       // If product uses a status enum, ensure it's 'available'
@@ -68,6 +81,43 @@ export async function handler(req: Request): Promise<Response> {
     // Insert order items
     const orderItems = cart.map((c: any) => ({ order_id: order.id, product_id: c.id, size: c.size, qty: c.qty, price_cents: (products.find((p:any) => p.id === c.id).price_cents) }));
     await supabase.from('order_items').insert(orderItems);
+
+    // Deduct stock from inventory for each item
+    for (const item of cart) {
+      if (item.size) {
+        // Deduct from specific size
+        const { data: inv } = await supabase
+          .from('inventory')
+          .select('id, stock')
+          .eq('product_id', item.id)
+          .eq('size', item.size)
+          .single();
+        
+        if (inv) {
+          await supabase
+            .from('inventory')
+            .update({ stock: Math.max(0, inv.stock - item.qty) })
+            .eq('id', inv.id);
+        }
+      } else {
+        // Deduct from first available inventory entry
+        const { data: inv } = await supabase
+          .from('inventory')
+          .select('id, stock')
+          .eq('product_id', item.id)
+          .gt('stock', 0)
+          .order('stock', { ascending: false })
+          .limit(1)
+          .single();
+        
+        if (inv) {
+          await supabase
+            .from('inventory')
+            .update({ stock: Math.max(0, inv.stock - item.qty) })
+            .eq('id', inv.id);
+        }
+      }
+    }
 
     // Create Razorpay order
     const razorBody = { amount: calculatedTotal, currency: 'INR', receipt: order.id };
