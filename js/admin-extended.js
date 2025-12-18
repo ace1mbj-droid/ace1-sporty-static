@@ -240,7 +240,10 @@ class AdminExtended {
 
             const modal = document.getElementById('stock-history-modal');
             const body = document.getElementById('stock-history-body');
-            
+            if (!modal || !body) {
+                showNotification('Stock history modal not found in DOM', 'error');
+                return;
+            }
             body.innerHTML = data.length ? data.map(adj => `
                 <tr>
                     <td>${new Date(adj.created_at).toLocaleString()}</td>
@@ -252,7 +255,6 @@ class AdminExtended {
                     <td>${adj.reason || '-'}</td>
                 </tr>
             `).join('') : '<tr><td colspan="5">No adjustment history</td></tr>';
-
             modal.style.display = 'block';
         } catch (error) {
             console.error('Error loading stock history:', error);
