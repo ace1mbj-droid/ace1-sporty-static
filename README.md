@@ -43,12 +43,9 @@ Supabase integration & server-side flow
 	- To have the frontend call the `create-order` Edge Function, set the global variable `window.__ACE1_EDGE_CREATE_ORDER__` to the Edge endpoint URL in `index.html`.
 	- The frontend will attempt to call the Edge Function and open Razorpay checkout flow if using Razorpay.
 
-4. GitHub Actions (FTPS Deploy & Diagnostics)
-	- `.github/workflows/ftps_deploy_and_verify.yml` — manual FTPS deploy to `/` (port 21, explicit FTPS), normalizes permissions, lists files, and runs HTTP health-check. Requires `FTP_HOST`, `FTP_USER`, `FTP_PASSWORD`, and `SITE_DOMAIN`.
-	- [Preview workflow removed] — We now deploy and test directly at `/`.
-	- `.github/workflows/ftp_healthcheck_htaccess_test.yml` — manual FTPS health-check: HEAD/GET, headers, optional `.htaccess` rename/restore.
-	- `.github/workflows/ftp_permissions_normalize.yml` — manual permissions normalization (dirs 755, files 644) over FTPS (port 990).
-	- `.github/workflows/ftp_list_and_diff.yml` — manual FTPS remote listing and local/remote filename diff.
+4. GitHub Actions (FTP Deploy & Health-check)
+	- `.github/workflows/deploy.yml` — Main deployment workflow with FTP upload and health-check
+	- `.github/workflows/ftp_deploy_only.yml` — Manual FTP-only deployment for testing
 
 5. Testing & next steps
 	- Set up Razorpay webhook to point to your `webhook-razorpay` function URL.
