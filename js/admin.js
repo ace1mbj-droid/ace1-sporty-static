@@ -271,13 +271,34 @@ class AdminPanel {
         });
 
         // Logs buttons
-        document.getElementById('refresh-logs').addEventListener('click', () => {
-            this.refreshLogs();
+        document.getElementById('refresh-logs').addEventListener('click', async () => {
+            const btn = document.getElementById('refresh-logs');
+            btn.disabled = true;
+            const spinner = document.createElement('span');
+            spinner.className = 'refresh-spinner';
+            btn.appendChild(spinner);
+            try {
+                await this.refreshLogs();
+            } finally {
+                btn.disabled = false;
+                if (spinner.parentNode) spinner.parentNode.removeChild(spinner);
+            }
         });
 
         // Revocations buttons
         const refreshRevocationsBtn = document.getElementById('refresh-revocations');
-        if (refreshRevocationsBtn) refreshRevocationsBtn.addEventListener('click', () => this.loadRevocations());
+        if (refreshRevocationsBtn) refreshRevocationsBtn.addEventListener('click', async () => {
+            refreshRevocationsBtn.disabled = true;
+            const spinner = document.createElement('span');
+            spinner.className = 'refresh-spinner';
+            refreshRevocationsBtn.appendChild(spinner);
+            try {
+                await this.loadRevocations();
+            } finally {
+                refreshRevocationsBtn.disabled = false;
+                if (spinner.parentNode) spinner.parentNode.removeChild(spinner);
+            }
+        });
 
         const revokeBtn = document.getElementById('revoke-token-btn');
         if (revokeBtn) revokeBtn.addEventListener('click', () => this.revokeTokenFromUI());
