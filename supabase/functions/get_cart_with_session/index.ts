@@ -53,22 +53,48 @@ Deno.serve(async (req) => {
     }
 
     // With service role key, RLS is bypassed, so we can query directly
-    const { data, error } = await supabase
+    // Find the cart record for this session
+    const { data: carts, error: cartErr } = await supabase
       .from('shopping_carts')
-      .select(`
-        *,
-        products (
-          id,
-          name,
-          price_cents,
-          image_url,
-          inventory(stock, size)
-        )
-      `)
+      .select('id')
       .eq('session_id', session_id)
+      .limit(1)
+
+    if (cartErr) {
+      console.error('Cart lookup error:', cartErr)
+      return new Response(
+        JSON.stringify({ success: false, error: cartErr.message }),
+        { 
+          status: 500, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      )
+    }
+
+    if (!carts || carts.length === 0) {
+      // No cart exists for this session
+      return new Response(
+        JSON.stringify({ success: true, data: [] }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    const cartId = carts[0].id
+
+    // Query the cart_items for this cart and include product and inventory info
+    const { data, error } = await supabase
+      .from('cart_items')
+      .select(`
+        id,
+        product_id,
+        quantity,
+        size,
+        products ( id, name, price_cents, image_url, inventory ( stock, size ) )
+      `)
+      .eq('cart_id', cartId)
 
     if (error) {
-      console.error('Cart query error:', error)
+      console.error('Cart items query error:', error)
       return new Response(
         JSON.stringify({ success: false, error: error.message }),
         { 
@@ -78,6 +104,7 @@ Deno.serve(async (req) => {
       )
     }
 
+    // Keep response shape compatible with frontend (products property expected)
     return new Response(
       JSON.stringify({ success: true, data: data || [] }),
       { 
