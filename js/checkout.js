@@ -232,7 +232,7 @@ class CheckoutManager {
         // so the backend can create the Razorpay order and create a payments record.
         // This stores the server response on `this.serverOrder` so we skip duplicating
         // order creation on the client after payment.
-        const EDGE_URL = window.__SHOES_EDGE_CREATE_ORDER__ || '';
+        const EDGE_URL = window.__ACE1_EDGE_CREATE_ORDER__ || '';
         if (EDGE_URL) {
             this.serverOrder = null;
             try {
