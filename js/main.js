@@ -777,23 +777,23 @@ async function syncCartToDatabase() {
         if (user) {
             // Authenticated user - use user_id
             // Delete old cart entries for this user
-            await supabase
-                .from('shopping_carts')
-                .delete()
-                .eq('user_id', user.id);
-            
-            // Insert new cart items
-            if (cart.length > 0) {
-                const cartData = cart.map(item => ({
-                    user_id: user.id,
+            // For authenticated users, store cart items in cart_items linked to a shopping_carts row
+            // Remove any existing cart rows for this user and create a fresh cart
+            await supabase.from('shopping_carts').delete().eq('user_id', user.id);
+
+            // Create a new shopping_carts row for this user and get its id
+            const newCartRes = await supabase.from('shopping_carts').insert({ user_id: user.id }).select('id').limit(1).single();
+            const userCartId = newCartRes?.data?.id;
+
+            // Insert new cart_items
+            if (cart.length > 0 && userCartId) {
+                const cartItemsData = cart.map(item => ({
+                    cart_id: userCartId,
                     product_id: item.id,
                     quantity: item.quantity,
                     size: item.size || null
                 }));
-                
-                await supabase
-                    .from('shopping_carts')
-                    .insert(cartData);
+                await supabase.from('cart_items').insert(cartItemsData);
             }
         } else {
             // Anonymous user - use session_id via RPC functions
@@ -827,18 +827,30 @@ async function loadCartFromDatabase() {
         let data = null;
         
         if (user) {
-            // Authenticated user - load by user_id
-            const result = await supabase
-                .from('shopping_carts')
-                .select(`
-                    *,
-                    products (id, name, price_cents, image_url, inventory(stock, size))
-                `)
-                .eq('user_id', user.id);
-            
-            if (!result.error && result.data) {
-                data = result.data;
+            // Authenticated user - load cart via cart_items
+            // First get cart ids for this user, then fetch cart_items for those carts
+            const cartsRes = await supabase.from('shopping_carts').select('id').eq('user_id', user.id);
+            if (cartsRes.error || !cartsRes.data || cartsRes.data.length === 0) {
+                data = [];
+            } else {
+                const cartIds = cartsRes.data.map(c => c.id);
+                const itemsRes = await supabase
+                    .from('cart_items')
+                    .select('id, product_id, quantity, size, products(id, name, price_cents, image_url, inventory(stock, size))')
+                    .in('cart_id', cartIds);
+                if (!itemsRes.error && itemsRes.data) {
+                    data = itemsRes.data.map(row => ({
+                        id: row.id,
+                        product_id: row.product_id,
+                        quantity: row.quantity,
+                        size: row.size,
+                        products: row.products
+                    }));
+                } else {
+                    data = [];
+                }
             }
+        }
         } else {
             // Anonymous user - load by session_id using Edge Function
             const cartSessionId = sessionStorage.getItem('ace1_session_id');
