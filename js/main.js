@@ -893,7 +893,7 @@ async function loadCartFromDatabase() {
                     quantity: item.quantity,
                     size: item.size
                 };
-            }).filter(item => item.name !== 'Unknown Product');
+            });
             
             cartLoaded = true;
             // Re-render cart with database data
