@@ -382,7 +382,8 @@
         <!-- Tabs -->
         <div class="admin-tabs">
             <button class="admin-tab active" data-tab="dashboard">Dashboard</button>
-            <button class="admin-tab" data-tab="products">Products</button>
+            <button class="admin-tab" data-tab="shoes">Shoes</button>
+            <button class="admin-tab" data-tab="clothing">Clothing</button>
             <button class="admin-tab" data-tab="inventory">Inventory</button>
             <button class="admin-tab" data-tab="categories">Categories</button>
             <button class="admin-tab" data-tab="orders">Orders</button>
@@ -446,15 +447,26 @@
                     </div>
                 </div>
 
-        <!-- Products Tab -->
-        <div class="admin-content" id="products-content">
+        <!-- Shoes Tab -->
+        <div class="admin-content" id="shoes-content">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h2>Manage Products</h2>
-                <button class="btn-add" id="add-product-btn">
-                    <i class="fas fa-plus"></i> Add New Product
+                <h2><i class="fas fa-shoe-prints"></i> Manage Shoes</h2>
+                <button class="btn-add" id="add-shoes-btn">
+                    <i class="fas fa-plus"></i> Add New Shoe
                 </button>
             </div>
-            <div class="product-grid" id="products-grid"></div>
+            <div class="product-grid" id="shoes-grid"></div>
+        </div>
+
+        <!-- Clothing Tab -->
+        <div class="admin-content" id="clothing-content">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2><i class="fas fa-tshirt"></i> Manage Clothing</h2>
+                <button class="btn-add" id="add-clothing-btn">
+                    <i class="fas fa-plus"></i> Add New Clothing Item
+                </button>
+            </div>
+            <div class="product-grid" id="clothing-grid"></div>
         </div>
 
         <!-- Orders Tab -->
