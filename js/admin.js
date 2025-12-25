@@ -611,6 +611,21 @@ class AdminPanel {
 
     async loadShoesProducts() {
         console.log('🔄 Loading shoes products...');
+        
+        // First check if primary_category column exists and what products have
+        try {
+            const { data: sampleProducts, error: sampleError } = await this.supabase
+                .from('products')
+                .select('id, name, primary_category, category')
+                .limit(3);
+            
+            if (!sampleError) {
+                console.log('📊 Sample products with primary_category:', sampleProducts);
+            }
+        } catch (e) {
+            console.warn('Could not check sample products:', e);
+        }
+        
         const { data: products, error } = await this.supabase
             .from('products')
             .select(`
@@ -652,6 +667,21 @@ class AdminPanel {
 
     async loadClothingProducts() {
         console.log('🔄 Loading clothing products...');
+        
+        // First check if primary_category column exists and what products have
+        try {
+            const { data: sampleProducts, error: sampleError } = await this.supabase
+                .from('products')
+                .select('id, name, primary_category, category')
+                .limit(3);
+            
+            if (!sampleError) {
+                console.log('📊 Sample products with primary_category:', sampleProducts);
+            }
+        } catch (e) {
+            console.warn('Could not check sample products:', e);
+        }
+        
         const { data: products, error } = await this.supabase
             .from('products')
             .select(`
