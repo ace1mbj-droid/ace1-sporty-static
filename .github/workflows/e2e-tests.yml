@@ -25,6 +25,11 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium
 
+      - name: Start local server
+        run: npx http-server . -p 3000 &
+        env:
+          CI: true
+
       - name: Run Playwright tests
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
