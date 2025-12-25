@@ -105,7 +105,8 @@ class AdminPanel {
         
         // Load initial data
         await this.loadDashboard();
-        await this.loadProducts();
+        // Products are loaded when switching to Shoes/Clothing tabs
+        // await this.loadProducts(); // Removed - products load per tab now
         await this.loadOrders();
         await this.loadUsers();
         await this.loadLogs();
@@ -330,7 +331,21 @@ class AdminPanel {
                 document.getElementById('change-summary-modal').classList.remove('active');
                 // After user acknowledges, close product modal and refresh lists
                 this.closeProductModal();
-                await this.loadProducts();
+                
+                // Reload products for the currently active tab
+                const activeTab = document.querySelector('.admin-tab.active');
+                if (activeTab) {
+                    const tabName = activeTab.dataset.tab;
+                    if (tabName === 'shoes') {
+                        await this.loadShoesProducts();
+                    } else if (tabName === 'clothing') {
+                        await this.loadClothingProducts();
+                    } else {
+                        // For other tabs, reload all products if needed
+                        await this.loadProducts();
+                    }
+                }
+                
                 await this.loadDashboard();
                 // Products are always fresh from database, no cache to clear
             });
@@ -1221,7 +1236,21 @@ class AdminPanel {
         } else {
             alert(`✅ Product saved successfully!\n\nTotal stock: ${totalStock}\n\nChanges will reflect across the site immediately.`);
             this.closeProductModal();
-            await this.loadProducts();
+            
+            // Reload products for the currently active tab
+            const activeTab = document.querySelector('.admin-tab.active');
+            if (activeTab) {
+                const tabName = activeTab.dataset.tab;
+                if (tabName === 'shoes') {
+                    await this.loadShoesProducts();
+                } else if (tabName === 'clothing') {
+                    await this.loadClothingProducts();
+                } else {
+                    // For other tabs, reload all products if needed
+                    await this.loadProducts();
+                }
+            }
+            
             await this.loadDashboard();
         }
         
@@ -1503,7 +1532,19 @@ class AdminPanel {
         await new Promise(resolve => setTimeout(resolve, 300));
         
         try {
-            await this.loadProducts();
+            // Reload products for the currently active tab
+            const activeTab = document.querySelector('.admin-tab.active');
+            if (activeTab) {
+                const tabName = activeTab.dataset.tab;
+                if (tabName === 'shoes') {
+                    await this.loadShoesProducts();
+                } else if (tabName === 'clothing') {
+                    await this.loadClothingProducts();
+                } else {
+                    // For other tabs, reload all products if needed
+                    await this.loadProducts();
+                }
+            }
             console.log('✅ Products reloaded after deletion');
             await this.loadDashboard();
             console.log('✅ Dashboard reloaded after deletion');
