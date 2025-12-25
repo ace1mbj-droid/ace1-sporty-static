@@ -31,18 +31,17 @@ class EcommerceBackend {
 
             // Check if item already exists in cart
             const { data: existing } = await this.supabase
-                .from('cart_items')
+                .from('shopping_carts')
                 .select('*')
                 .eq('user_id', userId)
                 .eq('product_id', productId)
                 .eq('size', options.size || null)
-                .eq('color', options.color || null)
                 .single();
 
             if (existing) {
                 // Update quantity
                 const { data, error } = await this.supabase
-                    .from('cart_items')
+                    .from('shopping_carts')
                     .update({ 
                         quantity: existing.quantity + quantity,
                         updated_at: new Date().toISOString()
@@ -56,14 +55,12 @@ class EcommerceBackend {
             } else {
                 // Add new item
                 const { data, error } = await this.supabase
-                    .from('cart_items')
+                    .from('shopping_carts')
                     .insert([{
                         user_id: userId,
                         product_id: productId,
                         quantity: quantity,
-                        size: options.size || null,
-                        color: options.color || null,
-                        custom_options: options.custom || null
+                        size: options.size || null
                     }])
                     .select()
                     .single();
@@ -85,7 +82,7 @@ class EcommerceBackend {
             }
 
             const { data, error } = await this.supabase
-                .from('cart_items')
+                .from('shopping_carts')
                 .select(`
                     *,
                     products (
@@ -118,7 +115,7 @@ class EcommerceBackend {
             }
 
             const { data, error } = await this.supabase
-                .from('cart_items')
+                .from('shopping_carts')
                 .update({ quantity })
                 .eq('id', cartItemId)
                 .select()
@@ -135,7 +132,7 @@ class EcommerceBackend {
     async removeFromCart(cartItemId) {
         try {
             const { error } = await this.supabase
-                .from('cart_items')
+                .from('shopping_carts')
                 .delete()
                 .eq('id', cartItemId);
 
@@ -155,7 +152,7 @@ class EcommerceBackend {
             }
 
             const { error } = await this.supabase
-                .from('cart_items')
+                .from('shopping_carts')
                 .delete()
                 .eq('user_id', userId);
 
