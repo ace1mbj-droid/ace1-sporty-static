@@ -1,6 +1,6 @@
 # Contributing
 
-Thanks for contributing to ACE#1!
+Thanks for contributing to Shoes!
 
 Please follow these guidelines so CI and reviewers can process your PR quickly.
 
@@ -20,4 +20,4 @@ Pull Request process
 - Open a PR and ensure your branch runs all checks.
 - Keep PRs small and focused; include test coverage where applicable.
 
-If you have any questions about migrations or the release flow, ping the maintainers (hello@ace1.in).
+If you have any questions about migrations or the release flow, ping the maintainers (hello@shoes.com).
