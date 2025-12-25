@@ -396,14 +396,17 @@ class AdminPanel {
 
     // Switch tabs and show corresponding content
     switchTab(tabName) {
+        console.log('🔄 Switching to tab:', tabName);
         if (!tabName) return;
         document.querySelectorAll('.admin-tab').forEach(tab => tab.classList.toggle('active', tab.dataset.tab === tabName));
         document.querySelectorAll('.admin-content').forEach(content => content.classList.toggle('active', content.id === `${tabName}-content`));
 
         // Load products for specific category tabs
         if (tabName === 'shoes') {
+            console.log('📦 Loading shoes products...');
             this.loadShoesProducts();
         } else if (tabName === 'clothing') {
+            console.log('👕 Loading clothing products...');
             this.loadClothingProducts();
         }
 
@@ -607,6 +610,7 @@ class AdminPanel {
     }
 
     async loadShoesProducts() {
+        console.log('🔄 Loading shoes products...');
         const { data: products, error } = await this.supabase
             .from('products')
             .select(`
@@ -629,10 +633,25 @@ class AdminPanel {
             return;
         }
 
+        console.log(`✅ Loaded ${products?.length || 0} shoes products:`, products);
+        
+        // If no products found with primary_category filter, try loading all products for debugging
+        if (!products || products.length === 0) {
+            console.log('⚠️ No shoes products found. Checking if any products exist at all...');
+            const { data: allProducts, error: allError } = await this.supabase
+                .from('products')
+                .select('id, name, primary_category, category')
+                .limit(5);
+            if (!allError) {
+                console.log('📊 Sample of all products:', allProducts);
+            }
+        }
+        
         this.processAndRenderProducts(products, 'shoes');
     }
 
     async loadClothingProducts() {
+        console.log('🔄 Loading clothing products...');
         const { data: products, error } = await this.supabase
             .from('products')
             .select(`
@@ -655,6 +674,20 @@ class AdminPanel {
             return;
         }
 
+        console.log(`✅ Loaded ${products?.length || 0} clothing products:`, products);
+        
+        // If no products found with primary_category filter, try loading all products for debugging
+        if (!products || products.length === 0) {
+            console.log('⚠️ No clothing products found. Checking if any products exist at all...');
+            const { data: allProducts, error: allError } = await this.supabase
+                .from('products')
+                .select('id, name, primary_category, category')
+                .limit(5);
+            if (!allError) {
+                console.log('📊 Sample of all products:', allProducts);
+            }
+        }
+        
         this.processAndRenderProducts(products, 'clothing');
     }
 
