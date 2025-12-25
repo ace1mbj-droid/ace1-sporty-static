@@ -1480,6 +1480,16 @@
                 </div>
 
                 <div class="form-group">
+                    <label for="product-primary-category">Primary Category *</label>
+                    <select id="product-primary-category" required>
+                        <option value="">-- Select Primary Category --</option>
+                        <option value="shoes">Shoes</option>
+                        <option value="clothing">Clothing</option>
+                    </select>
+                    <small style="color: #666;">Determines which page (shoes.html or clothing.html) this product appears on</small>
+                </div>
+
+                <div class="form-group">
                     <label for="product-stock">Stock Quantity *</label>
                     <!-- Multi-size inventory: dynamic rows of size + stock -->
                     <div id="inventory-rows">

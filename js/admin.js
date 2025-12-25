@@ -573,6 +573,7 @@ class AdminPanel {
                 <div class="product-admin-info">
                     <h3>${this.escapeHtml(product.name)}</h3>
                     <p><strong>Price:</strong> ₹${parseFloat(product.price).toLocaleString('en-IN')}</p>
+                    <p><strong>Primary Category:</strong> ${product.primary_category ? product.primary_category.charAt(0).toUpperCase() + product.primary_category.slice(1) : 'Not Set'}</p>
                     <p><strong>Category:</strong> ${product.category || 'N/A'}</p>
                     <p><strong>Stock:</strong> <span style="color: ${product.stock_quantity === 0 ? '#FF3D00' : product.stock_quantity < 10 ? '#FFA000' : '#00C853'}; font-weight: 600;">${product.stock_quantity || 0}</span></p>
                     <span class="stock-badge ${product.stock_quantity > 0 ? 'in-stock' : 'out-of-stock'}">
@@ -668,6 +669,7 @@ class AdminPanel {
             document.getElementById('product-description').value = product.description || '';
             document.getElementById('product-price').value = product.price;
             // category select value is set by populateProductCategorySelect()
+            document.getElementById('product-primary-category').value = product.primary_category || '';
             // Render inventory rows (size + stock)
             this.renderInventoryRows(product.inventory || []);
             document.getElementById('product-image').value = product.product_images?.[0]?.storage_path || '';
@@ -846,6 +848,7 @@ class AdminPanel {
             description: sanitizedDescription,
             price_cents: priceInCents,
             category: this.slugifyCategory(document.getElementById('product-category').value),
+            primary_category: document.getElementById('product-primary-category').value,
             is_active: document.getElementById('product-active').checked,
             show_on_index: document.getElementById('product-featured').checked
         };
