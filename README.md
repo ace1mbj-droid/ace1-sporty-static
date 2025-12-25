@@ -1,6 +1,6 @@
-# ACE#1 — Sporty Bold Starter (Static)
+# Shoes — Sporty Bold Starter (Static)
 
-This repo is a simple static starter for ACE#1 (health & fitness shoes) built with the Sporty Bold template.
+This repo is a simple static starter for Shoes (health & fitness shoes) built with the Sporty Bold template.
 
 Features
 - Sporty visual theme optimized for high-impact seasonal marketing.
@@ -40,7 +40,7 @@ Supabase integration & server-side flow
 	- Set env vars in Supabase Functions config: `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `RZ_KEY`, `RZ_SECRET`.
 
 3. Frontend
-	- To have the frontend call the `create-order` Edge Function, set the global variable `window.__ACE1_EDGE_CREATE_ORDER__` to the Edge endpoint URL in `index.html`.
+	- To have the frontend call the `create-order` Edge Function, set the global variable `window.__SHOES_EDGE_CREATE_ORDER__` to the Edge endpoint URL in `index.html`.
 	- The frontend will attempt to call the Edge Function and open Razorpay checkout flow if using Razorpay.
 
 4. GitHub Actions (FTP Deploy & Health-check)
@@ -49,7 +49,7 @@ Supabase integration & server-side flow
 
 5. Testing & next steps
 	- Set up Razorpay webhook to point to your `webhook-razorpay` function URL.
-	- Demo checkout uses `scripts/stripe-mock.js` without server. If you want to use the server flow, configure `window.__ACE1_EDGE_CREATE_ORDER__`.
+	- Demo checkout uses `scripts/stripe-mock.js` without server. If you want to use the server flow, configure `window.__SHOES_EDGE_CREATE_ORDER__`.
 
 Security notes
 --------------
