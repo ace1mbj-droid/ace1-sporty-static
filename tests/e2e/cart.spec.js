@@ -39,8 +39,12 @@ test.describe('Shopping cart integration (DB-backed)', () => {
 
     await page.goto(`${BASE_URL}/`);
 
-    // Wait for cart count to update
-    await page.waitForSelector('#cart-count');
+    // Wait for cart count to update (from 0 to the expected value)
+    await page.waitForFunction(() => {
+      const count = parseInt(document.getElementById('cart-count').innerText || '0', 10);
+      return count > 0;
+    });
+
     const countText = await page.locator('#cart-count').innerText();
 
     expect(parseInt(countText, 10)).toBeGreaterThanOrEqual(2);
