@@ -239,9 +239,13 @@ class AdminPanel {
             });
         });
 
-        // Add product button
-        document.getElementById('add-product-btn').addEventListener('click', () => {
-            this.openProductModal();
+        // Add product buttons
+        document.getElementById('add-shoes-btn')?.addEventListener('click', () => {
+            this.openProductModal(null, 'shoes');
+        });
+        
+        document.getElementById('add-clothing-btn')?.addEventListener('click', () => {
+            this.openProductModal(null, 'clothing');
         });
 
         // Modal close
@@ -395,6 +399,13 @@ class AdminPanel {
         if (!tabName) return;
         document.querySelectorAll('.admin-tab').forEach(tab => tab.classList.toggle('active', tab.dataset.tab === tabName));
         document.querySelectorAll('.admin-content').forEach(content => content.classList.toggle('active', content.id === `${tabName}-content`));
+
+        // Load products for specific category tabs
+        if (tabName === 'shoes') {
+            this.loadShoesProducts();
+        } else if (tabName === 'clothing') {
+            this.loadClothingProducts();
+        }
 
         // If switching to images tab, ensure image manager renders into the container
         try {
@@ -595,6 +606,142 @@ class AdminPanel {
         `).join('');
     }
 
+    async loadShoesProducts() {
+        const { data: products, error } = await this.supabase
+            .from('products')
+            .select(`
+                *,
+                inventory (
+                    stock,
+                    size
+                ),
+                product_images (
+                    storage_path,
+                    alt,
+                    position
+                )
+            `)
+            .eq('primary_category', 'shoes')
+            .order('created_at', { ascending: false });
+
+        if (error) {
+            console.error('Error loading shoes products:', error);
+            return;
+        }
+
+        this.processAndRenderProducts(products, 'shoes');
+    }
+
+    async loadClothingProducts() {
+        const { data: products, error } = await this.supabase
+            .from('products')
+            .select(`
+                *,
+                inventory (
+                    stock,
+                    size
+                ),
+                product_images (
+                    storage_path,
+                    alt,
+                    position
+                )
+            `)
+            .eq('primary_category', 'clothing')
+            .order('created_at', { ascending: false });
+
+        if (error) {
+            console.error('Error loading clothing products:', error);
+            return;
+        }
+
+        this.processAndRenderProducts(products, 'clothing');
+    }
+
+    async processAndRenderProducts(products, category) {
+        if (products && products.length > 0) {
+            this.productColumns = new Set(Object.keys(products[0]));
+        }
+
+        // Helper function to convert storage path to public URL
+        const getImageUrl = (storagePath) => {
+            if (!storagePath) return 'images/placeholder.jpg';
+            // Resolve project URL from config if available so the client is not bound to a single hard-coded project
+            const projectUrl = (window.SUPABASE_CONFIG && window.SUPABASE_CONFIG.url) || window.SUPABASE_URL || 'https://vorqavsuqcjnkjzwkyzr.supabase.co';
+            const storagePrefix = `${projectUrl.replace(/\/$/, '')}/storage`;
+
+            // If it's already a full Supabase Storage URL for the configured project, return as is
+            if (typeof storagePath === 'string' && storagePath.startsWith(storagePrefix)) return storagePath;
+            // If it's already any absolute URL, return as is
+            if (typeof storagePath === 'string' && storagePath.startsWith('http')) return storagePath;
+            // If it looks like a filename from the images folder, use it directly
+            if (storagePath.includes('.jpg') || storagePath.includes('.png') || storagePath.includes('.jpeg') || storagePath.includes('.gif') || storagePath.includes('.webp')) {
+                // Check if it's a local image file first (in /images folder)
+                return `images/${storagePath.toLowerCase()}`;
+            }
+            // Otherwise, construct Supabase Storage URL for the configured project (Images bucket)
+            return `${projectUrl.replace(/\/$/, '')}/storage/v1/object/public/Images/${storagePath}`;
+        };
+
+        // Process the data to flatten the related tables
+        this.products = (products || []).map(product => ({
+            ...product,
+            // Sum stock across all inventory rows for this product
+            stock_quantity: (product.inventory || []).reduce((s, i) => s + (i?.stock || 0), 0),
+            image_url: getImageUrl(product.product_images?.[0]?.storage_path) || null,
+            price: (product.price_cents / 100).toFixed(2) // Convert cents to rupees for display
+        }));
+
+        this.renderProducts(category);
+    }
+
+    renderProducts(category = null) {
+        const gridId = category === 'shoes' ? 'shoes-grid' : 
+                      category === 'clothing' ? 'clothing-grid' : 'products-grid';
+        const grid = document.getElementById(gridId);
+        
+        if (!grid) {
+            console.error(`Grid element ${gridId} not found`);
+            return;
+        }
+        
+        if (this.products.length === 0) {
+            const categoryName = category ? category.charAt(0).toUpperCase() + category.slice(1) : '';
+            grid.innerHTML = `<p style="text-align: center; padding: 40px; color: #666;">No ${categoryName.toLowerCase()} products found. Add your first ${categoryName.toLowerCase()} product!</p>`;
+            return;
+        }
+
+        grid.innerHTML = this.products.map(product => `
+            <div class="product-admin-card">
+                <img src="${product.image_url || 'images/placeholder.jpg'}" 
+                     alt="${this.escapeHtml(product.name)}" 
+                     onerror="this.src='images/placeholder.jpg'"
+                     loading="lazy">
+                <div class="product-admin-info">
+                    <h3>${this.escapeHtml(product.name)}</h3>
+                    <p><strong>Price:</strong> ₹${parseFloat(product.price).toLocaleString('en-IN')}</p>
+                    <p><strong>Primary Category:</strong> ${product.primary_category ? product.primary_category.charAt(0).toUpperCase() + product.primary_category.slice(1) : 'Not Set'}</p>
+                    <p><strong>Category:</strong> ${product.category || 'N/A'}</p>
+                    <p><strong>Stock:</strong> <span style="color: ${product.stock_quantity === 0 ? '#FF3D00' : product.stock_quantity < 10 ? '#FFA000' : '#00C853'}; font-weight: 600;">${product.stock_quantity || 0}</span></p>
+                    <span class="stock-badge ${product.stock_quantity > 0 ? 'in-stock' : 'out-of-stock'}">
+                        ${product.stock_quantity > 0 ? 'In Stock' : 'Out of Stock'}
+                    </span>
+                    <div class="product-actions">
+                        <button class="btn-edit" onclick="adminPanel.editProduct('${product.id}')">
+                            <i class="fas fa-edit"></i> Edit
+                        </button>
+                        <button class="btn-duplicate" onclick="adminPanel.duplicateProduct('${product.id}')" title="Duplicate this product">
+                            <i class="fas fa-copy"></i> Duplicate
+                        </button>
+                        <button class="btn-delete" onclick="adminPanel.deleteProduct('${product.id}')">
+                            <i class="fas fa-trash"></i> Delete
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    }
+
     escapeHtml(text) {
         const div = document.createElement('div');
         div.textContent = text;
@@ -653,7 +800,7 @@ class AdminPanel {
         `).join('');
     }
 
-    openProductModal(product = null) {
+    openProductModal(product = null, primaryCategory = null) {
         const modal = document.getElementById('product-modal');
         const form = document.getElementById('product-form');
         
@@ -724,6 +871,10 @@ class AdminPanel {
         } else {
             document.getElementById('modal-title').textContent = 'Add New Product';
             document.getElementById('image-preview').innerHTML = '<span style="color: #999;">Image preview will appear here</span>';
+            // Set primary category if provided
+            if (primaryCategory) {
+                document.getElementById('product-primary-category').value = primaryCategory;
+            }
             // Start with one empty size row
             this.renderInventoryRows([]);
             const addBtn = document.getElementById('add-size-btn');
