@@ -156,9 +156,19 @@ class ProductFilterManager {
         try {
             const supabase = window.getSupabase();
             
+            // Determine which primary category to filter by based on current page
+            let primaryCategoryFilter = null;
+            const currentPath = window.location.pathname;
+            
+            if (currentPath.includes('shoes.html')) {
+                primaryCategoryFilter = 'shoes';
+            } else if (currentPath.includes('clothing.html')) {
+                primaryCategoryFilter = 'clothing';
+            }
+            
             // Always fetch fresh data - no caching
-            console.log('🔄 Fetching products from Supabase...');
-            const { data: products, error } = await supabase
+            console.log('🔄 Fetching products from Supabase...', primaryCategoryFilter ? `(filtering by primary_category: ${primaryCategoryFilter})` : '(no primary category filter)');
+            let query = supabase
                 .from('products')
                 .select(`
                     *,
@@ -173,6 +183,13 @@ class ProductFilterManager {
                 `)
                 .eq('is_active', true)
                 .order('created_at', { ascending: false });
+            
+            // Apply primary category filter if on shoes or clothing page
+            if (primaryCategoryFilter) {
+                query = query.eq('primary_category', primaryCategoryFilter);
+            }
+            
+            const { data: products, error } = await query;
 
             if (error) throw error;
 

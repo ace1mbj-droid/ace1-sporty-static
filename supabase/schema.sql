@@ -10,6 +10,7 @@ create table if not exists products (
   price_cents int not null,
   currency text default 'INR',
   category text,
+  primary_category text check (primary_category in ('shoes', 'clothing')),
   is_active boolean default true,
   show_on_index boolean default true,
   deleted_at timestamptz,
