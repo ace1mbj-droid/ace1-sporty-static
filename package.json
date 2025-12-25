@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "private": true,
   "devDependencies": {
-    "@playwright/test": "^1.36.0"
+    "@playwright/test": "^1.36.0",
+    "@supabase/supabase-js": "^2.89.0"
   },
   "scripts": {
     "test:e2e": "npx playwright test --workers=1",
