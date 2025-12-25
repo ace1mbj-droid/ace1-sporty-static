@@ -852,33 +852,29 @@ async function loadCartFromDatabase() {
             }
         }
         } else {
-            // Anonymous user - load by session_id using Edge Function
-            const cartSessionId = sessionStorage.getItem('ace1_session_id');
-            
-            if (!cartSessionId) {
-                data = [];
-            } else {
-                // Use Edge Function to properly handle session variables for RLS
-                const response = await fetch(`https://vorqavsuqcjnkjzwkyzr.supabase.co/functions/v1/get_cart_with_session`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${supabase.supabaseKey}`
-                    },
-                    body: JSON.stringify({ session_id: cartSessionId })
-                });
-                
-                if (response.ok) {
-                    const result = await response.json();
-                    if (result.success) {
-                        data = result.data;
-                    } else {
-                        console.error('Cart load error:', result.error);
-                        data = [];
-                    }
-                } else {
-                    console.error('Cart load failed:', response.status);
+                // Anonymous user - load by session_id using RPC (safer than Edge Function for now)
+                const cartSessionId = sessionStorage.getItem('ace1_session_id');
+                if (!cartSessionId) {
                     data = [];
+                } else {
+                    const rpcRes = await supabase.rpc('get_cart_by_session', { p_session_id: cartSessionId });
+                    if (!rpcRes.error && rpcRes.data) {
+                        // rpc returns rows of (id, product_id, quantity, size, added_at)
+                        // fetch product details for those product_ids
+                        const productIds = rpcRes.data.map(r => r.product_id);
+                        if (productIds.length === 0) {
+                            data = [];
+                        } else {
+                            const prodRes = await supabase.from('products').select('id, name, price_cents').in('id', productIds);
+                            const invRes = await supabase.from('inventory').select('product_id, stock, size').in('product_id', productIds);
+
+                            const invMap = {};
+                            (invRes.data || []).forEach(i => { invMap[i.product_id] = invMap[i.product_id] || []; invMap[i.product_id].push({ stock: i.stock, size: i.size }); });
+
+                            data = rpcRes.data.map(r => ({ id: r.id, product_id: r.product_id, quantity: r.quantity, size: r.size, products: (prodRes.data || []).find(p => p.id === r.product_id) ? { ...(prodRes.data || []).find(p => p.id === r.product_id), inventory: invMap[r.product_id] || [] } : null }));
+                        }
+                    } else {
+                        console.error('Cart RPC load error:', rpcRes.error);
                 }
             }
         }
