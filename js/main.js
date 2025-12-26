@@ -850,7 +850,6 @@ async function loadCartFromDatabase() {
                     data = [];
                 }
             }
-        }
         } else {
                 // Anonymous user - load by session_id using RPC (safer than Edge Function for now)
                 const cartSessionId = sessionStorage.getItem('ace1_session_id');
