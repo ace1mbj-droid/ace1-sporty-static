@@ -121,6 +121,7 @@ class AuthManager {
     }
 
     async handleLogin(e) {
+        console.log('Login button clicked, handling login...');
         e.preventDefault();
         const form = e.target;
         const formData = new FormData(form);
@@ -141,6 +142,7 @@ class AuthManager {
             // Use database authentication
             if (window.databaseAuth) {
                 const result = await window.databaseAuth.login(data.email, data.password);
+                console.log('Login result:', result);
 
                 if (result.success) {
                     const user = result.user;
@@ -372,6 +374,11 @@ class AuthManager {
 
         requireCaptchaToken(form) {
             if (!form?.dataset?.requiresHcaptcha) {
+                return '';
+            }
+
+            // If hCaptcha is disabled, skip validation
+            if (window.HCAPTCHA_DISABLED) {
                 return '';
             }
 
