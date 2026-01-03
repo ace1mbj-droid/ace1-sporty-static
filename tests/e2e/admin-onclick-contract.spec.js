@@ -45,7 +45,7 @@ test.describe('Admin onclick contract', () => {
       const fakeClient = {
         auth: {
           getSession: async () => ({
-            data: { session: { user: { id: 'e2e-admin', email: 'e2e@ace1.in' } } },
+            data: { session: { user: { id: 'e2e-admin', email: 'hello@ace1.in' }, access_token: 'e2e-access-token' } },
             error: null,
           }),
           signOut: async () => ({ error: null }),
