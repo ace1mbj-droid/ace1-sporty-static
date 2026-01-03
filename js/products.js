@@ -182,6 +182,7 @@ class ProductFilterManager {
                     )
                 `)
                 .eq('is_active', true)
+                .is('deleted_at', null)
                 .order('created_at', { ascending: false });
             
             // Apply primary category filter if on shoes or clothing page
