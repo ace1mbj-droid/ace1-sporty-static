@@ -43,25 +43,23 @@
     // VERSION CHECK & FORCE RELOAD
     // ===================================
     async function checkVersion() {
+        const key = 'ace1_cache_version';
+
         try {
-            // Check cache headers (ETag/Last-Modified) from main resource
-            const response = await fetch(window.location.href, { method: 'HEAD' });
-            const etag = response.headers.get('ETag');
-            const lastModified = response.headers.get('Last-Modified');
-            
-            // Store current version in sessionStorage (transient, not persistent)
-            const key = 'ace1_cache_etag';
+            // Fetch version file with no-store so it reflects deploy bumps
+            const res = await fetch('/cache-version.txt', { cache: 'no-store' });
+            const versionText = (await res.text()).trim();
+
+            if (!versionText) return;
+
             const stored = sessionStorage.getItem(key);
-            const currentVersion = etag || lastModified;
-            
-            if (stored && stored !== currentVersion) {
+
+            if (stored && stored !== versionText) {
                 console.log('🔄 New version detected, clearing cache...');
                 clearBrowserCache();
-                sessionStorage.setItem(key, currentVersion);
-            } else if (!stored && currentVersion) {
-                sessionStorage.setItem(key, currentVersion);
             }
-            
+
+            sessionStorage.setItem(key, versionText);
         } catch (error) {
             console.warn('Version check failed:', error);
         }
@@ -71,13 +69,13 @@
     // ADD CACHE BUSTING TO SCRIPTS/STYLES
     // ===================================
     function addCacheBustingParams() {
-        const timestamp = Date.now();
+        const version = sessionStorage.getItem('ace1_cache_version') || 'latest';
         
         // Add timestamp to all script tags (except external CDNs)
         document.querySelectorAll('script[src]').forEach(script => {
             const src = script.getAttribute('src');
             if (src && !src.includes('http') && !src.includes('?')) {
-                script.src = src + '?v=' + timestamp;
+                script.src = src + '?v=' + version;
             }
         });
 
@@ -85,7 +83,7 @@
         document.querySelectorAll('link[rel="stylesheet"]').forEach(link => {
             const href = link.getAttribute('href');
             if (href && !href.includes('http') && !href.includes('?')) {
-                link.href = href + '?v=' + timestamp;
+                link.href = href + '?v=' + version;
             }
         });
 
