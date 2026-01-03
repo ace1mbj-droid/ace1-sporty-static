@@ -5069,3 +5069,14 @@ button {
     }
 }
 
+/* Development Banner */
+#dev-banner {
+    background: #ffcc00;
+    color: #000;
+    text-align: center;
+    padding: 10px;
+    font-weight: bold;
+    font-size: 1.1rem;
+    border-bottom: 2px solid #000;
+}
+
