@@ -33,6 +33,77 @@
     <link rel="stylesheet" href="css/reviews.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        .launch-update {
+            padding: 24px 0 0;
+            background: var(--bg-white);
+        }
+
+        .launch-update-card {
+            background: var(--bg-light);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            box-shadow: var(--shadow-sm);
+            padding: 22px 22px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 18px;
+            flex-wrap: wrap;
+        }
+
+        .launch-update-left {
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+            min-width: min(720px, 100%);
+        }
+
+        .launch-update-icon {
+            width: 54px;
+            height: 54px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--primary-color);
+            color: var(--bg-white);
+            flex: 0 0 auto;
+        }
+
+        .launch-update-copy h2 {
+            font-size: 22px;
+            margin: 0 0 4px;
+            color: var(--text-color);
+            font-weight: 700;
+        }
+
+        .launch-update-copy p {
+            margin: 0;
+            color: var(--text-light);
+            font-size: 15px;
+        }
+
+        .launch-update-actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        @media (max-width: 768px) {
+            .launch-update {
+                padding-top: 18px;
+            }
+            .launch-update-card {
+                padding: 18px;
+            }
+            .launch-update-copy h2 {
+                font-size: 20px;
+            }
+        }
+    </style>
 </head>
 <body>
     <div id="dev-banner">This website is under development</div>
@@ -88,6 +159,27 @@
         <div class="container">
             <h1>Clothing Collection</h1>
             <p>Discover our complete range of terahertz-enhanced apparel</p>
+        </div>
+    </section>
+
+    <!-- Launch Update (temporary announcement) -->
+    <section class="launch-update">
+        <div class="container">
+            <div class="launch-update-card" role="status" aria-live="polite">
+                <div class="launch-update-left">
+                    <div class="launch-update-icon" aria-hidden="true">
+                        <i class="fas fa-bolt"></i>
+                    </div>
+                    <div class="launch-update-copy">
+                        <h2>More products are launching soon</h2>
+                        <p>We’re expanding the Clothing collection with fresh drops and new terahertz-enhanced essentials. Stay connected so you don’t miss it.</p>
+                    </div>
+                </div>
+                <div class="launch-update-actions">
+                    <a class="btn btn-primary" href="https://instagram.com/ace_1_official/" target="_blank" rel="noopener">Follow on Instagram</a>
+                    <a class="btn btn-secondary" href="contact.html">Contact Us</a>
+                </div>
+            </div>
         </div>
     </section>
 
