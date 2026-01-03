@@ -54,7 +54,6 @@ jobs:
             --exclude='reproduction' \
             --exclude='scripts' \
             --exclude='**/*.md' \
-            --exclude='**/*.txt' \
             ./ dist/ || true
 
       # Removed allowlist validation to revert to previous working FTP deploy
