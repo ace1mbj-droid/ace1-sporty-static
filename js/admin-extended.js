@@ -534,7 +534,7 @@ class AdminExtended {
             // Refresh customer details if modal is open
             const modal = document.getElementById('customer-details-modal');
             if (modal?.classList.contains('active') && modal?.dataset.customerId === customerId) {
-                this.viewCustomerDetails(customerId);
+                await this.viewCustomerDetails(customerId);
             }
         } catch (error) {
             console.error('Error adding note:', error);
@@ -635,7 +635,7 @@ class AdminExtended {
             }
             showNotification('Content saved successfully', 'success');
             this.closeModal('content-block-modal');
-            this.loadContentBlocks();
+            await this.loadContentBlocks();
         } catch (error) {
             console.error('Error saving content:', error);
             showNotification('Failed to save content', 'error');
@@ -678,7 +678,7 @@ class AdminExtended {
             
             if (error) throw error;
             showNotification(`Content ${active ? 'enabled' : 'disabled'}`, 'success');
-            this.loadContentBlocks();
+            await this.loadContentBlocks();
         } catch (error) {
             console.error('Error toggling content:', error);
             showNotification('Failed to update content', 'error');
@@ -696,7 +696,7 @@ class AdminExtended {
             
             if (error) throw error;
             showNotification('Content deleted successfully', 'success');
-            this.loadContentBlocks();
+            await this.loadContentBlocks();
         } catch (error) {
             console.error('Error deleting content:', error);
             showNotification('Failed to delete content', 'error');
@@ -969,7 +969,7 @@ class AdminExtended {
             }
             showNotification('Coupon saved successfully', 'success');
             this.closeModal('coupon-modal');
-            this.loadCoupons();
+            await this.loadCoupons();
         } catch (error) {
             console.error('Error saving coupon:', error);
             showNotification('Failed to save coupon', 'error');
@@ -1026,7 +1026,7 @@ class AdminExtended {
             
             if (error) throw error;
             showNotification('Coupon deleted successfully', 'success');
-            this.loadCoupons();
+            await this.loadCoupons();
         } catch (error) {
             console.error('Error deleting coupon:', error);
             showNotification('Failed to delete coupon', 'error');
@@ -1139,7 +1139,7 @@ class AdminExtended {
             }
             showNotification('Shipping method saved successfully', 'success');
             this.closeModal('shipping-modal');
-            this.loadShippingMethods();
+            await this.loadShippingMethods();
         } catch (error) {
             console.error('Error saving shipping method:', error);
             showNotification('Failed to save shipping method', 'error');
@@ -1155,7 +1155,7 @@ class AdminExtended {
             
             if (error) throw error;
             showNotification(`Shipping method ${active ? 'enabled' : 'disabled'}`, 'success');
-            this.loadShippingMethods();
+            await this.loadShippingMethods();
         } catch (error) {
             console.error('Error toggling shipping method:', error);
             showNotification('Failed to update shipping method', 'error');
@@ -1729,7 +1729,7 @@ class AdminExtended {
                 await this.supabase.from('email_templates').insert(data);
             }
             showNotification('Template saved successfully', 'success');
-            this.loadCommunications();
+            await this.loadCommunications();
         } catch (error) {
             console.error('Error saving template:', error);
             showNotification('Failed to save template', 'error');
@@ -1741,7 +1741,7 @@ class AdminExtended {
         try {
             await this.supabase.from('email_templates').delete().eq('id', id);
             showNotification('Template deleted', 'success');
-            this.loadCommunications();
+            await this.loadCommunications();
         } catch (error) {
             console.error('Error deleting template:', error);
             showNotification('Failed to delete template', 'error');
