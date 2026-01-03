@@ -166,7 +166,7 @@
         }
         .video-gallery {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
             gap: 30px;
             margin-bottom: 60px;
         }
@@ -176,29 +176,46 @@
             overflow: hidden;
             box-shadow: 0 4px 20px rgba(0,0,0,0.1);
             transition: transform 0.3s ease, box-shadow 0.3s ease;
+            background: white;
         }
         .video-item:hover {
             transform: translateY(-5px);
             box-shadow: 0 8px 30px rgba(0,0,0,0.15);
         }
-        .video-item .video-placeholder {
+        .video-thumb {
+            position: relative;
+            display: block;
             width: 100%;
-            height: 250px;
+            height: 230px;
+            background: #f8f9fa;
+            overflow: hidden;
+        }
+        .video-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            filter: saturate(1.05);
+            transform: scale(1.01);
+        }
+        .video-play {
+            position: absolute;
+            inset: 0;
             display: flex;
             align-items: center;
             justify-content: center;
-            flex-direction: column;
-            gap: 10px;
-            background: #f8f9fa;
-            color: #666;
+            background: linear-gradient(180deg, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.35) 100%);
+            color: #fff;
+            font-size: 2.8rem;
+            opacity: 0.95;
+            transition: transform 0.2s ease, opacity 0.2s ease;
         }
-        .video-item .video-placeholder i {
-            font-size: 2.2rem;
-            opacity: 0.8;
+        .video-item:hover .video-play {
+            transform: scale(1.03);
+            opacity: 1;
         }
         .video-caption {
             padding: 20px;
-            background: white;
             text-align: center;
         }
         .video-caption h4 {
@@ -210,6 +227,67 @@
         .video-caption p {
             color: #666;
             font-size: 0.95rem;
+        }
+
+        /* Make videos feel like the highlight of the homepage */
+        .launch-gallery-section {
+            padding-top: 60px;
+        }
+        .video-hero {
+            display: grid;
+            grid-template-columns: 1.35fr 1fr;
+            gap: 28px;
+            align-items: stretch;
+            margin-bottom: 30px;
+        }
+        .video-hero .video-thumb {
+            height: 360px;
+            border-radius: 12px;
+        }
+        .video-hero-card {
+            border-radius: 12px;
+            background: white;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .video-hero-content {
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 10px;
+        }
+        .video-hero-content h3 {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: #333;
+            line-height: 1.2;
+        }
+        .video-hero-content p {
+            color: #666;
+        }
+        .video-cta {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 6px;
+            background: var(--secondary-color);
+            color: white;
+            padding: 12px 18px;
+            border-radius: 8px;
+            font-weight: 700;
+            width: fit-content;
+        }
+        .video-cta:hover {
+            filter: brightness(0.95);
+        }
+        @media (max-width: 900px) {
+            .video-hero {
+                grid-template-columns: 1fr;
+            }
+            .video-hero .video-thumb {
+                height: 260px;
+            }
         }
         .photo-gallery {
             display: grid;
@@ -342,102 +420,86 @@
             </div>
         </section>
 
-        <!-- Categories Grid -->
-        <section class="categories-section">
-            <div class="container">
-                <div class="categories-grid">
-                    <!-- Shoes Category -->
-                    <div class="category-card">
-                        <div class="category-image" style="background-image: url('https://images.unsplash.com/photo-1608231387042-66d1773070a5?w=800&h=400&fit=crop');">
-                            <i class="fas fa-shoe-prints"></i>
-                        </div>
-                        <div class="category-content">
-                            <h3 class="category-title">Shoes</h3>
-                            <p class="category-description">Revolutionary terahertz technology footwear for wellness and comfort</p>
-                            <a href="shoes.html" class="category-link">
-                                Shop Shoes <i class="fas fa-arrow-right"></i>
-                            </a>
-                        </div>
-                    </div>
-
-                    <!-- Clothing Category -->
-                    <div class="category-card">
-                        <div class="category-image" style="background-image: url('https://images.unsplash.com/photo-1576566588028-4147f3842f27?w=800&h=400&fit=crop');">
-                            <i class="fas fa-tshirt"></i>
-                        </div>
-                        <div class="category-content">
-                            <h3 class="category-title">Clothing</h3>
-                            <p class="category-description">Terahertz technology apparel for enhanced wellness</p>
-                            <a href="clothing.html" class="category-link">
-                                Shop Clothing <i class="fas fa-arrow-right"></i>
-                            </a>
-                        </div>
-                    </div>
-
-                    <!-- Accessories Category (Coming Soon) -->
-                    <div class="category-card coming-soon">
-                        <div class="category-image" style="background-image: url('https://images.unsplash.com/photo-1523293182086-7651a899d37f?w=800&h=400&fit=crop');">
-                            <i class="fas fa-glasses"></i>
-                        </div>
-                        <div class="category-content">
-                            <h3 class="category-title">Accessories</h3>
-                            <p class="category-description">Wellness accessories with terahertz technology</p>
-                            <span class="coming-soon-badge">Coming Soon</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Launch Event Gallery Section -->
+        <!-- Launch Event Gallery Section (Homepage highlight) -->
         <section class="launch-gallery-section">
             <div class="container">
                 <div class="section-header">
-                    <h2 class="section-title">Brand Launch Event</h2>
-                    <p class="section-subtitle">Experience the excitement of our brand launch event featuring revolutionary terahertz technology</p>
+                    <h2 class="section-title">Watch Ace#1 in Action</h2>
+                    <p class="section-subtitle">Launch moments, product showcases, and behind-the-scenes — these videos are the charm of our homepage.</p>
                 </div>
 
                 <!-- Gallery Tabs -->
                 <div class="gallery-tabs">
                     <button class="gallery-tab active" data-tab="videos">
-                        <i class="fas fa-play-circle"></i> Video Gallery
+                        <i class="fas fa-play-circle"></i> Videos
                     </button>
                     <button class="gallery-tab" data-tab="photos">
-                        <i class="fas fa-camera"></i> Photo Gallery
+                        <i class="fas fa-camera"></i> Photos
                     </button>
                 </div>
 
                 <!-- Video Gallery -->
                 <div class="gallery-content active" id="videos-content">
+                    <div class="video-hero">
+                        <div class="video-hero-card">
+                            <a class="video-thumb" href="https://youtu.be/QvilrHBjBLw" target="_blank" rel="noopener" aria-label="Play featured video on YouTube">
+                                <img src="https://img.youtube.com/vi/QvilrHBjBLw/hqdefault.jpg" alt="Ace#1 featured video" loading="lazy">
+                                <div class="video-play"><i class="fas fa-play-circle"></i></div>
+                            </a>
+                        </div>
+                        <div class="video-hero-card">
+                            <div class="video-hero-content">
+                                <h3>Featured Launch Video</h3>
+                                <p>See the energy, the products, and the moment Ace#1 came to life.</p>
+                                <a class="video-cta" href="https://youtu.be/QvilrHBjBLw" target="_blank" rel="noopener">
+                                    Watch on YouTube <i class="fas fa-arrow-right"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="video-gallery">
                         <div class="video-item">
-                            <div class="video-placeholder" role="img" aria-label="Brand Launch Highlights">
-                                <i class="fas fa-video"></i>
-                                <div>Video coming soon</div>
-                            </div>
-                            <div class="video-caption">
-                                <h4>Brand Launch Highlights</h4>
-                                <p>Watch the key moments from our grand launch event</p>
-                            </div>
-                        </div>
-                        <div class="video-item">
-                            <div class="video-placeholder" role="img" aria-label="Product Showcase">
-                                <i class="fas fa-video"></i>
-                                <div>Video coming soon</div>
-                            </div>
+                            <a class="video-thumb" href="https://youtu.be/O2cYQ-KZxbE" target="_blank" rel="noopener" aria-label="Play video on YouTube">
+                                <img src="https://img.youtube.com/vi/O2cYQ-KZxbE/hqdefault.jpg" alt="Ace#1 video" loading="lazy">
+                                <div class="video-play"><i class="fas fa-play-circle"></i></div>
+                            </a>
                             <div class="video-caption">
                                 <h4>Product Showcase</h4>
-                                <p>Explore our revolutionary terahertz technology products</p>
+                                <p>Explore our terahertz technology products in action</p>
                             </div>
                         </div>
+
                         <div class="video-item">
-                            <div class="video-placeholder" role="img" aria-label="Behind the Scenes">
-                                <i class="fas fa-video"></i>
-                                <div>Video coming soon</div>
-                            </div>
+                            <a class="video-thumb" href="https://youtu.be/DRD0WSg7vIc" target="_blank" rel="noopener" aria-label="Play video on YouTube">
+                                <img src="https://img.youtube.com/vi/DRD0WSg7vIc/hqdefault.jpg" alt="Ace#1 video" loading="lazy">
+                                <div class="video-play"><i class="fas fa-play-circle"></i></div>
+                            </a>
                             <div class="video-caption">
                                 <h4>Behind the Scenes</h4>
-                                <p>Get an exclusive look at the event preparation</p>
+                                <p>A closer look at the preparation and the vibe</p>
+                            </div>
+                        </div>
+
+                        <div class="video-item">
+                            <a class="video-thumb" href="https://youtu.be/KIiVM77ZWHY" target="_blank" rel="noopener" aria-label="Play video on YouTube">
+                                <img src="https://img.youtube.com/vi/KIiVM77ZWHY/hqdefault.jpg" alt="Ace#1 video" loading="lazy">
+                                <div class="video-play"><i class="fas fa-play-circle"></i></div>
+                            </a>
+                            <div class="video-caption">
+                                <h4>More Highlights</h4>
+                                <p>More key moments from our launch journey</p>
+                            </div>
+                        </div>
+
+                        <div class="video-item">
+                            <a class="video-thumb" href="https://youtu.be/XtePax2rsz0" target="_blank" rel="noopener" aria-label="Play video on YouTube">
+                                <img src="https://img.youtube.com/vi/XtePax2rsz0/hqdefault.jpg" alt="Ace#1 video" loading="lazy">
+                                <div class="video-play"><i class="fas fa-play-circle"></i></div>
+                            </a>
+                            <div class="video-caption">
+                                <h4>Technology Spotlight</h4>
+                                <p>A quick view into the story behind the tech</p>
                             </div>
                         </div>
                     </div>
@@ -492,6 +554,54 @@
                 </div>
             </div>
         </section>
+
+        <!-- Categories Grid -->
+        <section class="categories-section">
+            <div class="container">
+                <div class="categories-grid">
+                    <!-- Shoes Category -->
+                    <div class="category-card">
+                        <div class="category-image" style="background-image: url('https://images.unsplash.com/photo-1608231387042-66d1773070a5?w=800&h=400&fit=crop');">
+                            <i class="fas fa-shoe-prints"></i>
+                        </div>
+                        <div class="category-content">
+                            <h3 class="category-title">Shoes</h3>
+                            <p class="category-description">Revolutionary terahertz technology footwear for wellness and comfort</p>
+                            <a href="shoes.html" class="category-link">
+                                Shop Shoes <i class="fas fa-arrow-right"></i>
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Clothing Category -->
+                    <div class="category-card">
+                        <div class="category-image" style="background-image: url('https://images.unsplash.com/photo-1576566588028-4147f3842f27?w=800&h=400&fit=crop');">
+                            <i class="fas fa-tshirt"></i>
+                        </div>
+                        <div class="category-content">
+                            <h3 class="category-title">Clothing</h3>
+                            <p class="category-description">Terahertz technology apparel for enhanced wellness</p>
+                            <a href="clothing.html" class="category-link">
+                                Shop Clothing <i class="fas fa-arrow-right"></i>
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Accessories Category (Coming Soon) -->
+                    <div class="category-card coming-soon">
+                        <div class="category-image" style="background-image: url('https://images.unsplash.com/photo-1523293182086-7651a899d37f?w=800&h=400&fit=crop');">
+                            <i class="fas fa-glasses"></i>
+                        </div>
+                        <div class="category-content">
+                            <h3 class="category-title">Accessories</h3>
+                            <p class="category-description">Wellness accessories with terahertz technology</p>
+                            <span class="coming-soon-badge">Coming Soon</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
     </main>
 
     <!-- Footer -->
