@@ -252,7 +252,8 @@ class ProductFilterManager {
             }
             
         } catch (error) {
-            console.error('❌ Error loading products from Supabase:', error);
+            // Treat transient network issues as non-fatal; fall back to DOM-rendered products.
+            console.warn('⚠️ Failed to load products from Supabase:', error);
             console.warn('Fallback: Using hardcoded HTML products');
             // Still try to load from DOM if there are fallback products
             this.loadProducts();
