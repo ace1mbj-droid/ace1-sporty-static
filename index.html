@@ -123,6 +123,143 @@
             max-width: 600px;
             margin: 0 auto;
         }
+
+        /* Launch Event Gallery Styles */
+        .launch-gallery-section {
+            padding: 80px 0;
+            background: #fff;
+        }
+        .section-header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+        .section-title {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 15px;
+            color: #333;
+        }
+        .section-subtitle {
+            font-size: 1.1rem;
+            color: #666;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+        .video-gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            margin-bottom: 60px;
+        }
+        .video-item {
+            position: relative;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .video-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+        }
+        .video-item iframe {
+            width: 100%;
+            height: 250px;
+            border: none;
+        }
+        .video-caption {
+            padding: 20px;
+            background: white;
+            text-align: center;
+        }
+        .video-caption h4 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+        .video-caption p {
+            color: #666;
+            font-size: 0.95rem;
+        }
+        .photo-gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+        .photo-item {
+            position: relative;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+        .photo-item:hover {
+            transform: scale(1.05);
+        }
+        .photo-item img {
+            width: 100%;
+            height: 300px;
+            object-fit: cover;
+            display: block;
+        }
+        .photo-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+            color: white;
+            padding: 20px;
+            transform: translateY(100%);
+            transition: transform 0.3s ease;
+        }
+        .photo-item:hover .photo-overlay {
+            transform: translateY(0);
+        }
+        .photo-overlay h4 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        .photo-overlay p {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+        .gallery-tabs {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        .gallery-tab {
+            padding: 12px 30px;
+            background: #f0f0f0;
+            border: none;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #666;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .gallery-tab.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .gallery-tab:hover {
+            background: #e0e0e0;
+        }
+        .gallery-tab.active:hover {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .gallery-content {
+            display: none;
+        }
+        .gallery-content.active {
+            display: block;
+        }
     </style>
 </head>
 <body>
@@ -222,6 +359,107 @@
                 </div>
             </div>
         </section>
+
+        <!-- Launch Event Gallery Section -->
+        <section class="launch-gallery-section">
+            <div class="container">
+                <div class="section-header">
+                    <h2 class="section-title">Brand Launch Event</h2>
+                    <p class="section-subtitle">Experience the excitement of our brand launch event featuring revolutionary terahertz technology</p>
+                </div>
+
+                <!-- Gallery Tabs -->
+                <div class="gallery-tabs">
+                    <button class="gallery-tab active" data-tab="videos">
+                        <i class="fas fa-play-circle"></i> Video Gallery
+                    </button>
+                    <button class="gallery-tab" data-tab="photos">
+                        <i class="fas fa-camera"></i> Photo Gallery
+                    </button>
+                </div>
+
+                <!-- Video Gallery -->
+                <div class="gallery-content active" id="videos-content">
+                    <div class="video-gallery">
+                        <div class="video-item">
+                            <iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ" 
+                                    allowfullscreen
+                                    title="Brand Launch Highlights"></iframe>
+                            <div class="video-caption">
+                                <h4>Brand Launch Highlights</h4>
+                                <p>Watch the key moments from our grand launch event</p>
+                            </div>
+                        </div>
+                        <div class="video-item">
+                            <iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ" 
+                                    allowfullscreen
+                                    title="Product Showcase"></iframe>
+                            <div class="video-caption">
+                                <h4>Product Showcase</h4>
+                                <p>Explore our revolutionary terahertz technology products</p>
+                            </div>
+                        </div>
+                        <div class="video-item">
+                            <iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ" 
+                                    allowfullscreen
+                                    title="Behind the Scenes"></iframe>
+                            <div class="video-caption">
+                                <h4>Behind the Scenes</h4>
+                                <p>Get an exclusive look at the event preparation</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Photo Gallery -->
+                <div class="gallery-content" id="photos-content">
+                    <div class="photo-gallery">
+                        <div class="photo-item">
+                            <img src="https://via.placeholder.com/600x400/667eea/ffffff?text=Launch+Event+1" alt="Launch Event">
+                            <div class="photo-overlay">
+                                <h4>Grand Opening</h4>
+                                <p>The moment we unveiled our brand</p>
+                            </div>
+                        </div>
+                        <div class="photo-item">
+                            <img src="https://via.placeholder.com/600x400/764ba2/ffffff?text=Launch+Event+2" alt="Product Display">
+                            <div class="photo-overlay">
+                                <h4>Product Display</h4>
+                                <p>Showcasing our innovative products</p>
+                            </div>
+                        </div>
+                        <div class="photo-item">
+                            <img src="https://via.placeholder.com/600x400/667eea/ffffff?text=Launch+Event+3" alt="Guest Interactions">
+                            <div class="photo-overlay">
+                                <h4>Guest Interactions</h4>
+                                <p>Engaging with our valued attendees</p>
+                            </div>
+                        </div>
+                        <div class="photo-item">
+                            <img src="https://via.placeholder.com/600x400/764ba2/ffffff?text=Launch+Event+4" alt="Technology Demo">
+                            <div class="photo-overlay">
+                                <h4>Technology Demo</h4>
+                                <p>Demonstrating terahertz technology</p>
+                            </div>
+                        </div>
+                        <div class="photo-item">
+                            <img src="https://via.placeholder.com/600x400/667eea/ffffff?text=Launch+Event+5" alt="Team Photo">
+                            <div class="photo-overlay">
+                                <h4>Team Celebration</h4>
+                                <p>Our amazing team at the launch</p>
+                            </div>
+                        </div>
+                        <div class="photo-item">
+                            <img src="https://via.placeholder.com/600x400/764ba2/ffffff?text=Launch+Event+6" alt="Venue Setup">
+                            <div class="photo-overlay">
+                                <h4>Venue Setup</h4>
+                                <p>Beautiful event venue decoration</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
     </main>
 
     <!-- Footer -->
@@ -286,6 +524,28 @@
     <script src="js/hcaptcha-manager.js"></script>
     <script src="js/bot-defense.js"></script>
     <script src="js/cache-buster.js"></script>
+    <script>
+        // Gallery tab switching
+        document.addEventListener('DOMContentLoaded', function() {
+            const tabs = document.querySelectorAll('.gallery-tab');
+            const contents = document.querySelectorAll('.gallery-content');
+
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    // Remove active class from all tabs and contents
+                    tabs.forEach(t => t.classList.remove('active'));
+                    contents.forEach(c => c.classList.remove('active'));
+
+                    // Add active class to clicked tab
+                    this.classList.add('active');
+
+                    // Show corresponding content
+                    const tabName = this.getAttribute('data-tab');
+                    document.getElementById(tabName + '-content').classList.add('active');
+                });
+            });
+        });
+    </script>
 
 </body>
 </html>
