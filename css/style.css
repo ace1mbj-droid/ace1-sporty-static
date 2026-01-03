@@ -5069,6 +5069,20 @@ button {
     }
 }
 
+/* Placeholder Text Styling */
+::placeholder {
+    color: #999;
+    opacity: 1;
+}
+
+:-ms-input-placeholder {
+    color: #999;
+}
+
+::-ms-input-placeholder {
+    color: #999;
+}
+
 /* Development Banner */
 #dev-banner {
     background: #ffcc00;
