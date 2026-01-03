@@ -344,6 +344,7 @@ async function performSearch(query) {
                 )
             `)
             .eq('is_active', true)
+            .is('deleted_at', null)
             .or(`name.ilike.%${query}%,description.ilike.%${query}%,category.ilike.%${query}%`)
             .limit(10);
         
@@ -1222,6 +1223,7 @@ async function refreshProductsIfNeeded() {
                 )
             `)
             .eq('is_active', true)
+            .is('deleted_at', null)
             .eq('show_on_index', true)
             .order('created_at', { ascending: false });
 
