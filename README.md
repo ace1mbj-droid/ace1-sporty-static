@@ -20,6 +20,13 @@ python3 -m http.server 8000
 
 2. Add or edit products in `data/products.json`.
 
+Deploy without Hostinger (free)
+------------------------------
+
+If you don't have access to the current hosting panel (e.g., Hostinger) but need to fix production headers like CSP, deploy this repo to a free host you control (recommended: Vercel).
+
+See: `docs/FREE_DEPLOY_WITHOUT_HOSTINGER.md`
+
 3. For a real Stripe integration you will need a server to create sessions; the current demo uses `scripts/stripe-mock.js` which simulates success in test mode.
 
 Supabase integration & server-side flow
