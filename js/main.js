@@ -874,7 +874,9 @@ async function loadCartFromDatabase() {
                             data = rpcRes.data.map(r => ({ id: r.id, product_id: r.product_id, quantity: r.quantity, size: r.size, products: (prodRes.data || []).find(p => p.id === r.product_id) ? { ...(prodRes.data || []).find(p => p.id === r.product_id), inventory: invMap[r.product_id] || [] } : null }));
                         }
                     } else {
-                        console.error('Cart RPC load error:', rpcRes.error);
+                        // Network hiccups or backend errors shouldn't break the UI; fall back to empty cart.
+                        console.warn('Cart RPC load error:', rpcRes.error);
+                        data = [];
                 }
             }
         }
