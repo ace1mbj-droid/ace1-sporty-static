@@ -60,12 +60,29 @@
         }
         .category-image {
             height: 200px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.7) 0%, rgba(118, 75, 162, 0.7) 100%);
+            background-size: cover;
+            background-position: center;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 4rem;
             color: white;
+            position: relative;
+        }
+        .category-image::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.7) 0%, rgba(118, 75, 162, 0.7) 100%);
+            z-index: 1;
+        }
+        .category-image i {
+            position: relative;
+            z-index: 2;
         }
         .category-content {
             padding: 30px;
@@ -107,10 +124,12 @@
             font-size: 0.9rem;
         }
         .hero-section {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.9) 0%, rgba(118, 75, 162, 0.9) 100%),
+                        url('https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=1920&h=600&fit=crop') center/cover;
             color: white;
             padding: 120px 0;
             text-align: center;
+            position: relative;
         }
         .hero-title {
             font-size: 3.5rem;
@@ -319,7 +338,7 @@
                 <div class="categories-grid">
                     <!-- Shoes Category -->
                     <div class="category-card">
-                        <div class="category-image">
+                        <div class="category-image" style="background-image: url('https://images.unsplash.com/photo-1608231387042-66d1773070a5?w=800&h=400&fit=crop');">
                             <i class="fas fa-shoe-prints"></i>
                         </div>
                         <div class="category-content">
@@ -333,7 +352,7 @@
 
                     <!-- Clothing Category -->
                     <div class="category-card">
-                        <div class="category-image">
+                        <div class="category-image" style="background-image: url('https://images.unsplash.com/photo-1576566588028-4147f3842f27?w=800&h=400&fit=crop');">
                             <i class="fas fa-tshirt"></i>
                         </div>
                         <div class="category-content">
@@ -347,7 +366,7 @@
 
                     <!-- Accessories Category (Coming Soon) -->
                     <div class="category-card coming-soon">
-                        <div class="category-image">
+                        <div class="category-image" style="background-image: url('https://images.unsplash.com/photo-1523293182086-7651a899d37f?w=800&h=400&fit=crop');">
                             <i class="fas fa-glasses"></i>
                         </div>
                         <div class="category-content">
@@ -415,42 +434,42 @@
                 <div class="gallery-content" id="photos-content">
                     <div class="photo-gallery">
                         <div class="photo-item">
-                            <img src="https://via.placeholder.com/600x400/667eea/ffffff?text=Launch+Event+1" alt="Launch Event">
+                            <img src="https://images.unsplash.com/photo-1552674605-db6ffd4facb5?w=800&h=600&fit=crop" alt="Athletes Running" loading="lazy">
                             <div class="photo-overlay">
                                 <h4>Grand Opening</h4>
                                 <p>The moment we unveiled our brand</p>
                             </div>
                         </div>
                         <div class="photo-item">
-                            <img src="https://via.placeholder.com/600x400/764ba2/ffffff?text=Launch+Event+2" alt="Product Display">
+                            <img src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800&h=600&fit=crop" alt="Athletic Footwear" loading="lazy">
                             <div class="photo-overlay">
                                 <h4>Product Display</h4>
                                 <p>Showcasing our innovative products</p>
                             </div>
                         </div>
                         <div class="photo-item">
-                            <img src="https://via.placeholder.com/600x400/667eea/ffffff?text=Launch+Event+3" alt="Guest Interactions">
+                            <img src="https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800&h=600&fit=crop" alt="Fitness Training" loading="lazy">
                             <div class="photo-overlay">
                                 <h4>Guest Interactions</h4>
                                 <p>Engaging with our valued attendees</p>
                             </div>
                         </div>
                         <div class="photo-item">
-                            <img src="https://via.placeholder.com/600x400/764ba2/ffffff?text=Launch+Event+4" alt="Technology Demo">
+                            <img src="https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=800&h=600&fit=crop" alt="Sports Technology" loading="lazy">
                             <div class="photo-overlay">
                                 <h4>Technology Demo</h4>
                                 <p>Demonstrating terahertz technology</p>
                             </div>
                         </div>
                         <div class="photo-item">
-                            <img src="https://via.placeholder.com/600x400/667eea/ffffff?text=Launch+Event+5" alt="Team Photo">
+                            <img src="https://images.unsplash.com/photo-1517649763962-0c623066013b?w=800&h=600&fit=crop" alt="Team Sports" loading="lazy">
                             <div class="photo-overlay">
                                 <h4>Team Celebration</h4>
                                 <p>Our amazing team at the launch</p>
                             </div>
                         </div>
                         <div class="photo-item">
-                            <img src="https://via.placeholder.com/600x400/764ba2/ffffff?text=Launch+Event+6" alt="Venue Setup">
+                            <img src="https://images.unsplash.com/photo-1556906781-9a412961c28c?w=800&h=600&fit=crop" alt="Athletic Apparel" loading="lazy">
                             <div class="photo-overlay">
                                 <h4>Venue Setup</h4>
                                 <p>Beautiful event venue decoration</p>
