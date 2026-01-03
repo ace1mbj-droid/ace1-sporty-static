@@ -1205,9 +1205,18 @@ document.addEventListener('DOMContentLoaded', async () => {
 // Refresh products from Supabase if admin made changes
 async function refreshProductsIfNeeded() {
     const productsGrid = document.getElementById('products-grid');
-    if (!productsGrid) return; // Not on index page
+    if (!productsGrid) return;
+
+    // Only run on the featured-products section (welcome.html).
+    // Other pages (e.g., clothing.html) also have #products-grid and are managed by products.js.
+    if (productsGrid.dataset.productsSource !== 'featured') return;
     
     try {
+        if (typeof window.getSupabase !== 'function') {
+            // Supabase not initialized on this page; silently skip.
+            return;
+        }
+
         const supabase = window.getSupabase();
         
         // Fetch all active products with related data (matches products.js)
@@ -1318,7 +1327,8 @@ async function refreshProductsIfNeeded() {
         console.log(`✅ Homepage products updated from database (${processedProducts.length} products)`);
         
     } catch (error) {
-        console.error('Could not refresh products:', error.message);
+        // Avoid polluting console with errors for transient network/config issues.
+        console.warn('Could not refresh featured products:', error?.message || String(error));
     }
 }
 
