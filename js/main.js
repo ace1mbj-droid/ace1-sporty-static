@@ -344,6 +344,7 @@ async function performSearch(query) {
                 )
             `)
             .eq('is_active', true)
+            .is('deleted_at', null)
             .or(`name.ilike.%${query}%,description.ilike.%${query}%,category.ilike.%${query}%`)
             .limit(10);
         
@@ -601,6 +602,7 @@ async function addToCart(productId) {
                 inventory(stock, size)
             `)
             .eq('id', productId)
+            .is('deleted_at', null)
             .single();
 
         if (error || !product) {
@@ -864,7 +866,7 @@ async function loadCartFromDatabase() {
                         if (productIds.length === 0) {
                             data = [];
                         } else {
-                            const prodRes = await supabase.from('products').select('id, name, price_cents').in('id', productIds);
+                            const prodRes = await supabase.from('products').select('id, name, price_cents').in('id', productIds).is('deleted_at', null);
                             const invRes = await supabase.from('inventory').select('product_id, stock, size').in('product_id', productIds);
 
                             const invMap = {};
@@ -1256,6 +1258,7 @@ async function refreshProductsIfNeeded() {
                 )
             `)
             .eq('is_active', true)
+            .is('deleted_at', null)
             .eq('show_on_index', true)
             .order('created_at', { ascending: false });
 
@@ -1606,6 +1609,7 @@ function attachQuickViewHandlers() {
                             )
                         `)
                         .eq('id', productId)
+                        .is('deleted_at', null)
                         .single();
                     
                     if (product && !error) {
