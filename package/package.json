@@ -40,6 +40,9 @@
     "zod": "^3.24.1",
     "@supabase/mcp-utils": "^0.2.4"
   },
+  "overrides": {
+    "qs": "^6.14.1"
+  },
   "devDependencies": {
     "@ai-sdk/anthropic": "^1.2.9",
     "@electric-sql/pglite": "^0.2.17",
