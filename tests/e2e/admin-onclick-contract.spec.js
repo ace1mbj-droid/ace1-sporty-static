@@ -9,6 +9,73 @@ test.describe('Admin onclick contract', () => {
   const ADMIN_EMAIL = process.env.ACE1_ADMIN_EMAIL || process.env.ADMIN_EMAIL;
   const ADMIN_PASSWORD = process.env.ACE1_ADMIN_PASSWORD || process.env.ADMIN_PASSWORD;
 
+  async function stubSupabaseForAdmin(page) {
+    // Stub getSupabase() BEFORE any page scripts run so admin.html doesn't redirect.
+    await page.addInitScript(() => {
+      const emptyOk = async () => ({ data: [], error: null });
+      const emptyOneOk = async () => ({ data: null, error: null });
+
+      function builder() {
+        const chain = {
+          select: () => chain,
+          insert: () => chain,
+          update: () => chain,
+          upsert: () => chain,
+          delete: () => chain,
+          eq: () => chain,
+          neq: () => chain,
+          is: () => chain,
+          in: () => chain,
+          order: () => chain,
+          limit: () => chain,
+          range: () => chain,
+          single: () => chain,
+          maybeSingle: () => chain,
+          then: (resolve) => Promise.resolve({ data: [], error: null }).then(resolve),
+        };
+        // Make await chain resolve
+        return new Proxy(chain, {
+          get(target, prop) {
+            if (prop === 'then') return target.then;
+            return target[prop] || (() => chain);
+          },
+        });
+      }
+
+      const fakeClient = {
+        auth: {
+          getSession: async () => ({
+            data: { session: { user: { id: 'e2e-admin', email: 'e2e@ace1.in' } } },
+            error: null,
+          }),
+          signOut: async () => ({ error: null }),
+          onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } }),
+        },
+        from: () => builder(),
+        rpc: async () => ({ data: null, error: null }),
+        storage: {
+          from: () => ({
+            list: emptyOk,
+            upload: emptyOneOk,
+            remove: emptyOk,
+            getPublicUrl: () => ({ data: { publicUrl: '' } }),
+          }),
+        },
+      };
+
+      try {
+        Object.defineProperty(window, 'getSupabase', {
+          value: () => fakeClient,
+          writable: false,
+          configurable: false,
+        });
+      } catch (e) {
+        // Fallback if defineProperty fails for any reason
+        window.getSupabase = () => fakeClient;
+      }
+    });
+  }
+
   async function ensureAdminLoggedIn(page) {
     const dashboardTab = page.locator('[data-tab="dashboard"], button[data-tab="dashboard"]').first();
     if (await dashboardTab.isVisible({ timeout: 1500 }).catch(() => false)) return;
@@ -29,10 +96,16 @@ test.describe('Admin onclick contract', () => {
   }
 
   test('admin.html onclick targets exist on window', async ({ page }) => {
-    test.skip(!ADMIN_EMAIL || !ADMIN_PASSWORD, 'Set ADMIN_EMAIL/ADMIN_PASSWORD (or ACE1_ADMIN_EMAIL/ACE1_ADMIN_PASSWORD) to run admin e2e tests.');
+    // If credentials are present, we validate against the real logged-in admin.
+    // Otherwise we run in a stubbed mode that prevents redirects and only checks the onclick contract.
+    if (!ADMIN_EMAIL || !ADMIN_PASSWORD) {
+      await stubSupabaseForAdmin(page);
+    }
 
     await page.goto(ADMIN_URL, { waitUntil: 'domcontentloaded' });
-    await ensureAdminLoggedIn(page);
+    if (ADMIN_EMAIL && ADMIN_PASSWORD) {
+      await ensureAdminLoggedIn(page);
+    }
 
     await page.waitForFunction(() => !!window.adminPanel, null, { timeout: 20000 });
     await page.waitForFunction(() => !!window.categoryManager && !!window.inventoryManager, null, { timeout: 20000 });
