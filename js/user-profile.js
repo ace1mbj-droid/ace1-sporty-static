@@ -920,7 +920,6 @@ window.addToCartFromWishlist = async function(productId) {
                     .from('products')
                     .select('is_locked, status, inventory(stock)')
                     .eq('id', productId)
-                    .is('deleted_at', null)
                     .single();
                 if (error || !prod) {
                     if (window.showNotification) window.showNotification('Product not available', 'error');
