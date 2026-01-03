@@ -7,6 +7,16 @@ test.describe('Admin Dashboard - Ecommerce Core Functions', () => {
         // Navigate to admin
         await page.goto(ADMIN_URL, { waitUntil: 'domcontentloaded' });
         await page.waitForTimeout(4000); // Give page time to render
+
+        // If login form appears, log in with test admin
+        const emailInput = page.locator('input[type="email"]').first();
+        if (await emailInput.isVisible({ timeout: 2000 }).catch(() => false)) {
+            await emailInput.fill('hello@ace1.in');
+            await page.locator('input[type="password"]').first().fill('admin@111');
+            const loginBtn = page.locator('button').filter({ hasText: /Sign In|Login|log in/i }).first();
+            await loginBtn.click({ timeout: 5000 });
+            await page.waitForTimeout(5000);
+        }
     });
 
     // ==================== PAGE LOAD TEST ====================

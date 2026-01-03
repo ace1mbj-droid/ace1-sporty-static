@@ -3,7 +3,7 @@ const { test, expect, Page } = require('@playwright/test');
 // Admin dashboard comprehensive functional tests
 test.describe('Admin Dashboard Complete Ecommerce Functionality', () => {
     let page;
-    const ADMIN_URL = 'https://sporty-static-tan.vercel.app/admin.html';
+    const ADMIN_URL = 'https://ace1.in/admin.html';
     
     test.beforeEach(async ({ browser }) => {
         page = await browser.newPage();
@@ -59,11 +59,23 @@ test.describe('Admin Dashboard Complete Ecommerce Functionality', () => {
         }
     }
 
+    async function loginIfNeeded() {
+        const emailInput = page.locator('input[type="email"]').first();
+        if (await emailInput.isVisible({ timeout: 2000 }).catch(() => false)) {
+            await emailInput.fill('hello@ace1.in');
+            await page.locator('input[type="password"]').first().fill('admin@111');
+            const loginBtn = page.locator('button').filter({ hasText: /Sign In|Login|log in/i }).first();
+            await loginBtn.click({ timeout: 5000 });
+            await page.waitForTimeout(5000);
+        }
+    }
+
     test('1. Page loads and admin authentication verified', async () => {
         console.log('\n🔐 Test 1: Page Load & Authentication\n');
         
         try {
             await page.goto(ADMIN_URL, { waitUntil: 'domcontentloaded', timeout: 30000 });
+            await loginIfNeeded();
             console.log('   ✅ Page loaded');
             
             // Wait for body content to exist
@@ -97,6 +109,7 @@ test.describe('Admin Dashboard Complete Ecommerce Functionality', () => {
         
         try {
             await page.goto(ADMIN_URL, { waitUntil: 'domcontentloaded', timeout: 30000 });
+            await loginIfNeeded();
             
             // Wait for dashboard content
             await page.waitForSelector('.admin-content.active', { timeout: 15000 });
@@ -124,6 +137,7 @@ test.describe('Admin Dashboard Complete Ecommerce Functionality', () => {
         
         try {
             await page.goto(ADMIN_URL, { waitUntil: 'domcontentloaded', timeout: 30000 });
+            await loginIfNeeded();
             await page.waitForTimeout(2000);
             
             const success = await navigateTo('shoes');
@@ -146,6 +160,7 @@ test.describe('Admin Dashboard Complete Ecommerce Functionality', () => {
         
         try {
             await page.goto(ADMIN_URL, { waitUntil: 'domcontentloaded', timeout: 30000 });
+            await loginIfNeeded();
             await page.waitForTimeout(2000);
             
             const success = await navigateTo('clothing');
@@ -168,6 +183,7 @@ test.describe('Admin Dashboard Complete Ecommerce Functionality', () => {
         
         try {
             await page.goto(ADMIN_URL, { waitUntil: 'domcontentloaded', timeout: 30000 });
+            await loginIfNeeded();
             await page.waitForTimeout(2000);
             
             const success = await navigateTo('inventory');
@@ -182,6 +198,7 @@ test.describe('Admin Dashboard Complete Ecommerce Functionality', () => {
         
         try {
             await page.goto(ADMIN_URL, { waitUntil: 'domcontentloaded', timeout: 30000 });
+            await loginIfNeeded();
             await page.waitForTimeout(2000);
             
             const success = await navigateTo('categories');
@@ -196,6 +213,7 @@ test.describe('Admin Dashboard Complete Ecommerce Functionality', () => {
         
         try {
             await page.goto(ADMIN_URL, { waitUntil: 'domcontentloaded', timeout: 30000 });
+            await loginIfNeeded();
             await page.waitForTimeout(2000);
             
             const success = await navigateTo('orders');
@@ -210,6 +228,7 @@ test.describe('Admin Dashboard Complete Ecommerce Functionality', () => {
         
         try {
             await page.goto(ADMIN_URL, { waitUntil: 'domcontentloaded', timeout: 30000 });
+            await loginIfNeeded();
             await page.waitForTimeout(2000);
             
             const success = await navigateTo('customers');
@@ -224,6 +243,7 @@ test.describe('Admin Dashboard Complete Ecommerce Functionality', () => {
         
         try {
             await page.goto(ADMIN_URL, { waitUntil: 'domcontentloaded', timeout: 30000 });
+            await loginIfNeeded();
             await page.waitForTimeout(2000);
             
             const success = await navigateTo('settings');
@@ -238,6 +258,7 @@ test.describe('Admin Dashboard Complete Ecommerce Functionality', () => {
         
         try {
             await page.goto(ADMIN_URL, { waitUntil: 'domcontentloaded', timeout: 30000 });
+            await loginIfNeeded();
             await page.waitForTimeout(2000);
             
             // Check for buttons
@@ -261,6 +282,7 @@ test.describe('Admin Dashboard Complete Ecommerce Functionality', () => {
         
         try {
             await page.goto(ADMIN_URL, { waitUntil: 'domcontentloaded', timeout: 30000 });
+            await loginIfNeeded();
             await page.waitForTimeout(2000);
             
             await navigateTo('shoes');
@@ -286,6 +308,7 @@ test.describe('Admin Dashboard Complete Ecommerce Functionality', () => {
         
         try {
             await page.goto(ADMIN_URL, { waitUntil: 'domcontentloaded', timeout: 30000 });
+            await loginIfNeeded();
             await page.waitForTimeout(2000);
             
             // Look for forms
@@ -314,6 +337,7 @@ test.describe('Admin Dashboard Complete Ecommerce Functionality', () => {
         
         try {
             await page.goto(ADMIN_URL, { waitUntil: 'domcontentloaded', timeout: 30000 });
+            await loginIfNeeded();
             await page.waitForTimeout(2000);
             
             await navigateTo('shoes');
@@ -343,6 +367,7 @@ test.describe('Admin Dashboard Complete Ecommerce Functionality', () => {
         
         try {
             await page.goto(ADMIN_URL, { waitUntil: 'domcontentloaded', timeout: 30000 });
+            await loginIfNeeded();
             await page.waitForTimeout(2000);
             
             // Check Shoes tab for shoe products
@@ -367,6 +392,7 @@ test.describe('Admin Dashboard Complete Ecommerce Functionality', () => {
         
         try {
             await page.goto(ADMIN_URL, { waitUntil: 'domcontentloaded', timeout: 30000 });
+            await loginIfNeeded();
             await page.waitForTimeout(2000);
             
             await navigateTo('shoes');
@@ -400,6 +426,7 @@ test.describe('Admin Dashboard Complete Ecommerce Functionality', () => {
             // Step 1: Load page
             console.log('   → Step 1: Loading admin dashboard...');
             await page.goto(ADMIN_URL, { waitUntil: 'domcontentloaded', timeout: 30000 });
+            await loginIfNeeded();
             console.log('   ✅ Dashboard loaded');
             
             // Step 2: Navigate tabs
