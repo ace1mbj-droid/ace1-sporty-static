@@ -82,11 +82,8 @@ DECLARE
     v_order_count BIGINT;
     v_is_admin BOOLEAN;
 BEGIN
-    -- Check if user is admin
-    SELECT EXISTS (
-        SELECT 1 FROM user_roles 
-        WHERE user_id = auth.uid() AND is_admin = true
-    ) INTO v_is_admin;
+    -- Check if user is admin using the security.is_admin() function
+    SELECT security.is_admin() INTO v_is_admin;
     
     IF NOT v_is_admin THEN
         RETURN QUERY SELECT false, 'Only administrators can delete products';
@@ -141,11 +138,8 @@ DECLARE
     v_order_count BIGINT;
     v_is_admin BOOLEAN;
 BEGIN
-    -- Check if user is admin
-    SELECT EXISTS (
-        SELECT 1 FROM user_roles 
-        WHERE user_id = auth.uid() AND is_admin = true
-    ) INTO v_is_admin;
+    -- Check if user is admin using the security.is_admin() function
+    SELECT security.is_admin() INTO v_is_admin;
     
     IF NOT v_is_admin THEN
         RETURN QUERY SELECT false, 'Only administrators can delete products';
@@ -176,12 +170,21 @@ SET search_path = public, pg_temp;
 -- STEP 6: Create view for active products only (excludes soft-deleted)
 -- ============================================================================
 
-CREATE OR REPLACE VIEW active_products AS
-SELECT * FROM products
-WHERE deleted_at IS NULL AND is_active = true;
-
--- Grant permissions
-GRANT SELECT ON active_products TO anon, authenticated;
+-- Only create view if active_products doesn't exist as a table
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.tables 
+        WHERE table_schema = 'public' AND table_name = 'active_products' AND table_type = 'BASE TABLE'
+    ) THEN
+        CREATE OR REPLACE VIEW active_products AS
+        SELECT * FROM products
+        WHERE deleted_at IS NULL AND is_active = true;
+        
+        -- Grant permissions
+        GRANT SELECT ON active_products TO anon, authenticated;
+    END IF;
+END $$;
 
 -- ============================================================================
 -- STEP 7: Add audit trigger for product deletions
