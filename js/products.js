@@ -7,6 +7,10 @@ class ProductFilterManager {
         this.filteredProducts = [];
         this.categories = [];
         this.categorySlugByAny = new Map();
+        this.pagination = {
+            currentPage: 1,
+            perPage: 15,
+        };
         this.filters = {
             categories: [],
             priceRange: [0, 15000],
@@ -166,6 +170,17 @@ class ProductFilterManager {
             } else if (currentPath.includes('clothing.html')) {
                 primaryCategoryFilter = 'clothing';
             }
+
+            const setCategoryEmptyState = (isEmpty) => {
+                if (primaryCategoryFilter !== 'clothing') return;
+
+                const launchUpdate = document.querySelector('.launch-update');
+                const shopSection = document.querySelector('.shop-section');
+                if (!launchUpdate || !shopSection) return;
+
+                launchUpdate.hidden = !isEmpty;
+                shopSection.hidden = isEmpty;
+            };
             
             // Always fetch fresh data - no caching
             console.log('🔄 Fetching products from Supabase...', primaryCategoryFilter ? `(filtering by primary_category: ${primaryCategoryFilter})` : '(no primary category filter)');
@@ -241,6 +256,7 @@ class ProductFilterManager {
 
             // IMPORTANT: Render products FIRST to replace hardcoded HTML
             if (processedProducts && processedProducts.length > 0) {
+                setCategoryEmptyState(false);
                 this.renderProducts(processedProducts);
                 console.log('✅ Rendered products from Supabase');
                 
@@ -251,6 +267,10 @@ class ProductFilterManager {
             } else {
                 // Not an error condition; can be legitimate when inventory is empty.
                 console.log('No products returned from Supabase');
+
+                setCategoryEmptyState(true);
+                // Render an empty state so the page doesn't get stuck on a spinner.
+                this.renderProducts([]);
             }
             
         } catch (error) {
@@ -557,6 +577,7 @@ class ProductFilterManager {
     }
 
     applyFilters() {
+        this.pagination.currentPage = 1;
         this.filteredProducts = this.products.filter(product => {
             // Category filter (checkboxes)
             if (this.filters.categories && this.filters.categories.length > 0) {
@@ -602,6 +623,82 @@ class ProductFilterManager {
         this.updateDisplay();
     }
 
+    getPaginationContainer() {
+        return document.getElementById('pagination') || document.querySelector('.pagination');
+    }
+
+    setPage(pageNumber) {
+        const totalItems = this.filteredProducts.length;
+        const perPage = Math.max(1, this.pagination.perPage);
+        const totalPages = Math.max(1, Math.ceil(totalItems / perPage));
+        const nextPage = Math.min(totalPages, Math.max(1, pageNumber));
+        if (nextPage === this.pagination.currentPage) return;
+        this.pagination.currentPage = nextPage;
+        this.updateDisplay();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    renderPagination(totalItems) {
+        const container = this.getPaginationContainer();
+        if (!container) return;
+
+        const perPage = Math.max(1, this.pagination.perPage);
+        const totalPages = Math.max(1, Math.ceil(totalItems / perPage));
+
+        // Hide pagination when not needed
+        if (totalPages <= 1) {
+            container.innerHTML = '';
+            container.style.display = 'none';
+            return;
+        }
+
+        container.style.display = 'flex';
+
+        // Clamp current page
+        this.pagination.currentPage = Math.min(totalPages, Math.max(1, this.pagination.currentPage));
+        const current = this.pagination.currentPage;
+
+        const makeBtn = (labelHtml, ariaLabel, disabled, onClick, isActive = false) => {
+            const btn = document.createElement('button');
+            btn.className = `page-btn${isActive ? ' active' : ''}`;
+            btn.type = 'button';
+            btn.disabled = !!disabled;
+            btn.setAttribute('aria-label', ariaLabel);
+            btn.innerHTML = labelHtml;
+            btn.addEventListener('click', onClick);
+            return btn;
+        };
+
+        container.innerHTML = '';
+
+        // Prev
+        container.appendChild(
+            makeBtn(
+                '<i class="fas fa-chevron-left"></i>',
+                'Previous page',
+                current <= 1,
+                () => this.setPage(current - 1)
+            )
+        );
+
+        // Page numbers (simple + clear)
+        for (let p = 1; p <= totalPages; p += 1) {
+            container.appendChild(
+                makeBtn(String(p), `Page ${p}`, false, () => this.setPage(p), p === current)
+            );
+        }
+
+        // Next
+        container.appendChild(
+            makeBtn(
+                '<i class="fas fa-chevron-right"></i>',
+                'Next page',
+                current >= totalPages,
+                () => this.setPage(current + 1)
+            )
+        );
+    }
+
     sortProducts() {
         switch (this.filters.sortBy) {
             case 'price-low':
@@ -629,33 +726,52 @@ class ProductFilterManager {
         const productsGrid = document.querySelector('.products-grid');
         if (!productsGrid) return;
 
+        const total = this.filteredProducts.length;
+        const perPage = Math.max(1, this.pagination.perPage);
+        const totalPages = Math.max(1, Math.ceil(total / perPage));
+        this.pagination.currentPage = Math.min(totalPages, Math.max(1, this.pagination.currentPage));
+
+        const startIndex = (this.pagination.currentPage - 1) * perPage;
+        const endIndexExclusive = Math.min(total, startIndex + perPage);
+        const pageItems = this.filteredProducts.slice(startIndex, endIndexExclusive);
+
         // Hide all products
         this.products.forEach(product => {
             product.element.style.display = 'none';
         });
 
-        // Show filtered products
-        this.filteredProducts.forEach(product => {
+        // Show only current page products
+        pageItems.forEach(product => {
             product.element.style.display = 'block';
         });
 
         // Update results count
         const resultsCount = document.getElementById('results-count');
         if (resultsCount) {
-            resultsCount.textContent = `Showing ${this.filteredProducts.length} of ${this.products.length} products`;
+            if (total === 0) {
+                resultsCount.textContent = `Showing 0 of ${this.products.length} products`;
+            } else {
+                const from = startIndex + 1;
+                const to = endIndexExclusive;
+                resultsCount.textContent = `Showing ${from}–${to} of ${this.products.length} products`;
+            }
         }
 
         // Show no results message if needed
-        if (this.filteredProducts.length === 0) {
+        if (total === 0) {
             this.showNoResults();
+            this.renderPagination(0);
         } else {
             this.hideNoResults();
         }
 
         // Reorder products in DOM
-        this.filteredProducts.forEach(product => {
+        pageItems.forEach(product => {
             productsGrid.appendChild(product.element);
         });
+
+        // Render pagination controls
+        this.renderPagination(total);
     }
 
     showNoResults() {
@@ -762,13 +878,4 @@ if (document.querySelector('.products-grid')) {
     });
 }
 
-// Pagination
-document.querySelectorAll('.page-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-        if (!btn.disabled && !btn.querySelector('i')) {
-            document.querySelectorAll('.page-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-    });
-});
+// Pagination is now rendered dynamically by ProductFilterManager.
