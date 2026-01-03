@@ -105,8 +105,7 @@ BEGIN
         UPDATE products 
         SET 
             deleted_at = NOW(),
-            is_active = false,
-            updated_at = NOW()
+            is_active = false
         WHERE id = p_product_id;
         
         RETURN QUERY SELECT true, 
@@ -116,8 +115,7 @@ BEGIN
         UPDATE products 
         SET 
             deleted_at = NOW(),
-            is_active = false,
-            updated_at = NOW()
+            is_active = false
         WHERE id = p_product_id;
         
         RETURN QUERY SELECT true, 
