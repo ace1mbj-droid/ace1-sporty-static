@@ -539,7 +539,6 @@ class AdminPanel {
                     position
                 )
             `)
-            .is('deleted_at', null)
             .order('created_at', { ascending: false });
 
         if (error) {
@@ -638,7 +637,6 @@ class AdminPanel {
                 )
             `)
             .eq('primary_category', 'shoes')
-            .is('deleted_at', null)
             .order('created_at', { ascending: false });
 
         if (error) {
@@ -665,7 +663,6 @@ class AdminPanel {
                 )
             `)
             .eq('primary_category', 'clothing')
-            .is('deleted_at', null)
             .order('created_at', { ascending: false });
 
         if (error) {
