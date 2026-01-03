@@ -8,8 +8,8 @@ test.describe('Admin Panel Button Flows', () => {
     const ADMIN_PASSWORD = process.env.ACE1_ADMIN_PASSWORD || process.env.ADMIN_PASSWORD;
 
     async function ensureAdminLoggedIn(page) {
-        const productsTab = page.locator('[data-tab="products"], button[data-tab="products"]').first();
-        if (await productsTab.isVisible({ timeout: 1500 }).catch(() => false)) return;
+        const dashboardTab = page.locator('[data-tab="dashboard"], button[data-tab="dashboard"]').first();
+        if (await dashboardTab.isVisible({ timeout: 1500 }).catch(() => false)) return;
 
         await page.goto(`${BASE_URL}/admin-login.html`, { waitUntil: 'domcontentloaded' });
         await page.waitForFunction(() => !!window.databaseAuth && typeof window.databaseAuth.login === 'function', null, { timeout: 20000 });
@@ -54,15 +54,11 @@ test.describe('Admin Panel Button Flows', () => {
         }
     });
 
-    test('Products tab switches and loads', async ({ page }) => {
-        // Click products tab
-        const productsTab = await page.locator('button').filter({ hasText: /Products|All Products/i }).first();
-        
-        if (await productsTab.isVisible({ timeout: 2000 }).catch(() => false)) {
-            await productsTab.click();
-            await page.waitForTimeout(1500);
-            console.log('✅ Products tab clicked');
-        }
+    test('Dashboard tab is present', async ({ page }) => {
+        const dashboardTab = await page.locator('[data-tab="dashboard"]').first();
+        const isVisible = await dashboardTab.isVisible({ timeout: 2000 }).catch(() => false);
+        expect(isVisible).toBe(true);
+        console.log('✅ Dashboard tab present');
     });
 
     test('Shoes tab switches and loads', async ({ page }) => {
@@ -110,8 +106,11 @@ test.describe('Admin Panel Button Flows', () => {
     });
 
     test('Add Product button opens modal', async ({ page }) => {
-        // Click add product button
-        const addBtn = await page.locator('button').filter({ hasText: /Add Product|New Product|Add/i }).first();
+        // Admin UI uses category-specific add buttons
+        await page.locator('[data-tab="shoes"]').first().click();
+        await page.waitForTimeout(800);
+
+        const addBtn = await page.locator('#add-shoes-btn, #add-clothing-btn').first();
         
         if (await addBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
             await addBtn.click();

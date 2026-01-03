@@ -7,8 +7,8 @@ test.describe('Admin Dashboard - Ecommerce Core Functions', () => {
     const ADMIN_PASSWORD = process.env.ACE1_ADMIN_PASSWORD || process.env.ADMIN_PASSWORD;
 
     async function ensureAdminLoggedIn(page) {
-        const productsTab = page.locator('[data-tab="products"], button[data-tab="products"]').first();
-        if (await productsTab.isVisible({ timeout: 1500 }).catch(() => false)) return;
+        const dashboardTab = page.locator('[data-tab="dashboard"], button[data-tab="dashboard"]').first();
+        if (await dashboardTab.isVisible({ timeout: 1500 }).catch(() => false)) return;
 
         await page.goto(`${BASE_URL}/admin-login.html`, { waitUntil: 'domcontentloaded' });
         await page.waitForFunction(() => !!window.databaseAuth && typeof window.databaseAuth.login === 'function', null, { timeout: 20000 });
@@ -48,7 +48,7 @@ test.describe('Admin Dashboard - Ecommerce Core Functions', () => {
 
     // ==================== NAVIGATION TESTS ====================
     test('All tabs are clickable', async ({ page }) => {
-        const tabs = ['products', 'shoes', 'clothing', 'orders', 'users'];
+        const tabs = ['dashboard', 'shoes', 'clothing', 'orders', 'users'];
         let clickCount = 0;
 
         for (const tab of tabs) {
@@ -66,10 +66,10 @@ test.describe('Admin Dashboard - Ecommerce Core Functions', () => {
         console.log(`✅ Total tabs navigated: ${clickCount}`);
     });
 
-    // ==================== PRODUCTS TAB TESTS ====================
-    test('Products display with admin actions', async ({ page }) => {
-        const productsTab = await page.locator('[data-tab="products"]').first();
-        await productsTab.click();
+    // ==================== SHOES TAB TESTS (PRODUCT ADMIN ACTIONS) ====================
+    test('Shoes display with admin actions', async ({ page }) => {
+        const shoesTab = await page.locator('[data-tab="shoes"]').first();
+        await shoesTab.click();
         await page.waitForTimeout(1500);
 
         // Count product cards
@@ -93,15 +93,19 @@ test.describe('Admin Dashboard - Ecommerce Core Functions', () => {
     });
 
     test('Add Product button accessible', async ({ page }) => {
-        const addBtn = await page.locator('button').filter({ hasText: /Add Product|New Product/i }).first();
-        const isVisible = await addBtn.isVisible({ timeout: 500 }).catch(() => false);
+        // Admin UI uses category-specific add buttons
+        await page.locator('[data-tab="shoes"]').first().click();
+        await page.waitForTimeout(800);
+
+        const addBtn = await page.locator('#add-shoes-btn, #add-clothing-btn').first();
+        const isVisible = await addBtn.isVisible({ timeout: 2000 }).catch(() => false);
         expect(isVisible).toBe(true);
-        console.log('✅ Add Product button is accessible');
+        console.log('✅ Add New item button is accessible');
     });
 
     test('Search functionality works', async ({ page }) => {
-        const productsTab = await page.locator('[data-tab="products"]').first();
-        await productsTab.click();
+        const shoesTab = await page.locator('[data-tab="shoes"]').first();
+        await shoesTab.click();
         await page.waitForTimeout(1500);
 
         const searchInput = await page.locator('input[type="search"], input[placeholder*="search" i]').first();
@@ -143,8 +147,8 @@ test.describe('Admin Dashboard - Ecommerce Core Functions', () => {
 
     // ==================== INVENTORY TESTS ====================
     test('Inventory badges and stock indicators display', async ({ page }) => {
-        const productsTab = await page.locator('[data-tab="products"]').first();
-        await productsTab.click();
+        const shoesTab = await page.locator('[data-tab="shoes"]').first();
+        await shoesTab.click();
         await page.waitForTimeout(1500);
 
         // Check for stock badges
@@ -213,7 +217,10 @@ test.describe('Admin Dashboard - Ecommerce Core Functions', () => {
 
     // ==================== MODAL TESTS ====================
     test('Modals open and close properly', async ({ page }) => {
-        const addBtn = await page.locator('button').filter({ hasText: /Add Product|New Product/i }).first();
+        await page.locator('[data-tab="shoes"]').first().click();
+        await page.waitForTimeout(800);
+
+        const addBtn = await page.locator('#add-shoes-btn, #add-clothing-btn').first();
         const addBtnVisible = await addBtn.isVisible({ timeout: 500 }).catch(() => false);
 
         if (addBtnVisible) {
@@ -238,8 +245,8 @@ test.describe('Admin Dashboard - Ecommerce Core Functions', () => {
 
     // ==================== ECOMMERCE FEATURES ====================
     test('Price formatting with rupee symbol', async ({ page }) => {
-        const productsTab = await page.locator('[data-tab="products"]').first();
-        await productsTab.click();
+        const shoesTab = await page.locator('[data-tab="shoes"]').first();
+        await shoesTab.click();
         await page.waitForTimeout(1500);
 
         const priceRegex = /₹[\d,]+/g;
@@ -253,8 +260,8 @@ test.describe('Admin Dashboard - Ecommerce Core Functions', () => {
     });
 
     test('Category labels present on products', async ({ page }) => {
-        const productsTab = await page.locator('[data-tab="products"]').first();
-        await productsTab.click();
+        const shoesTab = await page.locator('[data-tab="shoes"]').first();
+        await shoesTab.click();
         await page.waitForTimeout(1500);
 
         // Look for primary category display
@@ -265,10 +272,10 @@ test.describe('Admin Dashboard - Ecommerce Core Functions', () => {
     // ==================== BUTTON RESPONSIVENESS ====================
     test('All major buttons respond to clicks', async ({ page }) => {
         const buttons = [
-            { selector: 'button[data-tab="products"]', name: 'Products Tab' },
+            { selector: 'button[data-tab="shoes"]', name: 'Shoes Tab' },
             { selector: 'button[data-tab="orders"]', name: 'Orders Tab' },
             { selector: 'button[data-tab="users"]', name: 'Users Tab' },
-            { selector: 'button:has-text("Add Product")', name: 'Add Product' },
+            { selector: '#add-shoes-btn', name: 'Add New Shoe' },
         ];
 
         let clickCount = 0;
@@ -289,7 +296,10 @@ test.describe('Admin Dashboard - Ecommerce Core Functions', () => {
 
     // ==================== FORM VALIDATION ====================
     test('Form fields accept input', async ({ page }) => {
-        const addBtn = await page.locator('button').filter({ hasText: /Add Product/i }).first();
+        await page.locator('[data-tab="shoes"]').first().click();
+        await page.waitForTimeout(800);
+
+        const addBtn = await page.locator('#add-shoes-btn, #add-clothing-btn').first();
         const isVisible = await addBtn.isVisible({ timeout: 500 }).catch(() => false);
 
         if (isVisible) {
@@ -323,18 +333,18 @@ test.describe('Admin Dashboard - Ecommerce Core Functions', () => {
         expect(bodyText?.length).toBeGreaterThan(500);
         console.log('✅ Step 1: Dashboard loaded with content');
 
-        // 2. Products visible
-        const productsTab = await page.locator('[data-tab="products"]').first();
-        await productsTab.click();
+        // 2. Shoes products visible
+        const shoesTab = await page.locator('[data-tab="shoes"]').first();
+        await shoesTab.click();
         await page.waitForTimeout(1500);
         const products = await page.locator('[class*="card"], [class*="product"]').count();
         console.log(`✅ Step 2: Products section accessible (${products} items visible)`);
 
-        // 3. Categories work
-        const shoesTab = await page.locator('[data-tab="shoes"]').first();
-        await shoesTab.click();
+        // 3. Clothing also accessible
+        const clothingTab = await page.locator('[data-tab="clothing"]').first();
+        await clothingTab.click();
         await page.waitForTimeout(1000);
-        console.log('✅ Step 3: Category filtering works');
+        console.log('✅ Step 3: Category tabs accessible');
 
         // 4. Orders accessible
         const ordersTab = await page.locator('[data-tab="orders"]').first();
@@ -349,7 +359,7 @@ test.describe('Admin Dashboard - Ecommerce Core Functions', () => {
         console.log('✅ Step 5: Users section accessible');
 
         // 6. Action buttons present
-        await productsTab.click();
+        await shoesTab.click();
         await page.waitForTimeout(1500);
         const editBtns = await page.locator('button:has-text("Edit")').count();
         const deleteBtns = await page.locator('button:has-text("Delete")').count();
