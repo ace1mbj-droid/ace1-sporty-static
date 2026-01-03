@@ -65,8 +65,8 @@ test.describe('Admin Dashboard Complete Ecommerce Functionality', () => {
     }
 
     async function loginIfNeeded() {
-        const productsTab = page.locator('[data-tab="products"], button[data-tab="products"]').first();
-        if (await productsTab.isVisible({ timeout: 1500 }).catch(() => false)) return;
+        const dashboardTab = page.locator('[data-tab="dashboard"], button[data-tab="dashboard"]').first();
+        if (await dashboardTab.isVisible({ timeout: 1500 }).catch(() => false)) return;
 
         await page.goto(`${BASE_URL}/admin-login.html`, { waitUntil: 'domcontentloaded' });
         await page.waitForFunction(() => !!window.databaseAuth && typeof window.databaseAuth.login === 'function', null, { timeout: 20000 });

@@ -9,8 +9,8 @@ test.describe('Admin Dashboard - Complete Ecommerce Functionality', () => {
 
     async function ensureAdminLoggedIn(page) {
         // Fast path: already on admin dashboard
-        const productsTab = page.locator('[data-tab="products"], button[data-tab="products"]').first();
-        if (await productsTab.isVisible({ timeout: 1500 }).catch(() => false)) return;
+        const dashboardTab = page.locator('[data-tab="dashboard"], button[data-tab="dashboard"]').first();
+        if (await dashboardTab.isVisible({ timeout: 1500 }).catch(() => false)) return;
 
         // Go to login page and sign in via in-page auth helper (bypasses captcha UI)
         await page.goto(`${BASE_URL}/admin-login.html`, { waitUntil: 'domcontentloaded' });
@@ -73,7 +73,7 @@ test.describe('Admin Dashboard - Complete Ecommerce Functionality', () => {
 
     // ==================== TAB NAVIGATION TESTS ====================
     test('Tab navigation switches between sections', async ({ page }) => {
-        const tabs = ['products', 'shoes', 'clothing', 'orders', 'users'];
+        const tabs = ['dashboard', 'shoes', 'clothing', 'orders', 'users'];
 
         for (const tab of tabs) {
             const tabBtn = await page.locator(`button[data-tab="${tab}"]`).first();
@@ -91,8 +91,12 @@ test.describe('Admin Dashboard - Complete Ecommerce Functionality', () => {
 
     // ==================== PRODUCT CRUD TESTS ====================
     test('Add new product with all fields', async ({ page }) => {
+        // Admin UI uses category-specific tabs; use Shoes as the canonical product management tab
+        await page.locator('button[data-tab="shoes"]').first().click();
+        await page.waitForTimeout(800);
+
         // Click add product button
-        const addBtn = await page.locator('button').filter({ hasText: /Add Product|New Product/i }).first();
+        const addBtn = await page.locator('#add-shoes-btn, button').filter({ hasText: /Add New Shoe|Add Shoe|Add New/i }).first();
         await addBtn.click();
         await page.waitForTimeout(1000);
 
@@ -168,9 +172,9 @@ test.describe('Admin Dashboard - Complete Ecommerce Functionality', () => {
     });
 
     test('Edit product and verify changes', async ({ page }) => {
-        // Go to products tab
-        const productsTab = await page.locator('button[data-tab="products"]').first();
-        await productsTab.click();
+        // Go to shoes tab
+        const shoesTab = await page.locator('button[data-tab="shoes"]').first();
+        await shoesTab.click();
         await page.waitForTimeout(1500);
 
         // Find first edit button
@@ -201,26 +205,26 @@ test.describe('Admin Dashboard - Complete Ecommerce Functionality', () => {
     });
 
     test('Delete product with order check', async ({ page }) => {
-        // Go to products tab
-        const productsTab = await page.locator('button[data-tab="products"]').first();
-        await productsTab.click();
+        // Go to shoes tab
+        const shoesTab = await page.locator('button[data-tab="shoes"]').first();
+        await shoesTab.click();
         await page.waitForTimeout(1500);
 
         // Get initial product count
         const initialCards = await page.locator('[class*="product-admin-card"]').count();
         console.log(`✅ Initial product count: ${initialCards}`);
 
+        // Handle confirmation dialog (register before clicking)
+        page.once('dialog', async (dialog) => {
+            console.log(`✅ Confirmation dialog: ${dialog.message().substring(0, 50)}...`);
+            await dialog.accept();
+        });
+
         // Find and click delete button
         const deleteBtn = await page.locator('button').filter({ hasText: /Delete/i }).first();
         if (await deleteBtn.isVisible({ timeout: 1000 }).catch(() => false)) {
             await deleteBtn.click();
             await page.waitForTimeout(500);
-
-            // Handle confirmation dialog
-            page.on('dialog', async (dialog) => {
-                console.log(`✅ Confirmation dialog: ${dialog.message().substring(0, 50)}...`);
-                await dialog.accept();
-            });
 
             // Wait for deletion to complete
             await page.waitForTimeout(2000);
@@ -234,9 +238,9 @@ test.describe('Admin Dashboard - Complete Ecommerce Functionality', () => {
     });
 
     test('Duplicate product creates copy', async ({ page }) => {
-        // Go to products tab
-        const productsTab = await page.locator('button[data-tab="products"]').first();
-        await productsTab.click();
+        // Go to shoes tab
+        const shoesTab = await page.locator('button[data-tab="shoes"]').first();
+        await shoesTab.click();
         await page.waitForTimeout(1500);
 
         // Get initial product count
@@ -267,8 +271,8 @@ test.describe('Admin Dashboard - Complete Ecommerce Functionality', () => {
 
     // ==================== SEARCH & FILTER TESTS ====================
     test('Search products by name', async ({ page }) => {
-        const productsTab = await page.locator('button[data-tab="products"]').first();
-        await productsTab.click();
+        const shoesTab = await page.locator('button[data-tab="shoes"]').first();
+        await shoesTab.click();
         await page.waitForTimeout(1500);
 
         const searchInput = await page.locator('input[type="search"], input[placeholder*="search" i]').first();
@@ -410,8 +414,8 @@ test.describe('Admin Dashboard - Complete Ecommerce Functionality', () => {
 
     // ==================== INVENTORY TESTS ====================
     test('Verify inventory tracking on products', async ({ page }) => {
-        const productsTab = await page.locator('button[data-tab="products"]').first();
-        await productsTab.click();
+        const shoesTab = await page.locator('button[data-tab="shoes"]').first();
+        await shoesTab.click();
         await page.waitForTimeout(1500);
 
         // Check first product's stock display
@@ -430,7 +434,10 @@ test.describe('Admin Dashboard - Complete Ecommerce Functionality', () => {
 
     // ==================== FORM VALIDATION TESTS ====================
     test('Validate required fields on product form', async ({ page }) => {
-        const addBtn = await page.locator('button').filter({ hasText: /Add Product|New Product/i }).first();
+        await page.locator('button[data-tab="shoes"]').first().click();
+        await page.waitForTimeout(800);
+
+        const addBtn = await page.locator('#add-shoes-btn').first();
         await addBtn.click();
         await page.waitForTimeout(1000);
 
@@ -447,7 +454,10 @@ test.describe('Admin Dashboard - Complete Ecommerce Functionality', () => {
     });
 
     test('Validate price format', async ({ page }) => {
-        const addBtn = await page.locator('button').filter({ hasText: /Add Product/i }).first();
+        await page.locator('button[data-tab="shoes"]').first().click();
+        await page.waitForTimeout(800);
+
+        const addBtn = await page.locator('#add-shoes-btn').first();
         await addBtn.click();
         await page.waitForTimeout(1000);
 
@@ -475,7 +485,10 @@ test.describe('Admin Dashboard - Complete Ecommerce Functionality', () => {
 
     // ==================== UI/UX TESTS ====================
     test('Modal opens and closes smoothly', async ({ page }) => {
-        const addBtn = await page.locator('button').filter({ hasText: /Add Product/i }).first();
+        await page.locator('button[data-tab="shoes"]').first().click();
+        await page.waitForTimeout(800);
+
+        const addBtn = await page.locator('#add-shoes-btn').first();
         
         // Open modal
         await addBtn.click();
@@ -497,10 +510,10 @@ test.describe('Admin Dashboard - Complete Ecommerce Functionality', () => {
     });
 
     test('Loading states and async operations', async ({ page }) => {
-        const productsTab = await page.locator('button[data-tab="products"]').first();
+        const shoesTab = await page.locator('button[data-tab="shoes"]').first();
         
         // Click tab and watch for loading
-        await productsTab.click();
+        await shoesTab.click();
         
         // Look for loading indicator
         const loader = await page.locator('[class*="load"], [class*="spin"], [aria-busy="true"]').first();
@@ -518,7 +531,10 @@ test.describe('Admin Dashboard - Complete Ecommerce Functionality', () => {
     });
 
     test('Error handling on failed operations', async ({ page }) => {
-        const addBtn = await page.locator('button').filter({ hasText: /Add Product/i }).first();
+        await page.locator('button[data-tab="shoes"]').first().click();
+        await page.waitForTimeout(800);
+
+        const addBtn = await page.locator('#add-shoes-btn').first();
         await addBtn.click();
         await page.waitForTimeout(1000);
 
@@ -549,8 +565,8 @@ test.describe('Admin Dashboard - Complete Ecommerce Functionality', () => {
 
     // ==================== ECOMMERCE LOGIC TESTS ====================
     test('Price calculations and currency formatting', async ({ page }) => {
-        const productsTab = await page.locator('button[data-tab="products"]').first();
-        await productsTab.click();
+        const shoesTab = await page.locator('button[data-tab="shoes"]').first();
+        await shoesTab.click();
         await page.waitForTimeout(1500);
 
         // Check price display format
@@ -589,8 +605,8 @@ test.describe('Admin Dashboard - Complete Ecommerce Functionality', () => {
     });
 
     test('Stock availability indicators', async ({ page }) => {
-        const productsTab = await page.locator('button[data-tab="products"]').first();
-        await productsTab.click();
+        const shoesTab = await page.locator('button[data-tab="shoes"]').first();
+        await shoesTab.click();
         await page.waitForTimeout(1500);
 
         // Count stock status badges
@@ -610,11 +626,11 @@ test.describe('Admin Dashboard - Complete Ecommerce Functionality', () => {
     test('Complete workflow: Create → Edit → Delete', async ({ page }) => {
         console.log('\n🔄 Starting complete ecommerce workflow test...\n');
 
-        // 1. Navigate to products
-        const productsTab = await page.locator('button[data-tab="products"]').first();
-        await productsTab.click();
+        // 1. Navigate to shoes
+        const shoesTab = await page.locator('button[data-tab="shoes"]').first();
+        await shoesTab.click();
         await page.waitForTimeout(1500);
-        console.log('✅ Step 1: Navigated to Products');
+        console.log('✅ Step 1: Navigated to Shoes');
 
         // 2. Count initial products
         const initialCount = await page.locator('[class*="product-admin-card"]').count();
