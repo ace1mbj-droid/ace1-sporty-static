@@ -2,29 +2,40 @@ const { test, expect } = require('@playwright/test');
 
 // Smoke test for admin panel button flows
 test.describe('Admin Panel Button Flows', () => {
-    const ADMIN_URL = 'https://ace1.in/admin.html';
+    const BASE_URL = process.env.E2E_BASE_URL || 'https://ace1.in';
+    const ADMIN_URL = `${BASE_URL}/admin.html`;
+    const ADMIN_EMAIL = process.env.ACE1_ADMIN_EMAIL || process.env.ADMIN_EMAIL;
+    const ADMIN_PASSWORD = process.env.ACE1_ADMIN_PASSWORD || process.env.ADMIN_PASSWORD;
+
+    async function ensureAdminLoggedIn(page) {
+        const productsTab = page.locator('[data-tab="products"], button[data-tab="products"]').first();
+        if (await productsTab.isVisible({ timeout: 1500 }).catch(() => false)) return;
+
+        await page.goto(`${BASE_URL}/admin-login.html`, { waitUntil: 'domcontentloaded' });
+        await page.waitForFunction(() => !!window.databaseAuth && typeof window.databaseAuth.login === 'function', null, { timeout: 20000 });
+
+        const result = await page.evaluate(async ({ email, password }) => {
+            return await window.databaseAuth.login(email, password);
+        }, { email: ADMIN_EMAIL, password: ADMIN_PASSWORD });
+
+        if (!result?.success) {
+            throw new Error(`Admin login failed: ${result?.error || 'unknown error'}`);
+        }
+
+        await page.goto(ADMIN_URL, { waitUntil: 'networkidle' });
+        await page.waitForTimeout(1500);
+    }
 
     test.beforeEach(async ({ page }) => {
+        test.skip(!ADMIN_EMAIL || !ADMIN_PASSWORD, 'Set ADMIN_EMAIL/ADMIN_PASSWORD (or ACE1_ADMIN_EMAIL/ACE1_ADMIN_PASSWORD) to run admin e2e tests.');
+
         // Navigate to admin page (assumes user is already logged in via browser context)
         await page.goto(ADMIN_URL, { waitUntil: 'networkidle' });
         
         // Wait for page to fully load
         await page.waitForTimeout(3000);
         
-        // If login form appears, use provided credentials
-        const emailInput = await page.locator('input[type="email"]').first();
-        if (await emailInput.isVisible({ timeout: 2000 }).catch(() => false)) {
-            await emailInput.fill('hello@ace1.in');
-            await page.locator('input[type="password"]').fill('admin@111');
-            
-            // Find and click login button
-            const loginBtn = await page.locator('button').filter({ hasText: /Sign In|Login|login/i }).first();
-            if (await loginBtn.isVisible()) {
-                await loginBtn.click();
-                // Wait for navigation
-                await page.waitForTimeout(5000);
-            }
-        }
+        await ensureAdminLoggedIn(page);
     });
 
     test('Dashboard loads successfully', async ({ page }) => {

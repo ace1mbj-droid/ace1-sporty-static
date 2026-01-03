@@ -3,9 +3,14 @@ const { test, expect, Page } = require('@playwright/test');
 // Admin dashboard comprehensive functional tests
 test.describe('Admin Dashboard Complete Ecommerce Functionality', () => {
     let page;
-    const ADMIN_URL = 'https://ace1.in/admin.html';
+    const BASE_URL = process.env.E2E_BASE_URL || 'https://ace1.in';
+    const ADMIN_URL = `${BASE_URL}/admin.html`;
+    const ADMIN_EMAIL = process.env.ACE1_ADMIN_EMAIL || process.env.ADMIN_EMAIL;
+    const ADMIN_PASSWORD = process.env.ACE1_ADMIN_PASSWORD || process.env.ADMIN_PASSWORD;
     
     test.beforeEach(async ({ browser }) => {
+        test.skip(!ADMIN_EMAIL || !ADMIN_PASSWORD, 'Set ADMIN_EMAIL/ADMIN_PASSWORD (or ACE1_ADMIN_EMAIL/ACE1_ADMIN_PASSWORD) to run admin e2e tests.');
+
         page = await browser.newPage();
         // Set viewport to desktop size
         await page.setViewportSize({ width: 1920, height: 1080 });
@@ -60,14 +65,22 @@ test.describe('Admin Dashboard Complete Ecommerce Functionality', () => {
     }
 
     async function loginIfNeeded() {
-        const emailInput = page.locator('input[type="email"]').first();
-        if (await emailInput.isVisible({ timeout: 2000 }).catch(() => false)) {
-            await emailInput.fill('hello@ace1.in');
-            await page.locator('input[type="password"]').first().fill('admin@111');
-            const loginBtn = page.locator('button').filter({ hasText: /Sign In|Login|log in/i }).first();
-            await loginBtn.click({ timeout: 5000 });
-            await page.waitForTimeout(5000);
+        const productsTab = page.locator('[data-tab="products"], button[data-tab="products"]').first();
+        if (await productsTab.isVisible({ timeout: 1500 }).catch(() => false)) return;
+
+        await page.goto(`${BASE_URL}/admin-login.html`, { waitUntil: 'domcontentloaded' });
+        await page.waitForFunction(() => !!window.databaseAuth && typeof window.databaseAuth.login === 'function', null, { timeout: 20000 });
+
+        const result = await page.evaluate(async ({ email, password }) => {
+            return await window.databaseAuth.login(email, password);
+        }, { email: ADMIN_EMAIL, password: ADMIN_PASSWORD });
+
+        if (!result?.success) {
+            throw new Error(`Admin login failed: ${result?.error || 'unknown error'}`);
         }
+
+        await page.goto(ADMIN_URL, { waitUntil: 'networkidle' });
+        await page.waitForTimeout(1500);
     }
 
     test('1. Page loads and admin authentication verified', async () => {
