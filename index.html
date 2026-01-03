@@ -291,8 +291,9 @@
         }
         .photo-gallery {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 18px;
+            grid-auto-flow: dense;
         }
         .photo-item {
             position: relative;
@@ -301,15 +302,23 @@
             box-shadow: 0 4px 20px rgba(0,0,0,0.1);
             cursor: pointer;
             transition: transform 0.3s ease;
+            background: #f8f9fa;
         }
         .photo-item:hover {
             transform: scale(1.05);
+        }
+        .photo-item.featured {
+            grid-column: span 2;
+            grid-row: span 2;
         }
         .photo-item img {
             width: 100%;
             height: 300px;
             object-fit: cover;
             display: block;
+        }
+        .photo-item.featured img {
+            height: 620px;
         }
         .photo-overlay {
             position: absolute;
@@ -324,6 +333,29 @@
         }
         .photo-item:hover .photo-overlay {
             transform: translateY(0);
+        }
+        .photo-overlay .view-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 10px;
+            font-weight: 700;
+            opacity: 0.95;
+        }
+        .photo-overlay .view-link i {
+            font-size: 0.95rem;
+        }
+        @media (max-width: 900px) {
+            .photo-item.featured {
+                grid-column: span 1;
+                grid-row: span 1;
+            }
+            .photo-item.featured img {
+                height: 300px;
+            }
+            .photo-overlay {
+                transform: translateY(0);
+            }
         }
         .photo-overlay h4 {
             font-size: 1.1rem;
@@ -508,48 +540,62 @@
                 <!-- Photo Gallery -->
                 <div class="gallery-content" id="photos-content">
                     <div class="photo-gallery">
-                        <div class="photo-item">
-                            <img src="https://images.unsplash.com/photo-1552674605-db6ffd4facb5?w=800&h=600&fit=crop" alt="Athletes Running" loading="lazy">
+                        <!-- NOTE: These URLs assume the images are uploaded to Supabase Storage bucket "Website" under "event-photo/".
+                             Use: node scripts/upload-event-photos.mjs "/Users/jai_das13/Downloads/Ace1/Event Photo" -->
+
+                        <a class="photo-item featured" href="https://vorqavsuqcjnkjzwkyzr.supabase.co/storage/v1/object/public/Website/event-photo/photo-2025-10-05-08-20-11.jpg" target="_blank" rel="noopener">
+                            <img src="https://vorqavsuqcjnkjzwkyzr.supabase.co/storage/v1/object/public/Website/event-photo/photo-2025-10-05-08-20-11.jpg" alt="Ace#1 launch event photo" loading="lazy" decoding="async" onerror="this.src='images/placeholder.jpg'">
                             <div class="photo-overlay">
-                                <h4>Grand Opening</h4>
-                                <p>The moment we unveiled our brand</p>
+                                <h4>Launch Moment</h4>
+                                <p>Highlights from the Ace#1 event</p>
+                                <span class="view-link">View full size <i class="fas fa-arrow-right"></i></span>
                             </div>
-                        </div>
-                        <div class="photo-item">
-                            <img src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800&h=600&fit=crop" alt="Athletic Footwear" loading="lazy">
+                        </a>
+
+                        <a class="photo-item" href="https://vorqavsuqcjnkjzwkyzr.supabase.co/storage/v1/object/public/Website/event-photo/photo-2025-10-05-08-20-11-2.jpg" target="_blank" rel="noopener">
+                            <img src="https://vorqavsuqcjnkjzwkyzr.supabase.co/storage/v1/object/public/Website/event-photo/photo-2025-10-05-08-20-11-2.jpg" alt="Ace#1 event photo" loading="lazy" decoding="async" onerror="this.src='images/placeholder.jpg'">
+                            <div class="photo-overlay">
+                                <h4>On-stage Energy</h4>
+                                <p>Real moments, real excitement</p>
+                                <span class="view-link">View full size <i class="fas fa-arrow-right"></i></span>
+                            </div>
+                        </a>
+
+                        <a class="photo-item" href="https://vorqavsuqcjnkjzwkyzr.supabase.co/storage/v1/object/public/Website/event-photo/photo-2025-10-05-08-20-11-3.jpg" target="_blank" rel="noopener">
+                            <img src="https://vorqavsuqcjnkjzwkyzr.supabase.co/storage/v1/object/public/Website/event-photo/photo-2025-10-05-08-20-11-3.jpg" alt="Ace#1 event photo" loading="lazy" decoding="async" onerror="this.src='images/placeholder.jpg'">
+                            <div class="photo-overlay">
+                                <h4>Audience Moments</h4>
+                                <p>The vibe that made the day special</p>
+                                <span class="view-link">View full size <i class="fas fa-arrow-right"></i></span>
+                            </div>
+                        </a>
+
+                        <a class="photo-item" href="https://vorqavsuqcjnkjzwkyzr.supabase.co/storage/v1/object/public/Website/event-photo/photo-2025-10-05-08-20-11-4.jpg" target="_blank" rel="noopener">
+                            <img src="https://vorqavsuqcjnkjzwkyzr.supabase.co/storage/v1/object/public/Website/event-photo/photo-2025-10-05-08-20-11-4.jpg" alt="Ace#1 event photo" loading="lazy" decoding="async" onerror="this.src='images/placeholder.jpg'">
                             <div class="photo-overlay">
                                 <h4>Product Display</h4>
-                                <p>Showcasing our innovative products</p>
+                                <p>Showcasing the collection</p>
+                                <span class="view-link">View full size <i class="fas fa-arrow-right"></i></span>
                             </div>
-                        </div>
-                        <div class="photo-item">
-                            <img src="https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800&h=600&fit=crop" alt="Fitness Training" loading="lazy">
+                        </a>
+
+                        <a class="photo-item" href="https://vorqavsuqcjnkjzwkyzr.supabase.co/storage/v1/object/public/Website/event-photo/photo-2025-10-05-08-20-11-5.jpg" target="_blank" rel="noopener">
+                            <img src="https://vorqavsuqcjnkjzwkyzr.supabase.co/storage/v1/object/public/Website/event-photo/photo-2025-10-05-08-20-11-5.jpg" alt="Ace#1 event photo" loading="lazy" decoding="async" onerror="this.src='images/placeholder.jpg'">
                             <div class="photo-overlay">
-                                <h4>Guest Interactions</h4>
-                                <p>Engaging with our valued attendees</p>
+                                <h4>Close-up Highlights</h4>
+                                <p>Details from the launch day</p>
+                                <span class="view-link">View full size <i class="fas fa-arrow-right"></i></span>
                             </div>
-                        </div>
-                        <div class="photo-item">
-                            <img src="https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=800&h=600&fit=crop" alt="Sports Technology" loading="lazy">
+                        </a>
+
+                        <a class="photo-item" href="https://vorqavsuqcjnkjzwkyzr.supabase.co/storage/v1/object/public/Website/event-photo/photo-2025-10-05-09-34-16.jpg" target="_blank" rel="noopener">
+                            <img src="https://vorqavsuqcjnkjzwkyzr.supabase.co/storage/v1/object/public/Website/event-photo/photo-2025-10-05-09-34-16.jpg" alt="Ace#1 event photo" loading="lazy" decoding="async" onerror="this.src='images/placeholder.jpg'">
                             <div class="photo-overlay">
-                                <h4>Technology Demo</h4>
-                                <p>Demonstrating terahertz technology</p>
+                                <h4>Team & Guests</h4>
+                                <p>A day to remember</p>
+                                <span class="view-link">View full size <i class="fas fa-arrow-right"></i></span>
                             </div>
-                        </div>
-                        <div class="photo-item">
-                            <img src="https://images.unsplash.com/photo-1517649763962-0c623066013b?w=800&h=600&fit=crop" alt="Team Sports" loading="lazy">
-                            <div class="photo-overlay">
-                                <h4>Team Celebration</h4>
-                                <p>Our amazing team at the launch</p>
-                            </div>
-                        </div>
-                        <div class="photo-item">
-                            <img src="https://images.unsplash.com/photo-1556906781-9a412961c28c?w=800&h=600&fit=crop" alt="Athletic Apparel" loading="lazy">
-                            <div class="photo-overlay">
-                                <h4>Venue Setup</h4>
-                                <p>Beautiful event venue decoration</p>
-                            </div>
-                        </div>
+                        </a>
                     </div>
                 </div>
             </div>
