@@ -73,7 +73,8 @@ class ProductFilterManager {
 
             this.renderCategoryCheckboxes();
         } catch (err) {
-            console.warn('⚠️ Failed to load categories for products page; using existing markup.', err);
+            // Non-fatal: keep existing markup if categories can't be fetched.
+            console.log('Failed to load categories for products page; using existing markup.', err);
         }
     }
 
@@ -248,13 +249,14 @@ class ProductFilterManager {
                 this.applyURLFilters();
                 this.applyFilters();
             } else {
-                console.warn('⚠️ No products returned from Supabase');
+                // Not an error condition; can be legitimate when inventory is empty.
+                console.log('No products returned from Supabase');
             }
             
         } catch (error) {
             // Treat transient network issues as non-fatal; fall back to DOM-rendered products.
-            console.warn('⚠️ Failed to load products from Supabase:', error);
-            console.warn('Fallback: Using hardcoded HTML products');
+            console.log('Failed to load products from Supabase:', error);
+            console.log('Fallback: Using hardcoded HTML products');
             // Still try to load from DOM if there are fallback products
             this.loadProducts();
         }

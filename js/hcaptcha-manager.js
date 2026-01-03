@@ -6,7 +6,8 @@ class HCaptchaManager {
     constructor() {
         // Skip initialization if disabled
         if (window.HCAPTCHA_DISABLED) {
-            console.warn('⚠️ hCaptcha is TEMPORARILY DISABLED');
+            // Intentionally disabled in this environment; avoid emitting warnings on public pages.
+            console.log('hCaptcha is temporarily disabled');
             return;
         }
         
@@ -16,7 +17,8 @@ class HCaptchaManager {
         this.scriptPromise = null;
 
         if (!this.siteKey) {
-            console.warn('hCaptcha site key missing. Set window.HCAPTCHA_SITE_KEY before loading hcaptcha-manager.js');
+            // Configuration issue; don't warn on public pages.
+            console.log('hCaptcha site key missing. Set window.HCAPTCHA_SITE_KEY before loading hcaptcha-manager.js');
             return;
         }
 
