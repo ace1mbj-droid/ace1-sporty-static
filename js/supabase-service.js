@@ -285,7 +285,8 @@ class SupabaseService {
         try {
             let query = this.supabase
                 .from('products')
-                .select('*');
+                .select('*')
+                .is('deleted_at', null);
 
             // Apply filters
             if (filters.category) {
