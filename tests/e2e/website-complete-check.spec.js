@@ -2,7 +2,7 @@ const { test, expect } = require('@playwright/test');
 
 // Comprehensive frontend test - verifies all public pages load correctly
 test.describe('Sporty Ace#1 - Complete Website Verification', () => {
-    const BASE_URL = 'https://sporty-static-tan.vercel.app';
+    const BASE_URL = process.env.E2E_BASE_URL || 'https://ace1.in';
 
     // All public pages to test
     const publicPages = [
@@ -28,9 +28,10 @@ test.describe('Sporty Ace#1 - Complete Website Verification', () => {
             
             // Listen for console errors
             const errors = [];
-            page.on('console', msg => {
+            const onConsole = (msg) => {
                 if (msg.type() === 'error') errors.push(msg.text());
-            });
+            };
+            page.on('console', onConsole);
             
             try {
                 await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
@@ -43,7 +44,10 @@ test.describe('Sporty Ace#1 - Complete Website Verification', () => {
                 const hasHeader = await page.locator('header, nav, .header, .navbar').count() > 0;
                 const hasFooter = await page.locator('footer, .footer').count() > 0;
                 
-                if (hasContent && (hasHeader || hasFooter)) {
+                if (errors.length > 0) {
+                    console.log(`⚠️  ${pageInfo.name}: ${errors.length} console errors`);
+                    console.log(`   First error: ${errors[0]}`);
+                } else if (hasContent && (hasHeader || hasFooter)) {
                     console.log(`✅ ${pageInfo.name}: OK`);
                 } else {
                     console.log(`⚠️  ${pageInfo.name}: Partial load`);
@@ -51,6 +55,8 @@ test.describe('Sporty Ace#1 - Complete Website Verification', () => {
                 
             } catch (error) {
                 console.log(`❌ ${pageInfo.name}: ${error.message}`);
+            } finally {
+                page.off('console', onConsole);
             }
         }
     });
@@ -126,6 +132,12 @@ test.describe('Sporty Ace#1 - Complete Website Verification', () => {
         console.log('\n🔍 Testing search functionality...\n');
         
         await page.goto(BASE_URL, { waitUntil: 'domcontentloaded', timeout: 30000 });
+
+        // If search is behind an overlay/modal, open it first
+        const searchToggle = page.locator('#search-btn, .search-btn, [aria-label="Search products"]').first();
+        if (await searchToggle.isVisible({ timeout: 2000 }).catch(() => false)) {
+            await searchToggle.click();
+        }
         
         // Look for search elements
         const searchInput = page.locator('input[type="search"], input[placeholder*="search" i], .search-input');
@@ -135,7 +147,9 @@ test.describe('Sporty Ace#1 - Complete Website Verification', () => {
             console.log('   ✅ Search input found');
             
             // Try typing in search
-            await searchInput.first().fill('shoes');
+            const input = searchInput.first();
+            await input.waitFor({ state: 'visible', timeout: 5000 });
+            await input.fill('shoes');
             console.log('   ✅ Search input accepts text');
         } else {
             console.log('   ⚠️  No search input found');
@@ -238,11 +252,12 @@ test.describe('Sporty Ace#1 - Complete Website Verification', () => {
         
         for (const pagePath of pagesToCheck) {
             const errors = [];
-            page.on('console', msg => {
+            const onConsole = (msg) => {
                 if (msg.type() === 'error' && !msg.text().includes('favicon')) {
                     errors.push(msg.text());
                 }
-            });
+            };
+            page.on('console', onConsole);
             
             await page.goto(BASE_URL + pagePath, { waitUntil: 'domcontentloaded', timeout: 30000 });
             await page.waitForTimeout(1000);
@@ -251,8 +266,11 @@ test.describe('Sporty Ace#1 - Complete Website Verification', () => {
                 console.log(`   ✅ ${pagePath}: No JS errors`);
             } else {
                 console.log(`   ⚠️  ${pagePath}: ${errors.length} errors`);
+                console.log(`   First error: ${errors[0]}`);
                 totalErrors += errors.length;
             }
+
+            page.off('console', onConsole);
         }
         
         expect(totalErrors).toBeLessThan(5); // Allow a few non-critical errors
