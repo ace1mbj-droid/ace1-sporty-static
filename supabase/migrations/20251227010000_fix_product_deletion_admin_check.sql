@@ -253,7 +253,7 @@ BEGIN
         jsonb_build_object(
             'sku', OLD.sku,
             'category', OLD.category,
-            'price', OLD.price,
+            'price_cents', OLD.price_cents,
             'operation', TG_OP
         )
     );
