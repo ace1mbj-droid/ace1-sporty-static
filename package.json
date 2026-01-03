@@ -8,6 +8,7 @@
   },
   "scripts": {
     "test:e2e": "npx playwright test --workers=1",
-    "test:e2e:headless": "npx playwright test --workers=1"
+    "test:e2e:headless": "npx playwright test --workers=1",
+    "check:links": "node scripts/check-links.js"
   }
 }

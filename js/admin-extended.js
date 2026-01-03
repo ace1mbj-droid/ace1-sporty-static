@@ -37,6 +37,7 @@ class AdminExtended {
                     inventory(id, size, stock)
                 `)
                 .eq('is_active', true)
+                .is('deleted_at', null)
                 .order('name');
 
             if (error) throw error;
@@ -140,6 +141,7 @@ class AdminExtended {
             .from('products')
             .select('id, name')
             .eq('is_active', true)
+            .is('deleted_at', null)
             .order('name');
         
         if (!products?.length) {

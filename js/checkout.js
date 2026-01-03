@@ -181,20 +181,7 @@ class CheckoutManager {
     }
 
     async placeOrder() {
-        const paymentMethod = document.querySelector('input[name="payment-method"]:checked');
-        
-        if (!paymentMethod) {
-            this.showNotification('Please select a payment method', 'error');
-            return;
-        }
-
-        const orderData = this.collectOrderData();
-
-        if (paymentMethod.value === 'razorpay') {
-            this.initiateRazorpayPayment(orderData);
-        } else if (paymentMethod.value === 'cod') {
-            this.processCODOrder(orderData);
-        }
+        this.showNotification('Order cannot be fulfilled due to high demand', 'error');
     }
 
     collectOrderData() {
