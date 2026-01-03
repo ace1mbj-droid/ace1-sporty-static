@@ -76,7 +76,7 @@ async function syncFooterShopLinks() {
                 cats.map(c => `<li><a href="products.html?category=${encodeURIComponent(c.slug)}">${c.name || c.slug}</a></li>`).join('');
         });
     } catch (err) {
-        console.warn('⚠️ Footer category sync skipped:', err);
+        console.log('Footer category sync skipped:', err);
     }
 }
 
@@ -641,7 +641,9 @@ async function addToCart(productId) {
             const cartProduct = {
                 id: product.id,
                 name: product.name,
-                price: parseFloat(product.price || product.price_cents || 0),
+                price: (product.price !== undefined && product.price !== null && String(product.price) !== '')
+                    ? Number(product.price)
+                    : (Number(product.price_cents || 0) / 100),
                 image: product.image_url || 'images/placeholder.jpg',
                 stock_quantity: totalStock
             };
@@ -655,8 +657,9 @@ async function addToCart(productId) {
 }
 
 function addProductToCart(product) {
-    // Ensure price is a number (handle both price and price_cents from Supabase)
-    const price = parseFloat(product.price || product.price_cents || 0);
+    // Ensure price is a number (handle both price (rupees) and price_cents (paise/cents) from Supabase)
+    const hasRupeePrice = product.price !== undefined && product.price !== null && String(product.price) !== '';
+    const price = hasRupeePrice ? Number(product.price) : (Number(product.price_cents || 0) / 100);
     if (price <= 0) {
         showNotification('Error: Product price not available', 'error');
         return;
@@ -812,7 +815,7 @@ async function syncCartToDatabase() {
             }
         }
     } catch (error) {
-        console.warn('Cart sync to database failed:', error);
+        console.log('Cart sync to database failed:', error);
     }
 }
 
@@ -875,7 +878,7 @@ async function loadCartFromDatabase() {
                         }
                     } else {
                         // Network hiccups or backend errors shouldn't break the UI; fall back to empty cart.
-                        console.warn('Cart RPC load error:', rpcRes.error);
+                        console.log('Cart RPC load error:', rpcRes.error);
                         data = [];
                 }
             }
@@ -906,7 +909,7 @@ async function loadCartFromDatabase() {
             renderCart();
         }
     } catch (error) {
-        console.warn('Failed to load cart from database:', error);
+        console.log('Failed to load cart from database:', error);
         cart = [];
         cartLoaded = true;
         renderCart();
@@ -1263,7 +1266,7 @@ async function refreshProductsIfNeeded() {
         const processedProducts = (products || []).map(product => ({
             ...product,
             image_url: getImageUrl(product.product_images?.[0]?.storage_path) || 'images/placeholder.jpg',
-            stock_quantity: product.inventory?.[0]?.stock || 0,
+            stock_quantity: (product.inventory || []).reduce((sum, inv) => sum + (inv.stock || 0), 0),
             price: (product.price_cents / 100).toFixed(2)
         }));
         
@@ -1328,7 +1331,7 @@ async function refreshProductsIfNeeded() {
         
     } catch (error) {
         // Avoid polluting console with errors for transient network/config issues.
-        console.warn('Could not refresh featured products:', error?.message || String(error));
+        console.log('Could not refresh featured products:', error?.message || String(error));
     }
 }
 
@@ -1605,7 +1608,7 @@ function attachQuickViewHandlers() {
                         const processedProduct = {
                             ...product,
                             image_url: getImageUrl(product.product_images?.[0]?.storage_path) || 'images/placeholder.jpg',
-                            stock_quantity: product.inventory?.[0]?.stock || 0,
+                            stock_quantity: (product.inventory || []).reduce((sum, inv) => sum + (inv.stock || 0), 0),
                             price: (product.price_cents / 100).toFixed(2)
                         };
                         
