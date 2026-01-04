@@ -8,8 +8,16 @@
 
 const { createClient } = require('@supabase/supabase-js');
 
-// Read from environment or use defaults
-const SUPABASE_URL = process.env.SUPABASE_URL || 'https://vorqavsuqcjnkjzwkyzr.supabase.co';
+// This repo is configured for a single hosted Supabase backend.
+const HOSTED_SUPABASE_URL = 'https://vorqavsuqcjnkjzwkyzr.supabase.co';
+if (process.env.SUPABASE_URL && process.env.SUPABASE_URL !== HOSTED_SUPABASE_URL) {
+    console.error('❌ Error: SUPABASE_URL does not match the hosted project for this repo');
+    console.error(`   Expected: ${HOSTED_SUPABASE_URL}`);
+    console.error(`   Received: ${process.env.SUPABASE_URL}`);
+    process.exit(1);
+}
+
+const SUPABASE_URL = HOSTED_SUPABASE_URL;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 if (!SUPABASE_SERVICE_ROLE_KEY) {
