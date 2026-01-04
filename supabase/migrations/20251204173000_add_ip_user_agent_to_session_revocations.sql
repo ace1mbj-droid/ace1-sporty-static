@@ -3,7 +3,6 @@
 ALTER TABLE IF EXISTS public.session_revocations
   ADD COLUMN IF NOT EXISTS ip_address text,
   ADD COLUMN IF NOT EXISTS user_agent text;
-
 -- Update revoke_session_by_token to accept and log ip/user_agent
 CREATE OR REPLACE FUNCTION public.revoke_session_by_token(
   t text,
@@ -36,9 +35,7 @@ BEGIN
   RETURN COALESCE(_deleted, 0);
 END;
 $$;
-
 COMMENT ON FUNCTION public.revoke_session_by_token(text, text, text, text, text) IS 'Delete a session row by token; requires service_role and logs the revocation with optional ip/user_agent. Returns number deleted.';
-
 -- Update revoke_sessions_for_email to accept and log ip/user_agent
 CREATE OR REPLACE FUNCTION public.revoke_sessions_for_email(
   p_email text,
@@ -76,5 +73,4 @@ BEGIN
   RETURN COALESCE(deleted_count, 0);
 END;
 $$;
-
 COMMENT ON FUNCTION public.revoke_sessions_for_email(text, text, text, text, text) IS 'Delete all sessions for a public.users account by email; requires service_role and logs the revocations with optional ip & user agent. Returns number deleted.';

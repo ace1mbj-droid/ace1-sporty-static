@@ -3,7 +3,6 @@
 -- 1) Create active_products table mirroring the shape of the products view
 -- Drop any existing VIEW named active_products so we can create the backing TABLE
 DROP VIEW IF EXISTS public.active_products;
-
 CREATE TABLE IF NOT EXISTS public.active_products (
   id uuid PRIMARY KEY,
   sku text,
@@ -18,7 +17,6 @@ CREATE TABLE IF NOT EXISTS public.active_products (
   deleted_at timestamptz DEFAULT NULL,
   created_at timestamptz DEFAULT now()
 );
-
 -- 2) Sync function: keeps active_products in sync with products
 CREATE OR REPLACE FUNCTION public.sync_active_products()
 RETURNS trigger
@@ -56,13 +54,11 @@ BEGIN
   RETURN NULL; -- AFTER trigger
 END;
 $$;
-
 -- 3) Attach trigger to products table
 DROP TRIGGER IF EXISTS products_sync_active_after ON public.products;
 CREATE TRIGGER products_sync_active_after
 AFTER INSERT OR UPDATE OR DELETE ON public.products
 FOR EACH ROW EXECUTE FUNCTION public.sync_active_products();
-
 -- 4) Add active_products to the realtime publication so it becomes available to Realtime
 DO $$
 BEGIN
@@ -79,6 +75,5 @@ BEGIN
     END IF;
   END IF;
 END$$;
-
 -- 5) Grant select to anon/authenticated for parity with the view
 GRANT SELECT ON public.active_products TO anon, authenticated;

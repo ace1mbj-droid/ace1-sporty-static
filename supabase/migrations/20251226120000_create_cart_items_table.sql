@@ -9,5 +9,4 @@ CREATE TABLE IF NOT EXISTS cart_items (
     added_at timestamptz DEFAULT now(),
     updated_at timestamptz DEFAULT now()
 );
-
--- NOTE: previous schema used product_id/quantity/size on shopping_carts; those columns were dropped in a follow-up migration.
+-- NOTE: previous schema used product_id/quantity/size on shopping_carts; those columns were dropped in a follow-up migration.;

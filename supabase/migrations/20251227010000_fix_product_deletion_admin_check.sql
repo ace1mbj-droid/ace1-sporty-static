@@ -27,7 +27,6 @@ BEGIN
         RAISE NOTICE 'Policy inventory_delete_admin already exists';
     END IF;
 END $$;
-
 -- ============================================================================
 -- STEP 2: Add soft delete column to products (if not exists)
 -- ============================================================================
@@ -53,7 +52,6 @@ BEGIN
         RAISE NOTICE 'Column deleted_at already exists';
     END IF;
 END $$;
-
 -- ============================================================================
 -- STEP 3: Create function to check for orders before deletion
 -- ============================================================================
@@ -70,7 +68,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER
 SET search_path = public, pg_temp;
-
 -- ============================================================================
 -- STEP 4: Create safe product deletion function (soft delete)
 -- ============================================================================
@@ -105,7 +102,8 @@ BEGIN
         UPDATE products 
         SET 
             deleted_at = NOW(),
-            is_active = false
+            is_active = false,
+            updated_at = NOW()
         WHERE id = p_product_id;
         
         RETURN QUERY SELECT true, 
@@ -115,7 +113,8 @@ BEGIN
         UPDATE products 
         SET 
             deleted_at = NOW(),
-            is_active = false
+            is_active = false,
+            updated_at = NOW()
         WHERE id = p_product_id;
         
         RETURN QUERY SELECT true, 
@@ -124,7 +123,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER
 SET search_path = public, pg_temp;
-
 -- ============================================================================
 -- STEP 5: Create hard delete function (only for products without orders)
 -- ============================================================================
@@ -163,7 +161,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER
 SET search_path = public, pg_temp;
-
 -- ============================================================================
 -- STEP 6: Create view for active products only (excludes soft-deleted)
 -- ============================================================================
@@ -175,15 +172,16 @@ BEGIN
         SELECT 1 FROM information_schema.tables 
         WHERE table_schema = 'public' AND table_name = 'active_products' AND table_type = 'BASE TABLE'
     ) THEN
-        CREATE OR REPLACE VIEW active_products AS
-        SELECT * FROM products
+        -- Avoid CREATE OR REPLACE here: it can fail if the existing view column layout differs.
+        DROP VIEW IF EXISTS public.active_products;
+        CREATE VIEW public.active_products AS
+        SELECT * FROM public.products
         WHERE deleted_at IS NULL AND is_active = true;
         
         -- Grant permissions
-        GRANT SELECT ON active_products TO anon, authenticated;
+        GRANT SELECT ON public.active_products TO anon, authenticated;
     END IF;
 END $$;
-
 -- ============================================================================
 -- STEP 7: Add audit trigger for product deletions
 -- ============================================================================
@@ -200,7 +198,6 @@ CREATE TABLE IF NOT EXISTS product_deletion_audit (
     deleted_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     metadata JSONB
 );
-
 -- Enable RLS on audit table (safe if already enabled)
 DO $$ 
 BEGIN
@@ -209,10 +206,8 @@ EXCEPTION
     WHEN OTHERS THEN
         RAISE NOTICE 'RLS already enabled on product_deletion_audit';
 END $$;
-
 -- Drop existing audit policy if exists
 DROP POLICY IF EXISTS "audit_select_admin" ON product_deletion_audit;
-
 -- Only admins can view audit logs
 CREATE POLICY "audit_select_admin"
 ON product_deletion_audit FOR SELECT
@@ -222,7 +217,6 @@ USING (
     WHERE ur.user_id = (select auth.uid()) AND ur.is_admin = true
   )
 );
-
 -- Create trigger function to log deletions
 CREATE OR REPLACE FUNCTION log_product_deletion()
 RETURNS TRIGGER AS $$
@@ -253,7 +247,7 @@ BEGIN
         jsonb_build_object(
             'sku', OLD.sku,
             'category', OLD.category,
-            'price_cents', OLD.price_cents,
+            'price', OLD.price,
             'operation', TG_OP
         )
     );
@@ -262,14 +256,12 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER
 SET search_path = public, pg_temp;
-
 -- Create trigger on products table
 DROP TRIGGER IF EXISTS product_deletion_audit_trigger ON products;
 CREATE TRIGGER product_deletion_audit_trigger
     BEFORE DELETE ON products
     FOR EACH ROW
     EXECUTE FUNCTION log_product_deletion();
-
 -- Also log soft deletes (when deleted_at is set)
 DROP TRIGGER IF EXISTS product_soft_delete_audit_trigger ON products;
 CREATE TRIGGER product_soft_delete_audit_trigger
@@ -277,7 +269,6 @@ CREATE TRIGGER product_soft_delete_audit_trigger
     FOR EACH ROW
     WHEN (OLD.deleted_at IS NULL AND NEW.deleted_at IS NOT NULL)
     EXECUTE FUNCTION log_product_deletion();
-
 -- ============================================================================
 -- VERIFICATION QUERIES
 -- ============================================================================
@@ -310,7 +301,6 @@ CREATE TRIGGER product_soft_delete_audit_trigger
 -- View all functions
 SELECT routine_name FROM information_schema.routines 
 WHERE routine_schema = 'public' AND routine_name LIKE '%product%';
-
 -- Check deleted_at column exists
 SELECT column_name FROM information_schema.columns 
 WHERE table_name = 'products' AND column_name = 'deleted_at';

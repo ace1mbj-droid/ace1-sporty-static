@@ -26,7 +26,6 @@ BEGIN
         RAISE WARNING 'User hello@ace1.in not found in auth.users - cannot add to user_roles';
     END IF;
 END $$;
-
 -- Step 2: Update security.is_admin() function with better logic
 -- This checks user_roles first, then falls back to users.role, then checks email
 CREATE OR REPLACE FUNCTION security.is_admin()
@@ -60,10 +59,8 @@ AS $$
     false
   );
 $$;
-
 -- Grant execute permissions
 GRANT EXECUTE ON FUNCTION security.is_admin() TO anon, authenticated, service_role;
-
 -- Also update the UUID version
 CREATE OR REPLACE FUNCTION security.is_admin(uid uuid)
 RETURNS boolean
@@ -96,10 +93,8 @@ AS $$
     false
   );
 $$;
-
 -- Grant execute permissions
 GRANT EXECUTE ON FUNCTION security.is_admin(uuid) TO anon, authenticated, service_role;
-
 -- Add comment
 COMMENT ON FUNCTION security.is_admin() IS 'Returns true if current user is admin (checks user_roles.is_admin, users.role, or email=hello@ace1.in)';
 COMMENT ON FUNCTION security.is_admin(uuid) IS 'Returns true if given user is admin (checks user_roles.is_admin, users.role, or email=hello@ace1.in)';
