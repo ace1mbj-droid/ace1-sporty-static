@@ -87,6 +87,17 @@ See: https://supabase.com/docs/guides/auth/auth-email-templates
 
 This is useful for keeping templates consistent across environments.
 
+This repo includes a helper script that updates all the common templates in one shot:
+
+1. Create a Supabase access token: https://supabase.com/dashboard/account/tokens
+2. Run:
+   - `export SUPABASE_ACCESS_TOKEN="..."`
+   - `export SUPABASE_PROJECT_REF="vorqavsuqcjnkjzwkyzr"`
+   - `python3 scripts/update-supabase-auth-templates.py`
+
+Templates are sourced from:
+- [docs/email-templates/](docs/email-templates/)
+
 ## 4) Gotchas
 
 - If your email provider enables link tracking, it can break `{{ .ConfirmationURL }}`. Disable link tracking.
