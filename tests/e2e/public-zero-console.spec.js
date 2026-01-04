@@ -46,11 +46,19 @@ test.describe('Public pages strict console hygiene', () => {
     test.skip(!BASE_URL, 'Set E2E_BASE_URL to run the strict console hygiene sweep (e.g. https://ace1.in or http://127.0.0.1:4173).');
     const pages = listPublicHtmlPages();
 
-    const consoleProblems = [];
-    const pageErrors = [];
+    const problems = [];
+
+    let currentPage = '(unknown)';
 
     page.on('pageerror', (err) => {
-      pageErrors.push(String(err && err.message ? err.message : err));
+      const message = String(err && err.message ? err.message : err);
+      const stack = String(err && err.stack ? err.stack : '');
+      problems.push({
+        page: currentPage,
+        type: 'pageerror',
+        message,
+        stack,
+      });
     });
 
     page.on('console', (msg) => {
@@ -64,7 +72,7 @@ test.describe('Public pages strict console hygiene', () => {
       if (type === 'error') {
         // Ignore occasional favicon noise if any browser complains.
         if (msg.text().toLowerCase().includes('favicon')) return;
-        consoleProblems.push({ type, text: msg.text(), url: locUrl });
+        problems.push({ page: currentPage, type, text: msg.text(), url: locUrl });
         return;
       }
 
@@ -72,31 +80,37 @@ test.describe('Public pages strict console hygiene', () => {
       // Third-party CDNs can emit warnings outside our control.
       if (!locUrl) {
         // Warnings with no location are treated as first-party.
-        consoleProblems.push({ type, text: msg.text(), url: locUrl });
+        problems.push({ page: currentPage, type, text: msg.text(), url: locUrl });
         return;
       }
 
       const isFirstParty = locUrl.startsWith(BASE_URL) || !isThirdPartyUrl(locUrl);
       if (isFirstParty) {
-        consoleProblems.push({ type, text: msg.text(), url: locUrl });
+        problems.push({ page: currentPage, type, text: msg.text(), url: locUrl });
       }
     });
 
     for (const filename of pages) {
       const url = BASE_URL + toUrlPath(filename);
+      currentPage = url;
       await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
       await page.waitForTimeout(500);
     }
 
     // Fail with useful output
-    if (pageErrors.length || consoleProblems.length) {
+    if (problems.length) {
       const lines = [];
-      for (const e of pageErrors) lines.push(`pageerror: ${e}`);
-      for (const p of consoleProblems) lines.push(`${p.type}: ${p.text}${p.url ? ` (at ${p.url})` : ''}`);
+      for (const p of problems) {
+        if (p.type === 'pageerror') {
+          lines.push(`[${p.page}] pageerror: ${p.message}`);
+          if (p.stack) lines.push(p.stack);
+          continue;
+        }
+        lines.push(`[${p.page}] ${p.type}: ${p.text}${p.url ? ` (at ${p.url})` : ''}`);
+      }
       expect(lines.join('\n')).toBe('');
     }
 
-    expect(pageErrors.length).toBe(0);
-    expect(consoleProblems.length).toBe(0);
+    expect(problems.length).toBe(0);
   });
 });

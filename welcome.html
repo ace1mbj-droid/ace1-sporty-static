@@ -11,10 +11,17 @@
     <!-- Auth callback redirect (must be first) -->
     <script>
         (function() {
-            var hash = window.location.hash;
+            // If this page is hit with an auth hash, forward to auth callback.
+            // Otherwise, welcome.html is deprecated and should redirect to index.html.
+            var hash = window.location.hash || '';
+            var search = window.location.search || '';
             if (hash && (hash.includes('access_token=') || hash.includes('error='))) {
                 window.location.href = 'auth-callback.html' + hash;
+                return;
             }
+
+            // Preserve query/hash in case something legacy depends on it.
+            window.location.replace('index.html' + search + hash);
         })();
     </script>
     
@@ -42,12 +49,12 @@
     <nav class="navbar" id="navbar">
         <div class="nav-container">
             <div class="nav-logo">
-                <a href="welcome.html">
+                <a href="index.html">
                     <span class="logo-text">ACE<span class="logo-accent">#1</span></span>
                 </a>
             </div>
             <ul class="nav-menu" id="nav-menu">
-                <li><a href="welcome.html" class="nav-link active">Home</a></li>
+                <li><a href="index.html" class="nav-link active">Discover</a></li>
                 <li><a href="shoes.html" class="nav-link">Shoes</a></li>
                 <li><a href="clothing.html" class="nav-link">Clothing</a></li>
                 <li><a href="technology.html" class="nav-link">Technology</a></li>

@@ -181,8 +181,18 @@ class CheckoutManager {
     }
 
     async placeOrder() {
+        // Maintenance mode guard (keeps checkout usable but prevents placing orders)
+        const settings = window.__siteSettings;
+        const maintenanceMode = Boolean(window.ACE1_MAINTENANCE_MODE || (settings && settings.maintenance_mode));
+        if (maintenanceMode) {
+            this.showNotification('Orders are temporarily paused. Please check back soon.', 'info');
+            return;
+        }
+
+        // Current behavior: orders are intentionally disabled (placeholder)
         this.showNotification('Order cannot be fulfilled due to high demand', 'error');
     }
+
 
     collectOrderData() {
         const form = document.getElementById('shipping-form');
