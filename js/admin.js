@@ -128,6 +128,56 @@ class AdminPanel {
         }
     }
 
+    async refreshAllAdminData() {
+        if (this._refreshAllInFlight) return this._refreshAllInFlight;
+
+        const safeCall = async (label, fn) => {
+            try {
+                return await fn();
+            } catch (e) {
+                console.warn(`${label} failed`, e);
+                return null;
+            }
+        };
+
+        this._refreshAllInFlight = (async () => {
+            const tasks = [];
+
+            tasks.push(safeCall('loadDashboard', () => this.loadDashboard()));
+            tasks.push(safeCall('loadOrders', () => this.loadOrders()));
+            tasks.push(safeCall('loadUsers', () => this.loadUsers()));
+            tasks.push(safeCall('loadLogs', () => this.loadLogs()));
+            tasks.push(safeCall('loadRevocations', () => this.loadRevocations()));
+            tasks.push(safeCall('refreshProductsForActiveTab', () => this.refreshProductsForActiveTab()));
+
+            const managers = [
+                ['inventoryManager', window.inventoryManager],
+                ['categoryManager', window.categoryManager],
+                ['customerManager', window.customerManager],
+                ['couponManager', window.couponManager],
+                ['shippingManager', window.shippingManager],
+                ['contentManager', window.contentManager],
+                ['analyticsManager', window.analyticsManager],
+                ['communicationManager', window.communicationManager],
+                ['rolesManager', window.rolesManager]
+            ];
+
+            for (const [name, mgr] of managers) {
+                if (mgr && typeof mgr.load === 'function') {
+                    tasks.push(safeCall(`${name}.load`, () => mgr.load()));
+                }
+            }
+
+            await Promise.allSettled(tasks);
+        })();
+
+        try {
+            return await this._refreshAllInFlight;
+        } finally {
+            this._refreshAllInFlight = null;
+        }
+    }
+
     async init() {
         // Clear redirect flag when page loads successfully
         sessionStorage.removeItem('auth_redirecting');
@@ -389,11 +439,7 @@ class AdminPanel {
             const acknowledgeSummaryAndRefresh = async () => {
                 document.getElementById('change-summary-modal').classList.remove('active');
                 this.closeProductModal();
-                await this.refreshAfterAdminDataMutation({
-                    refreshProducts: true,
-                    refreshDashboard: true,
-                    refreshInventory: true
-                });
+                await this.refreshAllAdminData();
             };
 
             // Treat both close (X) and OK as an acknowledgement so the UI always refreshes.
@@ -1614,11 +1660,7 @@ class AdminPanel {
         await new Promise(resolve => setTimeout(resolve, 300));
         
         try {
-            await this.refreshAfterAdminDataMutation({
-                refreshProducts: true,
-                refreshDashboard: true,
-                refreshInventory: true
-            });
+            await this.refreshAllAdminData();
             console.log('✅ Admin data refreshed after deletion');
             
             alert(`✅ Success!\n\n${result.message}\n\nThe product has been removed from the website.`);
@@ -1950,8 +1992,8 @@ class AdminPanel {
 
             console.log('✅ Order updated successfully, response:', data);
             if (window.showNotification) window.showNotification('Order updated', 'success');
-            await this.loadOrders();
             modal.classList.remove('active');
+            await this.refreshAllAdminData();
         } catch (err) {
             console.error('❌ Exception in updateOrderFromModal:', err);
             this.showInlineError('order-form-error', err.message || 'Failed to update order');
@@ -1969,8 +2011,8 @@ class AdminPanel {
                 .eq('id', orderId);
             if (error) return this.showInlineError('order-form-error', error.message || 'Failed to cancel order');
             if (window.showNotification) window.showNotification('Order cancelled', 'success');
-            await this.loadOrders();
             modal.classList.remove('active');
+            await this.refreshAllAdminData();
         } catch (err) {
             console.error('cancelOrderFromModal error:', err);
             this.showInlineError('order-form-error', err.message || 'Failed to cancel order');
@@ -1989,8 +2031,8 @@ class AdminPanel {
                 .eq('id', orderId);
             if (error) return this.showInlineError('order-form-error', error.message || 'Failed to mark refunded');
             if (window.showNotification) window.showNotification('Order marked refunded', 'success');
-            await this.loadOrders();
             modal.classList.remove('active');
+            await this.refreshAllAdminData();
         } catch (err) {
             console.error('refundOrderFromModal error:', err);
             this.showInlineError('order-form-error', err.message || 'Failed to mark refunded');
@@ -2067,7 +2109,7 @@ class AdminPanel {
         }
 
         alert('User role updated successfully');
-        await this.loadUsers();
+        await this.refreshAllAdminData();
     }
 
     async deleteUser(userId) {
@@ -2092,7 +2134,7 @@ class AdminPanel {
         } else {
             alert('User deleted successfully');
         }
-        await this.loadUsers();
+        await this.refreshAllAdminData();
     }
 
     // Open Edit User modal and populate fields
@@ -2172,7 +2214,7 @@ class AdminPanel {
 
             if (window.showNotification) window.showNotification('User updated', 'success');
             document.getElementById('user-modal').classList.remove('active');
-            await this.loadUsers();
+            await this.refreshAllAdminData();
         } catch (err) {
             console.error('saveUserFromModal error:', err);
             this.showInlineError('user-form-error', err.message || 'Failed to save user');
@@ -2319,7 +2361,7 @@ class AdminPanel {
         }
 
         alert('Settings saved successfully');
-        await this.loadSettings();
+        await this.refreshAllAdminData();
     }
 
     async cleanupOldSiteSettingsRows() {
@@ -2358,7 +2400,7 @@ class AdminPanel {
             if (deleteError) throw deleteError;
 
             if (window.showNotification) window.showNotification('Old site_settings rows deleted successfully.', 'success');
-            await this.loadSettings();
+            await this.refreshAllAdminData();
         } catch (err) {
             console.error('Cleanup site_settings failed:', err);
             this.showInlineError('settings-form-error', err?.message || 'Cleanup failed');
@@ -2478,9 +2520,7 @@ class AdminPanel {
             const deleted = Array.isArray(data) ? data[0] : data;
 
             alert(`Revocation completed — sessions removed: ${deleted}`);
-            // refresh revocations and logs
-            await this.loadRevocations();
-            await this.loadLogs();
+            await this.refreshAllAdminData();
         } catch (err) {
             console.error('Unexpected error revoking token:', err);
             alert('Unexpected error revoking session. See console for details.');
@@ -2545,7 +2585,7 @@ class AdminPanel {
 
             console.log('✅ All security logs cleared successfully');
             alert('All security logs cleared successfully');
-            await this.loadLogs();
+            await this.refreshAllAdminData();
         } catch (err) {
             console.error('Exception clearing logs:', err);
             alert(`Exception clearing logs: ${err.message}`);
