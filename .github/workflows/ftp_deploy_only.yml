@@ -10,6 +10,23 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Resolve FTP settings
+        id: ftp_vars
+        run: |
+          SERVER_DIR='${{ secrets.FTP_SERVER_DIR }}'
+          if [ -z "$SERVER_DIR" ]; then SERVER_DIR='${{ secrets.FTP_PUBLIC_DIR }}'; fi
+          if [ -z "$SERVER_DIR" ]; then SERVER_DIR='/'; fi
+
+          PORT='${{ secrets.FTP_PORT }}'
+          if [ -z "$PORT" ]; then PORT='21'; fi
+
+          PROTOCOL='${{ secrets.FTP_PROTOCOL }}'
+          if [ -z "$PROTOCOL" ]; then PROTOCOL='ftps'; fi
+
+          echo "server_dir=$SERVER_DIR" >> "$GITHUB_OUTPUT"
+          echo "port=$PORT" >> "$GITHUB_OUTPUT"
+          echo "protocol=$PROTOCOL" >> "$GITHUB_OUTPUT"
+
       - name: Build & copy to dist
         run: |
           rm -rf dist || true
@@ -23,9 +40,9 @@ jobs:
           username: ${{ secrets.FTP_USER }}
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: ./dist/
-          server-dir: /
-          protocol: ftps
-          port: 21
+          server-dir: ${{ steps.ftp_vars.outputs.server_dir }}
+          protocol: ${{ steps.ftp_vars.outputs.protocol }}
+          port: ${{ steps.ftp_vars.outputs.port }}
           dangerous-clean-slate: false
           exclude: |
             **/.git*
@@ -55,3 +72,7 @@ jobs:
 # - FTP_HOST
 # - FTP_USER
 # - FTP_PASSWORD
+# Optional secrets:
+# - FTP_SERVER_DIR (preferred) or FTP_PUBLIC_DIR
+# - FTP_PORT
+# - FTP_PROTOCOL (default 'ftps')

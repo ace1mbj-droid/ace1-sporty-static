@@ -99,9 +99,9 @@
 ## Supabase Configuration (Already Done)
 
 Your files connect to:
-- Supabase URL: https://ivxjmxrphuplqpxntseb.supabase.co
-- This is in: js/supabase-config.js
-- Works on ANY domain automatically ✅
+- Supabase URL: https://vorqavsuqcjnkjzwkyzr.supabase.co
+- This is enforced in: js/supabase-config.js
+- Hosted-only: do not change this to a local/dev URL ✅
 
 ## Server Type
 
