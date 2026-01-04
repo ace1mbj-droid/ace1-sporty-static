@@ -28,6 +28,15 @@ class ProductFilterManager {
         this.init();
     }
 
+    getPrimaryCategoryFilterFromPath() {
+        const currentPath = window.location.pathname || '';
+        if (currentPath.includes('shoes.html')) return 'shoes';
+        if (currentPath.includes('clothing.html')) return 'clothing';
+
+        // Default: align with the product query behavior (footwear-first)
+        return 'shoes';
+    }
+
     formatProductCreatedAt(value) {
         if (!value) return '';
         const date = new Date(value);
@@ -159,8 +168,18 @@ class ProductFilterManager {
             ? this.visibleCategorySlugs
             : null;
 
-        const categoryHtml = (this.categories || [])
-            .filter(c => !c.parent_id)
+        const primarySlug = this.getPrimaryCategoryFilterFromPath();
+        const normalizedPrimarySlug = this.slugifyCategory(primarySlug);
+        const pageParent = (this.categories || []).find(c => {
+            if (c.parent_id) return false;
+            return this.slugifyCategory(c.slug || c.name) === normalizedPrimarySlug;
+        });
+
+        const categoriesToRender = pageParent
+            ? (this.categories || []).filter(c => c.parent_id === pageParent.id)
+            : (this.categories || []).filter(c => !c.parent_id);
+
+        const categoryHtml = (categoriesToRender || [])
             .filter(c => this.slugifyCategory(c.slug || c.name))
             .map(c => ({
                 slug: this.slugifyCategory(c.slug || c.name),
@@ -189,18 +208,7 @@ class ProductFilterManager {
             const supabase = window.getSupabase();
             
             // Determine which primary category to filter by based on current page
-            let primaryCategoryFilter = null;
-            const currentPath = window.location.pathname;
-            
-            if (currentPath.includes('shoes.html')) {
-                primaryCategoryFilter = 'shoes';
-            } else if (currentPath.includes('clothing.html')) {
-                primaryCategoryFilter = 'clothing';
-            } else {
-                // The brand is currently footwear-first; keep the shop experience aligned
-                // with the Shoes inventory unless explicitly on clothing.html.
-                primaryCategoryFilter = 'shoes';
-            }
+            const primaryCategoryFilter = this.getPrimaryCategoryFilterFromPath();
 
             const setCategoryEmptyState = (isEmpty) => {
                 if (primaryCategoryFilter !== 'clothing') return;
