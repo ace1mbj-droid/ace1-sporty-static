@@ -62,15 +62,21 @@
 			"problemMatcher": []
 		},
 		{
-			"label": "Playwright: Public Zero Console (local)",
+			"label": "Playwright: Public Zero Console",
 			"type": "shell",
-			"command": "E2E_BASE_URL=\"http://127.0.0.1:3000\" npx playwright test tests/e2e/public-zero-console.spec.js --workers=1 --reporter=list",
+			"command": "E2E_BASE_URL=\"${input:e2eBaseUrl}\" npx playwright test tests/e2e/public-zero-console.spec.js --workers=1 --reporter=list",
 			"isBackground": false,
 			"problemMatcher": [],
 			"group": "test"
 		}
 	],
 	"inputs": [
+		{
+			"id": "e2eBaseUrl",
+			"type": "promptString",
+			"description": "E2E base URL (hosted site)",
+			"default": "https://ace1.in"
+		},
 		{
 			"id": "sqlFilePath",
 			"type": "promptString",
