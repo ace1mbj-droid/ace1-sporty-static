@@ -2,7 +2,6 @@
 
 ALTER TABLE products ADD COLUMN sub_category TEXT;
 ALTER TABLE products ADD COLUMN sub_sub_category TEXT;
-
 -- Update existing products if needed
 -- UPDATE products SET sub_category = 'some' WHERE ... but leave for manual
 

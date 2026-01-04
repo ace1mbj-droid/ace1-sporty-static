@@ -3,12 +3,9 @@
 -- Idempotent: safe to run multiple times.
 
 BEGIN;
-
 -- Delete by token string (idempotent)
 DELETE FROM public.sessions
 WHERE token = 'token_admin_mK2q7MVg7CwWYNF7Uu2izpzR';
-
 COMMIT;
-
 -- Verify manually with:
--- SELECT count(*) FROM public.sessions WHERE token = 'token_admin_mK2q7MVg7CwWYNF7Uu2izpzR';
+-- SELECT count(*) FROM public.sessions WHERE token = 'token_admin_mK2q7MVg7CwWYNF7Uu2izpzR';;
