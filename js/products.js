@@ -9,6 +9,9 @@ class ProductFilterManager {
         this.categorySlugByAny = new Map();
         this.visibleCategorySlugs = new Set();
         this.priceBounds = { min: 0, max: 15000 };
+        this._realtimeChannel = null;
+        this._realtimeRefreshTimer = null;
+        this._realtimeRefreshInFlight = null;
         this.pagination = {
             currentPage: 1,
             perPage: 15,
@@ -40,6 +43,56 @@ class ProductFilterManager {
         await this.loadCategoriesFromSupabase();
         await this.loadProductsFromSupabase();
         this.setupEventListeners();
+        this.setupRealtimeSync();
+    }
+
+    setupRealtimeSync() {
+        try {
+            if (window.__ace1ProductsRealtimeSetup) return;
+
+            const supabase = window.getSupabase ? window.getSupabase() : null;
+            if (!supabase || typeof supabase.channel !== 'function') return;
+
+            window.__ace1ProductsRealtimeSetup = true;
+
+            const scheduleRefresh = () => {
+                // Debounce bursty postgres_changes events
+                if (this._realtimeRefreshTimer) clearTimeout(this._realtimeRefreshTimer);
+                this._realtimeRefreshTimer = setTimeout(async () => {
+                    if (this._realtimeRefreshInFlight) return;
+                    this._realtimeRefreshInFlight = (async () => {
+                        try {
+                            await this.loadCategoriesFromSupabase();
+                            await this.loadProductsFromSupabase();
+                        } catch (e) {
+                            console.warn('Realtime refresh failed:', e);
+                        }
+                    })();
+                    try {
+                        await this._realtimeRefreshInFlight;
+                    } finally {
+                        this._realtimeRefreshInFlight = null;
+                    }
+                }, 400);
+            };
+
+            this._realtimeChannel = supabase
+                .channel('ace1-public-products-sync')
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, scheduleRefresh)
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'inventory' }, scheduleRefresh)
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'categories' }, scheduleRefresh)
+                .subscribe();
+
+            window.addEventListener('beforeunload', () => {
+                try {
+                    if (this._realtimeChannel) supabase.removeChannel(this._realtimeChannel);
+                } catch (e) {
+                    // ignore
+                }
+            });
+        } catch (e) {
+            console.warn('Realtime setup skipped:', e);
+        }
     }
 
     slugifyCategory(value) {
@@ -981,7 +1034,7 @@ class ProductFilterManager {
 // Initialize filter manager on products page
 if (document.querySelector('.products-grid')) {
     document.addEventListener('DOMContentLoaded', () => {
-        new ProductFilterManager();
+        window.productFilterManager = new ProductFilterManager();
     });
 }
 
