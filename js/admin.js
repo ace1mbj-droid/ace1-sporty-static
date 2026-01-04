@@ -105,6 +105,36 @@ class AdminPanel {
         return date.toISOString();
     }
 
+    buildMailtoLink(to, subject, body) {
+        const enc = (v) => encodeURIComponent(String(v || ''));
+        return `mailto:${enc(to)}?subject=${enc(subject)}&body=${enc(body)}`;
+    }
+
+    buildOrderUpdateEmail({ orderId, status, tracking_number, shipped_at, delivered_at }) {
+        const fmt = (value) => {
+            if (!value) return '';
+            const d = new Date(value);
+            if (!Number.isFinite(d.getTime())) return '';
+            return d.toLocaleString('en-IN');
+        };
+
+        const lines = [];
+        lines.push(`Your order (${orderId}) has been updated.`);
+        lines.push('');
+        lines.push(`Status: ${status || 'updated'}`);
+        if (tracking_number) lines.push(`Tracking number: ${tracking_number}`);
+        const shipped = fmt(shipped_at);
+        const delivered = fmt(delivered_at);
+        if (shipped) lines.push(`Shipped at: ${shipped}`);
+        if (delivered) lines.push(`Delivered at: ${delivered}`);
+        lines.push('');
+        lines.push('Thank you for shopping with ACE#1.');
+        return {
+            subject: `ACE#1 Order Update: ${orderId}`,
+            body: lines.join('\n')
+        };
+    }
+
     setupOrdersRealtime() {
         try {
             if (this._ordersRealtimeSetup) return;
@@ -2183,23 +2213,43 @@ class AdminPanel {
             console.log('✅ Order updated successfully, response:', data);
             if (window.showNotification) window.showNotification('Order updated', 'success');
 
-            // Best-effort: send email notification (requires Edge Function deployment + provider config)
+            // Notification (same idea as Contact Us form): mailto fallback if provider isn't configured.
             try {
                 const shippingEmail = existing?.shipping_address?.email || existing?.shipping_address?.Email || null;
-                if (shippingEmail && this.supabase?.functions?.invoke) {
-                    await this.supabase.functions.invoke('notify-order-update', {
-                        body: {
-                            orderId,
-                            to: shippingEmail,
-                            status,
-                            tracking_number: updateData.tracking_number,
-                            shipped_at: updateData.shipped_at || existing?.shipped_at || null,
-                            delivered_at: updateData.delivered_at || existing?.delivered_at || null
+                if (shippingEmail) {
+                    const payload = {
+                        orderId,
+                        to: shippingEmail,
+                        status,
+                        tracking_number: updateData.tracking_number,
+                        shipped_at: updateData.shipped_at || existing?.shipped_at || null,
+                        delivered_at: updateData.delivered_at || existing?.delivered_at || null
+                    };
+
+                    let mailto = null;
+
+                    // Try Edge Function if available (SendGrid if configured, otherwise returns mailto)
+                    if (this.supabase?.functions?.invoke) {
+                        try {
+                            const resp = await this.supabase.functions.invoke('notify-order-update', { body: payload });
+                            mailto = resp?.data?.mailto || null;
+                        } catch (e) {
+                            // ignore; we'll fall back to local mailto
                         }
-                    });
+                    }
+
+                    if (!mailto) {
+                        const email = this.buildOrderUpdateEmail(payload);
+                        mailto = this.buildMailtoLink(shippingEmail, email.subject, email.body);
+                    }
+
+                    const shouldOpen = confirm(`Notify customer at ${shippingEmail}?\n\nThis will open your email client (same as the Contact Us form).`);
+                    if (shouldOpen) {
+                        window.location.href = mailto;
+                    }
                 }
             } catch (e) {
-                console.warn('notify-order-update skipped/failed:', e);
+                console.warn('Order notification skipped/failed:', e);
             }
 
             modal.classList.remove('active');
