@@ -4711,6 +4711,16 @@ button {
     color: var(--secondary-color);
 }
 
+.public-availability-note {
+    margin: -10px 0 15px;
+    color: var(--text-light);
+    font-size: 14px;
+}
+
+.public-availability-note strong {
+    color: var(--text-color);
+}
+
 /* Search Box */
 .search-box input {
     padding: 10px 15px;
