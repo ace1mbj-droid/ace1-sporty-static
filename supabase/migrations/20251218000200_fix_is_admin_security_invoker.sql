@@ -33,7 +33,6 @@ AS $$
     false
   );
 $$;
-
 -- Recreate the UUID version with SECURITY INVOKER
 CREATE OR REPLACE FUNCTION security.is_admin(uid uuid)
 RETURNS boolean
@@ -66,11 +65,9 @@ AS $$
     false
   );
 $$;
-
 -- Grant execute permissions
 GRANT EXECUTE ON FUNCTION security.is_admin() TO anon, authenticated, service_role;
 GRANT EXECUTE ON FUNCTION security.is_admin(uuid) TO anon, authenticated, service_role;
-
 -- Add comments
 COMMENT ON FUNCTION security.is_admin() IS 'Returns true if current user is admin (checks user_roles.is_admin, users.role, or email=hello@ace1.in) - SECURITY INVOKER';
 COMMENT ON FUNCTION security.is_admin(uuid) IS 'Returns true if given user is admin (checks user_roles.is_admin, users.role, or email=hello@ace1.in) - SECURITY INVOKER';

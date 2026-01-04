@@ -16,7 +16,6 @@ BEGIN
   RETURN v_cart_id;
 END;
 $$;
-
 -- get_cart_by_session(session_id)
 CREATE OR REPLACE FUNCTION public.get_cart_by_session(p_session_id TEXT)
 RETURNS TABLE(id UUID, product_id UUID, quantity INTEGER, size TEXT, added_at timestamptz)
@@ -30,7 +29,6 @@ BEGIN
   WHERE sc.session_id = p_session_id AND sc.user_id IS NULL;
 END;
 $$;
-
 -- add_to_cart_by_session(session_id, product_id, quantity, size)
 CREATE OR REPLACE FUNCTION public.add_to_cart_by_session(p_session_id TEXT, p_product_id UUID, p_quantity INTEGER, p_size TEXT)
 RETURNS UUID
@@ -57,7 +55,6 @@ BEGIN
   END IF;
 END;
 $$;
-
 -- update_cart_item_by_session(session_id, product_id, quantity, size)
 CREATE OR REPLACE FUNCTION public.update_cart_item_by_session(p_session_id TEXT, p_product_id UUID, p_quantity INTEGER, p_size TEXT)
 RETURNS BOOLEAN
@@ -75,7 +72,6 @@ BEGIN
   RETURN FOUND;
 END;
 $$;
-
 -- remove_from_cart_by_session(session_id, product_id, size)
 CREATE OR REPLACE FUNCTION public.remove_from_cart_by_session(p_session_id TEXT, p_product_id UUID, p_size TEXT)
 RETURNS BOOLEAN
@@ -89,7 +85,6 @@ BEGIN
   RETURN FOUND;
 END;
 $$;
-
 -- clear_cart_by_session(session_id)
 CREATE OR REPLACE FUNCTION public.clear_cart_by_session(p_session_id TEXT)
 RETURNS BOOLEAN
@@ -103,7 +98,6 @@ BEGIN
   RETURN TRUE;
 END;
 $$;
-
 -- merge_session_cart_to_user(session_id, user_id)
 CREATE OR REPLACE FUNCTION public.merge_session_cart_to_user(p_session_id TEXT, p_user_id UUID)
 RETURNS INTEGER
@@ -128,7 +122,6 @@ BEGIN
   RETURN v_count;
 END;
 $$;
-
 -- Grant execute to authenticated and anon users where appropriate
 GRANT EXECUTE ON FUNCTION public.get_cart_by_session(TEXT) TO anon, authenticated;
 GRANT EXECUTE ON FUNCTION public.add_to_cart_by_session(TEXT, UUID, INTEGER, TEXT) TO anon, authenticated;

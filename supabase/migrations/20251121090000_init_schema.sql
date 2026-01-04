@@ -14,7 +14,6 @@ CREATE TABLE products (
   is_active boolean DEFAULT true,
   created_at timestamptz DEFAULT now()
 );
-
 -- product images
 CREATE TABLE product_images (
   id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
@@ -23,7 +22,6 @@ CREATE TABLE product_images (
   alt text,
   position int DEFAULT 1
 );
-
 -- inventory (size variants)
 CREATE TABLE inventory (
   id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
@@ -31,7 +29,6 @@ CREATE TABLE inventory (
   size text,
   stock int DEFAULT 0
 );
-
 -- orders
 CREATE TABLE orders (
   id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
@@ -42,7 +39,6 @@ CREATE TABLE orders (
   shipping_address jsonb,
   created_at timestamptz DEFAULT now()
 );
-
 -- order items
 CREATE TABLE order_items (
   id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
@@ -52,7 +48,6 @@ CREATE TABLE order_items (
   qty int,
   price_cents int
 );
-
 -- payments
 CREATE TABLE payments (
   id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
@@ -64,7 +59,6 @@ CREATE TABLE payments (
   metadata jsonb,
   created_at timestamptz DEFAULT now()
 );
-
 -- Optional user_roles table for admin flag
 CREATE TABLE user_roles (
   user_id uuid PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
