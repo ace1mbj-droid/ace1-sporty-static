@@ -6,6 +6,22 @@ class UserProfileManager {
         this.init();
     }
 
+    getSupabaseProjectUrl() {
+        return (
+            (window.SUPABASE_CONFIG && window.SUPABASE_CONFIG.url) ||
+            window.SUPABASE_URL ||
+            'https://vorqavsuqcjnkjzwkyzr.supabase.co'
+        ).replace(/\/$/, '');
+    }
+
+    resolveProductImageUrl(imageOrStoragePath) {
+        if (!imageOrStoragePath) return 'images/placeholder.jpg';
+        if (typeof imageOrStoragePath === 'string' && imageOrStoragePath.startsWith('http')) return imageOrStoragePath;
+        const storagePath = String(imageOrStoragePath);
+        const encodedPath = encodeURIComponent(storagePath).replace(/%2F/g, '/');
+        return `${this.getSupabaseProjectUrl()}/storage/v1/object/public/Images/${encodedPath}`;
+    }
+
     async init() {
         // Clear redirect flag when page loads successfully
         sessionStorage.removeItem('auth_redirecting');
@@ -184,6 +200,64 @@ class UserProfileManager {
             });
         }
 
+        // Addresses
+        const addAddressBtn = document.getElementById('add-address-btn');
+        if (addAddressBtn) {
+            addAddressBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.showAddressForm();
+            });
+        }
+
+        const addressesList = document.getElementById('addresses-list');
+        if (addressesList) {
+            // Delegate clicks for edit/delete/default and the empty-state add button
+            addressesList.addEventListener('click', (e) => {
+                const addBtn = e.target.closest('[data-action="address-add"]');
+                if (addBtn) {
+                    e.preventDefault();
+                    this.showAddressForm();
+                    return;
+                }
+
+                const editBtn = e.target.closest('[data-action="address-edit"]');
+                if (editBtn) {
+                    e.preventDefault();
+                    const id = editBtn.dataset.id;
+                    this.showAddressForm(this.addresses?.find(a => String(a.id) === String(id)) || null);
+                    return;
+                }
+
+                const deleteBtn = e.target.closest('[data-action="address-delete"]');
+                if (deleteBtn) {
+                    e.preventDefault();
+                    const id = deleteBtn.dataset.id;
+                    this.deleteAddress(id);
+                    return;
+                }
+
+                const setDefaultBtn = e.target.closest('[data-action="address-default"]');
+                if (setDefaultBtn) {
+                    e.preventDefault();
+                    const id = setDefaultBtn.dataset.id;
+                    this.setDefaultAddress(id);
+                    return;
+                }
+
+                const cancelBtn = e.target.closest('[data-action="address-cancel"]');
+                if (cancelBtn) {
+                    e.preventDefault();
+                    this.hideAddressForm();
+                    return;
+                }
+            });
+        }
+
+        const addressForm = document.getElementById('address-form');
+        if (addressForm) {
+            addressForm.addEventListener('submit', (e) => this.handleAddressSubmit(e));
+        }
+
         // User dropdown toggle
         const userBtn = document.getElementById('user-btn');
         const userMenu = document.getElementById('user-menu');
@@ -276,6 +350,9 @@ class UserProfileManager {
         
         // Load reviews from Supabase
         this.loadReviews();
+
+        // Load addresses from Supabase
+        this.loadAddresses();
     }
 
     handleTabSwitch(e) {
@@ -306,6 +383,12 @@ class UserProfileManager {
         const url = new URL(window.location);
         url.searchParams.set('tab', tabName);
         window.history.pushState({}, '', url);
+
+        // Lazy refresh on tab switch
+        if (tabName === 'orders') this.loadOrders();
+        if (tabName === 'wishlist') this.loadWishlist();
+        if (tabName === 'reviews') this.loadReviews();
+        if (tabName === 'addresses') this.loadAddresses();
     }
 
     handleURLParams() {
@@ -447,11 +530,15 @@ class UserProfileManager {
                         
                         const orderItems = order.order_items || [];
                         
+                        const orderLabel = order.order_number
+                            ? String(order.order_number)
+                            : `ACE${String(order.id).padStart(6, '0')}`;
+
                         return `
                             <div class="order-card">
                                 <div class="order-header">
                                     <div>
-                                        <h4>Order #ACE${String(order.id).padStart(6, '0')}</h4>
+                                        <h4>Order #${orderLabel}</h4>
                                         <p class="order-date">Placed on ${orderDate}</p>
                                     </div>
                                     <span class="order-status ${statusClass}">${order.status.charAt(0).toUpperCase() + order.status.slice(1)}</span>
@@ -460,13 +547,16 @@ class UserProfileManager {
                                     ${orderItems.map(item => {
                                         const productName = item.product?.name || 'Product';
                                         const productId = item.product_id || item.product?.id || '';
+                                        const imageSrcRaw = item.product?.image_url || item.product?.product_images?.[0]?.storage_path || item.product?.image || '';
+                                        const imageSrc = this.resolveProductImageUrl(imageSrcRaw);
+                                        const priceValue = (item.price_cents ? (item.price_cents / 100) : (item.price || 0));
                                         return `
                                             <div class="order-item" data-order-id="${order.id}" data-product-id="${productId}">
-                                                <img src="${item.product?.image || 'https://via.placeholder.com/80'}" alt="${productName}">
+                                                <img src="${imageSrc}" alt="${productName}" onerror="this.src='images/placeholder.jpg'">
                                                 <div class="order-item-info">
                                                     <h5>${productName}</h5>
                                                     <p>${item.size ? `Size: ${item.size} | ` : ''}Qty: ${item.quantity}</p>
-                                                    <p class="order-item-price">₹${item.price?.toLocaleString()}</p>
+                                                    <p class="order-item-price">₹${Number(priceValue || 0).toLocaleString('en-IN')}</p>
                                                     ${order.status === 'delivered' ? `
                                                         <button class="btn btn-outline btn-sm write-review-btn" data-order-id="${order.id}" data-product-id="${productId}" data-product-name="${productName}">Write Review</button>
                                                     ` : ''}
@@ -800,7 +890,7 @@ class UserProfileManager {
                     wishlistGrid.innerHTML = result.wishlist.map(item => {
                         const product = item.product || {};
                         const price = product.price_cents ? product.price_cents / 100 : (product.price || 0);
-                        const imageUrl = product.image_url || product.image || 'images/placeholder.jpg';
+                        const imageUrl = this.resolveProductImageUrl(product.image_url || product.product_images?.[0]?.storage_path || product.image || '');
                         return `
                             <div class="product-card">
                                 <div class="product-image">
@@ -869,6 +959,268 @@ class UserProfileManager {
             alert(message);
         }
     }
+
+    ensureAddressFormExists() {
+        const tab = document.getElementById('tab-addresses');
+        if (!tab) return;
+        if (document.getElementById('address-form')) return;
+
+        const formHost = document.createElement('div');
+        formHost.className = 'address-form-container';
+        formHost.id = 'address-form-container';
+        formHost.style.display = 'none';
+        formHost.innerHTML = `
+            <form class="profile-form" id="address-form">
+                <input type="hidden" name="addressId" value="">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="address-full-name">Full Name</label>
+                        <input type="text" id="address-full-name" name="fullName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="address-phone">Phone</label>
+                        <input type="tel" id="address-phone" name="phone" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="address-line1">Address Line 1</label>
+                    <input type="text" id="address-line1" name="addressLine1" required>
+                </div>
+                <div class="form-group">
+                    <label for="address-line2">Address Line 2 (optional)</label>
+                    <input type="text" id="address-line2" name="addressLine2">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="address-city">City</label>
+                        <input type="text" id="address-city" name="city" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="address-state">State</label>
+                        <input type="text" id="address-state" name="state" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="address-postal">Postal Code</label>
+                        <input type="text" id="address-postal" name="postalCode" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="address-country">Country</label>
+                        <input type="text" id="address-country" name="country" value="India" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" name="isDefault">
+                        <span>Set as default address</span>
+                    </label>
+                </div>
+                <div class="address-form-actions">
+                    <button type="submit" class="btn btn-primary">Save Address</button>
+                    <button type="button" class="btn btn-secondary" data-action="address-cancel">Cancel</button>
+                </div>
+            </form>
+        `;
+
+        const header = tab.querySelector('.tab-header');
+        if (header && header.parentNode) {
+            header.insertAdjacentElement('afterend', formHost);
+        } else {
+            tab.insertAdjacentElement('afterbegin', formHost);
+        }
+
+        // Bind submit once injected
+        const addressForm = document.getElementById('address-form');
+        addressForm?.addEventListener('submit', (e) => this.handleAddressSubmit(e));
+    }
+
+    showAddressForm(address = null) {
+        this.ensureAddressFormExists();
+        const container = document.getElementById('address-form-container');
+        const form = document.getElementById('address-form');
+        if (!container || !form) return;
+
+        form.reset();
+        form.addressId.value = '';
+
+        if (address) {
+            form.addressId.value = address.id || '';
+            form.fullName.value = address.full_name || address.fullName || '';
+            form.phone.value = address.phone || '';
+            form.addressLine1.value = address.address_line1 || address.addressLine1 || '';
+            form.addressLine2.value = address.address_line2 || address.addressLine2 || '';
+            form.city.value = address.city || '';
+            form.state.value = address.state || '';
+            form.postalCode.value = address.postal_code || address.postalCode || '';
+            form.country.value = address.country || 'India';
+            form.isDefault.checked = !!(address.is_default || address.isDefault);
+        }
+
+        container.style.display = '';
+        container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    hideAddressForm() {
+        const container = document.getElementById('address-form-container');
+        const form = document.getElementById('address-form');
+        if (form) form.reset();
+        if (container) container.style.display = 'none';
+    }
+
+    async handleAddressSubmit(e) {
+        e.preventDefault();
+
+        if (!window.supabaseService || !window.supabaseService.supabase) {
+            this.showNotification('Addresses are unavailable right now.', 'error');
+            return;
+        }
+
+        const formData = new FormData(e.target);
+        const data = Object.fromEntries(formData);
+
+        const addressPayload = {
+            full_name: (data.fullName || '').trim(),
+            phone: (data.phone || '').trim(),
+            address_line1: (data.addressLine1 || '').trim(),
+            address_line2: (data.addressLine2 || '').trim() || null,
+            city: (data.city || '').trim(),
+            state: (data.state || '').trim(),
+            postal_code: (data.postalCode || '').trim(),
+            country: (data.country || 'India').trim(),
+            is_default: data.isDefault === 'on'
+        };
+
+        try {
+            let result;
+            const addressId = (data.addressId || '').trim();
+            if (addressId) {
+                result = await window.supabaseService.updateAddress(addressId, addressPayload);
+            } else {
+                result = await window.supabaseService.addAddress(addressPayload);
+            }
+
+            if (result.success) {
+                this.showNotification('Address saved', 'success');
+                this.hideAddressForm();
+                await this.loadAddresses();
+            } else {
+                this.showNotification(result.error || 'Failed to save address', 'error');
+            }
+        } catch (err) {
+            console.error('Address save error:', err);
+            this.showNotification('Failed to save address', 'error');
+        }
+    }
+
+    async loadAddresses() {
+        const list = document.getElementById('addresses-list');
+        if (!list) return;
+
+        if (!window.supabaseService || !window.supabaseService.supabase) {
+            list.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <h3>No addresses saved</h3>
+                    <p>Add a shipping address for faster checkout</p>
+                    <button class="btn btn-primary" data-action="address-add">Add New Address</button>
+                </div>
+            `;
+            return;
+        }
+
+        try {
+            const result = await window.supabaseService.getAddresses();
+            if (result.success && result.addresses && result.addresses.length > 0) {
+                this.addresses = result.addresses;
+                list.innerHTML = result.addresses.map(addr => {
+                    const safe = (v) => String(v || '').replace(/[<>]/g, '');
+                    const isDefault = !!addr.is_default;
+                    const title = safe(addr.full_name || 'Address');
+                    const lines = [
+                        safe(addr.address_line1),
+                        addr.address_line2 ? safe(addr.address_line2) : '',
+                        `${safe(addr.city)}, ${safe(addr.state)} ${safe(addr.postal_code)}`,
+                        safe(addr.country || 'India'),
+                        addr.phone ? `Phone: ${safe(addr.phone)}` : ''
+                    ].filter(Boolean);
+
+                    return `
+                        <div class="address-card" data-id="${addr.id}">
+                            <div class="address-header">
+                                <h4>${title}</h4>
+                                ${isDefault ? '<span class="badge badge-primary">Default</span>' : ''}
+                            </div>
+                            <div class="address-text">${lines.join('<br>')}</div>
+                            <div class="address-actions">
+                                <button class="btn-text" data-action="address-edit" data-id="${addr.id}">Edit</button>
+                                <button class="btn-text text-danger" data-action="address-delete" data-id="${addr.id}">Delete</button>
+                                ${isDefault ? '' : '<button class="btn-text" data-action="address-default" data-id="' + addr.id + '">Set Default</button>'}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            } else {
+                this.addresses = [];
+                list.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <h3>No addresses saved</h3>
+                        <p>Add a shipping address for faster checkout</p>
+                        <button class="btn btn-primary" data-action="address-add">Add New Address</button>
+                    </div>
+                `;
+            }
+        } catch (err) {
+            console.error('Load addresses error:', err);
+            list.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <h3>No addresses saved</h3>
+                    <p>Add a shipping address for faster checkout</p>
+                    <button class="btn btn-primary" data-action="address-add">Add New Address</button>
+                </div>
+            `;
+        }
+    }
+
+    async deleteAddress(addressId) {
+        if (!addressId) return;
+        if (!window.supabaseService || !window.supabaseService.supabase) return;
+        if (!confirm('Delete this address?')) return;
+
+        try {
+            const res = await window.supabaseService.deleteAddress(addressId);
+            if (res.success) {
+                this.showNotification('Address deleted', 'success');
+                await this.loadAddresses();
+            } else {
+                this.showNotification(res.error || 'Failed to delete address', 'error');
+            }
+        } catch (err) {
+            console.error('Delete address error:', err);
+            this.showNotification('Failed to delete address', 'error');
+        }
+    }
+
+    async setDefaultAddress(addressId) {
+        if (!addressId) return;
+        if (!window.supabaseService || !window.supabaseService.supabase) return;
+
+        try {
+            // Unset defaults via service (implemented in updateAddress)
+            const res = await window.supabaseService.updateAddress(addressId, { is_default: true });
+            if (res.success) {
+                this.showNotification('Default address updated', 'success');
+                await this.loadAddresses();
+            } else {
+                this.showNotification(res.error || 'Failed to update default address', 'error');
+            }
+        } catch (err) {
+            console.error('Set default address error:', err);
+            this.showNotification('Failed to update default address', 'error');
+        }
+    }
 }
 
 // Helper functions for wishlist management
@@ -888,8 +1240,7 @@ window.removeFromWishlist = async function(productId) {
                 window.showNotification('Removed from wishlist', 'success');
             }
             // Reload wishlist display
-            const profileManager = new UserProfileManager();
-            profileManager.loadWishlist();
+            window.userProfileManager?.loadWishlist?.();
         } else {
             if (window.showNotification) {
                 window.showNotification('Failed to remove from wishlist', 'error');
@@ -975,5 +1326,5 @@ window.addToCartFromWishlist = async function(productId) {
 
 // Initialize profile manager
 document.addEventListener('DOMContentLoaded', () => {
-    new UserProfileManager();
+    window.userProfileManager = new UserProfileManager();
 });
