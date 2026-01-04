@@ -918,8 +918,10 @@ window.addToCartFromWishlist = async function(productId) {
             if (supabase) {
                 const { data: prod, error } = await supabase
                     .from('products')
-                    .select('is_locked, status, inventory(stock)')
+                    .select('is_active, deleted_at, is_locked, status, inventory(stock)')
                     .eq('id', productId)
+                    .eq('is_active', true)
+                    .is('deleted_at', null)
                     .single();
                 if (error || !prod) {
                     if (window.showNotification) window.showNotification('Product not available', 'error');

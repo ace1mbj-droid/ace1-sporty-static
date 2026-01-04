@@ -190,20 +190,25 @@ class ProductFilterManager {
 
             console.log(`✅ Fetched ${products?.length || 0} products from Supabase (fresh data)`);
             
+            const getProjectUrl = () => (
+                (window.SUPABASE_CONFIG && window.SUPABASE_CONFIG.url) || window.SUPABASE_URL || 'https://vorqavsuqcjnkjzwkyzr.supabase.co'
+            );
+
             // Helper function to convert storage path to public URL
             const getImageUrl = (storagePath) => {
                 if (!storagePath) return 'images/placeholder.jpg';
+                const projectUrl = getProjectUrl().replace(/\/$/, '');
+                const storagePrefix = `${projectUrl}/storage`;
                 // If it's already a full Supabase Storage URL, return as is
-                if (storagePath.startsWith('https://vorqavsuqcjnkjzwkyzr.supabase.co/storage')) return storagePath;
+                if (typeof storagePath === 'string' && storagePath.startsWith(storagePrefix)) return storagePath;
                 // If it's already a full URL, return as is
-                if (storagePath.startsWith('http')) return storagePath;
+                if (typeof storagePath === 'string' && storagePath.startsWith('http')) return storagePath;
                 // If it looks like a filename from the images folder, use it directly
-                if (storagePath.includes('.jpg') || storagePath.includes('.png') || storagePath.includes('.jpeg') || storagePath.includes('.gif') || storagePath.includes('.webp')) {
+                if (typeof storagePath === 'string' && (storagePath.includes('.jpg') || storagePath.includes('.png') || storagePath.includes('.jpeg') || storagePath.includes('.gif') || storagePath.includes('.webp'))) {
                     // Check if it's a local image file first (in /images folder)
                     return `images/${storagePath.toLowerCase()}`;
                 }
                 // Otherwise, try to construct Supabase Storage URL
-                const projectUrl = 'https://vorqavsuqcjnkjzwkyzr.supabase.co';
                 return `${projectUrl}/storage/v1/object/public/Images/${storagePath}`;
             };
             
@@ -220,7 +225,13 @@ class ProductFilterManager {
                 }, {}),
                 price: (product.price_cents / 100).toFixed(2), // Convert cents to rupees
                 category: this.normalizeCategoryToSlug(product.category)
-            }));
+            })).filter(product => {
+                // Hide locked/unavailable items from public listings so admin edits reflect immediately.
+                if (product && product.is_locked) return false;
+                const status = (product && product.status) ? String(product.status).toLowerCase() : null;
+                if (status && status !== 'available') return false;
+                return true;
+            });
 
             this.visibleCategorySlugs = new Set((processedProducts || []).map(p => p.category).filter(Boolean));
             // Re-render category filters now that we know which categories are present.
