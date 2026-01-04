@@ -12,7 +12,15 @@
 const { createClient } = require('@supabase/supabase-js');
 const crypto = require('crypto');
 
-const SUPABASE_URL = process.env.SUPABASE_URL || 'https://vorqavsuqcjnkjzwkyzr.supabase.co';
+const HOSTED_SUPABASE_URL = 'https://vorqavsuqcjnkjzwkyzr.supabase.co';
+if (process.env.SUPABASE_URL && process.env.SUPABASE_URL !== HOSTED_SUPABASE_URL) {
+    console.error('❌ Error: SUPABASE_URL does not match the hosted project for this repo');
+    console.error(`   Expected: ${HOSTED_SUPABASE_URL}`);
+    console.error(`   Received: ${process.env.SUPABASE_URL}`);
+    process.exit(1);
+}
+
+const SUPABASE_URL = HOSTED_SUPABASE_URL;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const ADMIN_EMAIL = 'hello@ace1.in';
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
