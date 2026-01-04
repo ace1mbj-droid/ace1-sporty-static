@@ -192,6 +192,10 @@ class AdminPanel {
             await this.loadClothingProducts();
             return;
         }
+        if (tabName === 'accessories') {
+            await this.loadAccessoriesProducts();
+            return;
+        }
         // Fallback: refresh the full product list if the UI tab expects it.
         // If the current tab isn't a products tab, this is a safe no-op for the UI.
         await this.loadProducts();
@@ -437,6 +441,10 @@ class AdminPanel {
             this.openProductModal(null, 'clothing');
         });
 
+        document.getElementById('add-accessories-btn')?.addEventListener('click', () => {
+            this.openProductModal(null, 'accessories');
+        });
+
         // Modal close
         document.getElementById('modal-close').addEventListener('click', () => {
             this.closeProductModal();
@@ -638,6 +646,8 @@ class AdminPanel {
             this.loadShoesProducts();
         } else if (tabName === 'clothing') {
             this.loadClothingProducts();
+        } else if (tabName === 'accessories') {
+            this.loadAccessoriesProducts();
         }
 
         // Load tab-specific managers (from admin-extended.js) when available
@@ -921,6 +931,39 @@ class AdminPanel {
         }
 
         this.processAndRenderProducts(products, 'clothing');
+    }
+
+    async loadAccessoriesProducts() {
+        try {
+            const { data: products, error } = await this.supabase
+                .from('products')
+                .select(`
+                    *,
+                    product_images (
+                        storage_path,
+                        alt
+                    ),
+                    inventory (
+                        stock,
+                        size
+                    )
+                `)
+                .eq('is_active', true)
+                .is('deleted_at', null)
+                .or('is_locked.is.null,is_locked.eq.false')
+                .eq('status', 'available')
+                .eq('primary_category', 'accessories')
+                .order('created_at', { ascending: false });
+
+            if (error) throw error;
+
+            this.renderProductsGrid(products || [], 'accessories-grid');
+        } catch (error) {
+            console.error('Error loading accessories products:', error);
+            showNotification('Failed to load accessories products', 'error');
+            const grid = document.getElementById('accessories-grid');
+            if (grid) grid.innerHTML = '<p style="text-align: center; padding: 40px; color: #666;">No products found. Add your first product!</p>';
+        }
     }
 
     async processAndRenderProducts(products, category) {

@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="alternate icon" href="favicon.svg">
+
+    <!-- Auth callback redirect (must be first) -->
+    <script>
+        (function() {
+            var hash = window.location.hash;
+            if (hash && (hash.includes('access_token=') || hash.includes('error='))) {
+                window.location.href = 'auth-callback.html' + hash;
+            }
+        })();
+    </script>
+
+    <!-- Cache Control Meta Tags -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+
+    <!-- Security Meta Tags -->
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta http-equiv="X-XSS-Protection" content="1; mode=block">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <meta name="description" content="Browse Ace#1 accessories. Shop the latest items as they drop.">
+    <title>Ace#1 | Accessories</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/reviews.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        .launch-update {
+            padding: 24px 0 0;
+            background: var(--bg-white);
+        }
+
+        .launch-update-card {
+            background: var(--bg-light);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            box-shadow: var(--shadow-sm);
+            padding: 22px 22px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 18px;
+            flex-wrap: wrap;
+        }
+
+        .launch-update-left {
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+            min-width: min(720px, 100%);
+        }
+
+        .launch-update-icon {
+            width: 54px;
+            height: 54px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--primary-color);
+            color: var(--bg-white);
+            flex: 0 0 auto;
+        }
+
+        .launch-update-copy h2 {
+            font-size: 22px;
+            margin: 0 0 4px;
+            color: var(--text-color);
+            font-weight: 700;
+        }
+
+        .launch-update-copy p {
+            margin: 0;
+            color: var(--text-light);
+            font-size: 15px;
+        }
+
+        .launch-update-actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        @media (max-width: 768px) {
+            .launch-update {
+                padding-top: 18px;
+            }
+            .launch-update-card {
+                padding: 18px;
+            }
+            .launch-update-copy h2 {
+                font-size: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="dev-banner">This website is under development</div>
+
+    <!-- Navigation -->
+    <nav class="navbar" id="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <a href="index.html">
+                    <img class="site-logo-img" src="https://vorqavsuqcjnkjzwkyzr.supabase.co/storage/v1/object/public/Website/brand/ace1-logo.jpeg" alt="ACE#1" decoding="async" loading="eager" onerror="this.remove();">
+                    <span class="logo-text">ACE<span class="logo-accent">#1</span></span>
+                </a>
+            </div>
+            <ul class="nav-menu" id="nav-menu">
+                <li><a href="index.html" class="nav-link">Discover</a></li>
+                <li><a href="shoes.html" class="nav-link">Shoes</a></li>
+                <li><a href="technology.html" class="nav-link">Technology</a></li>
+                <li><a href="about.html" class="nav-link">About</a></li>
+                <li><a href="contact.html" class="nav-link">Contact</a></li>
+            </ul>
+            <div class="nav-icons">
+                <button class="icon-btn search-btn" id="search-btn" aria-label="Search products">
+                    <i class="fas fa-search"></i>
+                </button>
+                <button class="icon-btn cart-btn" id="cart-btn" aria-label="Shopping cart">
+                    <i class="fas fa-shopping-bag"></i>
+                    <span class="cart-count" id="cart-count">0</span>
+                </button>
+                <button class="icon-btn user-btn" aria-label="User account">
+                    <i class="fas fa-user"></i>
+                </button>
+                <button class="hamburger" id="hamburger" aria-label="Toggle menu">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Search Overlay -->
+    <div class="search-overlay" id="search-overlay">
+        <div class="search-container">
+            <input type="text" class="search-input" placeholder="Search for products...">
+            <button class="search-close" id="search-close">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Page Header -->
+    <section class="page-hero">
+        <div class="container">
+            <h1>Accessories</h1>
+            <p>Browse the latest accessories drops. If you don’t see this link, accessories aren’t live yet.</p>
+        </div>
+    </section>
+
+    <!-- Launch Update (shown only when accessories are not available; hidden automatically when products load) -->
+    <section class="launch-update" hidden>
+        <div class="container">
+            <div class="launch-update-card" role="status" aria-live="polite">
+                <div class="launch-update-left">
+                    <div class="launch-update-icon" aria-hidden="true">
+                        <i class="fas fa-bolt"></i>
+                    </div>
+                    <div class="launch-update-copy">
+                        <h2>Accessories are launching soon</h2>
+                        <p>We’ll publish accessories as soon as they’re in stock. Check back soon.</p>
+                    </div>
+                </div>
+                <div class="launch-update-actions">
+                    <a class="btn btn-primary" href="https://instagram.com/ace_1_official/" target="_blank" rel="noopener noreferrer">Follow on Instagram</a>
+                    <a class="btn btn-secondary" href="contact.html">Contact Us</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Products Section -->
+    <section class="shop-section">
+        <div class="container">
+            <div class="shop-layout">
+                <!-- Sidebar Filters -->
+                <aside class="shop-sidebar">
+                    <div class="filter-group">
+                        <h3>Sub Categories</h3>
+                        <div id="category-filters"></div>
+                    </div>
+
+                    <div class="filter-group">
+                        <h3>Price Range</h3>
+                        <div class="price-range">
+                            <input type="range" min="0" max="15000" value="15000" id="price-slider">
+                            <div class="price-labels">
+                                <span>₹0</span>
+                                <span id="price-value">₹15,000</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="filter-group">
+                        <h3>Size</h3>
+                        <div class="size-grid">
+                            <button class="size-btn">XS</button>
+                            <button class="size-btn">S</button>
+                            <button class="size-btn">M</button>
+                            <button class="size-btn">L</button>
+                            <button class="size-btn">XL</button>
+                            <button class="size-btn">XXL</button>
+                        </div>
+                    </div>
+
+                    <div class="filter-group">
+                        <h3>Customer Rating</h3>
+                        <div class="rating-filter">
+                            <button class="rating-btn" data-rating="4">4+ Stars</button>
+                            <button class="rating-btn" data-rating="3">3+ Stars</button>
+                            <button class="rating-btn" data-rating="2">2+ Stars</button>
+                        </div>
+                    </div>
+                </aside>
+
+                <!-- Products Grid -->
+                <main class="shop-main">
+                    <div class="shop-header">
+                        <h2>All Accessories</h2>
+                        <div class="shop-controls">
+                            <select class="sort-select" id="sort-select">
+                                <option value="featured">Featured</option>
+                                <option value="price-low">Price: Low to High</option>
+                                <option value="price-high">Price: High to Low</option>
+                                <option value="rating">Highest Rated</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="products-grid" id="products-grid">
+                        <div class="loading-products">
+                            <div class="loading-spinner"></div>
+                            <p>Loading products...</p>
+                        </div>
+                    </div>
+
+                    <div class="pagination" id="pagination"></div>
+                </main>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <div class="footer-logo">
+                        <span class="logo-text">ACE<span class="logo-accent">#1</span></span>
+                    </div>
+                    <p>Revolutionary footwear technology for enhanced wellness and lifestyle.</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Shop</h4>
+                    <ul id="footer-shop-links">
+                        <li><a href="shoes.html">Shoes</a></li>
+                        <li><a href="clothing.html">Clothing</a></li>
+                        <li><a href="accessories.html">Accessories</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Support</h4>
+                    <ul>
+                        <li><a href="contact.html">Contact Us</a></li>
+                        <li><a href="faq.html">FAQ</a></li>
+                        <li><a href="size-guide.html">Size Guide</a></li>
+                        <li><a href="privacy-policy.html">Privacy Policy</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>About</h4>
+                    <ul>
+                        <li><a href="about.html">Our Story</a></li>
+                        <li><a href="technology.html">Technology</a></li>
+                        <li><a href="contact.html">Contact Us</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Connect</h4>
+                    <div class="social-links">
+                        <a href="https://instagram.com/ace_1_official/" target="_blank" rel="noopener noreferrer" aria-label="Ace#1 on Instagram" class="social-link"><i class="fab fa-instagram"></i></a>
+                        <a href="https://facebook.com/ace1official" target="_blank" rel="noopener noreferrer" aria-label="Ace#1 on Facebook" class="social-link"><i class="fab fa-facebook"></i></a>
+                    </div>
+                    <div class="newsletter">
+                        <h5>Stay Updated</h5>
+                        <div class="newsletter-form">
+                            <input type="email" placeholder="Enter your email">
+                            <button class="btn btn-primary">Subscribe</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 Ace#1. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Cache Buster (must load first) -->
+    <script src="js/cache-buster.js"></script>
+    <!-- Supabase Integration -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.89.0"></script>
+    <script src="js/supabase-config.js"></script>
+    <!-- Security Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.6/dist/purify.min.js"></script>
+    <script src="js/password-hasher.js"></script>
+    <script src="js/security.js"></script>
+    <script src="js/database-auth.js"></script>
+    <script src="js/supabase-service.js"></script>
+    <!-- E-Commerce Backend -->
+    <script src="js/ecommerce-backend.js"></script>
+    <!-- Reviews System -->
+    <script src="js/reviews-manager.js"></script>
+
+    <script src="js/main.js"></script>
+    <script src="js/products.js"></script>
+    <!-- Image Optimization -->
+    <script src="js/image-optimizer.js"></script>
+
+</body>
+</html>
