@@ -363,7 +363,8 @@
         <div class="nav-container">
             <div class="nav-logo">
                 <a href="index.html">
-                    <span class="logo-text">ACE<span class="logo-accent">#1</span> Admin</span>
+                    <img class="site-logo-img" src="https://vorqavsuqcjnkjzwkyzr.supabase.co/storage/v1/object/public/Website/Index%20Image%20Gallery/WhatsApp%20Image%202026-01-04%20at%2005.09.49.jpeg" alt="Ace#1" decoding="async" loading="eager">
+                    <span style="margin-left:10px; font-weight:700; color: var(--primary-color); letter-spacing: 0.5px;">Admin</span>
                 </a>
             </div>
             <div class="nav-icons">
@@ -1097,11 +1098,19 @@
                 <div id="settings-form-error" style="display:none;color:#b00020;margin-bottom:8px;"></div>
                 <div class="form-group">
                     <label>
-                        <input type="checkbox" id="maintenance-mode" checked>
+                        <input type="checkbox" id="maintenance-mode">
                         Maintenance Mode (disable orders)
                     </label>
                 </div>
-                <button type="submit" class="btn btn-primary">Save Settings</button>
+                <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:center;">
+                    <button type="submit" class="btn btn-primary">Save Settings</button>
+                    <button type="button" class="btn btn-danger" id="cleanup-site-settings">
+                        Clean Up Old Settings Rows
+                    </button>
+                </div>
+                <p style="margin-top:10px; font-size:13px; color:#666;">
+                    Cleans up duplicate rows in <code>site_settings</code> by keeping the most recently updated row and deleting older ones.
+                </p>
             </form>
         </div>
 

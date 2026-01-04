@@ -155,15 +155,16 @@ class AuthManager {
                             window.location.href = 'admin.html';
                         } else {
                             const redirect = new URLSearchParams(window.location.search).get('redirect');
+                            const normalizedRedirect = (redirect === 'welcome.html') ? 'index.html' : redirect;
                             const allowedRedirects = [
                                 'user-profile.html',
                                 'dashboard.html',
                                 'settings.html',
-                                'welcome.html'
+                                'index.html'
                                 // Add more safe pages as needed
                             ];
-                            window.location.href = allowedRedirects.includes(redirect)
-                                ? redirect
+                            window.location.href = allowedRedirects.includes(normalizedRedirect)
+                                ? normalizedRedirect
                                 : 'user-profile.html';
                         }
                     }, 1500);
@@ -335,11 +336,13 @@ class AuthManager {
         sessionStorage.setItem('auth_redirect_count', (redirectCount + 1).toString());
         sessionStorage.setItem('auth_redirecting', 'true');
 
-        const redirectParam = new URLSearchParams(window.location.search).get('redirect');
+        const redirectParamRaw = new URLSearchParams(window.location.search).get('redirect');
+        const redirectParam = (redirectParamRaw === 'welcome.html') ? 'index.html' : redirectParamRaw;
         const allowedRedirects = [
             'user-profile.html',
             'dashboard.html',
             'settings.html',
+            'index.html',
             // Add other internal pages allowed for redirect
         ];
         function isAllowedRedirect(str) {
