@@ -131,7 +131,7 @@ class DatabaseAuth {
         return hash.toString();
     }
 
-    // Register new user - using Supabase Auth
+    // Register new user
     async register(email, password, userData) {
         try {
             // Validate email format
@@ -158,7 +158,7 @@ class DatabaseAuth {
                 }
             }
 
-            // Use Supabase Auth for registration
+            // Create auth account
             const { data: authData, error: authError } = await this.supabase.auth.signUp({
                 email: email,
                 password: password,
@@ -229,7 +229,7 @@ class DatabaseAuth {
                     success: true, 
                     user: user,
                     needsConfirmation: true,
-                    message: 'Registration successful! Please check your email to confirm your account.'
+                    message: 'Account created! Please check your email to confirm your account.'
                 };
             }
 
@@ -259,7 +259,7 @@ class DatabaseAuth {
             this.setSessionToken(sessionToken);
             this.setHttpOnlyCookie(sessionId);
 
-            console.log('✅ Registration successful via Supabase Auth');
+            console.log('✅ Registration successful');
             return { success: true, user: user };
         } catch (error) {
             console.error('Registration error:', error);
@@ -267,7 +267,7 @@ class DatabaseAuth {
         }
     }
 
-    // Login user - using Supabase Auth
+    // Login user
     async login(email, password) {
         try {
             // Validate email format
@@ -295,7 +295,7 @@ class DatabaseAuth {
                 }
             }
 
-            // Use Supabase Auth for authentication
+            // Authenticate
             const { data: authData, error: authError } = await this.supabase.auth.signInWithPassword({
                 email: email,
                 password: password
@@ -409,7 +409,7 @@ class DatabaseAuth {
                 });
             }
 
-            console.log('✅ Login successful via Supabase Auth');
+            console.log('✅ Login successful');
             return { success: true, user: user };
         } catch (error) {
             console.error('Login error:', error);
@@ -562,7 +562,7 @@ class DatabaseAuth {
         }
     }
 
-    // Change password - using Supabase Auth
+    // Change password
     async changePassword(currentPassword, newPassword) {
         try {
             if (!this.currentUser) {
@@ -590,7 +590,7 @@ class DatabaseAuth {
                 return { success: false, error: 'Current password is incorrect' };
             }
 
-            // Update password via Supabase Auth
+            // Update password
             const { error } = await this.supabase.auth.updateUser({
                 password: newPassword
             });
@@ -610,7 +610,7 @@ class DatabaseAuth {
                 });
             }
 
-            console.log('✅ Password changed successfully via Supabase Auth');
+            console.log('✅ Password changed successfully');
             
             // Force logout to make new password effective immediately
             await this.logout();
