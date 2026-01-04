@@ -68,6 +68,14 @@
 			"isBackground": false,
 			"problemMatcher": [],
 			"group": "test"
+		},
+		{
+			"label": "Playwright: Modals (local)",
+			"type": "shell",
+			"command": "BASE_URL=\"http://127.0.0.1:3000\" npx playwright test tests/e2e/modals.spec.js --workers=1 --reporter=list",
+			"isBackground": false,
+			"problemMatcher": [],
+			"group": "test"
 		}
 	],
 	"inputs": [
