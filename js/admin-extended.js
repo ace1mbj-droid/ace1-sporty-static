@@ -1409,6 +1409,58 @@ class AdminExtended {
     // ========================================
     // CATEGORY MANAGEMENT
     // ========================================
+
+    getPageParentCategoryDefinitions() {
+        // Hardcoded “page parent categories” to keep category hierarchy aligned
+        // with the public pages (shoes.html, clothing.html). If new pages are
+        // created, add an entry here.
+        return [
+            { name: 'Shoes', slug: 'shoes', sort_order: 0 },
+            { name: 'Clothing', slug: 'clothing', sort_order: 1 }
+        ];
+    }
+
+    normalizeCategorySlug(value) {
+        return String(value || '')
+            .trim()
+            .toLowerCase()
+            .replace(/\s+/g, '-')
+            .replace(/[^a-z0-9\-]/g, '')
+            .replace(/\-+/g, '-');
+    }
+
+    async ensurePageParentCategories(categories) {
+        const defs = this.getPageParentCategoryDefinitions();
+        const existing = new Map();
+        (categories || []).forEach(c => {
+            if (c && !c.parent_id) {
+                const slug = this.normalizeCategorySlug(c.slug || c.name);
+                if (slug) existing.set(slug, c);
+            }
+        });
+
+        const toInsert = defs
+            .filter(d => !existing.has(this.normalizeCategorySlug(d.slug)))
+            .map(d => ({
+                name: d.name,
+                slug: this.normalizeCategorySlug(d.slug),
+                parent_id: null,
+                sort_order: typeof d.sort_order === 'number' ? d.sort_order : 0,
+                is_active: true
+            }));
+
+        if (!toInsert.length) return false;
+
+        try {
+            const res = await this.supabase.from('categories').insert(toInsert);
+            if (res.error) throw res.error;
+            return true;
+        } catch (e) {
+            console.warn('Failed to auto-create page parent categories:', e);
+            return false;
+        }
+    }
+
     async loadCategoriesFromDB() {
         try {
             const { data, error } = await this.supabase
@@ -1417,6 +1469,13 @@ class AdminExtended {
                 .order('name');
 
             if (error) throw error;
+
+            // Ensure top-level “page parent” categories exist (Shoes/Clothing).
+            // If we inserted any missing parents, reload so the UI reflects them.
+            const insertedParents = await this.ensurePageParentCategories(data);
+            if (insertedParents) {
+                return await this.loadCategoriesFromDB();
+            }
             
             // Update category stats
             this.updateCategoryStats(data);
@@ -1458,7 +1517,21 @@ class AdminExtended {
         select.innerHTML = '<option value="">None (Top Level)</option>';
         
         // Add categories (only top-level as parents)
-        const parents = categories?.filter(c => !c.parent_id) || [];
+        const defs = this.getPageParentCategoryDefinitions();
+        const defOrder = new Map(defs.map(d => [this.normalizeCategorySlug(d.slug), d]));
+
+        const parents = (categories?.filter(c => !c.parent_id) || []).slice();
+        parents.sort((a, b) => {
+            const aSlug = this.normalizeCategorySlug(a.slug || a.name);
+            const bSlug = this.normalizeCategorySlug(b.slug || b.name);
+            const aDef = defOrder.get(aSlug);
+            const bDef = defOrder.get(bSlug);
+            if (aDef && bDef) return (aDef.sort_order || 0) - (bDef.sort_order || 0);
+            if (aDef) return -1;
+            if (bDef) return 1;
+            return String(a.name || '').localeCompare(String(b.name || ''));
+        });
+
         parents.forEach(cat => {
             const option = document.createElement('option');
             option.value = cat.id;

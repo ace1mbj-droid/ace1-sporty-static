@@ -950,7 +950,17 @@ class AdminPanel {
         form.reset();
 
         // Always refresh category options from DB so admin category changes sync everywhere
-        this.populateProductCategorySelect(product?.category || '');
+        const primaryCategoryValue = document.getElementById('product-primary-category')?.value || primaryCategory || product?.primary_category || '';
+        this.populateProductCategorySelect(product?.category || '', primaryCategoryValue);
+
+        const primarySelect = document.getElementById('product-primary-category');
+        if (primarySelect) {
+            primarySelect.onchange = () => {
+                const selectedPrimary = primarySelect.value || '';
+                const currentCategory = document.getElementById('product-category')?.value || '';
+                this.populateProductCategorySelect(currentCategory, selectedPrimary);
+            };
+        }
         
         if (product) {
             document.getElementById('modal-title').textContent = 'Edit Product';
@@ -1036,7 +1046,7 @@ class AdminPanel {
             .replace(/\-+/g, '-');
     }
 
-    async populateProductCategorySelect(selectedValue) {
+    async populateProductCategorySelect(selectedValue, primaryCategory = '') {
         const select = document.getElementById('product-category');
         if (!select || !this.supabase) return;
 
@@ -1053,6 +1063,7 @@ class AdminPanel {
             if (error) throw error;
 
             const normalizedSelected = this.slugifyCategory(selectedValue);
+            const normalizedPrimary = this.slugifyCategory(primaryCategory);
 
             const byId = new Map();
             (categories || []).forEach(c => byId.set(c.id, c));
@@ -1074,7 +1085,13 @@ class AdminPanel {
                 select.appendChild(option);
             };
 
-            roots
+            const pageParent = normalizedPrimary
+                ? roots.find(r => this.slugifyCategory(r.slug || r.name) === normalizedPrimary)
+                : null;
+
+            const rootsToRender = pageParent ? [pageParent] : roots;
+
+            rootsToRender
                 .sort((a, b) => String(a.name || '').localeCompare(String(b.name || '')))
                 .forEach(parent => {
                     const parentSlug = this.slugifyCategory(parent.slug || parent.name);
