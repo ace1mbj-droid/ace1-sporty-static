@@ -12,24 +12,13 @@
 			"problemMatcher": []
 		},
 		{
-			"label": "Supabase: Link (prompt project ref)",
+			"label": "Supabase: Link (hosted project)",
 			"type": "shell",
-			"command": "supabase link --project-ref ${input:supabaseProjectRef}",
+			"command": "supabase link --project-ref vorqavsuqcjnkjzwkyzr",
 			"presentation": {
 				"reveal": "always",
 				"panel": "shared"
 			},
-			"problemMatcher": []
-		},
-		{
-			"label": "Supabase: Start (local)",
-			"type": "shell",
-			"command": "supabase start",
-			"presentation": {
-				"reveal": "always",
-				"panel": "shared"
-			},
-			"isBackground": true,
 			"problemMatcher": []
 		},
 		{
@@ -55,7 +44,7 @@
 		{
 			"label": "Supabase: Run SQL file (prompt)",
 			"type": "shell",
-			"command": "supabase db query --file ${input:sqlFilePath} --project-ref ${input:supabaseProjectRef}",
+			"command": "supabase db query --file ${input:sqlFilePath} --project-ref vorqavsuqcjnkjzwkyzr",
 			"presentation": {
 				"reveal": "always",
 				"panel": "shared"
@@ -65,7 +54,7 @@
 		{
 			"label": "MCP: Verify access (dry-run)",
 			"type": "shell",
-			"command": "echo 'Verifying MCP connection...' && curl -f -H \"Authorization: Bearer ${input:supabaseServiceRoleKey}\" \"https://mcp.supabase.com/mcp?project_ref=${input:supabaseProjectRef}&features=docs,account,database,debugging,development,functions,storage,branching\" > /dev/null 2>&1 && echo 'MCP access verified successfully.' || (echo 'MCP access verification failed. Check your service role key.' && exit 1)",
+			"command": "echo 'Verifying MCP connection...' && curl -f -H \"Authorization: Bearer ${input:supabaseServiceRoleKey}\" \"https://mcp.supabase.com/mcp?project_ref=vorqavsuqcjnkjzwkyzr&features=docs,account,database,debugging,development,functions,storage,branching\" > /dev/null 2>&1 && echo 'MCP access verified successfully.' || (echo 'MCP access verification failed. Check your service role key.' && exit 1)",
 			"presentation": {
 				"reveal": "always",
 				"panel": "shared"
@@ -82,12 +71,6 @@
 		}
 	],
 	"inputs": [
-		{
-			"id": "supabaseProjectRef",
-			"type": "promptString",
-			"description": "Supabase project ref (leave blank to prompt)",
-			"default": "vorqavsuqcjnkjzwkyzr"
-		},
 		{
 			"id": "sqlFilePath",
 			"type": "promptString",
