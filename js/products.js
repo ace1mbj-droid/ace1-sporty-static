@@ -7,6 +7,7 @@ class ProductFilterManager {
         this.filteredProducts = [];
         this.categories = [];
         this.categorySlugByAny = new Map();
+        this.visibleCategorySlugs = new Set();
         this.priceBounds = { min: 0, max: 15000 };
         this.pagination = {
             currentPage: 1,
@@ -99,65 +100,26 @@ class ProductFilterManager {
         if (!container) return;
         if (!this.categories?.length) return;
 
-        // Organize categories hierarchically
-        const primaryCategories = this.categories.filter(c => !c.parent_id);
-        const subcategoriesByParent = new Map();
+        // Flat categories only (no subcategory UI). Also: only show categories
+        // that actually exist in the current product set.
+        const allowedSlugs = this.visibleCategorySlugs && this.visibleCategorySlugs.size > 0
+            ? this.visibleCategorySlugs
+            : null;
 
-        // Group subcategories by parent_id
-        this.categories.filter(c => c.parent_id).forEach(sub => {
-            if (!subcategoriesByParent.has(sub.parent_id)) {
-                subcategoriesByParent.set(sub.parent_id, []);
-            }
-            subcategoriesByParent.get(sub.parent_id).push(sub);
-        });
-
-        // Generate HTML for hierarchical categories
-        const categoryHtml = primaryCategories
+        const categoryHtml = (this.categories || [])
+            .filter(c => !c.parent_id)
             .filter(c => this.slugifyCategory(c.slug || c.name))
-            .map(primary => {
-                const primarySlug = this.slugifyCategory(primary.slug || primary.name);
-                const primaryLabel = primary.name || primarySlug;
-                const subcategories = subcategoriesByParent.get(primary.id) || [];
-
-                if (subcategories.length > 0) {
-                    // Primary category with subcategories
-                    const subcategoryCheckboxes = subcategories
-                        .filter(sub => this.slugifyCategory(sub.slug || sub.name))
-                        .map(sub => {
-                            const subSlug = this.slugifyCategory(sub.slug || sub.name);
-                            const subLabel = sub.name || subSlug;
-                            return `
-                                <label class="filter-checkbox subcategory-checkbox">
-                                    <input type="checkbox" name="category" value="${subSlug}" checked>
-                                    <span>${subLabel}</span>
-                                </label>
-                            `;
-                        })
-                        .join('');
-
-                    return `
-                        <div class="category-group">
-                            <div class="primary-category">
-                                <label class="filter-checkbox primary-checkbox">
-                                    <input type="checkbox" name="category" value="${primarySlug}" checked>
-                                    <span><strong>${primaryLabel}</strong></span>
-                                </label>
-                            </div>
-                            <div class="subcategories">
-                                ${subcategoryCheckboxes}
-                            </div>
-                        </div>
-                    `;
-                } else {
-                    // Primary category without subcategories
-                    return `
-                        <label class="filter-checkbox">
-                            <input type="checkbox" name="category" value="${primarySlug}" checked>
-                            <span>${primaryLabel}</span>
-                        </label>
-                    `;
-                }
-            })
+            .map(c => ({
+                slug: this.slugifyCategory(c.slug || c.name),
+                label: c.name || this.slugifyCategory(c.slug || c.name)
+            }))
+            .filter(c => !allowedSlugs || allowedSlugs.has(c.slug))
+            .map(c => `
+                <label class="filter-checkbox">
+                    <input type="checkbox" name="category" value="${c.slug}" checked>
+                    <span>${c.label}</span>
+                </label>
+            `)
             .join('');
 
         container.innerHTML = categoryHtml;
@@ -181,6 +143,10 @@ class ProductFilterManager {
                 primaryCategoryFilter = 'shoes';
             } else if (currentPath.includes('clothing.html')) {
                 primaryCategoryFilter = 'clothing';
+            } else {
+                // The brand is currently footwear-first; keep the shop experience aligned
+                // with the Shoes inventory unless explicitly on clothing.html.
+                primaryCategoryFilter = 'shoes';
             }
 
             const setCategoryEmptyState = (isEmpty) => {
@@ -255,6 +221,10 @@ class ProductFilterManager {
                 price: (product.price_cents / 100).toFixed(2), // Convert cents to rupees
                 category: this.normalizeCategoryToSlug(product.category)
             }));
+
+            this.visibleCategorySlugs = new Set((processedProducts || []).map(p => p.category).filter(Boolean));
+            // Re-render category filters now that we know which categories are present.
+            this.renderCategoryCheckboxes();
             
             // Log first product to verify stock_quantity
             if (processedProducts && processedProducts.length > 0) {
