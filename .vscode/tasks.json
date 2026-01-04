@@ -76,6 +76,14 @@
 			"isBackground": false,
 			"problemMatcher": [],
 			"group": "test"
+		},
+		{
+			"label": "Playwright: Admin Modals (local)",
+			"type": "shell",
+			"command": "BASE_URL=\"http://127.0.0.1:3000\" ADMIN_EMAIL=\"${input:adminEmail}\" ADMIN_PASSWORD=\"${input:adminPassword}\" npx playwright test tests/e2e/admin-modals.spec.js --workers=1 --reporter=list",
+			"isBackground": false,
+			"problemMatcher": [],
+			"group": "test"
 		}
 	],
 	"inputs": [
@@ -95,6 +103,18 @@
 			"id": "supabaseServiceRoleKey",
 			"type": "promptString",
 			"description": "Supabase service role key (for MCP verification)",
+			"default": ""
+		},
+		{
+			"id": "adminEmail",
+			"type": "promptString",
+			"description": "Admin email for E2E tests",
+			"default": "hello@ace1.in"
+		},
+		{
+			"id": "adminPassword",
+			"type": "promptString",
+			"description": "Admin password for E2E tests (not stored)",
 			"default": ""
 		}
 	]
