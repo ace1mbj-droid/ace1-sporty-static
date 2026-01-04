@@ -7,6 +7,71 @@ let cartTotal = 0;
 let cartSessionId = sessionStorage.getItem('ace1_session_id') || generateSessionId();
 let cartLoaded = false;
 
+// Cart cross-page consistency helpers
+const CART_CACHE_KEY = 'ace1_cart_cache_v1';
+let cartSyncTimer = null;
+let cartSyncInFlight = null;
+
+function publishCartUpdate() {
+    // Keep other modules (e.g. checkout.js) in sync
+    window.cart = cart;
+    try {
+        window.dispatchEvent(new CustomEvent('ace1:cart-updated', { detail: { cart } }));
+    } catch {
+        // ignore
+    }
+}
+
+function saveCartCache(pendingSync) {
+    try {
+        sessionStorage.setItem(
+            CART_CACHE_KEY,
+            JSON.stringify({
+                updatedAt: Date.now(),
+                pendingSync: !!pendingSync,
+                cart
+            })
+        );
+    } catch {
+        // ignore
+    }
+}
+
+function loadCartCache() {
+    try {
+        const raw = sessionStorage.getItem(CART_CACHE_KEY);
+        if (!raw) return null;
+        const parsed = JSON.parse(raw);
+        if (!parsed || !Array.isArray(parsed.cart)) return null;
+        return parsed;
+    } catch {
+        return null;
+    }
+}
+
+function getCartDom() {
+    return {
+        cartCount: document.getElementById('cart-count'),
+        cartItems: document.getElementById('cart-items'),
+        cartTotalElement: document.getElementById('cart-total')
+    };
+}
+
+function scheduleCartSync() {
+    if (cartSyncTimer) {
+        clearTimeout(cartSyncTimer);
+    }
+
+    cartSyncTimer = setTimeout(() => {
+        cartSyncTimer = null;
+        cartSyncInFlight = (async () => {
+            await syncCartToDatabase();
+        })().finally(() => {
+            cartSyncInFlight = null;
+        });
+    }, 150);
+}
+
 // Ensure global header/footer elements are present across all pages
 (function ensureGlobalLayoutElements() {
     const nav = document.getElementById('navbar');
@@ -929,64 +994,15 @@ function addProductToCart(product) {
 }
 
 function updateCart() {
-    // Save cart to database (no localStorage)
-    syncCartToDatabase();
-    
-    // Update cart count
-    const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
-    if (cartCount) {
-        cartCount.textContent = totalItems;
-    }
-    
-    // If cart UI not present on this page, stop here
-    if (!cartItems || !cartTotalElement) {
-        return;
-    }
+    // Persist the in-memory cart for other scripts/pages
+    publishCartUpdate();
 
-    // Update cart total
-    cartTotal = cart.reduce((sum, item) => sum + ((parseFloat(item.price) || 0) * item.quantity), 0);
-    cartTotalElement.textContent = `₹${cartTotal.toLocaleString('en-IN')}`;
-    
-    // Update cart items display
-    if (cart.length === 0) {
-        cartItems.innerHTML = `
-            <div class="cart-empty">
-                <i class="fas fa-shopping-bag"></i>
-                <p>Your cart is empty</p>
-            </div>
-        `;
-    } else {
-        cartItems.innerHTML = cart.map(item => {
-            const price = parseFloat(item.price || 0);
-            const imageUrl = resolveProductImageUrl(item.image);
-            return `
-            <div class="cart-item" data-id="${item.id}">
-                <img src="${imageUrl}" alt="${item.name}" onerror="this.src='images/placeholder.jpg'">
-                <div class="cart-item-info">
-                    <h4>${item.name}</h4>
-                    <p>₹${price.toLocaleString('en-IN')}</p>
-                    <div class="cart-item-quantity">
-                        <button class="qty-btn minus" data-id="${item.id}">-</button>
-                        <span>${item.quantity}</span>
-                        <button class="qty-btn plus" data-id="${item.id}">+</button>
-                    </div>
-                </div>
-                <button class="remove-item" data-id="${item.id}">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-        `;
-        }).join('');
-        
-        // Add event listeners for quantity buttons and remove buttons
-        document.querySelectorAll('.qty-btn').forEach(btn => {
-            btn.addEventListener('click', updateQuantity);
-        });
-        
-        document.querySelectorAll('.remove-item').forEach(btn => {
-            btn.addEventListener('click', removeFromCart);
-        });
-    }
+    // Mark as pending sync so fast navigation won't reload stale DB state
+    saveCartCache(true);
+
+    // Render immediately (optimistic UI), then sync in background
+    renderCart();
+    scheduleCartSync();
 }
 
 function updateQuantity(e) {
@@ -1023,7 +1039,15 @@ function removeFromCart(e) {
 async function syncCartToDatabase() {
     try {
         const supabase = window.getSupabase?.();
-        if (!supabase) return;
+        if (!supabase) {
+            if (cached?.cart) {
+                cart = cached.cart;
+                cartLoaded = true;
+                publishCartUpdate();
+                renderCart();
+            }
+            return;
+        }
         
         const user = window.AuthManager?.getCurrentUser();
         
@@ -1063,6 +1087,9 @@ async function syncCartToDatabase() {
                 });
             }
         }
+
+        // Mark local cache as synced
+        saveCartCache(false);
     } catch (error) {
         console.log('Cart sync to database failed:', error);
     }
@@ -1071,6 +1098,18 @@ async function syncCartToDatabase() {
 // Load cart from database
 async function loadCartFromDatabase() {
     if (cartLoaded) return; // Only load once
+
+    // If we just changed cart on a previous page and navigated quickly,
+    // prefer the cached cart to avoid briefly reloading stale DB data.
+    const cached = loadCartCache();
+    if (cached?.pendingSync && (Date.now() - (cached.updatedAt || 0) < 12000)) {
+        cart = cached.cart;
+        cartLoaded = true;
+        publishCartUpdate();
+        renderCart();
+        scheduleCartSync();
+        return;
+    }
     
     try {
         const supabase = window.getSupabase?.();
@@ -1167,34 +1206,39 @@ async function loadCartFromDatabase() {
 
 // Render cart UI without syncing to database
 function renderCart() {
-    // Update cart count
+    publishCartUpdate();
+    const cached = loadCartCache();
+    saveCartCache(!!cached?.pendingSync);
+
+    const { cartCount: countEl, cartItems: itemsEl, cartTotalElement: totalEl } = getCartDom();
+
     const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
-    if (cartCount) {
-        cartCount.textContent = totalItems;
+    if (countEl) {
+        countEl.textContent = totalItems;
     }
-    
+
     // If cart UI not present on this page, stop here
-    if (!cartItems || !cartTotalElement) {
+    if (!itemsEl || !totalEl) {
         return;
     }
 
-    // Update cart total
     cartTotal = cart.reduce((sum, item) => sum + ((parseFloat(item.price) || 0) * item.quantity), 0);
-    cartTotalElement.textContent = `₹${cartTotal.toLocaleString('en-IN')}`;
-    
-    // Update cart items display
+    totalEl.textContent = `₹${cartTotal.toLocaleString('en-IN')}`;
+
     if (cart.length === 0) {
-        cartItems.innerHTML = `
+        itemsEl.innerHTML = `
             <div class="cart-empty">
                 <i class="fas fa-shopping-bag"></i>
                 <p>Your cart is empty</p>
             </div>
         `;
-    } else {
-        cartItems.innerHTML = cart.map(item => {
-            const price = parseFloat(item.price || 0);
-            const imageUrl = resolveProductImageUrl(item.image);
-            return `
+        return;
+    }
+
+    itemsEl.innerHTML = cart.map(item => {
+        const price = parseFloat(item.price || 0);
+        const imageUrl = resolveProductImageUrl(item.image);
+        return `
             <div class="cart-item" data-id="${item.id}">
                 <img src="${imageUrl}" alt="${item.name}" onerror="this.src='images/placeholder.jpg'">
                 <div class="cart-item-info">
@@ -1211,17 +1255,15 @@ function renderCart() {
                 </button>
             </div>
         `;
-        }).join('');
-        
-        // Add event listeners
-        document.querySelectorAll('.qty-btn').forEach(btn => {
-            btn.addEventListener('click', updateQuantity);
-        });
-        
-        document.querySelectorAll('.remove-item').forEach(btn => {
-            btn.addEventListener('click', removeFromCart);
-        });
-    }
+    }).join('');
+
+    document.querySelectorAll('.qty-btn').forEach(btn => {
+        btn.addEventListener('click', updateQuantity);
+    });
+
+    document.querySelectorAll('.remove-item').forEach(btn => {
+        btn.addEventListener('click', removeFromCart);
+    });
 }
 
 // ===================================
@@ -1442,12 +1484,15 @@ document.querySelectorAll('.feature-card, .product-card, .testimonial-card').for
 // ===================================
 // QUICK VIEW MODAL (placeholder)
 // ===================================
-document.querySelectorAll('.quick-view-btn').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        showNotification('Quick view coming soon!', 'success');
+if (!document.getElementById('quick-view-modal')) {
+    document.querySelectorAll('.quick-view-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            showNotification('Quick view coming soon!', 'success');
+        });
     });
-});
+}
 
 // ===================================
 // INITIALIZE
@@ -1727,14 +1772,25 @@ document.addEventListener('keydown', (e) => {
 // ===================================
 const checkoutBtn = document.querySelector('.cart-footer .btn-primary');
 if (checkoutBtn) {
-    checkoutBtn.addEventListener('click', () => {
+    checkoutBtn.addEventListener('click', async (e) => {
+        e.preventDefault();
         // Check the in-memory cart loaded from database
         if (cart.length === 0) {
             showNotification('Your cart is empty', 'error');
             return;
         }
-        
-        // Redirect to checkout page
+
+        // Ensure the latest cart state is synced before navigating
+        try {
+            if (cartSyncInFlight) {
+                await cartSyncInFlight;
+            } else {
+                await syncCartToDatabase();
+            }
+        } catch {
+            // ignore sync errors; navigation still proceeds
+        }
+
         window.location.href = 'checkout.html';
     });
 }
@@ -1796,6 +1852,13 @@ let currentQuickViewProduct = null;
 // Open Quick View Modal
 function openQuickView(productData) {
     currentQuickViewProduct = productData;
+
+    // Reset any previous selections inside the modal
+    try {
+        quickViewModal?.querySelectorAll('.size-option.selected').forEach(btn => btn.classList.remove('selected'));
+    } catch {
+        // ignore
+    }
     
     // Get proper image URL
     const imageUrl = productData.image_url || productData.image || 'images/placeholder.jpg';
@@ -2071,7 +2134,6 @@ if (document.readyState === 'loading') {
 window.loadCartFromDatabase = loadCartFromDatabase;
 window.updateCartCount = function() {
     const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
-    if (cartCount) {
-        cartCount.textContent = totalItems;
-    }
+    const el = document.getElementById('cart-count');
+    if (el) el.textContent = totalItems;
 };
