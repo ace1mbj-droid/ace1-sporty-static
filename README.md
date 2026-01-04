@@ -53,6 +53,7 @@ Supabase integration & server-side flow
 4. GitHub Actions (FTP Deploy & Health-check)
 	- `.github/workflows/deploy.yml` — Main deployment workflow with FTP upload and health-check
 	- `.github/workflows/ftp_deploy_only.yml` — Manual FTP-only deployment for testing
+	- `.github/workflows/supabase-deploy.yml` — Manual Supabase deploy (migrations + Edge Functions), guarded
 
 5. Testing & next steps
 	- Set up Razorpay webhook to point to your `webhook-razorpay` function URL.
@@ -60,7 +61,8 @@ Supabase integration & server-side flow
 
 Security notes
 --------------
-- Never store the Supabase service role key in your frontend or GitHub secrets. Use the Supabase Functions environment for secrets.
+- Never store the Supabase service role key in your frontend.
+- Prefer storing secrets in Supabase Edge Function environment variables. If you use GitHub Actions, treat GitHub secrets as production secrets and scope them tightly.
 - For admin create/update product functionality, use Edge Functions protected by an `is_admin` claim or the `user_roles` table added to the schema.
 
 Notes
@@ -72,39 +74,21 @@ Next steps I can do for you
 - Add an interactive product detail modal or product pages.
 - Convert to a Vite + React + Tailwind starter for componentization.
 
-Automated Supabase + FTP deployment
-----------------------------------
+Automated deployments
+---------------------
 
-I added an automated GitHub Actions workflow that:
+This repo supports hosted-only automation via GitHub Actions:
 
-- applies your DB schema & RLS policies
-- deploys Supabase Edge Functions found in `supabase/functions`
-- sets secure Razorpay secrets in Supabase
-- uploads built static assets to an FTP/SFTP host
+- FTP deploy: `.github/workflows/deploy.yml` (push to `main` is guarded; manual dispatch supported)
+- FTP deploy only: `.github/workflows/ftp_deploy_only.yml` (manual)
+- Supabase deploy: `.github/workflows/supabase-deploy.yml` (manual, guarded by confirm step)
 
-Files to review:
-- `.github/workflows/deploy_supabase_and_ftp.yml` — runs on push to `main` and performs the entire infra + FTP deploy.
-- `scripts/deploy_supabase.sh` — local script to run the same steps yourself (needs environment variables set).
+Secrets for FTP workflows
+- `FTP_HOST`, `FTP_USER`, `FTP_PASSWORD`
+- Optional: `FTP_SERVER_DIR` (preferred) or `FTP_PUBLIC_DIR`, `FTP_PORT`, `FTP_PROTOCOL` (default `ftps`)
 
-GitHub secrets to set (FTPS-only)
-- `SUPABASE_ACCESS_TOKEN` — personal supabase CLI token
-- `SUPABASE_PROJECT_REF` — the Supabase project ref id
-- `SUPABASE_DB_URL` — postgres connection string with privileges to run SQL (service role preferred)
- - `SUPABASE_KEY` — optional server/project key for trusted server code (keep secret)
- - `SUPABASE_SERVICE_ROLE_KEY` — service-role key used by CI and server-side scripts for admin actions. Store this in CI secrets or a secure environment and avoid exposing it in frontend code.
- - New helper script: `scripts/create_admin.js` — uses `SUPABASE_SERVICE_ROLE_KEY` to create or update an `admin` user with a PBKDF2 hashed password. See `docs/admin-setup.md` for usage.
-- `RZ_KEY` and `RZ_SECRET` — Razorpay keys
-- `FTP_HOST`, `FTP_USER`, `FTP_PASSWORD` — FTP credentials (FTPS implicit TLS, port 990)
-- `SITE_DOMAIN` — e.g., `ace1.in` (used by deploy+verify health-check)
-
-Example local deploy command:
-
-```bash
-SUPABASE_ACCESS_TOKEN=abc SUPABASE_PROJECT_REF=xyz SUPABASE_DB_URL=postgres://... RZ_KEY=... RZ_SECRET=... ./scripts/deploy_supabase.sh
-```
-
-Advanced options:
- - Replace direct `psql` schema execution with Supabase migrations (recommended) and call `supabase db push` in CI.
+Secrets for Supabase workflow
+- `SUPABASE_ACCESS_TOKEN`, `SUPABASE_PROJECT_REF`
 
 CI migrations and secure DB access
 ---------------------------------
