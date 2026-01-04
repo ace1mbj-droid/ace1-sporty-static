@@ -768,6 +768,24 @@ const cartCount = document.getElementById('cart-count');
 const cartItems = document.getElementById('cart-items');
 const cartTotalElement = document.getElementById('cart-total');
 
+function getSupabaseProjectUrl() {
+    return (
+        (window.SUPABASE_CONFIG && window.SUPABASE_CONFIG.url) ||
+        window.SUPABASE_URL ||
+        'https://vorqavsuqcjnkjzwkyzr.supabase.co'
+    ).replace(/\/$/, '');
+}
+
+function resolveProductImageUrl(imageOrStoragePath) {
+    if (!imageOrStoragePath) return 'images/placeholder.jpg';
+    if (typeof imageOrStoragePath === 'string' && imageOrStoragePath.startsWith('http')) return imageOrStoragePath;
+
+    const storagePath = String(imageOrStoragePath);
+    // Encode while keeping path separators
+    const encodedPath = encodeURIComponent(storagePath).replace(/%2F/g, '/');
+    return `${getSupabaseProjectUrl()}/storage/v1/object/public/Images/${encodedPath}`;
+}
+
 // Open cart
 cartBtn?.addEventListener('click', () => {
     if (cartSidebar) {
@@ -817,7 +835,8 @@ async function addToCart(productId) {
             .from('products')
             .select(`
                 *,
-                inventory(stock, size)
+                inventory(stock, size),
+                product_images(storage_path)
             `)
             .eq('id', productId)
             .eq('is_active', true)
@@ -868,7 +887,7 @@ async function addToCart(productId) {
                 price: (product.price !== undefined && product.price !== null && String(product.price) !== '')
                     ? Number(product.price)
                     : (Number(product.price_cents || 0) / 100),
-                image: product.image_url || 'images/placeholder.jpg',
+                image: product.image_url || product.product_images?.[0]?.storage_path || 'images/placeholder.jpg',
                 stock_quantity: totalStock
             };
             
@@ -939,9 +958,10 @@ function updateCart() {
     } else {
         cartItems.innerHTML = cart.map(item => {
             const price = parseFloat(item.price || 0);
+            const imageUrl = resolveProductImageUrl(item.image);
             return `
             <div class="cart-item" data-id="${item.id}">
-                <img src="${item.image}" alt="${item.name}" onerror="this.src='images/placeholder.jpg'">
+                <img src="${imageUrl}" alt="${item.name}" onerror="this.src='images/placeholder.jpg'">
                 <div class="cart-item-info">
                     <h4>${item.name}</h4>
                     <p>₹${price.toLocaleString('en-IN')}</p>
@@ -970,17 +990,20 @@ function updateCart() {
 }
 
 function updateQuantity(e) {
-    const productId = parseInt(e.target.dataset.id);
-    const item = cart.find(item => item.id === productId);
+    const btn = e.target.closest('.qty-btn');
+    if (!btn) return;
+
+    const productId = btn.dataset.id;
+    const item = cart.find(i => String(i.id) === String(productId));
     
     if (!item) return;
     
-    if (e.target.classList.contains('plus')) {
+    if (btn.classList.contains('plus')) {
         item.quantity += 1;
-    } else if (e.target.classList.contains('minus')) {
+    } else if (btn.classList.contains('minus')) {
         item.quantity -= 1;
         if (item.quantity <= 0) {
-            cart = cart.filter(item => item.id !== productId);
+            cart = cart.filter(i => String(i.id) !== String(productId));
         }
     }
     
@@ -988,8 +1011,10 @@ function updateQuantity(e) {
 }
 
 function removeFromCart(e) {
-    const productId = parseInt(e.target.closest('.remove-item').dataset.id);
-    cart = cart.filter(item => item.id !== productId);
+    const btn = e.target.closest('.remove-item');
+    if (!btn) return;
+    const productId = btn.dataset.id;
+    cart = cart.filter(i => String(i.id) !== String(productId));
     updateCart();
     showNotification('Product removed from cart');
 }
@@ -1064,7 +1089,7 @@ async function loadCartFromDatabase() {
                 const cartIds = cartsRes.data.map(c => c.id);
                 const itemsRes = await supabase
                     .from('cart_items')
-                    .select('id, product_id, quantity, size, products(id, name, price_cents, image_url, inventory(stock, size))')
+                    .select('id, product_id, quantity, size, products(id, name, price_cents, image_url, product_images(storage_path), inventory(stock, size))')
                     .in('cart_id', cartIds);
                 if (!itemsRes.error && itemsRes.data) {
                     data = itemsRes.data.map(row => ({
@@ -1092,7 +1117,7 @@ async function loadCartFromDatabase() {
                         if (productIds.length === 0) {
                             data = [];
                         } else {
-                            const prodRes = await supabase.from('products').select('id, name, price_cents').in('id', productIds);
+                            const prodRes = await supabase.from('products').select('id, name, price_cents, image_url, product_images(storage_path)').in('id', productIds);
                             const invRes = await supabase.from('inventory').select('product_id, stock, size').in('product_id', productIds);
 
                             const invMap = {};
@@ -1117,7 +1142,7 @@ async function loadCartFromDatabase() {
                     id: item.product_id,
                     name: item.products?.name || 'Unknown Product',
                     price: item.products?.price_cents ? item.products.price_cents / 100 : 0,
-                    image: item.products?.image_url || 'images/placeholder.jpg',
+                    image: item.products?.image_url || item.products?.product_images?.[0]?.storage_path || 'images/placeholder.jpg',
                     stock_quantity: totalStock,
                     quantity: item.quantity,
                     size: item.size
@@ -1168,9 +1193,10 @@ function renderCart() {
     } else {
         cartItems.innerHTML = cart.map(item => {
             const price = parseFloat(item.price || 0);
+            const imageUrl = resolveProductImageUrl(item.image);
             return `
             <div class="cart-item" data-id="${item.id}">
-                <img src="${item.image}" alt="${item.name}" onerror="this.src='images/placeholder.jpg'">
+                <img src="${imageUrl}" alt="${item.name}" onerror="this.src='images/placeholder.jpg'">
                 <div class="cart-item-info">
                     <h4>${item.name}</h4>
                     <p>₹${price.toLocaleString('en-IN')}</p>
