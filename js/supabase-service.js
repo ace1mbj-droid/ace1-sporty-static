@@ -243,6 +243,14 @@ class SupabaseService {
         try {
             if (!this.currentUser) throw new Error('User not authenticated');
 
+            // If setting as default, unset other defaults first
+            if (updates && updates.is_default) {
+                await this.supabase
+                    .from('addresses')
+                    .update({ is_default: false })
+                    .eq('user_id', this.currentUser.id);
+            }
+
             const { data, error } = await this.supabase
                 .from('addresses')
                 .update(updates)
@@ -872,29 +880,35 @@ class SupabaseService {
                     .from('wishlists')
                     .select(`
                         *,
-                        products (
+                        product:products (
                             id,
                             name,
+                            category,
                             price_cents,
+                            price,
                             image_url,
                             product_images (
                                 storage_path
-                            ),
-                            inventory (
-                                stock
                             )
                         )
                     `)
-                    .eq('session_id', sessionId);
-                
-                return { success: true, wishlist: [] };
+                    .eq('session_id', sessionId)
+                    .order('added_at', { ascending: false });
+
+                if (error) throw error;
+                return { success: true, wishlist: data || [] };
             }
 
             const { data, error } = await this.supabase
                 .from('wishlists')
                 .select(`
                     *,
-                    product:products(*)
+                    product:products(
+                        *,
+                        product_images(
+                            storage_path
+                        )
+                    )
                 `)
                 .eq('user_id', this.currentUser.id)
                 .order('added_at', { ascending: false });
