@@ -2883,6 +2883,48 @@ button {
     width: 16px;
 }
 
+/* Inline suggestions (autocomplete dropdown) */
+.ace1-inline-suggest-wrap {
+    position: relative;
+}
+
+.ace1-inline-suggest {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    box-shadow: var(--shadow-lg);
+    max-height: 240px;
+    overflow-y: auto;
+    z-index: 2000;
+}
+
+.ace1-inline-suggest[hidden] {
+    display: none;
+}
+
+.ace1-inline-suggest-item {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 10px 14px;
+    border: none;
+    background: transparent;
+    color: var(--text-color);
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.ace1-inline-suggest-item:hover,
+.ace1-inline-suggest-item:focus,
+.ace1-inline-suggest-item.is-active {
+    background: var(--bg-light);
+    outline: none;
+}
+
 /* ===================================
    CHECKOUT PAGES
    =================================== */
