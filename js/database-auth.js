@@ -58,6 +58,32 @@ class DatabaseAuth {
                 const session = sessions && sessions.length > 0 ? sessions[0] : null;
                 
                 if (session) {
+                    // If we have a Supabase JWT, require the account to be confirmed.
+                    // This prevents restoring sessions for unconfirmed email/password signups.
+                    if (session.jwt_token) {
+                        try {
+                            const { data: userResult, error: userErr } = await this.supabase.auth.getUser(session.jwt_token);
+                            if (userErr || !userResult?.user) {
+                                console.log('⚠️ Could not validate Supabase user for restored session; clearing local session...');
+                                localStorage.removeItem('ace1_session_id');
+                                return;
+                            }
+
+                            const confirmedAt = userResult.user.email_confirmed_at || userResult.user.confirmed_at || null;
+                            const isAdminEmail = String(userResult.user.email || '').toLowerCase() === 'hello@ace1.in';
+                            if (!confirmedAt && !isAdminEmail) {
+                                console.log('⚠️ Email not confirmed; refusing to restore session.');
+                                await this.supabase.auth.signOut();
+                                localStorage.removeItem('ace1_session_id');
+                                return;
+                            }
+                        } catch (e) {
+                            console.log('⚠️ Session validation threw; clearing local session...');
+                            localStorage.removeItem('ace1_session_id');
+                            return;
+                        }
+                    }
+
                     // Session is valid, restore user
                     const user = session.user_data ? session.user_data : {
                         id: session.user_id,
@@ -81,8 +107,9 @@ class DatabaseAuth {
                             .catch(() => {});
                         
                         // Keep JWT token for API calls (if user is authenticated)
-                        if (session.jwt_token) {
-                            this.setSessionToken(session.jwt_token);
+                        // Keep session token for DB/RPC calls
+                        if (session.token) {
+                            this.setSessionToken(session.token);
                         }
                         
                         console.log('✅ Database session restored:', user.email);
@@ -235,15 +262,17 @@ class DatabaseAuth {
 
             // Auto-login if no confirmation needed
             const sessionId = crypto.randomUUID();
-            const sessionToken = authData.session.access_token;
+            const sessionToken = this.generateToken();
+            const supabaseJwt = authData.session.access_token;
             const expiresAt = new Date(authData.session.expires_at * 1000);
 
             const { error: sessionError } = await this.supabase
                 .from('sessions')
                 .insert([{
                     user_id: authData.user.id,
+                    token: sessionToken,
                     session_id: sessionId,
-                    jwt_token: sessionToken,
+                    jwt_token: supabaseJwt,
                     user_data: user,
                     expires_at: expiresAt.toISOString(),
                     ip_address: await this.getClientIP(),
@@ -315,6 +344,18 @@ class DatabaseAuth {
                 };
             }
 
+            // If email confirmation is enabled, prevent login until confirmed.
+            // (Supabase often blocks this already, but this also prevents edge cases.)
+            const confirmedAt = authData.user.email_confirmed_at || authData.user.confirmed_at || null;
+            const isAdminEmail = String(authData.user.email || '').toLowerCase() === 'hello@ace1.in';
+            if (!confirmedAt && !isAdminEmail) {
+                try { await this.supabase.auth.signOut(); } catch (e) {}
+                return {
+                    success: false,
+                    error: 'Please confirm your email before logging in.'
+                };
+            }
+
             // Reset rate limit on successful login
             if (window.securityManager) {
                 const clientId = window.securityManager.getClientIdentifier();
@@ -374,15 +415,17 @@ class DatabaseAuth {
 
             // Create session in database
             const sessionId = crypto.randomUUID();
-            const sessionToken = authData.session.access_token; // Use Supabase's token
+            const sessionToken = this.generateToken();
+            const supabaseJwt = authData.session.access_token;
             const expiresAt = new Date(authData.session.expires_at * 1000);
 
             const { error: sessionError } = await this.supabase
                 .from('sessions')
                 .insert([{
                     user_id: userData.id,
+                    token: sessionToken,
                     session_id: sessionId,
-                    jwt_token: sessionToken,
+                    jwt_token: supabaseJwt,
                     user_data: user,
                     expires_at: expiresAt.toISOString(),
                     ip_address: await this.getClientIP(),
@@ -424,7 +467,18 @@ class DatabaseAuth {
     async oauthLogin(provider, userData) {
         try {
             console.log('🔨 oauthLogin() called for:', userData.email);
-            const email = userData.email;
+            // OAuth should always have a Supabase session; use it as source of truth.
+            const { data: { session } } = await this.supabase.auth.getSession();
+            const supabaseUser = session?.user || null;
+            const email = (userData && userData.email) || supabaseUser?.email;
+
+            if (!supabaseUser || !supabaseUser.id) {
+                return { success: false, error: 'No Supabase session found for OAuth login' };
+            }
+
+            if (!email) {
+                return { success: false, error: 'Missing email for OAuth login' };
+            }
             
             // Check if user exists
             const { data: existing } = await this.supabase
@@ -454,16 +508,12 @@ class DatabaseAuth {
                 user = data;
             } else {
                 console.log('➕ Creating new user in database...');
-                // Create new user from OAuth
-                const randomPassword = crypto.randomUUID(); // Random secure password for OAuth users
-                const passwordHash = await this.hashPassword(randomPassword);
-                
                 const { data, error } = await this.supabase
                     .from('users')
                     .insert([{
-                        id: crypto.randomUUID(), // Generate UUID for new user
+                        // IMPORTANT: public.users.id must match auth.users.id
+                        id: supabaseUser.id,
                         email: email,
-                        password_hash: passwordHash,
                         first_name: userData.firstName,
                         last_name: userData.lastName,
                         avatar: userData.avatar,
@@ -493,6 +543,7 @@ class DatabaseAuth {
             // Create session in database (no localStorage storage)
             const sessionId = crypto.randomUUID();
             const sessionToken = this.generateToken();
+            const supabaseJwt = session?.access_token || null;
             const expiresAt = new Date();
             expiresAt.setDate(expiresAt.getDate() + 7); // 7 days expiry
 
@@ -501,8 +552,9 @@ class DatabaseAuth {
                 .from('sessions')
                 .insert([{
                     user_id: user.id,
+                    token: sessionToken,
                     session_id: sessionId,
-                    jwt_token: sessionToken,
+                    jwt_token: supabaseJwt,
                     user_data: userObj,
                     expires_at: expiresAt.toISOString(),
                     ip_address: await this.getClientIP(),
