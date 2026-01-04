@@ -2,11 +2,13 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 
 // Optional email notification function.
 //
-// This function is intentionally provider-agnostic but currently supports Resend.
+// Matches the project's existing approach:
+// - If SendGrid is configured, send server-side.
+// - Otherwise, return a `mailto:` fallback (like the Contact Us form).
 //
-// Env vars:
-// - RESEND_API_KEY: required to actually send
-// - EMAIL_FROM: e.g. "ACE#1 <hello@ace1.in>" (required)
+// Env vars (optional):
+// - SENDGRID_API_KEY
+// - SENDGRID_FROM (email address)
 //
 // Expected JSON body:
 // {
@@ -35,6 +37,11 @@ function formatDateTime(value: unknown): string {
   return date.toLocaleString("en-IN", { timeZone: "Asia/Kolkata" });
 }
 
+function buildMailto(to: string, subject: string, body: string): string {
+  const enc = (v: string) => encodeURIComponent(v);
+  return `mailto:${enc(to)}?subject=${enc(subject)}&body=${enc(body)}`;
+}
+
 export default async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") {
     return new Response(null, {
@@ -49,18 +56,16 @@ export default async (req: Request): Promise<Response> => {
 
   if (req.method !== "POST") return json({ error: "Method not allowed" }, 405);
 
-  const resendKey = Deno.env.get("RESEND_API_KEY") ?? "";
-  const from = Deno.env.get("EMAIL_FROM") ?? "";
+  const getEnv = (key: string): string => {
+    try {
+      return (globalThis as any)?.Deno?.env?.get?.(key) ?? "";
+    } catch {
+      return "";
+    }
+  };
 
-  if (!resendKey || !from) {
-    return json(
-      {
-        error: "Email not configured",
-        hint: "Set RESEND_API_KEY and EMAIL_FROM env vars for this Edge Function.",
-      },
-      501,
-    );
-  }
+  const SENDGRID_API_KEY = getEnv("SENDGRID_API_KEY");
+  const SENDGRID_FROM = getEnv("SENDGRID_FROM");
 
   let body: any = null;
   try {
@@ -92,26 +97,44 @@ export default async (req: Request): Promise<Response> => {
   lines.push("");
   lines.push("Thank you for shopping with ACE#1.");
 
-  const emailPayload = {
-    from,
-    to: [to],
-    subject,
-    text: lines.join("\n"),
-  };
+  const textBody = lines.join("\n");
 
-  const resp = await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${resendKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(emailPayload),
-  });
+  // Preferred: SendGrid (consistent with existing admin-reset function)
+  if (SENDGRID_API_KEY && SENDGRID_FROM) {
+    const sgPayload = {
+      personalizations: [{ to: [{ email: to }] }],
+      from: { email: SENDGRID_FROM },
+      subject,
+      content: [{ type: "text/plain", value: textBody }],
+    };
 
-  const respText = await resp.text();
-  if (!resp.ok) {
-    return json({ error: "Failed to send email", provider_status: resp.status, provider_body: respText }, 502);
+    const sgRes = await fetch("https://api.sendgrid.com/v3/mail/send", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${SENDGRID_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(sgPayload),
+    });
+
+    if (!sgRes.ok) {
+      const sgText = await sgRes.text().catch(() => "");
+      return json({ error: "Failed to send email", provider: "sendgrid", provider_status: sgRes.status, provider_body: sgText }, 502);
+    }
+
+    return json({ ok: true, provider: "sendgrid" });
   }
 
-  return json({ ok: true, provider_body: respText });
+  // Fallback: mailto link (same idea as Contact Us)
+  return json(
+    {
+      ok: false,
+      provider: "mailto",
+      hint: "Email provider not configured. Use the mailto link to send from an email client.",
+      mailto: buildMailto(to, subject, textBody),
+      subject,
+      text: textBody,
+    },
+    501,
+  );
 };
