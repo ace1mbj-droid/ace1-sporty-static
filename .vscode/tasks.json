@@ -84,6 +84,14 @@
 			"isBackground": false,
 			"problemMatcher": [],
 			"group": "test"
+		},
+		{
+			"label": "Playwright: Admin CRUD (local)",
+			"type": "shell",
+			"command": "BASE_URL=\"http://127.0.0.1:3000\" ADMIN_EMAIL=\"${input:adminEmail}\" ADMIN_PASSWORD=\"${input:adminPassword}\" npx playwright test tests/e2e/admin-crud.spec.js --workers=1 --reporter=list",
+			"isBackground": false,
+			"problemMatcher": [],
+			"group": "test"
 		}
 	],
 	"inputs": [

@@ -2020,6 +2020,8 @@ class AdminExtended {
         }
 
         // Show modal
+        // Some close paths set inline display:none; clear it so .modal/.active CSS can take effect.
+        modal.style.display = 'flex';
         modal.classList.add('active');
 
         // Focus on name input
@@ -2116,7 +2118,12 @@ class AdminExtended {
     // ========================================
     closeModal(modalId) {
         const modal = document.getElementById(modalId);
-        if (modal) modal.style.display = 'none';
+        if (!modal) return;
+        // Support both visibility mechanisms used across admin:
+        // - class-based (".modal.active")
+        // - inline style-based (style.display = 'flex'/'block')
+        modal.classList.remove('active');
+        modal.style.display = 'none';
     }
 
     showCustomerTab(tab) {
