@@ -1791,7 +1791,7 @@ function openQuickView(productData) {
     document.getElementById('qv-name').textContent = productData.name;
     document.getElementById('qv-category').textContent = productData.category || 'Sneakers';
     document.getElementById('qv-price').textContent = `₹${price ? parseFloat(price).toLocaleString('en-IN') : '0'}`;
-    document.getElementById('qv-description').textContent = productData.description || 'Premium quality sneakers with exceptional comfort and style.';
+    document.getElementById('qv-description').textContent = productData.description || 'Description coming soon.';
     
     // Stock status
     const stockEl = document.getElementById('qv-stock');
