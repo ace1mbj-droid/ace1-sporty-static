@@ -111,7 +111,8 @@ async function syncPrimaryCategoryPageLinks() {
 
         // Add more entries here when new primary-category pages are created.
         const pageDefs = [
-            { key: 'clothing', href: 'clothing.html', label: 'Clothing', insertAfter: 'shoes.html' }
+            { key: 'clothing', href: 'clothing.html', label: 'Clothing', insertAfter: 'shoes.html' },
+            { key: 'accessories', href: 'accessories.html', label: 'Accessories', insertAfter: 'clothing.html' }
         ];
 
         const availabilityByKey = new Map();
