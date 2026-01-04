@@ -84,6 +84,69 @@ class AdminPanel {
         this.init();
     }
 
+    toDatetimeLocalValue(value) {
+        if (!value) return '';
+        const date = new Date(value);
+        if (!Number.isFinite(date.getTime())) return '';
+        const pad = (n) => String(n).padStart(2, '0');
+        const yyyy = date.getFullYear();
+        const mm = pad(date.getMonth() + 1);
+        const dd = pad(date.getDate());
+        const hh = pad(date.getHours());
+        const min = pad(date.getMinutes());
+        return `${yyyy}-${mm}-${dd}T${hh}:${min}`;
+    }
+
+    parseDatetimeLocalToIso(value) {
+        const raw = String(value || '').trim();
+        if (!raw) return null;
+        const date = new Date(raw);
+        if (!Number.isFinite(date.getTime())) return null;
+        return date.toISOString();
+    }
+
+    setupOrdersRealtime() {
+        try {
+            if (this._ordersRealtimeSetup) return;
+            if (!this.supabase || typeof this.supabase.channel !== 'function') return;
+
+            this._ordersRealtimeSetup = true;
+
+            const schedule = () => {
+                if (this._ordersRealtimeTimer) clearTimeout(this._ordersRealtimeTimer);
+                this._ordersRealtimeTimer = setTimeout(async () => {
+                    try {
+                        await this.loadOrders();
+
+                        const modal = document.getElementById('order-modal');
+                        const openOrderId = modal?.classList.contains('active') ? modal.dataset.orderId : null;
+                        if (openOrderId) {
+                            // Refresh modal fields from the updated in-memory orders list
+                            this.viewOrder(openOrderId);
+                        }
+                    } catch (e) {
+                        console.warn('Orders realtime refresh failed:', e);
+                    }
+                }, 400);
+            };
+
+            this._ordersRealtimeChannel = this.supabase
+                .channel('ace1-admin-orders-sync')
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, schedule)
+                .subscribe();
+
+            window.addEventListener('beforeunload', () => {
+                try {
+                    if (this._ordersRealtimeChannel) this.supabase.removeChannel(this._ordersRealtimeChannel);
+                } catch (e) {
+                    // ignore
+                }
+            });
+        } catch (e) {
+            console.warn('Orders realtime setup skipped:', e);
+        }
+    }
+
     getActiveTabName() {
         const activeTab = document.querySelector('.admin-tab.active');
         return activeTab ? activeTab.dataset.tab : null;
@@ -202,6 +265,7 @@ class AdminPanel {
         // Products are loaded when switching to Shoes/Clothing tabs
         // await this.loadProducts(); // Removed - products load per tab now
         await this.loadOrders();
+        this.setupOrdersRealtime();
         await this.loadUsers();
         await this.loadLogs();
         await this.loadRevocations();
@@ -2024,13 +2088,25 @@ class AdminPanel {
         details.push(`Order ID: ${order.id}`);
         details.push(`Total: ₹${((order.total_cents || 0) / 100).toFixed(2)}`);
         details.push(`Status: ${order.status || 'unknown'}`);
+        details.push(`Tracking: ${order.tracking_number || 'N/A'}`);
+        details.push(`Shipped At: ${order.shipped_at ? new Date(order.shipped_at).toLocaleString() : 'N/A'}`);
+        details.push(`Delivered At: ${order.delivered_at ? new Date(order.delivered_at).toLocaleString() : 'N/A'}`);
         details.push(`Created: ${new Date(order.created_at).toLocaleString()}`);
         details.push('\nShipping:');
         details.push(JSON.stringify(order.shipping_address || {}, null, 2));
 
         document.getElementById('order-details-area').textContent = details.join('\n\n');
         document.getElementById('order-status-select').value = order.status || 'pending';
-        document.getElementById('order-notes').value = order.notes || '';
+        document.getElementById('order-notes').value = order.admin_notes || order.notes || '';
+
+        const trackingEl = document.getElementById('order-tracking-number');
+        if (trackingEl) trackingEl.value = order.tracking_number || '';
+
+        const shippedEl = document.getElementById('order-shipped-at');
+        if (shippedEl) shippedEl.value = this.toDatetimeLocalValue(order.shipped_at);
+
+        const deliveredEl = document.getElementById('order-delivered-at');
+        if (deliveredEl) deliveredEl.value = this.toDatetimeLocalValue(order.delivered_at);
 
         // Store current order id on the modal element
         document.getElementById('order-modal').dataset.orderId = orderId;
@@ -2049,6 +2125,12 @@ class AdminPanel {
         const status = document.getElementById('order-status-select').value;
         const notes = document.getElementById('order-notes').value.trim();
 
+        const trackingNumber = (document.getElementById('order-tracking-number')?.value || '').trim();
+        const shippedAtIso = this.parseDatetimeLocalToIso(document.getElementById('order-shipped-at')?.value);
+        const deliveredAtIso = this.parseDatetimeLocalToIso(document.getElementById('order-delivered-at')?.value);
+
+        const existing = this.orders.find(o => String(o.id) === String(orderId)) || null;
+
         console.log('🔄 Updating order:', orderId, 'with status:', status, 'notes:', notes);
 
         if (!orderId) {
@@ -2064,6 +2146,24 @@ class AdminPanel {
             // Only update notes if the field exists and has content
             if (notes) {
                 updateData.admin_notes = notes;
+            }
+
+            // Tracking fields
+            updateData.tracking_number = trackingNumber ? trackingNumber : null;
+
+            // Respect explicit timestamp edits from the admin
+            if (shippedAtIso) updateData.shipped_at = shippedAtIso;
+            if (deliveredAtIso) updateData.delivered_at = deliveredAtIso;
+
+            // If admin sets status to shipped/delivered and timestamps are empty, set them
+            if (status === 'shipped' && !shippedAtIso && !existing?.shipped_at) {
+                updateData.shipped_at = new Date().toISOString();
+            }
+            if (status === 'delivered' && !deliveredAtIso && !existing?.delivered_at) {
+                updateData.delivered_at = new Date().toISOString();
+                if (!shippedAtIso && !existing?.shipped_at) {
+                    updateData.shipped_at = updateData.shipped_at || new Date().toISOString();
+                }
             }
 
             console.log('📤 Sending update to Supabase:', updateData);
@@ -2082,6 +2182,26 @@ class AdminPanel {
 
             console.log('✅ Order updated successfully, response:', data);
             if (window.showNotification) window.showNotification('Order updated', 'success');
+
+            // Best-effort: send email notification (requires Edge Function deployment + provider config)
+            try {
+                const shippingEmail = existing?.shipping_address?.email || existing?.shipping_address?.Email || null;
+                if (shippingEmail && this.supabase?.functions?.invoke) {
+                    await this.supabase.functions.invoke('notify-order-update', {
+                        body: {
+                            orderId,
+                            to: shippingEmail,
+                            status,
+                            tracking_number: updateData.tracking_number,
+                            shipped_at: updateData.shipped_at || existing?.shipped_at || null,
+                            delivered_at: updateData.delivered_at || existing?.delivered_at || null
+                        }
+                    });
+                }
+            } catch (e) {
+                console.warn('notify-order-update skipped/failed:', e);
+            }
+
             modal.classList.remove('active');
             await this.refreshAllAdminData();
         } catch (err) {
