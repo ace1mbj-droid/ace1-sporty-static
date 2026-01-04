@@ -30,9 +30,7 @@ BEGIN
   RETURN COALESCE(_deleted, 0);
 END;
 $$;
-
 COMMENT ON FUNCTION public.revoke_session_by_token(text, text, text) IS 'Delete a session row by token; requires service_role and logs the revocation. Returns number deleted.';
-
 CREATE OR REPLACE FUNCTION public.revoke_sessions_for_email(
   p_email text,
   p_revoked_by text DEFAULT NULL,
@@ -69,5 +67,4 @@ BEGIN
   RETURN COALESCE(deleted_count, 0);
 END;
 $$;
-
 COMMENT ON FUNCTION public.revoke_sessions_for_email(text, text, text) IS 'Delete all sessions for a public.users account by email; requires service_role and logs the revocations. Returns number of rows deleted.';

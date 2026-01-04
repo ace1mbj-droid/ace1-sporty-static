@@ -9,7 +9,6 @@ CREATE TABLE IF NOT EXISTS public.session_revocations (
   reason text,
   revoked_at timestamptz NOT NULL DEFAULT now()
 );
-
 -- 2) Updated revoke_session_by_token: log+delete and require service_role caller
 CREATE OR REPLACE FUNCTION public.revoke_session_by_token(
   t text,
@@ -41,9 +40,7 @@ BEGIN
   RETURN COALESCE(_deleted, 0);
 END;
 $$;
-
 COMMENT ON FUNCTION public.revoke_session_by_token(text, text, text) IS 'Delete a session row by token; requires service_role and logs the revocation. Returns 1 when a row was logged/deleted or 0 otherwise.';
-
 -- 3) Updated revoke_sessions_for_email: log all deleted tokens and require service_role
 CREATE OR REPLACE FUNCTION public.revoke_sessions_for_email(
   p_email text,
@@ -79,5 +76,4 @@ BEGIN
   RETURN COALESCE(deleted_count, 0);
 END;
 $$;
-
 COMMENT ON FUNCTION public.revoke_sessions_for_email(text, text, text) IS 'Delete all sessions for a public.users account by email; requires service_role and logs the revocations. Returns number of rows deleted.';

@@ -19,17 +19,14 @@ BEGIN
         RAISE NOTICE 'Column primary_category already exists';
     END IF;
 END $$;
-
 -- Create index for faster queries filtering by primary category
 CREATE INDEX IF NOT EXISTS idx_products_primary_category
 ON public.products(primary_category)
 WHERE primary_category IS NOT NULL;
-
 -- Create composite index for active products by primary category
 CREATE INDEX IF NOT EXISTS idx_products_active_primary_category
 ON public.products(is_active, primary_category)
 WHERE is_active = true AND primary_category IS NOT NULL;
-
 -- Update existing products to have appropriate primary_category based on their category
 -- This is a one-time data migration for existing products
 UPDATE public.products
@@ -39,7 +36,6 @@ SET primary_category = CASE
     ELSE NULL
 END
 WHERE primary_category IS NULL;
-
 -- Verification query - check the column exists and has proper constraints
 SELECT
     column_name,

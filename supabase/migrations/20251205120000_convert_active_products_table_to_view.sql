@@ -3,7 +3,6 @@
 -- Updates the sync trigger/function and realtime publication to use the sync table
 
 BEGIN;
-
 -- 1) If active_products is an ordinary table, rename it to active_products_sync to preserve the data
 DO $$
 DECLARE
@@ -27,7 +26,6 @@ BEGIN
     END IF;
   END IF;
 END$$;
-
 -- 2) Ensure sync table exists with the expected shape so the sync function / trigger remain safe
 -- If active_products_sync exists (because the repository intentionally created it), do nothing. Otherwise create it as an empty table shaped like the products selection.
 DO $$
@@ -40,19 +38,38 @@ BEGIN
     EXECUTE 'CREATE TABLE public.active_products_sync (id uuid PRIMARY KEY, sku text, name text NOT NULL, short_desc text, long_desc text, price_cents int NOT NULL, currency text DEFAULT ''INR'', category text, is_active boolean DEFAULT true, show_on_index boolean DEFAULT true, deleted_at timestamptz DEFAULT NULL, created_at timestamptz DEFAULT now())';
   END IF;
 END$$;
-
 -- 3) Replace sync function so it targets active_products_sync (idempotent)
 CREATE OR REPLACE FUNCTION public.sync_active_products()
 RETURNS trigger
 LANGUAGE plpgsql
 AS $$
+DECLARE
+  new_json jsonb;
+  v_deleted_at timestamptz;
+  v_show_on_index boolean := true;
+  v_is_active boolean := true;
+  v_created_at timestamptz := now();
 BEGIN
   IF TG_OP = 'INSERT' OR TG_OP = 'UPDATE' THEN
-    IF NEW.deleted_at IS NULL AND NEW.is_active = true AND COALESCE(NEW.show_on_index, true) = true THEN
+    new_json := to_jsonb(NEW);
+    IF new_json ? 'deleted_at' THEN
+      v_deleted_at := NULLIF(new_json->>'deleted_at', '')::timestamptz;
+    END IF;
+    IF new_json ? 'show_on_index' THEN
+      v_show_on_index := COALESCE(NULLIF(new_json->>'show_on_index', '')::boolean, true);
+    END IF;
+    IF new_json ? 'is_active' THEN
+      v_is_active := COALESCE(NULLIF(new_json->>'is_active', '')::boolean, true);
+    END IF;
+    IF new_json ? 'created_at' THEN
+      v_created_at := NULLIF(new_json->>'created_at', '')::timestamptz;
+    END IF;
+
+    IF v_deleted_at IS NULL AND v_is_active = true AND v_show_on_index = true THEN
       INSERT INTO public.active_products_sync (
         id, sku, name, short_desc, long_desc, price_cents, currency, category, is_active, show_on_index, deleted_at, created_at
       ) VALUES (
-        NEW.id, NEW.sku, NEW.name, NEW.short_desc, NEW.long_desc, NEW.price_cents, NEW.currency, NEW.category, NEW.is_active, COALESCE(NEW.show_on_index, true), NEW.deleted_at, NEW.created_at
+        NEW.id, NEW.sku, NEW.name, NEW.short_desc, NEW.long_desc, NEW.price_cents, NEW.currency, NEW.category, v_is_active, v_show_on_index, v_deleted_at, v_created_at
       ) ON CONFLICT (id) DO UPDATE
       SET sku = EXCLUDED.sku,
           name = EXCLUDED.name,
@@ -77,13 +94,11 @@ BEGIN
   RETURN NULL;
 END;
 $$;
-
 -- 4) Attach the trigger to products table (idempotent)
 DROP TRIGGER IF EXISTS products_sync_active_after ON public.products;
 CREATE TRIGGER products_sync_active_after
 AFTER INSERT OR UPDATE OR DELETE ON public.products
 FOR EACH ROW EXECUTE FUNCTION public.sync_active_products();
-
 -- 5) Ensure publication contains the sync table (if supabase_realtime is used)
 DO $$
 BEGIN
@@ -110,13 +125,43 @@ BEGIN
     END IF;
   END IF;
 END$$;
-
 -- 6) Create the canonical view that apps expect
-CREATE OR REPLACE VIEW public.active_products AS
-SELECT id, sku, name, short_desc, long_desc, price_cents, currency, category, is_active, show_on_index, deleted_at, created_at
-FROM public.products
-WHERE deleted_at IS NULL AND is_active = true AND COALESCE(show_on_index, true) = true;
+-- The underlying products schema can vary over time. Build the view defensively so shadow DB apply works.
+DO $$
+DECLARE
+  has_show_on_index boolean;
+  has_deleted_at boolean;
+  view_sql text;
+BEGIN
+  SELECT EXISTS (
+    SELECT 1
+    FROM information_schema.columns
+    WHERE table_schema = 'public'
+      AND table_name = 'products'
+      AND column_name = 'show_on_index'
+  ) INTO has_show_on_index;
 
+  SELECT EXISTS (
+    SELECT 1
+    FROM information_schema.columns
+    WHERE table_schema = 'public'
+      AND table_name = 'products'
+      AND column_name = 'deleted_at'
+  ) INTO has_deleted_at;
+
+  view_sql :=
+    'CREATE OR REPLACE VIEW public.active_products AS '
+    'SELECT id, sku, name, short_desc, long_desc, price_cents, currency, category, is_active, '
+    || CASE WHEN has_show_on_index THEN 'COALESCE(show_on_index, true) AS show_on_index, ' ELSE 'true AS show_on_index, ' END
+    || CASE WHEN has_deleted_at THEN 'deleted_at, ' ELSE 'NULL::timestamptz AS deleted_at, ' END
+    || 'created_at '
+    'FROM public.products '
+    'WHERE is_active = true'
+    || CASE WHEN has_deleted_at THEN ' AND deleted_at IS NULL' ELSE '' END
+    || CASE WHEN has_show_on_index THEN ' AND COALESCE(show_on_index, true) = true' ELSE '' END
+    || ';';
+
+  EXECUTE view_sql;
+END $$;
 GRANT SELECT ON public.active_products TO anon, authenticated;
-
 COMMIT;

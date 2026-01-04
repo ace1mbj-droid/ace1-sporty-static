@@ -13,14 +13,10 @@ DROP POLICY IF EXISTS "user_roles_update_admin" ON user_roles CASCADE;
 DROP POLICY IF EXISTS "user_roles_update_self_only" ON user_roles CASCADE;
 DROP POLICY IF EXISTS "user_roles_delete_admin" ON user_roles CASCADE;
 DROP POLICY IF EXISTS "user_roles_delete_self_only" ON user_roles CASCADE;
-
 -- Disable RLS completely
 ALTER TABLE user_roles DISABLE ROW LEVEL SECURITY;
-
 -- Grant read access to authenticated users
 GRANT SELECT ON user_roles TO authenticated, anon;
-
 -- Keep write access restricted to service_role only (default)
 REVOKE INSERT, UPDATE, DELETE ON user_roles FROM authenticated, anon;
-
 COMMENT ON TABLE user_roles IS 'Admin role flags. RLS disabled - publicly readable. Modifications require service_role key.';

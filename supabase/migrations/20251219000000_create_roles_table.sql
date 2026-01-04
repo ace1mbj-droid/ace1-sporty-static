@@ -9,10 +9,8 @@ CREATE TABLE IF NOT EXISTS public.roles (
     created_at TIMESTAMPTZ DEFAULT now(),
     updated_at TIMESTAMPTZ DEFAULT now()
 );
-
 -- Enable RLS
 ALTER TABLE public.roles ENABLE ROW LEVEL SECURITY;
-
 -- Allow admins to manage roles
 CREATE POLICY "Admins can manage roles" ON public.roles
 FOR ALL TO authenticated
@@ -22,7 +20,6 @@ USING (
         WHERE user_id = auth.uid() AND is_admin = true
     )
 );
-
 -- Insert default roles
 INSERT INTO public.roles (name, description, permissions) VALUES
 ('owner', 'Full system access with all permissions', '{"products": true, "orders": true, "customers": true, "analytics": true, "settings": true, "users": true}'),

@@ -1,22 +1,29 @@
 -- Migration: restrict revoke RPC execution to service_role only
 
 -- Revoke EXECUTE from public/anonymous/authenticated roles for known overloads
-REVOKE EXECUTE ON FUNCTION public.revoke_session_by_token(text) FROM public, anon, authenticated;
-REVOKE EXECUTE ON FUNCTION public.revoke_session_by_token(text, text, text, text, text) FROM public, anon, authenticated;
+DO $$
+BEGIN
+	IF to_regprocedure('public.revoke_session_by_token(text)') IS NOT NULL THEN
+		EXECUTE 'REVOKE EXECUTE ON FUNCTION public.revoke_session_by_token(text) FROM public, anon, authenticated';
+		EXECUTE 'GRANT EXECUTE ON FUNCTION public.revoke_session_by_token(text) TO service_role';
+		EXECUTE 'REVOKE ALL ON FUNCTION public.revoke_session_by_token(text) FROM PUBLIC';
+	END IF;
 
-REVOKE EXECUTE ON FUNCTION public.revoke_sessions_for_email(text) FROM public, anon, authenticated;
-REVOKE EXECUTE ON FUNCTION public.revoke_sessions_for_email(text, text, text, text, text) FROM public, anon, authenticated;
+	IF to_regprocedure('public.revoke_session_by_token(text,text,text,text,text)') IS NOT NULL THEN
+		EXECUTE 'REVOKE EXECUTE ON FUNCTION public.revoke_session_by_token(text, text, text, text, text) FROM public, anon, authenticated';
+		EXECUTE 'GRANT EXECUTE ON FUNCTION public.revoke_session_by_token(text, text, text, text, text) TO service_role';
+		EXECUTE 'REVOKE ALL ON FUNCTION public.revoke_session_by_token(text, text, text, text, text) FROM PUBLIC';
+	END IF;
 
--- Grant EXECUTE only to the service_role
-GRANT EXECUTE ON FUNCTION public.revoke_session_by_token(text) TO service_role;
-GRANT EXECUTE ON FUNCTION public.revoke_session_by_token(text, text, text, text, text) TO service_role;
+	IF to_regprocedure('public.revoke_sessions_for_email(text)') IS NOT NULL THEN
+		EXECUTE 'REVOKE EXECUTE ON FUNCTION public.revoke_sessions_for_email(text) FROM public, anon, authenticated';
+		EXECUTE 'GRANT EXECUTE ON FUNCTION public.revoke_sessions_for_email(text) TO service_role';
+		EXECUTE 'REVOKE ALL ON FUNCTION public.revoke_sessions_for_email(text) FROM PUBLIC';
+	END IF;
 
-GRANT EXECUTE ON FUNCTION public.revoke_sessions_for_email(text) TO service_role;
-GRANT EXECUTE ON FUNCTION public.revoke_sessions_for_email(text, text, text, text, text) TO service_role;
-
--- Ensure other accidental default privileges are cleared
-REVOKE ALL ON FUNCTION public.revoke_session_by_token(text) FROM PUBLIC;
-REVOKE ALL ON FUNCTION public.revoke_session_by_token(text, text, text, text, text) FROM PUBLIC;
-
-REVOKE ALL ON FUNCTION public.revoke_sessions_for_email(text) FROM PUBLIC;
-REVOKE ALL ON FUNCTION public.revoke_sessions_for_email(text, text, text, text, text) FROM PUBLIC;
+	IF to_regprocedure('public.revoke_sessions_for_email(text,text,text,text,text)') IS NOT NULL THEN
+		EXECUTE 'REVOKE EXECUTE ON FUNCTION public.revoke_sessions_for_email(text, text, text, text, text) FROM public, anon, authenticated';
+		EXECUTE 'GRANT EXECUTE ON FUNCTION public.revoke_sessions_for_email(text, text, text, text, text) TO service_role';
+		EXECUTE 'REVOKE ALL ON FUNCTION public.revoke_sessions_for_email(text, text, text, text, text) FROM PUBLIC';
+	END IF;
+END $$;
