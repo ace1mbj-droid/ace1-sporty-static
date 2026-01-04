@@ -7,11 +7,11 @@ class CheckoutManager {
         this.shipping = 0;
         this.total = 0;
         this.discount = 0;
-        this.init();
+        void this.init();
     }
 
-    init() {
-        this.loadCartItems();
+    async init() {
+        await this.loadCartItems();
         this.calculateTotals();
         this.displayCartItems();
         this.setupEventListeners();
@@ -19,6 +19,13 @@ class CheckoutManager {
     }
 
     setupEventListeners() {
+        // Keep checkout in sync if cart changes while this page is open
+        window.addEventListener('ace1:cart-updated', () => {
+            this.cartItems = window.cart || [];
+            this.calculateTotals();
+            this.displayCartItems();
+        });
+
         // Continue to payment
         const continueBtn = document.getElementById('continue-to-payment');
         if (continueBtn) {
@@ -50,9 +57,17 @@ class CheckoutManager {
         }
     }
 
-    loadCartItems() {
+    async loadCartItems() {
         // Cart state is maintained via session/DB, not localStorage
-        // This method is now a no-op; cart items are fetched from window.cart if available
+        // Prefer the shared loader if available so checkout gets fresh data.
+        try {
+            if (typeof window.loadCartFromDatabase === 'function') {
+                await window.loadCartFromDatabase();
+            }
+        } catch {
+            // ignore
+        }
+
         this.cartItems = window.cart || [];
     }
 
