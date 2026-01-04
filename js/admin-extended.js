@@ -231,11 +231,15 @@ class AdminExtended {
             this.loadInventory();
             
             // Sync products tab and dashboard if adminPanel exists
-            if (window.adminPanel?.loadProducts) {
-                window.adminPanel.loadProducts();
-            }
-            if (window.adminPanel?.loadDashboard) {
-                window.adminPanel.loadDashboard();
+            if (window.adminPanel?.refreshAfterAdminDataMutation) {
+                window.adminPanel.refreshAfterAdminDataMutation({
+                    refreshProducts: true,
+                    refreshDashboard: true,
+                    refreshInventory: false
+                });
+            } else {
+                if (window.adminPanel?.loadProducts) window.adminPanel.loadProducts();
+                if (window.adminPanel?.loadDashboard) window.adminPanel.loadDashboard();
             }
         } catch (error) {
             console.error('Error adjusting stock:', error);
@@ -1592,7 +1596,15 @@ class AdminExtended {
             
             // Sync with products tab - reload product form category dropdown
             if (window.adminPanel) {
-                window.adminPanel.loadProducts();
+                if (window.adminPanel.refreshAfterAdminDataMutation) {
+                    window.adminPanel.refreshAfterAdminDataMutation({
+                        refreshProducts: true,
+                        refreshDashboard: true,
+                        refreshInventory: false
+                    });
+                } else {
+                    window.adminPanel.loadProducts();
+                }
                 const productModal = document.getElementById('product-modal');
                 const categorySelect = document.getElementById('product-category');
                 if (productModal?.classList.contains('active') && typeof window.adminPanel.populateProductCategorySelect === 'function') {
@@ -1649,7 +1661,15 @@ class AdminExtended {
             
             // Sync with products tab
             if (window.adminPanel) {
-                window.adminPanel.loadProducts();
+                if (window.adminPanel.refreshAfterAdminDataMutation) {
+                    window.adminPanel.refreshAfterAdminDataMutation({
+                        refreshProducts: true,
+                        refreshDashboard: true,
+                        refreshInventory: false
+                    });
+                } else {
+                    window.adminPanel.loadProducts();
+                }
                 const productModal = document.getElementById('product-modal');
                 const categorySelect = document.getElementById('product-category');
                 if (productModal?.classList.contains('active') && typeof window.adminPanel.populateProductCategorySelect === 'function') {
