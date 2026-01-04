@@ -3,6 +3,8 @@ class UserProfileManager {
     constructor() {
         this.orders = [];
         this.ordersReviewBound = false;
+        this._ordersRealtimeSetup = false;
+        this._ordersRealtimeChannel = null;
         this.init();
     }
 
@@ -534,6 +536,19 @@ class UserProfileManager {
                             ? String(order.order_number)
                             : `ACE${String(order.id).padStart(6, '0')}`;
 
+                        const totalRupees = (order.total_amount != null)
+                            ? Number(order.total_amount || 0)
+                            : Number(((order.total_cents || 0) / 100));
+
+                        const trackingNumber = order.tracking_number ? String(order.tracking_number) : '';
+                        const shippedAt = order.shipped_at ? new Date(order.shipped_at) : null;
+                        const deliveredAt = order.delivered_at ? new Date(order.delivered_at) : null;
+
+                        const formatDateTime = (d) => {
+                            if (!d || !Number.isFinite(d.getTime())) return '';
+                            return d.toLocaleString('en-IN');
+                        };
+
                         return `
                             <div class="order-card">
                                 <div class="order-header">
@@ -550,12 +565,13 @@ class UserProfileManager {
                                         const imageSrcRaw = item.product?.image_url || item.product?.product_images?.[0]?.storage_path || item.product?.image || '';
                                         const imageSrc = this.resolveProductImageUrl(imageSrcRaw);
                                         const priceValue = (item.price_cents ? (item.price_cents / 100) : (item.price || 0));
+                                        const qty = (item.quantity != null) ? item.quantity : ((item.qty != null) ? item.qty : 1);
                                         return `
                                             <div class="order-item" data-order-id="${order.id}" data-product-id="${productId}">
                                                 <img src="${imageSrc}" alt="${productName}" onerror="this.src='images/placeholder.jpg'">
                                                 <div class="order-item-info">
                                                     <h5>${productName}</h5>
-                                                    <p>${item.size ? `Size: ${item.size} | ` : ''}Qty: ${item.quantity}</p>
+                                                    <p>${item.size ? `Size: ${item.size} | ` : ''}Qty: ${qty}</p>
                                                     <p class="order-item-price">₹${Number(priceValue || 0).toLocaleString('en-IN')}</p>
                                                     ${order.status === 'delivered' ? `
                                                         <button class="btn btn-outline btn-sm write-review-btn" data-order-id="${order.id}" data-product-id="${productId}" data-product-name="${productName}">Write Review</button>
@@ -566,11 +582,18 @@ class UserProfileManager {
                                     }).join('')}
                                 </div>
                                 <div class="order-footer">
-                                    <p class="order-total">Total: ₹${order.total_amount?.toLocaleString()}</p>
+                                    <div>
+                                        <p class="order-total">Total: ₹${Number(totalRupees || 0).toLocaleString('en-IN')}</p>
+                                        <p class="order-date" style="margin-top:6px;">
+                                            ${trackingNumber ? `Tracking: ${trackingNumber}` : 'Tracking: Not assigned yet'}
+                                            ${shippedAt ? ` | Shipped: ${formatDateTime(shippedAt)}` : ''}
+                                            ${deliveredAt ? ` | Delivered: ${formatDateTime(deliveredAt)}` : ''}
+                                        </p>
+                                    </div>
                                     <div class="order-actions">
                                         ${order.status === 'delivered' ? 
-                                            `<button class="btn btn-secondary btn-sm">View Details</button>` :
-                                            `<button class="btn btn-secondary btn-sm">Track Order</button>`
+                                            `<button class="btn btn-secondary btn-sm" onclick="window.location.href='order-confirmation.html?order=${order.id}'">View Details</button>` :
+                                            `<button class="btn btn-secondary btn-sm" onclick="window.location.href='order-confirmation.html?order=${order.id}'">Track Order</button>`
                                         }
                                     </div>
                                 </div>
@@ -579,6 +602,7 @@ class UserProfileManager {
                     }).join('');
 
                     this.bindOrderReviewHandlers();
+                    this.setupOrdersRealtimeSync();
                 } else {
                     // No orders found
                     ordersList.innerHTML = `
@@ -598,6 +622,39 @@ class UserProfileManager {
         } else {
             // Supabase not available - show demo orders
             this.showDemoOrders(ordersList);
+        }
+    }
+
+    setupOrdersRealtimeSync() {
+        try {
+            if (this._ordersRealtimeSetup) return;
+            if (!window.supabaseService?.subscribeToCurrentUserOrders) return;
+
+            this._ordersRealtimeSetup = true;
+
+            const scheduleRefresh = () => {
+                if (this._ordersRealtimeTimer) clearTimeout(this._ordersRealtimeTimer);
+                this._ordersRealtimeTimer = setTimeout(async () => {
+                    try {
+                        await this.loadOrders();
+                    } catch (e) {
+                        console.warn('User orders realtime refresh failed:', e);
+                    }
+                }, 400);
+            };
+
+            this._ordersRealtimeChannel = window.supabaseService.subscribeToCurrentUserOrders(() => scheduleRefresh());
+
+            const supabase = window.supabaseService?.supabase;
+            window.addEventListener('beforeunload', () => {
+                try {
+                    if (supabase && this._ordersRealtimeChannel) supabase.removeChannel(this._ordersRealtimeChannel);
+                } catch (e) {
+                    // ignore
+                }
+            });
+        } catch (e) {
+            console.warn('setupOrdersRealtimeSync skipped:', e);
         }
     }
     
