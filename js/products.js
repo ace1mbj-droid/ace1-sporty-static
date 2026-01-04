@@ -60,6 +60,7 @@ class ProductFilterManager {
         const currentPath = window.location.pathname || '';
         if (currentPath.includes('shoes.html')) return 'shoes';
         if (currentPath.includes('clothing.html')) return 'clothing';
+        if (currentPath.includes('accessories.html')) return 'accessories';
 
         // Default: align with the product query behavior (footwear-first)
         return 'shoes';
@@ -347,7 +348,7 @@ class ProductFilterManager {
                 console.log('No products returned from Supabase');
 
                 // Clothing should not be publicly available when empty.
-                if (primaryCategoryFilter === 'clothing') {
+                if (primaryCategoryFilter === 'clothing' || primaryCategoryFilter === 'accessories') {
                     window.location.replace('shoes.html');
                     return;
                 }
@@ -425,7 +426,7 @@ class ProductFilterManager {
         }
 
         const path = window.location.pathname || '';
-        const showCreatedAt = path.includes('shoes.html') || path.includes('clothing.html');
+        const showCreatedAt = path.includes('shoes.html') || path.includes('clothing.html') || path.includes('accessories.html');
 
         grid.innerHTML = products.map(product => {
             const createdAtLabel = showCreatedAt ? this.formatProductCreatedAt(product.created_at) : '';
