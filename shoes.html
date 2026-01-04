@@ -44,6 +44,47 @@
     <meta name="twitter:title" content="Ace#1 | Quality, Affordable Sneakers">
     <meta name="twitter:description" content="Shop Ace#1 sneakers - quality, affordable footwear for walking, tracking, jogging, and long shifts.">
     <meta name="twitter:image" content="https://vorqavsuqcjnkjzwkyzr.supabase.co/storage/v1/object/public/Website/Cat1.JPG">
+
+    <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@graph": [
+                {
+                    "@type": "Organization",
+                    "@id": "https://ace1.in/#organization",
+                    "name": "Ace#1",
+                    "url": "https://ace1.in/",
+                    "logo": {
+                        "@type": "ImageObject",
+                        "url": "https://vorqavsuqcjnkjzwkyzr.supabase.co/storage/v1/object/public/Website/brand/ace1-logo.jpeg"
+                    }
+                },
+                {
+                    "@type": "CollectionPage",
+                    "@id": "https://ace1.in/shoes.html#webpage",
+                    "url": "https://ace1.in/shoes.html",
+                    "name": "Ace#1 | Quality, Affordable Sneakers",
+                    "isPartOf": {
+                        "@id": "https://ace1.in/#website"
+                    },
+                    "about": {
+                        "@id": "https://ace1.in/#organization"
+                    },
+                    "inLanguage": "en-IN"
+                },
+                {
+                    "@type": "WebSite",
+                    "@id": "https://ace1.in/#website",
+                    "url": "https://ace1.in/",
+                    "name": "Ace#1",
+                    "publisher": {
+                        "@id": "https://ace1.in/#organization"
+                    },
+                    "inLanguage": "en-IN"
+                }
+            ]
+        }
+    </script>
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/reviews.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
