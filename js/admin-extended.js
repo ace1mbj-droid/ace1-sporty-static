@@ -37,6 +37,7 @@ class AdminExtended {
                     inventory(id, size, stock)
                 `)
                 .eq('is_active', true)
+                .eq('primary_category', 'shoes')
                 .is('deleted_at', null)
                 .order('name');
 
@@ -141,6 +142,7 @@ class AdminExtended {
             .from('products')
             .select('id, name')
             .eq('is_active', true)
+            .eq('primary_category', 'shoes')
             .is('deleted_at', null)
             .order('name');
         

@@ -103,27 +103,40 @@ button {
     align-items: center;
 }
 
+/* When an image logo is present, hide the text mark (fallback is shown if the image is removed onerror). */
+.nav-logo a .site-logo-img + .logo-text {
+    display: none;
+}
+
 .site-logo-img {
-    height: 42px;
+    height: 56px;
     width: auto;
-    max-width: 180px;
+    max-width: 240px;
     display: block;
     object-fit: contain;
-    border-radius: 10px;
+    border-radius: 0;
 }
 
 .footer-logo-img {
-    height: 34px;
+    height: 44px;
     max-width: 200px;
 }
 
 .nav-logo .logo-text {
     font-family: var(--font-display);
-    font-size: 32px;
+    font-size: 36px;
     font-weight: bold;
     letter-spacing: 2px;
     color: var(--primary-color);
     font-style: normal !important;
+}
+
+.nav-logo .admin-badge {
+    margin-left: 10px;
+    font-weight: 700;
+    color: var(--text-light);
+    letter-spacing: 0.5px;
+    font-size: 14px;
 }
 
 .logo-accent {
@@ -901,6 +914,13 @@ button {
     font-size: 36px;
     margin-bottom: 20px;
     letter-spacing: 2px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.footer-logo .footer-logo-img + .logo-text {
+    display: none;
 }
 
 .footer-column p {
@@ -3655,9 +3675,8 @@ button {
         padding: 0 15px;
     }
 
-    .nav-logo .logo-text {
-        font-size: 18px;
-    }
+    .nav-logo .logo-text { font-size: 24px; }
+    .nav-logo .admin-badge { font-size: 13px; }
 
     .nav-icons {
         gap: 10px;
@@ -3745,31 +3764,64 @@ button {
         position: sticky;
         top: 0;
         z-index: 1000;
-        padding: 10px 0;
+        padding-top: calc(10px + env(safe-area-inset-top));
+        padding-bottom: 10px;
         box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
 
     .nav-container {
-        padding: 0 12px;
+        padding-left: calc(clamp(12px, 4vw, 16px) + env(safe-area-inset-left));
+        padding-right: calc(clamp(12px, 4vw, 16px) + env(safe-area-inset-right));
+        padding-top: 0;
+        padding-bottom: 0;
         display: flex;
         justify-content: space-between;
         align-items: center;
-        gap: 8px;
+        gap: clamp(6px, 2vw, 10px);
     }
 
     .nav-logo {
         flex: 0;
     }
 
-    .nav-logo .logo-text {
-        font-size: 16px;
-        font-weight: 600;
-    }
+    .nav-logo .logo-text { font-size: 22px; font-weight: 700; }
+    .nav-logo .admin-badge { font-size: 12px; }
 
     .nav-icons {
         display: flex;
-        gap: 6px;
+        gap: clamp(6px, 2vw, 10px);
         align-items: center;
+    }
+
+    /* Make icon buttons easier to tap on phones (min 44px target). */
+    .nav-icons .icon-btn {
+        width: clamp(44px, 10vw, 52px);
+        height: clamp(44px, 10vw, 52px);
+        padding: 0;
+    }
+
+    .nav-icons .icon-btn i {
+        font-size: clamp(20px, 5vw, 24px);
+    }
+
+    .site-logo-img {
+        height: clamp(40px, 9vw, 48px);
+        max-width: 200px;
+    }
+
+    .nav-icons .cart-count {
+        width: 22px;
+        height: 22px;
+        font-size: 12px;
+        top: -2px;
+        right: -2px;
+    }
+
+    /* Hamburger is a button too; increase hit area without changing colors. */
+    .hamburger {
+        width: clamp(44px, 10vw, 52px);
+        height: clamp(44px, 10vw, 52px);
+        padding: clamp(10px, 2.5vw, 12px);
     }
 
     .nav-icons a,
@@ -3778,6 +3830,7 @@ button {
         font-size: 12px;
         white-space: nowrap;
         min-height: 44px;
+        min-width: 44px;
         display: inline-flex;
         align-items: center;
         justify-content: center;
@@ -4215,26 +4268,59 @@ button {
     }
 
     .navbar {
-        padding: 8px 0;
+        padding-top: calc(8px + env(safe-area-inset-top));
+        padding-bottom: 8px;
     }
 
     .nav-container {
-        padding: 0 10px;
-        gap: 4px;
+        padding-left: calc(clamp(8px, 3.5vw, 12px) + env(safe-area-inset-left));
+        padding-right: calc(clamp(8px, 3.5vw, 12px) + env(safe-area-inset-right));
+        padding-top: 0;
+        padding-bottom: 0;
+        gap: clamp(2px, 2vw, 6px);
     }
 
-    .nav-logo .logo-text {
-        font-size: 14px;
-    }
+    .nav-logo .logo-text { font-size: 20px; }
+    .nav-logo .admin-badge { font-size: 12px; }
 
     .nav-icons {
-        gap: 4px;
+        gap: clamp(2px, 2vw, 6px);
+    }
+
+    .nav-icons .icon-btn {
+        width: clamp(44px, 12vw, 52px);
+        height: clamp(44px, 12vw, 52px);
+        padding: 0;
+    }
+
+    .nav-icons .icon-btn i {
+        font-size: clamp(20px, 6vw, 24px);
+    }
+
+    .site-logo-img {
+        height: clamp(38px, 10vw, 44px);
+        max-width: 180px;
+    }
+
+    .nav-icons .cart-count {
+        width: 22px;
+        height: 22px;
+        font-size: 12px;
+        top: -2px;
+        right: -2px;
+    }
+
+    .hamburger {
+        width: clamp(44px, 12vw, 52px);
+        height: clamp(44px, 12vw, 52px);
+        padding: clamp(10px, 3vw, 12px);
     }
 
     .nav-icons a,
     .nav-icons button {
         padding: 6px 8px;
         font-size: 11px;
+        min-width: 44px;
     }
 
     .hero {
@@ -4426,6 +4512,7 @@ button {
         padding: 0 12px;
     }
 }
+
 
 /* Landscape orientation (max-width: 768px) */
 @media (max-width: 768px) and (orientation: landscape) {
@@ -5103,14 +5190,8 @@ button {
     color: #999;
 }
 
-/* Development Banner */
+/* Development/Test Banner (disabled for customers) */
 #dev-banner {
-    background: #ffcc00;
-    color: #000;
-    text-align: center;
-    padding: 10px;
-    font-weight: bold;
-    font-size: 1.1rem;
-    border-bottom: 2px solid #000;
+    display: none !important;
 }
 
