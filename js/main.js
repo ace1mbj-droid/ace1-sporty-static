@@ -1128,7 +1128,14 @@ filterBtns.forEach(btn => {
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     anchor.addEventListener('click', function (e) {
         e.preventDefault();
-        const target = document.querySelector(this.getAttribute('href'));
+        const href = this.getAttribute('href');
+        if (!href || href === '#') return;
+        let target = null;
+        try {
+            target = document.querySelector(href);
+        } catch {
+            return;
+        }
         if (target) {
             target.scrollIntoView({
                 behavior: 'smooth',
