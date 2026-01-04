@@ -17,6 +17,8 @@ In Supabase Dashboard:
 2. Select **Confirm signup**
 3. Replace the subject/body with your branded version.
 
+If you have **zero DNS access**, this is the main thing you can (and should) do.
+
 ### Recommended template (Confirm signup)
 
 **Subject**
@@ -39,11 +41,28 @@ Notes:
 - `{{ .ConfirmationURL }}` is the verification link provided by Supabase.
 - You can personalize with metadata via `{{ .Data }}` if you store it in `auth.users.user_metadata`.
 
+Copy/paste versions for all common templates live in:
+- [docs/email-templates/confirm-signup.html](docs/email-templates/confirm-signup.html)
+- [docs/email-templates/reset-password.html](docs/email-templates/reset-password.html)
+- [docs/email-templates/magic-link.html](docs/email-templates/magic-link.html)
+- [docs/email-templates/change-email.html](docs/email-templates/change-email.html)
+- [docs/email-templates/invite-user.html](docs/email-templates/invite-user.html)
+
 ## 2) Change the sender to hello@ace1.in (SMTP)
 
 If your “From” shows Supabase branding, configure **Custom SMTP**.
 
 If you do not have access to DNS records for `ace1.in` (for example no registrar/DNS access), you can still update the **template content** and often the **sender name**, but you cannot reliably change the **From email address** to `hello@ace1.in`.
+
+### No-DNS option: make it look like ACE#1 anyway
+
+With zero DNS access, do this:
+
+1. Supabase Dashboard → **Authentication → Templates**
+2. Replace the default template bodies to remove the Supabase footer/branding.
+3. Add your own footer, e.g. “Need help? hello@ace1.in”.
+
+If Supabase exposes a **Sender name** field for default sending in your project, set it to `ACE#1`. If it doesn’t, include “ACE#1” in the subject and in the email footer.
 
 In Supabase Dashboard:
 
