@@ -836,6 +836,51 @@ class AdminPanel {
         }));
 
         this.renderProducts(category);
+
+        // Update admin tab + status message to reflect whether this category
+        // is currently visible on the public site.
+        this.updatePrimaryCategoryPublicVisibility(category, products || []);
+    }
+
+    updatePrimaryCategoryPublicVisibility(category, rawProducts) {
+        if (category !== 'shoes' && category !== 'clothing') return;
+
+        const publicCount = (rawProducts || []).filter(p => {
+            const isActive = p && p.is_active === true;
+            const notDeleted = !p?.deleted_at;
+            const notLocked = p?.is_locked !== true;
+            const status = String(p?.status || 'available');
+            const available = status === 'available';
+            return isActive && notDeleted && notLocked && available;
+        }).length;
+
+        const visible = publicCount > 0;
+        const tabButton = document.querySelector(`.admin-tab[data-tab="${category}"]`);
+        if (tabButton) {
+            const baseLabel = category === 'shoes' ? 'Shoes' : 'Clothing';
+            tabButton.textContent = visible ? baseLabel : `${baseLabel} (Hidden)`;
+        }
+
+        const content = document.getElementById(`${category}-content`);
+        if (!content) return;
+
+        let note = content.querySelector('.public-availability-note');
+        if (!note) {
+            note = document.createElement('div');
+            note.className = 'public-availability-note';
+
+            const grid = content.querySelector('.product-grid');
+            if (grid) {
+                grid.insertAdjacentElement('beforebegin', note);
+            } else {
+                content.appendChild(note);
+            }
+        }
+
+        const label = category === 'shoes' ? 'Shoes' : 'Clothing';
+        note.innerHTML = visible
+            ? `<strong>Public page:</strong> Visible (${publicCount} active product${publicCount === 1 ? '' : 's'}).`
+            : `<strong>Public page:</strong> Hidden (no active products). Add at least 1 active ${label.toLowerCase()} product to show it on the website.`;
     }
 
     renderProducts(category = null) {

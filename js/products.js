@@ -238,6 +238,8 @@ class ProductFilterManager {
                 `)
                 .eq('is_active', true)
                 .is('deleted_at', null)
+                .or('is_locked.is.null,is_locked.eq.false')
+                .eq('status', 'available')
                 .order('created_at', { ascending: false });
             
             // Apply primary category filter if on shoes or clothing page
@@ -286,13 +288,7 @@ class ProductFilterManager {
                 }, {}),
                 price: (product.price_cents / 100).toFixed(2), // Convert cents to rupees
                 category: this.normalizeCategoryToSlug(product.category)
-            })).filter(product => {
-                // Hide locked/unavailable items from public listings so admin edits reflect immediately.
-                if (product && product.is_locked) return false;
-                const status = (product && product.status) ? String(product.status).toLowerCase() : null;
-                if (status && status !== 'available') return false;
-                return true;
-            });
+            }));
 
             this.visibleCategorySlugs = new Set((processedProducts || []).map(p => p.category).filter(Boolean));
             // Re-render category filters now that we know which categories are present.
@@ -321,6 +317,12 @@ class ProductFilterManager {
             } else {
                 // Not an error condition; can be legitimate when inventory is empty.
                 console.log('No products returned from Supabase');
+
+                // Clothing should not be publicly available when empty.
+                if (primaryCategoryFilter === 'clothing') {
+                    window.location.replace('shoes.html');
+                    return;
+                }
 
                 setCategoryEmptyState(true);
                 // Render an empty state so the page doesn't get stuck on a spinner.
