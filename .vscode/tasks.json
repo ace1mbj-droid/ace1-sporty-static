@@ -24,7 +24,7 @@
 		{
 			"label": "Supabase: DB Pull",
 			"type": "shell",
-			"command": "supabase db pull --yes",
+			"command": "bash scripts/supabase-db-pull-safe.sh",
 			"presentation": {
 				"reveal": "always",
 				"panel": "shared"
