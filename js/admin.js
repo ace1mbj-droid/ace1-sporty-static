@@ -1245,6 +1245,235 @@ class AdminPanel {
         }
         
         modal.classList.add('active');
+
+        // Inline suggestions for faster data entry
+        try {
+            this.setupInlineSuggestionsForProductModal();
+        } catch (e) {
+            console.warn('Inline suggestions setup failed', e);
+        }
+    }
+
+    // ===================================
+    // INLINE SUGGESTIONS (ADMIN)
+    // ===================================
+    getLocalList(key, limit = 30) {
+        try {
+            const raw = localStorage.getItem(key);
+            const parsed = raw ? JSON.parse(raw) : [];
+            if (!Array.isArray(parsed)) return [];
+            return parsed.map(v => String(v || '').trim()).filter(Boolean).slice(0, limit);
+        } catch {
+            return [];
+        }
+    }
+
+    setLocalList(key, values, limit = 30) {
+        try {
+            const list = Array.from(new Set((values || []).map(v => String(v || '').trim()).filter(Boolean)));
+            localStorage.setItem(key, JSON.stringify(list.slice(0, limit)));
+        } catch {
+            // ignore
+        }
+    }
+
+    addLocalListValue(key, value, limit = 30) {
+        const v = String(value || '').trim();
+        if (!v) return;
+        const current = this.getLocalList(key, limit);
+        const next = [v, ...current.filter(x => x.toLowerCase() !== v.toLowerCase())].slice(0, limit);
+        this.setLocalList(key, next, limit);
+    }
+
+    createInlineSuggestDropdown(anchorEl) {
+        if (!anchorEl) return null;
+        const host = anchorEl.closest('.form-group') || anchorEl.parentElement;
+        if (!host) return null;
+
+        host.classList.add('ace1-inline-suggest-wrap');
+
+        let dd = host.querySelector('.ace1-inline-suggest');
+        if (!dd) {
+            dd = document.createElement('div');
+            dd.className = 'ace1-inline-suggest';
+            dd.hidden = true;
+            host.appendChild(dd);
+        }
+        return dd;
+    }
+
+    bindInlineSuggest(inputEl, getItems) {
+        if (!inputEl || inputEl.dataset.inlineSuggestBound === '1') return;
+        inputEl.dataset.inlineSuggestBound = '1';
+
+        const dropdown = this.createInlineSuggestDropdown(inputEl);
+        if (!dropdown) return;
+
+        let activeIndex = -1;
+        let lastItems = [];
+
+        const close = () => {
+            dropdown.hidden = true;
+            dropdown.innerHTML = '';
+            activeIndex = -1;
+            lastItems = [];
+        };
+
+        const render = (items) => {
+            lastItems = items || [];
+            activeIndex = -1;
+
+            if (!lastItems.length) {
+                close();
+                return;
+            }
+
+            dropdown.innerHTML = lastItems
+                .slice(0, 8)
+                .map((txt, idx) => `<button type="button" class="ace1-inline-suggest-item" data-idx="${idx}">${this.escapeHtml(txt)}</button>`)
+                .join('');
+            dropdown.hidden = false;
+        };
+
+        const updateActive = () => {
+            const btns = Array.from(dropdown.querySelectorAll('.ace1-inline-suggest-item'));
+            btns.forEach((b, i) => {
+                if (i === activeIndex) b.classList.add('is-active');
+                else b.classList.remove('is-active');
+            });
+            const active = btns[activeIndex];
+            if (active) active.scrollIntoView({ block: 'nearest' });
+        };
+
+        const pick = (idx) => {
+            const v = lastItems[idx];
+            if (!v) return;
+            inputEl.value = v;
+            inputEl.dispatchEvent(new Event('input', { bubbles: true }));
+            close();
+        };
+
+        dropdown.addEventListener('mousedown', (e) => {
+            // Prevent input blur before we handle click
+            e.preventDefault();
+        });
+
+        dropdown.addEventListener('click', (e) => {
+            const btn = e.target?.closest?.('.ace1-inline-suggest-item');
+            const idx = btn ? parseInt(btn.dataset.idx, 10) : NaN;
+            if (Number.isFinite(idx)) pick(idx);
+        });
+
+        inputEl.addEventListener('input', () => {
+            const q = String(inputEl.value || '').trim().toLowerCase();
+            const items = (getItems?.() || [])
+                .map(v => String(v || '').trim())
+                .filter(Boolean);
+
+            const filtered = q
+                ? items.filter(v => v.toLowerCase().includes(q))
+                : items;
+
+            render(Array.from(new Set(filtered)).slice(0, 8));
+        });
+
+        inputEl.addEventListener('keydown', (e) => {
+            if (dropdown.hidden) return;
+            const btns = dropdown.querySelectorAll('.ace1-inline-suggest-item');
+            if (!btns.length) return;
+
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                activeIndex = Math.min(btns.length - 1, activeIndex + 1);
+                updateActive();
+                return;
+            }
+
+            if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                activeIndex = Math.max(0, activeIndex - 1);
+                updateActive();
+                return;
+            }
+
+            if (e.key === 'Enter') {
+                if (activeIndex >= 0) {
+                    e.preventDefault();
+                    pick(activeIndex);
+                }
+                return;
+            }
+
+            if (e.key === 'Escape') {
+                close();
+            }
+        });
+
+        inputEl.addEventListener('blur', () => {
+            setTimeout(close, 120);
+        });
+    }
+
+    getSizeSuggestions(primaryCategory) {
+        const cat = String(primaryCategory || '').toLowerCase();
+        if (cat === 'clothing') {
+            return ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL'];
+        }
+        if (cat === 'accessories') {
+            return ['One Size'];
+        }
+        // shoes default
+        return ['5', '6', '7', '8', '9', '10', '11', '12'];
+    }
+
+    setupInlineSuggestionsForProductModal() {
+        const modal = document.getElementById('product-modal');
+        if (!modal || !modal.classList.contains('active')) return;
+
+        // Product name suggestions from existing products + recently used values
+        const nameInput = modal.querySelector('#product-name');
+        this.bindInlineSuggest(nameInput, () => {
+            const recent = this.getLocalList('ace1_admin_product_name_suggestions_v1', 30);
+            const existing = (this.products || []).map(p => p?.name).filter(Boolean);
+            return [...recent, ...existing];
+        });
+
+        nameInput?.addEventListener('blur', () => {
+            this.addLocalListValue('ace1_admin_product_name_suggestions_v1', nameInput.value, 30);
+        });
+
+        // Image URL suggestions from existing images + recently used values
+        const imageInput = modal.querySelector('#product-image');
+        this.bindInlineSuggest(imageInput, () => {
+            const recent = this.getLocalList('ace1_admin_image_url_suggestions_v1', 30);
+            const existing = (this.products || []).map(p => p?.image_url).filter(Boolean);
+            return [...recent, ...existing];
+        });
+
+        imageInput?.addEventListener('blur', () => {
+            this.addLocalListValue('ace1_admin_image_url_suggestions_v1', imageInput.value, 30);
+        });
+
+        // Inventory sizes: bind on focus for each row
+        const primary = modal.querySelector('#product-primary-category')?.value || '';
+        const sizeSuggestions = this.getSizeSuggestions(primary);
+
+        const bindAllInvSizes = () => {
+            modal.querySelectorAll('.inv-size').forEach(el => {
+                this.bindInlineSuggest(el, () => sizeSuggestions);
+            });
+        };
+
+        bindAllInvSizes();
+
+        const addBtn = modal.querySelector('#add-size-btn');
+        if (addBtn && addBtn.dataset.inlineSuggestHooked !== '1') {
+            addBtn.dataset.inlineSuggestHooked = '1';
+            addBtn.addEventListener('click', () => {
+                // Wait for row to be added
+                setTimeout(bindAllInvSizes, 0);
+            });
+        }
     }
 
     slugifyCategory(value) {

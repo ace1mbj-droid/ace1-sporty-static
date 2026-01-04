@@ -464,6 +464,7 @@ const searchInput = document.querySelector('.search-input');
 // Search state
 let searchDebounceTimer = null;
 let searchResultsContainer = null;
+let searchActiveIndex = -1;
 
 // Initialize search results container
 function initSearchResults() {
@@ -504,10 +505,20 @@ function initSearchResults() {
                     cursor: pointer;
                     transition: all 0.3s ease;
                     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+                    border: none;
+                    width: 100%;
+                    text-align: left;
                 }
                 .search-result-item:hover {
                     transform: translateY(-2px);
                     box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+                }
+                .search-result-item.is-active {
+                    transform: translateY(-2px);
+                    box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+                }
+                .search-result-item:focus {
+                    outline: none;
                 }
                 .search-result-image {
                     width: 70px;
@@ -571,6 +582,7 @@ async function performSearch(query) {
     
     if (query.length < 2) {
         searchResultsContainer.innerHTML = '<p class="search-hint">Type at least 2 characters to search...</p>';
+        searchActiveIndex = -1;
         return;
     }
     
@@ -627,6 +639,7 @@ async function performSearch(query) {
                     <p style="font-size: 14px; margin-top: 10px;">Try different keywords or browse our <a href="products.html" style="color: #FF6B00;">products page</a></p>
                 </div>
             `;
+            searchActiveIndex = -1;
             return;
         }
         
@@ -646,24 +659,37 @@ async function performSearch(query) {
                     <p style="font-size: 14px; margin-top: 10px;">Try different keywords or browse our <a href="products.html" style="color: #FF6B00;">products page</a></p>
                 </div>
             `;
+            searchActiveIndex = -1;
             return;
         }
 
-        searchResultsContainer.innerHTML = availableProducts.map(product => {
+        searchResultsContainer.innerHTML = availableProducts.map((product, idx) => {
             const imageUrl = getImageUrl(product.product_images?.[0]?.storage_path);
             const price = (product.price_cents / 100).toLocaleString('en-IN');
-            
+            const href = `products.html?search=${encodeURIComponent(product.name)}`;
+
             return `
-                <div class="search-result-item" onclick="window.location.href='products.html?search=${encodeURIComponent(product.name)}'">
+                <button type="button" class="search-result-item" data-href="${href}" data-index="${idx}">
                     <img src="${imageUrl}" alt="${product.name}" class="search-result-image" onerror="this.src='images/placeholder.jpg'">
                     <div class="search-result-info">
                         <div class="search-result-name">${highlightMatch(product.name, query)}</div>
                         <div class="search-result-category">${product.category || 'Footwear'}</div>
                     </div>
                     <div class="search-result-price">₹${price}</div>
-                </div>
+                </button>
             `;
         }).join('');
+
+        // Reset active index and bind click handler (event delegation)
+        searchActiveIndex = -1;
+        if (!searchResultsContainer.dataset.bound) {
+            searchResultsContainer.addEventListener('click', (e) => {
+                const btn = e.target?.closest?.('.search-result-item');
+                const href = btn?.dataset?.href;
+                if (href) window.location.href = href;
+            });
+            searchResultsContainer.dataset.bound = '1';
+        }
         
         // Add "View All" link if there might be more results
         if (availableProducts.length >= 10) {
@@ -677,6 +703,7 @@ async function performSearch(query) {
     } catch (error) {
         console.error('Search error:', error);
         searchResultsContainer.innerHTML = '<p class="search-hint">Search error. Please try again.</p>';
+        searchActiveIndex = -1;
     }
 }
 
@@ -690,11 +717,30 @@ function escapeHTML(str) {
         .replace(/'/g, '&#39;');
 }
 
+function escapeRegex(str) {
+    return String(str).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
 // Highlight matching text
 function highlightMatch(text, query) {
     if (!query) return text;
-    const regex = new RegExp(`(${query})`, 'gi');
+    const safe = escapeRegex(query);
+    const regex = new RegExp(`(${safe})`, 'gi');
     return text.replace(regex, '<mark style="background: #FFE0B2; padding: 0 2px;">$1</mark>');
+}
+
+function updateActiveSearchResult() {
+    if (!searchResultsContainer) return;
+    const items = Array.from(searchResultsContainer.querySelectorAll('.search-result-item'));
+    items.forEach((el, i) => {
+        if (i === searchActiveIndex) el.classList.add('is-active');
+        else el.classList.remove('is-active');
+    });
+
+    const active = items[searchActiveIndex];
+    if (active && typeof active.scrollIntoView === 'function') {
+        active.scrollIntoView({ block: 'nearest' });
+    }
 }
 
 searchBtn?.addEventListener('click', () => {
@@ -709,6 +755,7 @@ searchClose?.addEventListener('click', () => {
     if (searchResultsContainer) {
         searchResultsContainer.innerHTML = '<p class="search-hint">Start typing to search products...</p>';
     }
+    searchActiveIndex = -1;
 });
 
 searchOverlay?.addEventListener('click', (e) => {
@@ -725,10 +772,43 @@ searchInput?.addEventListener('input', (e) => {
     }, 300);
 });
 
-// Handle Enter key
-searchInput?.addEventListener('keypress', (e) => {
+// Keyboard navigation for search results
+searchInput?.addEventListener('keydown', (e) => {
+    if (!searchOverlay?.classList.contains('active')) return;
+
+    if (e.key === 'Escape') {
+        searchOverlay.classList.remove('active');
+        searchActiveIndex = -1;
+        return;
+    }
+
+    const items = searchResultsContainer
+        ? Array.from(searchResultsContainer.querySelectorAll('.search-result-item'))
+        : [];
+
+    if (e.key === 'ArrowDown') {
+        if (!items.length) return;
+        e.preventDefault();
+        searchActiveIndex = Math.min(items.length - 1, searchActiveIndex + 1);
+        updateActiveSearchResult();
+        return;
+    }
+
+    if (e.key === 'ArrowUp') {
+        if (!items.length) return;
+        e.preventDefault();
+        searchActiveIndex = Math.max(0, searchActiveIndex - 1);
+        updateActiveSearchResult();
+        return;
+    }
+
     if (e.key === 'Enter') {
         const query = e.target.value.trim();
+        if (searchActiveIndex >= 0 && items[searchActiveIndex]?.dataset?.href) {
+            e.preventDefault();
+            window.location.href = items[searchActiveIndex].dataset.href;
+            return;
+        }
         if (query.length >= 2) {
             window.location.href = `products.html?search=${encodeURIComponent(query)}`;
         }

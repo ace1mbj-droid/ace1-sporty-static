@@ -11,14 +11,19 @@ class CheckoutManager {
     }
 
     async init() {
+        // Attach listeners ASAP (inline suggestions + button handlers)
+        this.setupEventListeners();
+
         await this.loadCartItems();
         this.calculateTotals();
         this.displayCartItems();
-        this.setupEventListeners();
         this.loadUserInfo();
     }
 
     setupEventListeners() {
+        if (this._listenersSetup) return;
+        this._listenersSetup = true;
+
         // Keep checkout in sync if cart changes while this page is open
         window.addEventListener('ace1:cart-updated', () => {
             this.cartItems = window.cart || [];
@@ -55,6 +60,187 @@ class CheckoutManager {
         if (pincodeInput) {
             pincodeInput.addEventListener('blur', () => this.validatePincode());
         }
+
+        // Inline suggestions for shipping fields
+        try {
+            this.setupInlineSuggestions();
+        } catch (e) {
+            console.warn('Checkout inline suggestions skipped:', e);
+        }
+    }
+
+    // ===================================
+    // INLINE SUGGESTIONS (CHECKOUT)
+    // ===================================
+    getLocalList(key, limit = 30) {
+        try {
+            const raw = localStorage.getItem(key);
+            const parsed = raw ? JSON.parse(raw) : [];
+            if (!Array.isArray(parsed)) return [];
+            return parsed.map(v => String(v || '').trim()).filter(Boolean).slice(0, limit);
+        } catch {
+            return [];
+        }
+    }
+
+    setLocalList(key, values, limit = 30) {
+        try {
+            const list = Array.from(new Set((values || []).map(v => String(v || '').trim()).filter(Boolean)));
+            localStorage.setItem(key, JSON.stringify(list.slice(0, limit)));
+        } catch {
+            // ignore
+        }
+    }
+
+    addLocalListValue(key, value, limit = 30) {
+        const v = String(value || '').trim();
+        if (!v) return;
+        const current = this.getLocalList(key, limit);
+        const next = [v, ...current.filter(x => x.toLowerCase() !== v.toLowerCase())].slice(0, limit);
+        this.setLocalList(key, next, limit);
+    }
+
+    createInlineSuggestDropdown(anchorEl) {
+        if (!anchorEl) return null;
+        const host = anchorEl.closest('.form-group') || anchorEl.parentElement;
+        if (!host) return null;
+        host.classList.add('ace1-inline-suggest-wrap');
+        let dd = host.querySelector('.ace1-inline-suggest');
+        if (!dd) {
+            dd = document.createElement('div');
+            dd.className = 'ace1-inline-suggest';
+            dd.hidden = true;
+            host.appendChild(dd);
+        }
+        return dd;
+    }
+
+    bindInlineSuggest(inputEl, getItems) {
+        if (!inputEl || inputEl.dataset.inlineSuggestBound === '1') return;
+        inputEl.dataset.inlineSuggestBound = '1';
+
+        const dropdown = this.createInlineSuggestDropdown(inputEl);
+        if (!dropdown) return;
+
+        let activeIndex = -1;
+        let lastItems = [];
+
+        const close = () => {
+            dropdown.hidden = true;
+            dropdown.innerHTML = '';
+            activeIndex = -1;
+            lastItems = [];
+        };
+
+        const escapeHtml = (s) => String(s)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+
+        const render = (items) => {
+            lastItems = items || [];
+            activeIndex = -1;
+            if (!lastItems.length) {
+                close();
+                return;
+            }
+            dropdown.innerHTML = lastItems
+                .slice(0, 8)
+                .map((txt, idx) => `<button type="button" class="ace1-inline-suggest-item" data-idx="${idx}">${escapeHtml(txt)}</button>`)
+                .join('');
+            dropdown.hidden = false;
+        };
+
+        const updateActive = () => {
+            const btns = Array.from(dropdown.querySelectorAll('.ace1-inline-suggest-item'));
+            btns.forEach((b, i) => {
+                if (i === activeIndex) b.classList.add('is-active');
+                else b.classList.remove('is-active');
+            });
+            const active = btns[activeIndex];
+            if (active) active.scrollIntoView({ block: 'nearest' });
+        };
+
+        const pick = (idx) => {
+            const v = lastItems[idx];
+            if (!v) return;
+            inputEl.value = v;
+            inputEl.dispatchEvent(new Event('input', { bubbles: true }));
+            close();
+        };
+
+        dropdown.addEventListener('mousedown', (e) => e.preventDefault());
+        dropdown.addEventListener('click', (e) => {
+            const btn = e.target?.closest?.('.ace1-inline-suggest-item');
+            const idx = btn ? parseInt(btn.dataset.idx, 10) : NaN;
+            if (Number.isFinite(idx)) pick(idx);
+        });
+
+        inputEl.addEventListener('input', () => {
+            const q = String(inputEl.value || '').trim().toLowerCase();
+            const items = (getItems?.() || [])
+                .map(v => String(v || '').trim())
+                .filter(Boolean);
+            const filtered = q ? items.filter(v => v.toLowerCase().includes(q)) : items;
+            render(Array.from(new Set(filtered)).slice(0, 8));
+        });
+
+        inputEl.addEventListener('keydown', (e) => {
+            if (dropdown.hidden) return;
+            const btns = dropdown.querySelectorAll('.ace1-inline-suggest-item');
+            if (!btns.length) return;
+
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                activeIndex = Math.min(btns.length - 1, activeIndex + 1);
+                updateActive();
+                return;
+            }
+            if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                activeIndex = Math.max(0, activeIndex - 1);
+                updateActive();
+                return;
+            }
+            if (e.key === 'Enter') {
+                if (activeIndex >= 0) {
+                    e.preventDefault();
+                    pick(activeIndex);
+                }
+                return;
+            }
+            if (e.key === 'Escape') {
+                close();
+            }
+        });
+
+        inputEl.addEventListener('blur', () => {
+            setTimeout(close, 120);
+        });
+    }
+
+    setupInlineSuggestions() {
+        const address = document.getElementById('address');
+        const city = document.getElementById('city');
+        const pincode = document.getElementById('pincode');
+
+        this.bindInlineSuggest(address, () => this.getLocalList('ace1_checkout_address_suggestions_v1', 30));
+        this.bindInlineSuggest(city, () => this.getLocalList('ace1_checkout_city_suggestions_v1', 30));
+        this.bindInlineSuggest(pincode, () => this.getLocalList('ace1_checkout_pincode_suggestions_v1', 30));
+
+        const persist = () => this.saveCheckoutSuggestionSnapshot();
+        address?.addEventListener('blur', persist);
+        city?.addEventListener('blur', persist);
+        pincode?.addEventListener('blur', persist);
+    }
+
+    saveCheckoutSuggestionSnapshot() {
+        // Store last-used values as future inline suggestions (no server writes)
+        this.addLocalListValue('ace1_checkout_address_suggestions_v1', document.getElementById('address')?.value, 30);
+        this.addLocalListValue('ace1_checkout_city_suggestions_v1', document.getElementById('city')?.value, 30);
+        this.addLocalListValue('ace1_checkout_pincode_suggestions_v1', document.getElementById('pincode')?.value, 30);
     }
 
     async loadCartItems() {
@@ -157,6 +343,13 @@ class CheckoutManager {
     proceedToPayment() {
         if (!this.validateShippingForm()) {
             return;
+        }
+
+        // Persist for inline suggestions next time
+        try {
+            this.saveCheckoutSuggestionSnapshot();
+        } catch {
+            // ignore
         }
 
         // Hide shipping section, show payment section
