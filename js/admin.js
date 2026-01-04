@@ -84,6 +84,50 @@ class AdminPanel {
         this.init();
     }
 
+    getActiveTabName() {
+        const activeTab = document.querySelector('.admin-tab.active');
+        return activeTab ? activeTab.dataset.tab : null;
+    }
+
+    async refreshProductsForActiveTab() {
+        const tabName = this.getActiveTabName();
+        if (tabName === 'shoes') {
+            await this.loadShoesProducts();
+            return;
+        }
+        if (tabName === 'clothing') {
+            await this.loadClothingProducts();
+            return;
+        }
+        // Fallback: refresh the full product list if the UI tab expects it.
+        // If the current tab isn't a products tab, this is a safe no-op for the UI.
+        await this.loadProducts();
+    }
+
+    async refreshAfterAdminDataMutation(options = {}) {
+        const {
+            refreshProducts = true,
+            refreshDashboard = true,
+            refreshInventory = true
+        } = options;
+
+        if (refreshProducts) {
+            try { await this.refreshProductsForActiveTab(); } catch (e) { console.warn('refreshProductsForActiveTab failed', e); }
+        }
+        if (refreshDashboard) {
+            try { await this.loadDashboard(); } catch (e) { console.warn('loadDashboard failed', e); }
+        }
+        if (refreshInventory) {
+            try {
+                if (window.inventoryManager?.load) {
+                    await window.inventoryManager.load();
+                }
+            } catch (e) {
+                console.warn('inventoryManager.load failed', e);
+            }
+        }
+    }
+
     async init() {
         // Clear redirect flag when page loads successfully
         sessionStorage.removeItem('auth_redirecting');
@@ -341,29 +385,20 @@ class AdminPanel {
             // Change summary modal handlers
             const summaryClose = document.getElementById('summary-close');
             const summaryOk = document.getElementById('summary-ok');
-            if (summaryClose) summaryClose.addEventListener('click', () => document.getElementById('change-summary-modal').classList.remove('active'));
-            if (summaryOk) summaryOk.addEventListener('click', async () => {
+
+            const acknowledgeSummaryAndRefresh = async () => {
                 document.getElementById('change-summary-modal').classList.remove('active');
-                // After user acknowledges, close product modal and refresh lists
                 this.closeProductModal();
-                
-                // Reload products for the currently active tab
-                const activeTab = document.querySelector('.admin-tab.active');
-                if (activeTab) {
-                    const tabName = activeTab.dataset.tab;
-                    if (tabName === 'shoes') {
-                        await this.loadShoesProducts();
-                    } else if (tabName === 'clothing') {
-                        await this.loadClothingProducts();
-                    } else {
-                        // For other tabs, reload all products if needed
-                        await this.loadProducts();
-                    }
-                }
-                
-                await this.loadDashboard();
-                // Products are always fresh from database, no cache to clear
-            });
+                await this.refreshAfterAdminDataMutation({
+                    refreshProducts: true,
+                    refreshDashboard: true,
+                    refreshInventory: true
+                });
+            };
+
+            // Treat both close (X) and OK as an acknowledgement so the UI always refreshes.
+            if (summaryClose) summaryClose.addEventListener('click', () => acknowledgeSummaryAndRefresh());
+            if (summaryOk) summaryOk.addEventListener('click', () => acknowledgeSummaryAndRefresh());
         // clear any active tab classes (initial state)
         document.querySelectorAll('.admin-tab').forEach(tab => tab.classList.remove('active'));
 
@@ -1579,22 +1614,12 @@ class AdminPanel {
         await new Promise(resolve => setTimeout(resolve, 300));
         
         try {
-            // Reload products for the currently active tab
-            const activeTab = document.querySelector('.admin-tab.active');
-            if (activeTab) {
-                const tabName = activeTab.dataset.tab;
-                if (tabName === 'shoes') {
-                    await this.loadShoesProducts();
-                } else if (tabName === 'clothing') {
-                    await this.loadClothingProducts();
-                } else {
-                    // For other tabs, reload all products if needed
-                    await this.loadProducts();
-                }
-            }
-            console.log('✅ Products reloaded after deletion');
-            await this.loadDashboard();
-            console.log('✅ Dashboard reloaded after deletion');
+            await this.refreshAfterAdminDataMutation({
+                refreshProducts: true,
+                refreshDashboard: true,
+                refreshInventory: true
+            });
+            console.log('✅ Admin data refreshed after deletion');
             
             alert(`✅ Success!\n\n${result.message}\n\nThe product has been removed from the website.`);
         } catch (err) {
