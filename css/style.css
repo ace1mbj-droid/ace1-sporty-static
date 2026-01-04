@@ -103,6 +103,20 @@ button {
     align-items: center;
 }
 
+.site-logo-img {
+    height: 42px;
+    width: auto;
+    max-width: 180px;
+    display: block;
+    object-fit: contain;
+    border-radius: 10px;
+}
+
+.footer-logo-img {
+    height: 34px;
+    max-width: 200px;
+}
+
 .nav-logo .logo-text {
     font-family: var(--font-display);
     font-size: 32px;
@@ -599,6 +613,12 @@ button {
     font-size: 20px;
     font-weight: 600;
     margin-bottom: 8px;
+}
+
+.product-date {
+    font-size: 12px;
+    color: var(--text-light);
+    margin: 0 0 12px;
 }
 
 .product-category {
