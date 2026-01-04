@@ -6,7 +6,10 @@ node_modules/
 .env
 .env.local
 .DS_Store
-/.vscode/
+
+# VS Code
+/.vscode/*
+!/.vscode/tasks.json
 
 # Playwright artifacts
 test-results/

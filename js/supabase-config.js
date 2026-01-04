@@ -2,10 +2,40 @@
 // SUPABASE CONFIGURATION
 // ===================================
 // Configured on: December 3, 2025
+const HOSTED_SUPABASE_URL = 'https://vorqavsuqcjnkjzwkyzr.supabase.co';
+
 const SUPABASE_CONFIG = {
-    url: 'https://vorqavsuqcjnkjzwkyzr.supabase.co',
+    url: HOSTED_SUPABASE_URL,
     anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZvcnFhdnN1cWNqbmtqendreXpyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM2NTYwMTMsImV4cCI6MjA3OTIzMjAxM30.HhExWu9XMFm2CBhoZUnHyYI0D0-smScXb_pSzCGkMvI'
 };
+
+function assertHostedSupabaseConfig() {
+    try {
+        const configured = new URL(SUPABASE_CONFIG.url);
+        const expected = new URL(HOSTED_SUPABASE_URL);
+
+        const invalidHostnames = new Set(['localhost', '127.0.0.1', '0.0.0.0']);
+        if (invalidHostnames.has(configured.hostname)) {
+            throw new Error(`Refusing to run against local Supabase host: ${configured.hostname}`);
+        }
+
+        if (configured.origin !== expected.origin) {
+            throw new Error(`SUPABASE_CONFIG.url must match hosted project: ${expected.origin}`);
+        }
+
+        if (!configured.hostname.endsWith('.supabase.co')) {
+            throw new Error('SUPABASE_CONFIG.url must be a *.supabase.co URL');
+        }
+
+        return true;
+    } catch (error) {
+        console.error('❌ Invalid Supabase configuration (hosted-only mode).');
+        console.error(`   Expected: ${HOSTED_SUPABASE_URL}`);
+        console.error(`   Received: ${SUPABASE_CONFIG && SUPABASE_CONFIG.url}`);
+        console.error('   Fix: update js/supabase-config.js to use the hosted project URL only.');
+        throw error;
+    }
+}
 
 // Keep a session token for admin use; attach it only to Supabase requests
 // Token is set by databaseAuth when session is created
@@ -34,6 +64,8 @@ const sessionAwareFetch = async (input, init = {}) => {
 let supabaseClient = null;
 
 function initSupabase() {
+    assertHostedSupabaseConfig();
+
     if (typeof window.supabase === 'undefined') {
         console.error('Supabase library not loaded. Add the CDN script to your HTML.');
         return null;
