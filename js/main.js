@@ -81,11 +81,113 @@ async function syncFooterShopLinks() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+    // Replace text logos with the site logo image.
+    applySiteLogo();
+    // Best-effort: keep storefront aligned with Admin > Site Settings.
+    syncSiteSettings();
     // Best-effort sync; if Supabase is unavailable on a page, it simply no-ops.
     syncFooterShopLinks();
     // Track page view for analytics
     trackPageView();
 });
+
+function applySiteLogo() {
+    const logoUrl = 'https://vorqavsuqcjnkjzwkyzr.supabase.co/storage/v1/object/public/Website/Index%20Image%20Gallery/WhatsApp%20Image%202026-01-04%20at%2005.09.49.jpeg';
+
+    // Navbar logo
+    const navLink = document.querySelector('.nav-logo a');
+    if (navLink && !navLink.querySelector('img.site-logo-img')) {
+        const img = document.createElement('img');
+        img.className = 'site-logo-img';
+        img.src = logoUrl;
+        img.alt = 'Ace#1';
+        img.decoding = 'async';
+        img.loading = 'eager';
+
+        while (navLink.firstChild) navLink.removeChild(navLink.firstChild);
+        navLink.appendChild(img);
+    }
+
+    // Footer logo(s)
+    document.querySelectorAll('.footer-logo').forEach(footerLogo => {
+        if (footerLogo.querySelector('img.site-logo-img')) return;
+
+        const img = document.createElement('img');
+        img.className = 'site-logo-img footer-logo-img';
+        img.src = logoUrl;
+        img.alt = 'Ace#1';
+        img.decoding = 'async';
+        img.loading = 'lazy';
+
+        while (footerLogo.firstChild) footerLogo.removeChild(footerLogo.firstChild);
+        footerLogo.appendChild(img);
+    });
+}
+
+// ===================================
+// SITE SETTINGS SYNC (ADMIN → STOREFRONT)
+// ===================================
+async function syncSiteSettings() {
+    try {
+        const supabase = window.getSupabase ? window.getSupabase() : null;
+        if (!supabase) return;
+
+        const { data: rows, error } = await supabase
+            .from('site_settings')
+            .select('*')
+            .order('updated_at', { ascending: false })
+            .limit(1);
+
+        if (error) throw error;
+
+        const settings = rows?.[0] || null;
+        if (!settings) return;
+
+        window.__siteSettings = settings;
+        window.ACE1_MAINTENANCE_MODE = !!settings.maintenance_mode;
+
+        applySiteSettingsToDom(settings);
+    } catch (err) {
+        // Non-fatal: site works with baked-in content.
+        console.log('Site settings sync skipped:', err);
+    }
+}
+
+function applySiteSettingsToDom(settings) {
+    if (!settings) return;
+
+    const isIndex = window.location.pathname.endsWith('/') || window.location.pathname.endsWith('/index.html') || window.location.pathname.endsWith('index.html');
+    if (isIndex && settings.site_title) {
+        document.title = settings.site_title;
+    }
+
+    if (isIndex && settings.site_description) {
+        const meta = document.querySelector('meta[name="description"]');
+        if (meta) meta.setAttribute('content', settings.site_description);
+    }
+
+    // Update all Instagram links to the configured handle
+    if (settings.instagram_url) {
+        document.querySelectorAll('a[href*="instagram.com"]').forEach(a => {
+            a.setAttribute('href', settings.instagram_url);
+        });
+    }
+
+    // Update mailto links
+    if (settings.contact_email) {
+        document.querySelectorAll('a[href^="mailto:"]').forEach(a => {
+            a.setAttribute('href', `mailto:${settings.contact_email}`);
+        });
+    }
+
+    // Update tel links
+    if (settings.contact_phone) {
+        const telValue = String(settings.contact_phone).replace(/\s+/g, '');
+        document.querySelectorAll('a[href^="tel:"]').forEach(a => {
+            a.setAttribute('href', `tel:${telValue}`);
+        });
+    }
+}
 
 // ===================================
 // PAGE VIEW TRACKING (FOOTFALL ANALYTICS)
@@ -593,6 +695,11 @@ document.querySelectorAll('.add-to-cart-btn').forEach(btn => {
 
 async function addToCart(productId) {
     try {
+        if (window.ACE1_MAINTENANCE_MODE) {
+            showNotification('Orders are temporarily paused. Please check back soon.', 'info');
+            return;
+        }
+
         // Try to get product from Supabase first
         const supabase = window.getSupabase();
         const { data: product, error } = await supabase
@@ -1210,7 +1317,7 @@ async function refreshProductsIfNeeded() {
     const productsGrid = document.getElementById('products-grid');
     if (!productsGrid) return;
 
-    // Only run on the featured-products section (welcome.html).
+    // Only run on the featured-products section (homepage featured grid).
     // Other pages (e.g., clothing.html) also have #products-grid and are managed by products.js.
     if (productsGrid.dataset.productsSource !== 'featured') return;
     

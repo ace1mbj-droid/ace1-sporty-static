@@ -38,14 +38,16 @@ Message:
 ${data.message}
     `.trim();
     
+    const targetEmail = window.__siteSettings?.contact_email || 'hello@ace1.in';
+
     // Create mailto link
-    const mailtoLink = `mailto:hello@ace1.in?subject=${encodeURIComponent(data.subject || 'Contact Form Submission')}&body=${encodeURIComponent(emailBody)}`;
+    const mailtoLink = `mailto:${encodeURIComponent(targetEmail)}?subject=${encodeURIComponent(data.subject || 'Contact Form Submission')}&body=${encodeURIComponent(emailBody)}`;
     
     // Open email client
     window.location.href = mailtoLink;
     
     // Show success message
-    showNotification('Opening your email client to send the message to hello@ace1.in');
+    showNotification(`Opening your email client to send the message to ${targetEmail}`);
     
     // Reset form after a short delay
     setTimeout(() => {

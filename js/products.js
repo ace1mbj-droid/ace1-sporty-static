@@ -7,6 +7,7 @@ class ProductFilterManager {
         this.filteredProducts = [];
         this.categories = [];
         this.categorySlugByAny = new Map();
+        this.priceBounds = { min: 0, max: 15000 };
         this.pagination = {
             currentPage: 1,
             perPage: 15,
@@ -21,6 +22,17 @@ class ProductFilterManager {
             sortBy: 'featured'
         };
         this.init();
+    }
+
+    formatProductCreatedAt(value) {
+        if (!value) return '';
+        const date = new Date(value);
+        if (!Number.isFinite(date.getTime())) return '';
+        return date.toLocaleDateString('en-IN', {
+            year: 'numeric',
+            month: 'short',
+            day: '2-digit'
+        });
     }
 
     async init() {
@@ -52,7 +64,7 @@ class ProductFilterManager {
 
             const { data, error } = await supabase
                 .from('categories')
-                .select('name, slug, parent_id, sort_order, is_active')
+                .select('id, name, slug, parent_id, sort_order, is_active')
                 .eq('is_active', true)
                 .order('sort_order', { ascending: true })
                 .order('name', { ascending: true });
@@ -261,7 +273,7 @@ class ProductFilterManager {
                 console.log('✅ Rendered products from Supabase');
                 
                 // Load products into the filter system and apply URL filters
-                this.loadProducts();
+                this.loadProductsFromData(processedProducts);
                 this.applyURLFilters();
                 this.applyFilters();
             } else {
@@ -280,6 +292,43 @@ class ProductFilterManager {
             // Still try to load from DOM if there are fallback products
             this.loadProducts();
         }
+    }
+
+    updatePriceBoundsFromProducts() {
+        const prices = (this.products || [])
+            .map(p => Number(p.price))
+            .filter(v => Number.isFinite(v) && v >= 0);
+
+        const maxPrice = prices.length ? Math.ceil(Math.max(...prices)) : 15000;
+        this.priceBounds = {
+            min: 0,
+            max: Math.max(0, maxPrice)
+        };
+
+        // Ensure current filter range stays within bounds
+        const currentMax = Number(this.filters?.priceRange?.[1]);
+        if (!Number.isFinite(currentMax) || currentMax > this.priceBounds.max || currentMax === 15000) {
+            this.filters.priceRange = [0, this.priceBounds.max];
+        } else {
+            this.filters.priceRange = [0, Math.max(0, Math.min(currentMax, this.priceBounds.max))];
+        }
+
+        // Sync UI
+        const priceSlider = document.getElementById('price-slider');
+        const priceValue = document.getElementById('price-value');
+        const priceMin = document.getElementById('price-min');
+        const priceMax = document.getElementById('price-max');
+
+        if (priceSlider) {
+            priceSlider.min = String(this.priceBounds.min);
+            priceSlider.max = String(this.priceBounds.max);
+            priceSlider.value = String(this.filters.priceRange[1]);
+        }
+        if (priceValue) {
+            priceValue.textContent = `₹${Number(this.filters.priceRange[1]).toLocaleString('en-IN')}`;
+        }
+        if (priceMin) priceMin.textContent = `₹${this.priceBounds.min.toLocaleString('en-IN')}`;
+        if (priceMax) priceMax.textContent = `₹${this.priceBounds.max.toLocaleString('en-IN')}`;
     }
 
     renderProducts(products) {
@@ -303,7 +352,13 @@ class ProductFilterManager {
             console.log('Out of stock products:', outOfStock.map(p => p.name));
         }
 
-        grid.innerHTML = products.map(product => `
+        const path = window.location.pathname || '';
+        const showCreatedAt = path.includes('shoes.html') || path.includes('clothing.html');
+
+        grid.innerHTML = products.map(product => {
+            const createdAtLabel = showCreatedAt ? this.formatProductCreatedAt(product.created_at) : '';
+
+            return `
             <div class="product-card" data-product-id="${product.id}" data-category="${this.normalizeCategoryToSlug(product.category || 'casual')}">
                 <div class="product-image">
                     <img src="${product.image_url || 'images/placeholder.jpg'}" alt="${product.name}" onerror="this.src='images/placeholder.jpg'">
@@ -316,6 +371,7 @@ class ProductFilterManager {
                 </div>
                 <div class="product-info">
                     <h3 class="product-name">${product.name}</h3>
+                    ${createdAtLabel ? `<p class="product-date">Added on ${createdAtLabel}</p>` : ''}
                     <p class="product-description">${(product.description || '').substring(0, 100)}...</p>
                     <div class="product-rating">
                         <i class="fas fa-star"></i>
@@ -338,7 +394,8 @@ class ProductFilterManager {
                     </div>
                 </div>
             </div>
-        `).join('');
+        `;
+        }).join('');
 
         console.log('✅ Grid HTML updated successfully');
 
@@ -374,12 +431,59 @@ class ProductFilterManager {
                 name: card.querySelector('.product-name')?.textContent || '',
                 category: card.dataset.category || 'all',
                 price: price,
+                sizes: [],
+                colors: [],
                 rating: this.getProductRating(card),
                 image: card.querySelector('img')?.src || ''
             };
         });
         
         this.filteredProducts = [...this.products];
+        this.updatePriceBoundsFromProducts();
+    }
+
+    loadProductsFromData(processedProducts) {
+        const byId = new Map((processedProducts || []).map(p => [String(p.id), p]));
+        const productCards = document.querySelectorAll('.product-card');
+
+        this.products = Array.from(productCards).map(card => {
+            const id = String(card.dataset.productId || card.getAttribute('data-product-id') || '');
+            const data = byId.get(id);
+
+            // Canonical price is from admin `price_cents`
+            const priceCents = data && Number.isFinite(Number(data.price_cents)) ? Number(data.price_cents) : null;
+            const priceRupees = priceCents != null ? priceCents / 100 : Number(data?.price) || 0;
+
+            // Canonical size availability is from `inventory`
+            const inventoryBySize = data?.inventory_by_size || {};
+            const sizes = Object.keys(inventoryBySize)
+                .filter(size => (inventoryBySize[size] || 0) > 0)
+                .map(size => String(size));
+
+            // Optional: if products later get color fields, support filtering
+            const colorsRaw = data?.colors || data?.color || data?.colour || null;
+            const colors = Array.isArray(colorsRaw)
+                ? colorsRaw.map(c => String(c).trim().toLowerCase()).filter(Boolean)
+                : (typeof colorsRaw === 'string' && colorsRaw.trim())
+                    ? colorsRaw.split(',').map(c => c.trim().toLowerCase()).filter(Boolean)
+                    : [];
+
+            return {
+                element: card,
+                id: id,
+                name: data?.name || card.querySelector('.product-name')?.textContent || '',
+                category: data?.category ? this.normalizeCategoryToSlug(data.category) : (card.dataset.category || 'all'),
+                price: priceRupees,
+                price_cents: priceCents,
+                sizes,
+                colors,
+                rating: this.getProductRating(card),
+                image: card.querySelector('img')?.src || ''
+            };
+        });
+
+        this.filteredProducts = [...this.products];
+        this.updatePriceBoundsFromProducts();
     }
 
     getProductRating(card) {
@@ -572,7 +676,8 @@ class ProductFilterManager {
 
     updateColorFilter() {
         const activeColors = Array.from(document.querySelectorAll('.color-btn.active'))
-            .map(btn => btn.dataset.color);
+            .map(btn => (btn.dataset.color || btn.getAttribute('title') || '').trim().toLowerCase())
+            .filter(Boolean);
         this.setFilter('colors', activeColors);
     }
 
@@ -592,6 +697,22 @@ class ProductFilterManager {
             // Price range filter
             if (product.price < this.filters.priceRange[0] || product.price > this.filters.priceRange[1]) {
                 return false;
+            }
+
+            // Size filter (based on admin inventory rows)
+            if (this.filters.sizes && this.filters.sizes.length > 0) {
+                const productSizes = Array.isArray(product.sizes) ? product.sizes : [];
+                const matchesSize = this.filters.sizes.some(s => productSizes.includes(String(s)));
+                if (!matchesSize) return false;
+            }
+
+            // Color filter (only enforced if product has color data)
+            if (this.filters.colors && this.filters.colors.length > 0) {
+                const productColors = Array.isArray(product.colors) ? product.colors : [];
+                if (productColors.length > 0) {
+                    const matchesColor = this.filters.colors.some(c => productColors.includes(String(c).toLowerCase()));
+                    if (!matchesColor) return false;
+                }
             }
 
             // Rating filter
@@ -805,7 +926,7 @@ class ProductFilterManager {
     clearAllFilters() {
         this.filters = {
             categories: [],
-            priceRange: [0, 15000],
+            priceRange: [0, this.priceBounds.max],
             sizes: [],
             colors: [],
             rating: 0,
@@ -824,8 +945,13 @@ class ProductFilterManager {
 
         const priceSlider = document.getElementById('price-slider');
         if (priceSlider) {
-            priceSlider.value = 15000;
-            document.getElementById('price-value').textContent = '₹15,000';
+            priceSlider.min = String(this.priceBounds.min);
+            priceSlider.max = String(this.priceBounds.max);
+            priceSlider.value = String(this.priceBounds.max);
+            const priceValue = document.getElementById('price-value');
+            if (priceValue) {
+                priceValue.textContent = `₹${this.priceBounds.max.toLocaleString('en-IN')}`;
+            }
         }
 
         const sortSelect = document.getElementById('sort-select');

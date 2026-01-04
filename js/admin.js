@@ -280,6 +280,21 @@ class AdminPanel {
             this.saveSettings();
         });
 
+        // Settings cleanup
+        const cleanupBtn = document.getElementById('cleanup-site-settings');
+        if (cleanupBtn) cleanupBtn.addEventListener('click', async () => {
+            cleanupBtn.disabled = true;
+            const spinner = document.createElement('span');
+            spinner.className = 'refresh-spinner';
+            cleanupBtn.appendChild(spinner);
+            try {
+                await this.cleanupOldSiteSettingsRows();
+            } finally {
+                cleanupBtn.disabled = false;
+                if (spinner.parentNode) spinner.parentNode.removeChild(spinner);
+            }
+        });
+
         // Logs buttons
         document.getElementById('refresh-logs').addEventListener('click', async () => {
             const btn = document.getElementById('refresh-logs');
@@ -420,6 +435,35 @@ class AdminPanel {
             this.loadShoesProducts();
         } else if (tabName === 'clothing') {
             this.loadClothingProducts();
+        }
+
+        // Load tab-specific managers (from admin-extended.js) when available
+        try {
+            if (tabName === 'inventory' && window.inventoryManager?.load) window.inventoryManager.load();
+            if (tabName === 'categories' && window.categoryManager?.load) window.categoryManager.load();
+            if (tabName === 'customers' && window.customerManager?.load) window.customerManager.load();
+            if (tabName === 'coupons' && window.couponManager?.load) window.couponManager.load();
+            if (tabName === 'shipping' && window.shippingManager?.load) window.shippingManager.load();
+            if (tabName === 'content' && window.contentManager?.load) window.contentManager.load();
+            if (tabName === 'analytics' && window.analyticsManager?.load) window.analyticsManager.load();
+            if (tabName === 'communications' && window.communicationManager?.load) window.communicationManager.load();
+            if (tabName === 'roles' && window.rolesManager?.load) window.rolesManager.load();
+        } catch (e) {
+            console.warn('Tab manager load failed:', e);
+        }
+
+        // Core data tabs
+        try {
+            if (tabName === 'dashboard') this.loadDashboard();
+            if (tabName === 'orders') this.loadOrders();
+            if (tabName === 'users') this.loadUsers();
+            if (tabName === 'logs') {
+                this.loadLogs();
+                this.loadRevocations();
+            }
+            if (tabName === 'settings') this.loadSettings();
+        } catch (e) {
+            console.warn('Core tab load failed:', e);
         }
 
         // If switching to images tab, ensure image manager renders into the container
@@ -2188,17 +2232,21 @@ class AdminPanel {
 
     // Settings Management
     async loadSettings() {
-        const { data: settings, error } = await this.supabase
+        const { data: rows, error } = await this.supabase
             .from('site_settings')
             .select('*')
-            .single();
+            .order('updated_at', { ascending: false })
+            .limit(1);
 
-        if (error && error.code !== 'PGRST116') { // PGRST116 is "not found"
+        if (error) {
             console.error('Error loading settings:', error);
             return;
         }
 
+        const settings = rows?.[0] || null;
+
         this.settings = settings || {
+            id: null,
             site_title: 'ACE#1 - Revolutionary Footwear',
             site_description: 'Revolutionary footwear integrated with terahertz technology for enhanced wellness and lifestyle.',
             contact_email: 'hello@ace1.in',
@@ -2230,9 +2278,14 @@ class AdminPanel {
             updated_at: new Date().toISOString()
         };
 
+        // Ensure we update the latest settings row instead of creating a new one each save.
+        const payload = this.settings?.id
+            ? [{ ...settingsData, id: this.settings.id }]
+            : [settingsData];
+
         const { error } = await this.supabase
             .from('site_settings')
-            .upsert([settingsData], { onConflict: 'id' });
+            .upsert(payload, { onConflict: 'id' });
 
         if (error) {
             console.error('Error saving settings:', error);
@@ -2242,6 +2295,49 @@ class AdminPanel {
 
         alert('Settings saved successfully');
         await this.loadSettings();
+    }
+
+    async cleanupOldSiteSettingsRows() {
+        try {
+            const { data: rows, error } = await this.supabase
+                .from('site_settings')
+                .select('id, updated_at, created_at')
+                .order('updated_at', { ascending: false })
+                .order('created_at', { ascending: false });
+
+            if (error) throw error;
+
+            const allRows = rows || [];
+            if (allRows.length <= 1) {
+                if (window.showNotification) window.showNotification('No duplicates found in site_settings.', 'info');
+                return;
+            }
+
+            const keepRow = allRows[0];
+            const deleteRows = allRows.slice(1).filter(r => r?.id);
+            const keepDate = keepRow?.updated_at || keepRow?.created_at || null;
+
+            const confirmed = confirm(
+                `This will delete ${deleteRows.length} old site_settings row(s) and keep the latest one.\n\n` +
+                `Kept row updated_at: ${keepDate || '(unknown)'}\n\n` +
+                `Continue?`
+            );
+            if (!confirmed) return;
+
+            const deleteIds = deleteRows.map(r => r.id);
+            const { error: deleteError } = await this.supabase
+                .from('site_settings')
+                .delete()
+                .in('id', deleteIds);
+
+            if (deleteError) throw deleteError;
+
+            if (window.showNotification) window.showNotification('Old site_settings rows deleted successfully.', 'success');
+            await this.loadSettings();
+        } catch (err) {
+            console.error('Cleanup site_settings failed:', err);
+            this.showInlineError('settings-form-error', err?.message || 'Cleanup failed');
+        }
     }
 
     // Logs Management
