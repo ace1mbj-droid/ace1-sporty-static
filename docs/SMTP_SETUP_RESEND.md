@@ -24,6 +24,8 @@ Resend is usually the fastest path to “working SMTP + good deliverability” w
 
 Add those DNS records in your DNS provider (Cloudflare/GoDaddy/Namecheap/etc), then wait until Resend shows “Verified”.
 
+If you **cannot** change DNS (no registrar/DNS access), you will not be able to send Auth emails *from* `hello@ace1.in`. Use the fallback section below.
+
 ### 3) Create SMTP credentials in Resend
 
 - In Resend: **SMTP** / **API Keys** (UI may vary)
@@ -48,6 +50,16 @@ In Supabase Dashboard:
 - Go to **Authentication → Templates**
 - Update **Confirm signup** to remove Supabase branding.
 - Use the template in [docs/AUTH_EMAIL_BRANDING.md](docs/AUTH_EMAIL_BRANDING.md)
+
+## Fallback (no DNS access)
+
+If you don’t have access to DNS for `ace1.in`, you can still remove the “powered by Supabase” wording and make the emails look like ACE#1:
+
+1. Supabase Dashboard → **Authentication → Templates**
+2. Update the email templates to your own copy (see [docs/AUTH_EMAIL_BRANDING.md](docs/AUTH_EMAIL_BRANDING.md)).
+3. In Supabase Dashboard → **Authentication → Settings** look for **Sender name** (if available) and set it to `ACE#1`.
+
+This will change the *content/branding*, but the actual **From address** will remain the default Supabase sender until DNS + SMTP are configured.
 
 ## Troubleshooting
 

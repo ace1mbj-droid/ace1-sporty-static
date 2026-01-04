@@ -43,6 +43,8 @@ Notes:
 
 If your “From” shows Supabase branding, configure **Custom SMTP**.
 
+If you do not have access to DNS records for `ace1.in` (for example no registrar/DNS access), you can still update the **template content** and often the **sender name**, but you cannot reliably change the **From email address** to `hello@ace1.in`.
+
 In Supabase Dashboard:
 
 1. Go to **Authentication → Settings → Email / SMTP** (naming varies slightly)
