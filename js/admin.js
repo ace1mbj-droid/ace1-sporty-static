@@ -427,10 +427,38 @@ class AdminPanel {
         });
 
         // Logout
-        document.getElementById('logout-btn').addEventListener('click', async () => {
-            if (window.databaseAuth && typeof window.databaseAuth.logout === 'function') {
-                await window.databaseAuth.logout();
+        const logoutBtn = document.getElementById('logout-btn');
+        if (logoutBtn) logoutBtn.addEventListener('click', async (e) => {
+            e.preventDefault();
+            logoutBtn.disabled = true;
+
+            const originalText = logoutBtn.textContent;
+            logoutBtn.textContent = 'Logging out...';
+
+            try {
+                if (window.databaseAuth && typeof window.databaseAuth.logout === 'function') {
+                    await window.databaseAuth.logout();
+                } else {
+                    // Fallback: sign out via Supabase Auth if DatabaseAuth isn't available.
+                    await this.supabase?.auth?.signOut?.();
+                }
+            } catch (err) {
+                console.error('Logout failed:', err);
+            } finally {
+                // Ensure local client state is cleared even if signOut fails.
+                try { window.setSupabaseSessionToken?.(null); } catch (e2) { /* ignore */ }
+                try { localStorage.removeItem('ace1_session_id'); } catch (e2) { /* ignore */ }
+                try { sessionStorage.removeItem('ace1_admin_token'); } catch (e2) { /* ignore */ }
             }
+
+            // Always redirect to force a clean auth check.
+            window.location.href = 'admin-login.html';
+
+            // Best-effort restore if navigation is blocked.
+            setTimeout(() => {
+                logoutBtn.disabled = false;
+                logoutBtn.textContent = originalText;
+            }, 2000);
         });
             // Change summary modal handlers
             const summaryClose = document.getElementById('summary-close');
