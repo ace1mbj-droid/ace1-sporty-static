@@ -231,7 +231,9 @@ class AdminExtended {
             this.loadInventory();
             
             // Sync products tab and dashboard if adminPanel exists
-            if (window.adminPanel?.refreshAfterAdminDataMutation) {
+            if (window.adminPanel?.refreshAllAdminData) {
+                await window.adminPanel.refreshAllAdminData();
+            } else if (window.adminPanel?.refreshAfterAdminDataMutation) {
                 window.adminPanel.refreshAfterAdminDataMutation({
                     refreshProducts: true,
                     refreshDashboard: true,
@@ -538,6 +540,10 @@ class AdminExtended {
             if (error) throw error;
             
             showNotification('Note added successfully', 'success');
+
+            if (window.adminPanel?.refreshAllAdminData) {
+                await window.adminPanel.refreshAllAdminData();
+            }
             
             // Refresh customer details if modal is open
             const modal = document.getElementById('customer-details-modal');
@@ -644,6 +650,10 @@ class AdminExtended {
             showNotification('Content saved successfully', 'success');
             this.closeModal('content-block-modal');
             await this.loadContentBlocks();
+
+            if (window.adminPanel?.refreshAllAdminData) {
+                await window.adminPanel.refreshAllAdminData();
+            }
         } catch (error) {
             console.error('Error saving content:', error);
             showNotification('Failed to save content', 'error');
@@ -687,6 +697,10 @@ class AdminExtended {
             if (error) throw error;
             showNotification(`Content ${active ? 'enabled' : 'disabled'}`, 'success');
             await this.loadContentBlocks();
+
+            if (window.adminPanel?.refreshAllAdminData) {
+                await window.adminPanel.refreshAllAdminData();
+            }
         } catch (error) {
             console.error('Error toggling content:', error);
             showNotification('Failed to update content', 'error');
@@ -705,6 +719,10 @@ class AdminExtended {
             if (error) throw error;
             showNotification('Content deleted successfully', 'success');
             await this.loadContentBlocks();
+
+            if (window.adminPanel?.refreshAllAdminData) {
+                await window.adminPanel.refreshAllAdminData();
+            }
         } catch (error) {
             console.error('Error deleting content:', error);
             showNotification('Failed to delete content', 'error');
@@ -978,6 +996,10 @@ class AdminExtended {
             showNotification('Coupon saved successfully', 'success');
             this.closeModal('coupon-modal');
             await this.loadCoupons();
+
+            if (window.adminPanel?.refreshAllAdminData) {
+                await window.adminPanel.refreshAllAdminData();
+            }
         } catch (error) {
             console.error('Error saving coupon:', error);
             showNotification('Failed to save coupon', 'error');
@@ -1035,6 +1057,10 @@ class AdminExtended {
             if (error) throw error;
             showNotification('Coupon deleted successfully', 'success');
             await this.loadCoupons();
+
+            if (window.adminPanel?.refreshAllAdminData) {
+                await window.adminPanel.refreshAllAdminData();
+            }
         } catch (error) {
             console.error('Error deleting coupon:', error);
             showNotification('Failed to delete coupon', 'error');
@@ -1148,6 +1174,10 @@ class AdminExtended {
             showNotification('Shipping method saved successfully', 'success');
             this.closeModal('shipping-modal');
             await this.loadShippingMethods();
+
+            if (window.adminPanel?.refreshAllAdminData) {
+                await window.adminPanel.refreshAllAdminData();
+            }
         } catch (error) {
             console.error('Error saving shipping method:', error);
             showNotification('Failed to save shipping method', 'error');
@@ -1164,6 +1194,10 @@ class AdminExtended {
             if (error) throw error;
             showNotification(`Shipping method ${active ? 'enabled' : 'disabled'}`, 'success');
             await this.loadShippingMethods();
+
+            if (window.adminPanel?.refreshAllAdminData) {
+                await window.adminPanel.refreshAllAdminData();
+            }
         } catch (error) {
             console.error('Error toggling shipping method:', error);
             showNotification('Failed to update shipping method', 'error');
@@ -1271,6 +1305,10 @@ class AdminExtended {
 
             if (error) throw error;
             showNotification('Settings saved successfully', 'success');
+
+            if (window.adminPanel?.refreshAllAdminData) {
+                await window.adminPanel.refreshAllAdminData();
+            }
         } catch (error) {
             console.error('Error saving settings:', error);
             showNotification('Failed to save settings', 'error');
@@ -1355,6 +1393,10 @@ class AdminExtended {
                     }
 
                     showNotification(`Imported ${imported} products`, 'success');
+
+                    if (window.adminPanel?.refreshAllAdminData) {
+                        await window.adminPanel.refreshAllAdminData();
+                    }
                     resolve(imported);
                 } catch (error) {
                     reject(error);
@@ -1596,7 +1638,9 @@ class AdminExtended {
             
             // Sync with products tab - reload product form category dropdown
             if (window.adminPanel) {
-                if (window.adminPanel.refreshAfterAdminDataMutation) {
+                if (window.adminPanel.refreshAllAdminData) {
+                    await window.adminPanel.refreshAllAdminData();
+                } else if (window.adminPanel.refreshAfterAdminDataMutation) {
                     window.adminPanel.refreshAfterAdminDataMutation({
                         refreshProducts: true,
                         refreshDashboard: true,
@@ -1661,7 +1705,9 @@ class AdminExtended {
             
             // Sync with products tab
             if (window.adminPanel) {
-                if (window.adminPanel.refreshAfterAdminDataMutation) {
+                if (window.adminPanel.refreshAllAdminData) {
+                    await window.adminPanel.refreshAllAdminData();
+                } else if (window.adminPanel.refreshAfterAdminDataMutation) {
                     window.adminPanel.refreshAfterAdminDataMutation({
                         refreshProducts: true,
                         refreshDashboard: true,
@@ -1754,6 +1800,10 @@ class AdminExtended {
             }
             showNotification('Template saved successfully', 'success');
             await this.loadCommunications();
+
+            if (window.adminPanel?.refreshAllAdminData) {
+                await window.adminPanel.refreshAllAdminData();
+            }
         } catch (error) {
             console.error('Error saving template:', error);
             showNotification('Failed to save template', 'error');
@@ -1766,6 +1816,10 @@ class AdminExtended {
             await this.supabase.from('email_templates').delete().eq('id', id);
             showNotification('Template deleted', 'success');
             await this.loadCommunications();
+
+            if (window.adminPanel?.refreshAllAdminData) {
+                await window.adminPanel.refreshAllAdminData();
+            }
         } catch (error) {
             console.error('Error deleting template:', error);
             showNotification('Failed to delete template', 'error');
@@ -1950,6 +2004,10 @@ class AdminExtended {
             }
             showNotification('Role saved successfully', 'success');
             this.loadAdminRoles();
+
+            if (window.adminPanel?.refreshAllAdminData) {
+                await window.adminPanel.refreshAllAdminData();
+            }
         } catch (error) {
             console.error('Error saving role:', error);
             showNotification('Failed to save role', 'error');
@@ -1962,6 +2020,10 @@ class AdminExtended {
             await this.supabase.from('roles').delete().eq('id', id);
             showNotification('Role deleted', 'success');
             this.loadAdminRoles();
+
+            if (window.adminPanel?.refreshAllAdminData) {
+                await window.adminPanel.refreshAllAdminData();
+            }
         } catch (error) {
             console.error('Error deleting role:', error);
             showNotification('Failed to delete role', 'error');
