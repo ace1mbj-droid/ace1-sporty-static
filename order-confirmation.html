@@ -81,10 +81,37 @@
                     <i class="fas fa-check-circle"></i>
                 </div>
                 <h1>Order Confirmed!</h1>
-                <p class="confirmation-message">Thank you for your order. We've sent a confirmation email to your inbox.</p>
+                <p class="confirmation-message">Thank you for your order. We'll send updates to your email (if provided) as your order status changes.</p>
                 
                 <div class="order-number">
                     <strong>Order Number:</strong> <span id="order-id">ACE001234</span>
+                </div>
+
+                <div class="confirmation-card" id="order-live-card" style="display:none;">
+                    <h3>Order Status</h3>
+                    <div class="next-steps">
+                        <div class="step">
+                            <i class="fas fa-receipt"></i>
+                            <div>
+                                <h4>Status</h4>
+                                <p id="order-status-text">-</p>
+                            </div>
+                        </div>
+                        <div class="step">
+                            <i class="fas fa-truck"></i>
+                            <div>
+                                <h4>Tracking</h4>
+                                <p id="order-tracking-text">-</p>
+                            </div>
+                        </div>
+                        <div class="step">
+                            <i class="fas fa-clock"></i>
+                            <div>
+                                <h4>Timeline</h4>
+                                <p id="order-timeline-text">-</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="confirmation-card">
@@ -233,6 +260,83 @@
         if (orderId) {
             document.getElementById('order-id').textContent = orderId;
         }
+
+        const formatDateTime = (value) => {
+            if (!value) return '';
+            const d = new Date(value);
+            if (!Number.isFinite(d.getTime())) return '';
+            return d.toLocaleString('en-IN');
+        };
+
+        const renderOrderLive = (order) => {
+            const liveCard = document.getElementById('order-live-card');
+            if (!liveCard) return;
+
+            const status = order?.status ? String(order.status) : 'unknown';
+            const tracking = order?.tracking_number ? String(order.tracking_number) : 'Not assigned yet';
+            const shipped = formatDateTime(order?.shipped_at);
+            const delivered = formatDateTime(order?.delivered_at);
+
+            const statusEl = document.getElementById('order-status-text');
+            const trackingEl = document.getElementById('order-tracking-text');
+            const timelineEl = document.getElementById('order-timeline-text');
+
+            if (statusEl) statusEl.textContent = status;
+            if (trackingEl) trackingEl.textContent = tracking;
+            if (timelineEl) {
+                const parts = [];
+                if (shipped) parts.push(`Shipped: ${shipped}`);
+                if (delivered) parts.push(`Delivered: ${delivered}`);
+                timelineEl.textContent = parts.length ? parts.join(' | ') : 'Timeline will appear here once shipped.';
+            }
+
+            liveCard.style.display = '';
+        };
+
+        const loadOrderDetails = async () => {
+            try {
+                if (!orderId) return;
+                if (!window.supabaseService?.getOrder) return;
+                const result = await window.supabaseService.getOrder(orderId);
+                if (result?.success && result?.order) {
+                    renderOrderLive(result.order);
+                }
+            } catch (e) {
+                // Best-effort only
+            }
+        };
+
+        const setupOrderRealtime = () => {
+            try {
+                if (!orderId) return;
+                if (!window.supabaseService?.subscribeToOrder) return;
+
+                const supabase = window.supabaseService?.supabase;
+                if (!supabase) return;
+
+                // Initial fetch (will only work for authenticated users)
+                loadOrderDetails();
+
+                let timer = null;
+                const schedule = () => {
+                    if (timer) clearTimeout(timer);
+                    timer = setTimeout(() => loadOrderDetails(), 400);
+                };
+
+                const channel = window.supabaseService.subscribeToOrder(orderId, () => schedule());
+                window.addEventListener('beforeunload', () => {
+                    try {
+                        if (channel) supabase.removeChannel(channel);
+                    } catch (e) {
+                        // ignore
+                    }
+                });
+            } catch (e) {
+                // ignore
+            }
+        };
+
+        setupOrderRealtime();
     </script>
     <!-- Image Optimization -->
     <script src="js/image-optimizer.js"></script>

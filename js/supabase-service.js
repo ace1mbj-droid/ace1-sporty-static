@@ -712,6 +712,53 @@ class SupabaseService {
         }
     }
 
+    subscribeToOrder(orderId, onChange) {
+        try {
+            if (!this.supabase || typeof this.supabase.channel !== 'function') return null;
+            if (!orderId) return null;
+
+            const channel = this.supabase
+                .channel(`ace1-order:${orderId}`)
+                .on(
+                    'postgres_changes',
+                    { event: '*', schema: 'public', table: 'orders', filter: `id=eq.${orderId}` },
+                    (payload) => {
+                        try { if (typeof onChange === 'function') onChange(payload); } catch (e) { /* ignore */ }
+                    }
+                )
+                .subscribe();
+
+            return channel;
+        } catch (e) {
+            console.warn('subscribeToOrder failed:', e);
+            return null;
+        }
+    }
+
+    subscribeToCurrentUserOrders(onChange) {
+        try {
+            if (!this.supabase || typeof this.supabase.channel !== 'function') return null;
+            if (!this.currentUser?.id) return null;
+
+            const userId = this.currentUser.id;
+            const channel = this.supabase
+                .channel(`ace1-user-orders:${userId}`)
+                .on(
+                    'postgres_changes',
+                    { event: '*', schema: 'public', table: 'orders', filter: `user_id=eq.${userId}` },
+                    (payload) => {
+                        try { if (typeof onChange === 'function') onChange(payload); } catch (e) { /* ignore */ }
+                    }
+                )
+                .subscribe();
+
+            return channel;
+        } catch (e) {
+            console.warn('subscribeToCurrentUserOrders failed:', e);
+            return null;
+        }
+    }
+
     async createReviewFromOrder({ orderId, productId, rating, title, comment }) {
         try {
             if (!this.currentUser) throw new Error('User not authenticated');
