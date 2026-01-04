@@ -28,6 +28,34 @@ class ProductFilterManager {
         this.init();
     }
 
+    sanitizeText(value) {
+        const text = String(value ?? '');
+        try {
+            if (window.DOMPurify && typeof window.DOMPurify.sanitize === 'function') {
+                return window.DOMPurify.sanitize(text, { ALLOWED_TAGS: [], ALLOWED_ATTR: [] });
+            }
+        } catch (e) {
+            // ignore
+        }
+        return text
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
+    truncateText(value, maxLen) {
+        const raw = String(value ?? '').trim();
+        if (!raw) return '';
+        const max = Math.max(0, Number(maxLen) || 0);
+        if (!max || raw.length <= max) return raw;
+        const clipped = raw.slice(0, max);
+        const lastSpace = clipped.lastIndexOf(' ');
+        const pretty = lastSpace > 40 ? clipped.slice(0, lastSpace) : clipped;
+        return `${pretty}…`;
+    }
+
     getPrimaryCategoryFilterFromPath() {
         const currentPath = window.location.pathname || '';
         if (currentPath.includes('shoes.html')) return 'shoes';
@@ -402,37 +430,49 @@ class ProductFilterManager {
         grid.innerHTML = products.map(product => {
             const createdAtLabel = showCreatedAt ? this.formatProductCreatedAt(product.created_at) : '';
 
+            const name = this.sanitizeText(product.name || 'Product');
+            const categoryLabel = this.sanitizeText(product.category || 'Sneakers');
+            const description = this.truncateText(this.sanitizeText(product.description || ''), 120);
+
+            const priceNumber = Number(product.price);
+            const priceLabel = Number.isFinite(priceNumber)
+                ? `₹${priceNumber.toLocaleString('en-IN')}`
+                : '₹0';
+
+            const isAvailable = !product.is_locked
+                && Number(product.stock_quantity) > 0
+                && (product.status === undefined || String(product.status).toLowerCase() === 'available');
+
+            const disabledReason = product.is_locked
+                ? 'Unavailable'
+                : (Number(product.stock_quantity) === 0 ? 'Out of Stock' : 'Unavailable');
+
             return `
             <div class="product-card" data-product-id="${product.id}" data-category="${this.normalizeCategoryToSlug(product.category || 'casual')}">
                 <div class="product-image">
-                    <img src="${product.image_url || 'images/placeholder.jpg'}" alt="${product.name}" onerror="this.src='images/placeholder.jpg'">
+                    <img src="${product.image_url || 'images/placeholder.jpg'}" alt="${name}" onerror="this.src='images/placeholder.jpg'" loading="lazy" decoding="async">
                     ${product.is_locked ? '<div class="product-badge bg-gray">Locked</div>' : ''}
                     ${product.stock_quantity === 0 ? '<div class="product-badge bg-red">Out of Stock</div>' : ''}
                     ${product.stock_quantity > 0 && product.stock_quantity < 10 ? '<div class="product-badge bg-orange">Low Stock</div>' : ''}
                     <div class="product-overlay">
-                        <button class="quick-view-btn" data-product-id="${product.id}">Quick View</button>
+                        <button class="quick-view-btn" data-product-id="${product.id}" aria-label="Quick view ${name}">Quick View</button>
                     </div>
                 </div>
                 <div class="product-info">
-                    <h3 class="product-name">${product.name}</h3>
-                    ${createdAtLabel ? `<p class="product-date">Added on ${createdAtLabel}</p>` : ''}
-                    <p class="product-description">${(product.description || '').substring(0, 100)}...</p>
-                    <div class="product-rating">
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star-half-alt"></i>
-                        <span>(${Math.floor(Math.random() * 200 + 50)})</span>
+                    <div class="product-meta">
+                        <span class="product-category-pill">${categoryLabel}</span>
+                        ${createdAtLabel ? `<span class="product-date">Added ${createdAtLabel}</span>` : ''}
                     </div>
+                    <h3 class="product-name">${name}</h3>
+                    ${description ? `<p class="product-description">${description}</p>` : ''}
                     <div class="product-footer">
-                        <span class="product-price">₹${parseFloat(product.price).toLocaleString('en-IN')}</span>
-                        ${(!product.is_locked && product.stock_quantity > 0 && (product.status === undefined || String(product.status).toLowerCase() === 'available'))
-                            ? `<button class="add-to-cart-btn" data-id="${product.id}">
-                                <i class="fas fa-shopping-bag"></i>
+                        <span class="product-price">${priceLabel}</span>
+                        ${isAvailable
+                            ? `<button class="add-to-cart-btn" data-id="${product.id}" aria-label="Add ${name} to cart" title="Add to cart">
+                                <i class="fas fa-shopping-bag" aria-hidden="true"></i>
                                </button>`
-                            : `<button class="add-to-cart-btn" disabled>
-                                <i class="fas fa-times-circle" style="margin-right: 5px;"></i> ${product.is_locked ? 'Unavailable' : 'Out of Stock'}
+                            : `<button class="add-to-cart-btn" disabled title="${disabledReason}">
+                                <i class="fas fa-times-circle" style="margin-right: 5px;" aria-hidden="true"></i> ${disabledReason}
                                </button>`
                         }
                     </div>

@@ -539,6 +539,7 @@ button {
     overflow: hidden;
     transition: var(--transition);
     cursor: pointer;
+    border: 1px solid rgba(0, 0, 0, 0.04);
 }
 
 .product-card:hover {
@@ -563,6 +564,7 @@ button {
     object-position: center;
     transition: var(--transition);
     background: #fff;
+    padding: 18px;
 }
 
 .product-card:hover .product-image img {
@@ -622,6 +624,30 @@ button {
     padding: 25px;
 }
 
+.product-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 10px;
+}
+
+.product-category-pill {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+    color: var(--primary-color);
+    background: var(--bg-light);
+    border: 1px solid var(--border-color);
+    padding: 6px 10px;
+    border-radius: 999px;
+    max-width: 65%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
 .product-name {
     font-size: 20px;
     font-weight: 600;
@@ -632,6 +658,19 @@ button {
     font-size: 12px;
     color: var(--text-light);
     margin: 0 0 12px;
+}
+
+.product-meta .product-date {
+    margin: 0;
+    white-space: nowrap;
+}
+
+.product-description {
+    color: var(--text-light);
+    font-size: 14px;
+    line-height: 1.7;
+    margin-bottom: 18px;
+    min-height: 44px;
 }
 
 .product-category {
@@ -679,6 +718,12 @@ button {
     justify-content: center;
     font-size: 18px;
     transition: var(--transition);
+}
+
+.add-to-cart-btn:focus-visible,
+.quick-view-btn:focus-visible {
+    outline: 3px solid rgba(255, 107, 0, 0.25);
+    outline-offset: 2px;
 }
 
 .add-to-cart-btn:hover {
