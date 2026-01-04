@@ -431,6 +431,17 @@ async function performSearch(query) {
             return;
         }
         
+        const getProjectUrl = () => (
+            (window.SUPABASE_CONFIG && window.SUPABASE_CONFIG.url) || window.SUPABASE_URL || 'https://vorqavsuqcjnkjzwkyzr.supabase.co'
+        );
+
+        const getImageUrl = (storagePath) => {
+            if (!storagePath) return 'images/placeholder.jpg';
+            if (typeof storagePath === 'string' && storagePath.startsWith('http')) return storagePath;
+            const projectUrl = getProjectUrl().replace(/\/$/, '');
+            return `${projectUrl}/storage/v1/object/public/Images/${storagePath}`;
+        };
+
         // Search products by name, description, or category
         const { data: products, error } = await supabase
             .from('products')
@@ -441,6 +452,8 @@ async function performSearch(query) {
                 category,
                 price_cents,
                 is_active,
+                is_locked,
+                status,
                 product_images (
                     storage_path
                 )
@@ -463,16 +476,26 @@ async function performSearch(query) {
             return;
         }
         
-        // Helper function for image URLs
-        const getImageUrl = (storagePath) => {
-            if (!storagePath) return 'images/placeholder.jpg';
-            if (storagePath.startsWith('http')) return storagePath;
-            const projectUrl = 'https://vorqavsuqcjnkjzwkyzr.supabase.co';
-            return `${projectUrl}/storage/v1/object/public/Images/${storagePath}`;
-        };
+        const availableProducts = (products || []).filter(p => {
+            if (p && p.is_locked) return false;
+            const status = (p && p.status) ? String(p.status).toLowerCase() : null;
+            if (status && status !== 'available') return false;
+            return true;
+        });
         
         // Render results
-        searchResultsContainer.innerHTML = products.map(product => {
+        if (!availableProducts.length) {
+            searchResultsContainer.innerHTML = `
+                <div class="search-no-results">
+                    <i class="fas fa-search"></i>
+                    <p>No products found for "<strong>${escapeHTML(query)}</strong>"</p>
+                    <p style="font-size: 14px; margin-top: 10px;">Try different keywords or browse our <a href="products.html" style="color: #FF6B00;">products page</a></p>
+                </div>
+            `;
+            return;
+        }
+
+        searchResultsContainer.innerHTML = availableProducts.map(product => {
             const imageUrl = getImageUrl(product.product_images?.[0]?.storage_path);
             const price = (product.price_cents / 100).toLocaleString('en-IN');
             
@@ -489,7 +512,7 @@ async function performSearch(query) {
         }).join('');
         
         // Add "View All" link if there might be more results
-        if (products.length >= 10) {
+        if (availableProducts.length >= 10) {
             searchResultsContainer.innerHTML += `
                 <a href="products.html?search=${encodeURIComponent(query)}" style="display: block; text-align: center; padding: 15px; color: #FF6B00; font-weight: 600; text-decoration: none;">
                     View all results <i class="fas fa-arrow-right"></i>
@@ -709,6 +732,8 @@ async function addToCart(productId) {
                 inventory(stock, size)
             `)
             .eq('id', productId)
+            .eq('is_active', true)
+            .is('deleted_at', null)
             .single();
 
         if (error || !product) {
@@ -736,6 +761,10 @@ async function addToCart(productId) {
             
             // Check stock and availability from Supabase
             if (product.is_locked) {
+                showNotification('This product is currently unavailable', 'error');
+                return;
+            }
+            if (product.status && String(product.status).toLowerCase() !== 'available') {
                 showNotification('This product is currently unavailable', 'error');
                 return;
             }
@@ -1364,15 +1393,20 @@ async function refreshProductsIfNeeded() {
             return;
         }
         
+        const getProjectUrl = () => (
+            (window.SUPABASE_CONFIG && window.SUPABASE_CONFIG.url) || window.SUPABASE_URL || 'https://vorqavsuqcjnkjzwkyzr.supabase.co'
+        );
+
         // Helper function to convert storage path to public URL (matches products.js)
         const getImageUrl = (storagePath) => {
             if (!storagePath) return 'images/placeholder.jpg';
-            if (storagePath.startsWith('https://vorqavsuqcjnkjzwkyzr.supabase.co/storage')) return storagePath;
-            if (storagePath.startsWith('http')) return storagePath;
-            if (storagePath.includes('.jpg') || storagePath.includes('.png') || storagePath.includes('.jpeg') || storagePath.includes('.gif') || storagePath.includes('.webp')) {
+            const projectUrl = getProjectUrl().replace(/\/$/, '');
+            const storagePrefix = `${projectUrl}/storage`;
+            if (typeof storagePath === 'string' && storagePath.startsWith(storagePrefix)) return storagePath;
+            if (typeof storagePath === 'string' && storagePath.startsWith('http')) return storagePath;
+            if (typeof storagePath === 'string' && (storagePath.includes('.jpg') || storagePath.includes('.png') || storagePath.includes('.jpeg') || storagePath.includes('.gif') || storagePath.includes('.webp'))) {
                 return `images/${storagePath.toLowerCase()}`;
             }
-            const projectUrl = 'https://vorqavsuqcjnkjzwkyzr.supabase.co';
             return `${projectUrl}/storage/v1/object/public/Images/${storagePath}`;
         };
         
@@ -1382,7 +1416,12 @@ async function refreshProductsIfNeeded() {
             image_url: getImageUrl(product.product_images?.[0]?.storage_path) || 'images/placeholder.jpg',
             stock_quantity: (product.inventory || []).reduce((sum, inv) => sum + (inv.stock || 0), 0),
             price: (product.price_cents / 100).toFixed(2)
-        }));
+        })).filter(product => {
+            if (product && product.is_locked) return false;
+            const status = (product && product.status) ? String(product.status).toLowerCase() : null;
+            if (status && status !== 'available') return false;
+            return true;
+        });
         
         // Render products with same template as products.js
         productsGrid.innerHTML = processedProducts.map(product => `
@@ -1703,18 +1742,30 @@ function attachQuickViewHandlers() {
                             )
                         `)
                         .eq('id', productId)
+                        .eq('is_active', true)
+                        .is('deleted_at', null)
                         .single();
                     
                     if (product && !error) {
+                        if (product.is_locked || (product.status && String(product.status).toLowerCase() !== 'available')) {
+                            showNotification('This product is currently unavailable', 'error');
+                            return;
+                        }
+
+                        const getProjectUrl = () => (
+                            (window.SUPABASE_CONFIG && window.SUPABASE_CONFIG.url) || window.SUPABASE_URL || 'https://vorqavsuqcjnkjzwkyzr.supabase.co'
+                        );
+
                         // Helper function to convert storage path to public URL
                         const getImageUrl = (storagePath) => {
                             if (!storagePath) return 'images/placeholder.jpg';
-                            if (storagePath.startsWith('https://vorqavsuqcjnkjzwkyzr.supabase.co/storage')) return storagePath;
-                            if (storagePath.startsWith('http')) return storagePath;
-                            if (storagePath.includes('.jpg') || storagePath.includes('.png') || storagePath.includes('.jpeg') || storagePath.includes('.gif') || storagePath.includes('.webp')) {
+                            const projectUrl = getProjectUrl().replace(/\/$/, '');
+                            const storagePrefix = `${projectUrl}/storage`;
+                            if (typeof storagePath === 'string' && storagePath.startsWith(storagePrefix)) return storagePath;
+                            if (typeof storagePath === 'string' && storagePath.startsWith('http')) return storagePath;
+                            if (typeof storagePath === 'string' && (storagePath.includes('.jpg') || storagePath.includes('.png') || storagePath.includes('.jpeg') || storagePath.includes('.gif') || storagePath.includes('.webp'))) {
                                 return `images/${storagePath.toLowerCase()}`;
                             }
-                            const projectUrl = 'https://vorqavsuqcjnkjzwkyzr.supabase.co';
                             return `${projectUrl}/storage/v1/object/public/Images/${storagePath}`;
                         };
                         
