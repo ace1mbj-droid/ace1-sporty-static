@@ -39,6 +39,92 @@ let cartLoaded = false;
 // ===================================
 // CATEGORY SYNC (FOOTER SHOP LINKS)
 // ===================================
+async function syncPrimaryCategoryPageLinks() {
+    try {
+        const supabase = window.getSupabase ? window.getSupabase() : null;
+        if (!supabase) return;
+
+        // Add more entries here when new primary-category pages are created.
+        const pageDefs = [
+            { key: 'clothing', href: 'clothing.html', label: 'Clothing', insertAfter: 'shoes.html' }
+        ];
+
+        const availabilityByKey = new Map();
+
+        for (const def of pageDefs) {
+            const { count, error } = await supabase
+                .from('products')
+                .select('id', { count: 'exact', head: true })
+                .eq('primary_category', def.key)
+                .eq('is_active', true)
+                .is('deleted_at', null)
+                .or('is_locked.is.null,is_locked.eq.false')
+                .eq('status', 'available');
+
+            if (error) throw error;
+            availabilityByKey.set(def.key, (count || 0) > 0);
+        }
+
+        const navMenu = document.getElementById('nav-menu') || document.querySelector('.nav-menu');
+        if (navMenu) {
+            pageDefs.forEach(def => {
+                const available = availabilityByKey.get(def.key);
+
+                // Find existing link (if any)
+                const existingLink = navMenu.querySelector(`a[href="${def.href}"]`);
+
+                if (!available) {
+                    if (existingLink) {
+                        const li = existingLink.closest('li');
+                        if (li) li.remove();
+                        else existingLink.remove();
+                    }
+                    return;
+                }
+
+                if (!existingLink) {
+                    const li = document.createElement('li');
+                    const a = document.createElement('a');
+                    a.href = def.href;
+                    a.className = 'nav-link';
+                    a.textContent = def.label;
+                    li.appendChild(a);
+
+                    const anchor = def.insertAfter
+                        ? navMenu.querySelector(`a[href="${def.insertAfter}"]`)
+                        : null;
+                    const anchorLi = anchor ? anchor.closest('li') : null;
+                    if (anchorLi && anchorLi.parentNode === navMenu) {
+                        anchorLi.insertAdjacentElement('afterend', li);
+                    } else {
+                        navMenu.appendChild(li);
+                    }
+                }
+            });
+
+            // Ensure active link state for the current page
+            const path = window.location.pathname || '';
+            pageDefs.forEach(def => {
+                const link = navMenu.querySelector(`a[href="${def.href}"]`);
+                if (!link) return;
+                if (path.includes(def.href)) link.classList.add('active');
+            });
+        }
+
+        // Hide any footer or other links pointing to gated pages when unavailable
+        pageDefs.forEach(def => {
+            const available = availabilityByKey.get(def.key);
+            document.querySelectorAll(`a[href="${def.href}"]`).forEach(a => {
+                const li = a.closest('li');
+                if (li) li.style.display = available ? '' : 'none';
+                else a.style.display = available ? '' : 'none';
+            });
+        });
+    } catch (err) {
+        console.log('Primary category page link sync skipped:', err);
+    }
+}
+
 async function syncFooterShopLinks() {
     try {
         const supabase = window.getSupabase ? window.getSupabase() : null;
@@ -87,6 +173,8 @@ document.addEventListener('DOMContentLoaded', () => {
     syncSiteSettings();
     // Best-effort sync; if Supabase is unavailable on a page, it simply no-ops.
     syncFooterShopLinks();
+    // Show/hide primary-category pages (e.g., Clothing) based on inventory.
+    syncPrimaryCategoryPageLinks();
     // Track page view for analytics
     trackPageView();
 });
