@@ -1344,9 +1344,65 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     // Refresh product displays if admin updated products
     refreshProductsIfNeeded();
+
+    // Keep featured products in sync with admin changes
+    setupHomepageRealtimeFeaturedSync();
     
     console.log('Ace#1 Marketplace loaded successfully!');
 });
+
+function setupHomepageRealtimeFeaturedSync() {
+    try {
+        const productsGrid = document.getElementById('products-grid');
+        if (!productsGrid) return;
+        if (productsGrid.dataset.productsSource !== 'featured') return;
+        if (window.__ace1HomepageFeaturedRealtimeSetup) return;
+
+        if (typeof window.getSupabase !== 'function') return;
+        const supabase = window.getSupabase();
+        if (!supabase || typeof supabase.channel !== 'function') return;
+
+        window.__ace1HomepageFeaturedRealtimeSetup = true;
+
+        let timer = null;
+        let inFlight = null;
+
+        const schedule = () => {
+            if (timer) clearTimeout(timer);
+            timer = setTimeout(async () => {
+                if (inFlight) return;
+                inFlight = (async () => {
+                    try {
+                        await refreshProductsIfNeeded();
+                    } catch (e) {
+                        console.warn('Featured products realtime refresh failed:', e);
+                    }
+                })();
+                try {
+                    await inFlight;
+                } finally {
+                    inFlight = null;
+                }
+            }, 400);
+        };
+
+        const channel = supabase
+            .channel('ace1-homepage-featured-sync')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, schedule)
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'inventory' }, schedule)
+            .subscribe();
+
+        window.addEventListener('beforeunload', () => {
+            try {
+                supabase.removeChannel(channel);
+            } catch (e) {
+                // ignore
+            }
+        });
+    } catch (e) {
+        console.warn('Homepage realtime sync skipped:', e);
+    }
+}
 
 // Refresh products from Supabase if admin made changes
 async function refreshProductsIfNeeded() {
