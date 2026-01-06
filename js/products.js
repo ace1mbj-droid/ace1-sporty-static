@@ -305,7 +305,7 @@ class ProductFilterManager {
             };
             
             // Process the data to flatten related tables
-            const processedProducts = (products || []).map(product => ({
+            let processedProducts = (products || []).map(product => ({
                 ...product,
                 image_url: getImageUrl(product.product_images?.[0]?.storage_path) || null,
                 // Sum stock across all sizes for total availability
@@ -318,6 +318,10 @@ class ProductFilterManager {
                 price: (product.price_cents / 100).toFixed(2), // Convert cents to rupees
                 category: this.normalizeCategoryToSlug(product.category)
             }));
+
+            // Only show products that are actually available to buy (in-stock).
+            // The DB query already filters is_active + not deleted + not locked + status=available.
+            processedProducts = processedProducts.filter(p => Number(p.stock_quantity || 0) > 0);
 
             this.visibleCategorySlugs = new Set((processedProducts || []).map(p => p.category).filter(Boolean));
             // Re-render category filters now that we know which categories are present.
