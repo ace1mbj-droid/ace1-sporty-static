@@ -2,10 +2,14 @@
 // CACHE BUSTER & BROWSER CACHE CLEANER
 // ===================================
 // Ensures users always get the latest version of the website
-// Uses ETag/Last-Modified headers for cache validation (no localStorage)
+// Stateless: does not rely on localStorage/sessionStorage for versioning
 
 (function() {
     'use strict';
+
+    // In-memory version state (no local persistence)
+    let currentVersion = '';
+    let lastVersionCheckAt = 0;
 
     // ===================================
     // CLEAR BROWSER CACHE
@@ -24,14 +28,6 @@
                 });
             }
 
-            // 2. Clear cache items from sessionStorage only (no localStorage)
-            const sessionCacheKeys = Object.keys(sessionStorage).filter(key =>
-                key.includes('cache') || key.includes('cached')
-            );
-            sessionCacheKeys.forEach(key => {
-                sessionStorage.removeItem(key);
-            });
-
             console.log('✅ Browser cache cleared successfully');
             
         } catch (error) {
@@ -43,54 +39,37 @@
     // VERSION CHECK & FORCE RELOAD
     // ===================================
     async function checkVersion(forceCheck = false) {
-        const key = 'ace1_cache_version';
-        const lastCheckKey = 'ace1_last_version_check';
-
         try {
-            // Throttle checks to every 30 seconds unless forced
-            const lastCheck = parseInt(sessionStorage.getItem(lastCheckKey) || '0', 10);
             const now = Date.now();
-            if (!forceCheck && (now - lastCheck) < 30000) {
-                return false;
+
+            // Throttle checks to every 30 seconds unless forced
+            if (!forceCheck && (now - lastVersionCheckAt) < 30000) {
+                return { changed: false, version: currentVersion || 'latest' };
             }
-            sessionStorage.setItem(lastCheckKey, String(now));
+            lastVersionCheckAt = now;
 
             // Fetch version file with no-store so it reflects deploy bumps
-            const res = await fetch('/cache-version.txt?_=' + now, { 
+            const res = await fetch('/cache-version.txt?_=' + now, {
                 cache: 'no-store',
                 headers: { 'Cache-Control': 'no-cache' }
             });
             const versionText = (await res.text()).trim();
+            const nextVersion = versionText || 'latest';
 
-            if (!versionText) return false;
+            // Expose for other scripts if needed (in-memory only)
+            window.__ACE1_ASSET_VERSION__ = nextVersion;
 
-            // Persist across browser restarts (sessionStorage isn't enough for multi-day caching issues)
-            const stored = localStorage.getItem(key) || '';
-
-            const changed = Boolean(stored && stored !== versionText);
+            const changed = Boolean(currentVersion && currentVersion !== nextVersion);
             if (changed) {
-                console.log('🔄 New version detected:', versionText, '(was:', stored, ')');
+                console.log('🔄 New version detected:', nextVersion, '(was:', currentVersion, ')');
                 clearBrowserCache();
-            }
 
-            // Store in both localStorage (persistent) and sessionStorage (quick access)
-            localStorage.setItem(key, versionText);
-            sessionStorage.setItem(key, versionText);
-
-            // Expose for other scripts if needed
-            window.__ACE1_ASSET_VERSION__ = versionText;
-
-            // If version changed, force a reload so already-loaded stale JS doesn't keep running
-            if (changed) {
-                console.log('🔄 Reloading page for new version...');
+                // Reload after clearing caches so already-loaded stale JS doesn't keep running
                 setTimeout(() => {
                     try {
-                        // Clear all caches then reload
                         if ('caches' in window) {
                             caches.keys().then(names => {
-                                Promise.all(names.map(n => caches.delete(n))).then(() => {
-                                    location.reload();
-                                });
+                                Promise.all(names.map(n => caches.delete(n))).then(() => location.reload());
                             });
                         } else {
                             location.reload();
@@ -101,32 +80,34 @@
                 }, 100);
             }
 
-            return changed;
+            currentVersion = nextVersion;
+            return { changed, version: nextVersion };
         } catch (error) {
             console.warn('Version check failed:', error);
+            return { changed: false, version: currentVersion || 'latest' };
         }
     }
 
     // ===================================
     // ADD CACHE BUSTING TO SCRIPTS/STYLES
     // ===================================
-    function addCacheBustingParams() {
-        const version = (sessionStorage.getItem('ace1_cache_version') || localStorage.getItem('ace1_cache_version')) || 'latest';
+    function addCacheBustingParams(version) {
+        const safeVersion = version || currentVersion || 'latest';
 
         const withVersion = (rawUrl) => {
             try {
                 const url = new URL(rawUrl, location.origin);
                 if (url.origin !== location.origin) return rawUrl;
-                url.searchParams.set('v', version);
+                url.searchParams.set('v', safeVersion);
                 // Keep paths root-relative when possible
                 return url.pathname + url.search + url.hash;
             } catch {
                 // If URL parsing fails, fall back to simple appending
                 if (String(rawUrl || '').includes('?')) {
                     // Replace existing v= if present
-                    return String(rawUrl).replace(/([?&])v=[^&#]*/i, `$1v=${encodeURIComponent(version)}`);
+                    return String(rawUrl).replace(/([?&])v=[^&#]*/i, `$1v=${encodeURIComponent(safeVersion)}`);
                 }
-                return String(rawUrl) + '?v=' + encodeURIComponent(version);
+                return String(rawUrl) + '?v=' + encodeURIComponent(safeVersion);
             }
         };
         
@@ -146,7 +127,7 @@
             }
         });
 
-        console.log('✅ Cache busting parameters added to assets');
+        console.log('✅ Cache busting parameters added to assets (v=' + safeVersion + ')');
     }
 
     // ===================================
@@ -177,18 +158,8 @@
     // CLEAR SPECIFIC PRODUCT/DATA CACHES
     // ===================================
     function clearDataCaches() {
-        // Only clear sessionStorage caches; localStorage has been migrated
-        const dataCacheKeys = [
-            'ace1_products_cache',
-            'ace1_categories_cache',
-            'ace1_search_cache'
-        ];
-
-        dataCacheKeys.forEach(key => {
-            if (sessionStorage.getItem(key)) {
-                sessionStorage.removeItem(key);
-            }
-        });
+        // Intentionally no-op here.
+        // The product/cart/session storage is handled by their respective modules.
     }
 
     // ===================================
@@ -214,22 +185,21 @@
         // 1. Add no-cache meta tags
         addNoCacheMetaTags();
 
-        // 2. Check version and clear cache if needed
-        // Note: this is async, but we also keep a best-effort v= param pass below.
-        void checkVersion(true); // Force check on init
-
-        // 3. Always clear data caches (products, etc.) on every page load
-        clearDataCaches();
+        // 2. Check version and apply cache-busting params
+        // (We do not persist version locally; we fetch it each time.)
+        const applyVersionedAssets = async () => {
+            const res = await checkVersion(true);
+            addCacheBustingParams(res.version);
+        };
 
         // 4. Unregister any old service workers
         unregisterServiceWorkers();
 
-        // 5. Add cache busting parameters to assets
-        // (Run after DOM is loaded)
+        // 3. Add cache busting parameters to assets (after DOM is loaded)
         if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', addCacheBustingParams);
+            document.addEventListener('DOMContentLoaded', () => { void applyVersionedAssets(); });
         } else {
-            addCacheBustingParams();
+            void applyVersionedAssets();
         }
 
         // 6. Check for updates when user returns to tab
@@ -249,7 +219,6 @@
         setInterval(() => {
             console.log('🔄 Periodic version check...');
             void checkVersion(false);
-            clearDataCaches();
         }, 120000); // 2 minutes
     }
 
@@ -262,9 +231,6 @@
         checkVersion: () => checkVersion(true),
         forceReload: function() {
             clearBrowserCache();
-            clearDataCaches();
-            localStorage.removeItem('ace1_cache_version');
-            sessionStorage.clear();
             location.reload();
         }
     };
