@@ -225,14 +225,19 @@ class ProductFilterManager {
 
             // Build slug mappings for backward compatibility
             (this.categories || []).forEach(c => {
-                const slug = this.slugifyCategory(c.slug || c.name);
+                const slugFromSlug = this.slugifyCategory(c.slug);
+                const slugFromName = this.slugifyCategory(c.name);
+                const canonical = slugFromSlug || slugFromName;
+
                 const nameKey = String(c.name || '').trim().toLowerCase();
-                if (slug) {
-                    this.categorySlugByAny.set(slug, slug);
-                    this.categorySlugByAny.set(slug.toLowerCase(), slug);
-                }
-                if (nameKey && slug) {
-                    this.categorySlugByAny.set(nameKey, slug);
+                const slugKey = String(c.slug || '').trim().toLowerCase();
+
+                if (canonical) {
+                    // Keys that might appear in older data or admin inputs
+                    this.categorySlugByAny.set(canonical, canonical);
+                    this.categorySlugByAny.set(canonical.toLowerCase(), canonical);
+                    if (nameKey) this.categorySlugByAny.set(nameKey, canonical);
+                    if (slugKey) this.categorySlugByAny.set(slugKey, canonical);
                 }
             });
 
@@ -258,7 +263,8 @@ class ProductFilterManager {
         const normalizedPrimarySlug = this.slugifyCategory(primarySlug);
         const pageParent = (this.categories || []).find(c => {
             if (c.parent_id) return false;
-            return this.slugifyCategory(c.slug || c.name) === normalizedPrimarySlug;
+            return this.slugifyCategory(c.slug) === normalizedPrimarySlug
+                || this.slugifyCategory(c.name) === normalizedPrimarySlug;
         });
 
         const categoriesToRender = pageParent
