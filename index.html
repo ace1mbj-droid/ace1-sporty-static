@@ -2,15 +2,18 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
     
     <!-- Favicon & App Icons -->
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link rel="alternate icon" href="favicon.svg">
-    <link rel="apple-touch-icon" href="apple-touch-icon.svg">
+    <link rel="apple-touch-icon" sizes="180x180" href="images/apple-touch-icon.png">
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#1a1a2e">
     <meta name="msapplication-TileColor" content="#1a1a2e">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     
     <!-- Auth callback redirect (must be first) -->
     <script>
@@ -617,6 +620,147 @@
                 height: 40px;
                 font-size: 1.5rem;
             }
+            .gallery-tabs {
+                gap: 10px;
+                flex-wrap: wrap;
+            }
+            .gallery-tab {
+                padding: 10px 20px;
+                font-size: 0.9rem;
+            }
+            .video-hero {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+            .video-hero .video-thumb {
+                height: 200px;
+            }
+            .video-hero-content h3 {
+                font-size: 1.3rem;
+            }
+            .video-gallery {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+            }
+            .video-thumb {
+                height: 120px;
+            }
+            .video-play i {
+                font-size: 2rem;
+            }
+            .video-caption {
+                padding: 10px;
+            }
+            .video-caption h4 {
+                font-size: 0.95rem;
+            }
+            .video-caption p {
+                font-size: 0.8rem;
+            }
+            .photo-gallery {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+            }
+            .photo-item img {
+                height: 150px;
+            }
+            .photo-item.featured {
+                grid-column: span 2;
+                grid-row: span 1;
+            }
+            .photo-item.featured img {
+                height: 200px;
+            }
+        }
+        /* Small phones */
+        @media (max-width: 480px) {
+            .launch-gallery-section {
+                padding: 30px 10px;
+            }
+            .section-title {
+                font-size: 1.5rem !important;
+            }
+            .gallery-tabs {
+                gap: 8px;
+            }
+            .gallery-tab {
+                padding: 8px 16px;
+                font-size: 0.85rem;
+            }
+            .video-hero .video-thumb {
+                height: 180px;
+            }
+            .video-hero-content {
+                padding: 15px;
+            }
+            .video-hero-content h3 {
+                font-size: 1.1rem;
+            }
+            .video-cta {
+                padding: 10px 14px;
+                font-size: 0.9rem;
+            }
+            .video-gallery {
+                grid-template-columns: 1fr 1fr;
+                gap: 8px;
+            }
+            .video-thumb {
+                height: 100px;
+            }
+            .video-play i {
+                font-size: 1.5rem;
+            }
+            .video-caption {
+                padding: 8px;
+            }
+            .video-caption h4 {
+                font-size: 0.85rem;
+            }
+            .video-caption p {
+                display: none; /* Hide on very small screens */
+            }
+            .photo-gallery {
+                gap: 8px;
+            }
+            .photo-item img {
+                height: 120px;
+            }
+            .photo-item.featured img {
+                height: 160px;
+            }
+            .photo-overlay {
+                padding: 10px;
+            }
+            .photo-overlay h4 {
+                font-size: 0.9rem;
+            }
+            .photo-overlay p {
+                font-size: 0.75rem;
+            }
+            .lightbox-caption {
+                padding: 10px 15px;
+                font-size: 0.9rem;
+            }
+            .lightbox-counter {
+                font-size: 0.8rem;
+                padding: 5px 10px;
+            }
+        }
+        /* Very small phones */
+        @media (max-width: 360px) {
+            .gallery-tab {
+                padding: 6px 12px;
+                font-size: 0.8rem;
+            }
+            .video-thumb {
+                height: 85px;
+            }
+            .photo-item img {
+                height: 100px;
+            }
+            .photo-item.featured img {
+                height: 140px;
+            }
         }
     </style>
 </head>
@@ -628,7 +772,7 @@
         <div class="nav-container">
             <div class="nav-logo">
                 <a href="index.html">
-                    <img class="site-logo-img" src="images/ace1-logo-horizontal.svg" alt="ACE#1" decoding="async" loading="eager" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';">
+                    <img class="site-logo-img" src="https://vorqavsuqcjnkjzwkyzr.supabase.co/storage/v1/object/public/Website/brand/ace1-logo.jpeg" alt="ACE#1" decoding="async" loading="eager" onerror="this.src='images/ace1-logo-original-512.png'; this.onerror=function(){this.style.display='none'; this.nextElementSibling.style.display='inline';};">
                     <span class="logo-text" style="display:none;">ACE<span class="logo-accent">#1</span></span>
                 </a>
             </div>
@@ -899,7 +1043,7 @@
             <div class="footer-content">
                 <div class="footer-section">
                     <div class="footer-logo">
-                        <img class="footer-logo-img" src="images/ace1-logo.svg" alt="ACE#1" loading="lazy" decoding="async" onerror="this.remove();">
+                        <img class="footer-logo-img" src="https://vorqavsuqcjnkjzwkyzr.supabase.co/storage/v1/object/public/Website/brand/ace1-logo.jpeg" alt="ACE#1" loading="lazy" decoding="async" onerror="this.src='images/ace1-logo-original-512.png';">
                         <span class="logo-text">ACE<span class="logo-accent">#1</span></span>
                     </div>
                     <p>Modern footwear built for comfort and everyday wear.</p>
