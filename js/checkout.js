@@ -15,6 +15,13 @@ class CheckoutManager {
         this.setupEventListeners();
 
         await this.loadCartItems();
+        
+        // If cart is empty, redirect to products page
+        if (!this.cartItems || this.cartItems.length === 0) {
+            this.showEmptyCart();
+            return;
+        }
+        
         this.calculateTotals();
         this.displayCartItems();
         this.loadUserInfo();
@@ -569,17 +576,8 @@ class CheckoutManager {
             const razorpay = new Razorpay(options);
             razorpay.open();
         } else {
-            this.showNotification('Payment gateway not available. Please try again later.', 'error');
-            console.log('Razorpay integration ready. Add your API key to js/razorpay-config.js');
-            
-            // For demo purposes, simulate successful payment
-            setTimeout(() => {
-                this.handlePaymentSuccess(orderData, {
-                    razorpay_payment_id: 'demo_' + Date.now(),
-                    razorpay_order_id: (this.serverOrder?.razor?.id) || orderData.orderId,
-                    razorpay_signature: 'demo_signature'
-                });
-            }, 1000);
+            this.showNotification('Payment gateway is currently unavailable. Please try Cash on Delivery or try again later.', 'error');
+            console.error('Razorpay SDK not loaded. Ensure js/razorpay-config.js is properly configured.');
         }
     }
 
@@ -755,13 +753,20 @@ class CheckoutManager {
 
     showEmptyCart() {
         const container = document.querySelector('.checkout-container');
+        const progressSection = document.querySelector('.checkout-progress');
+        
+        // Hide the progress steps when cart is empty
+        if (progressSection) {
+            progressSection.style.display = 'none';
+        }
+        
         if (container) {
             container.innerHTML = `
-                <div class="empty-state">
-                    <i class="fas fa-shopping-bag"></i>
-                    <h2>Your cart is empty</h2>
-                    <p>Add some products to your cart to proceed with checkout</p>
-                    <a href="products.html" class="btn btn-primary">Browse Products</a>
+                <div class="empty-state" style="text-align: center; padding: 80px 20px; max-width: 500px; margin: 0 auto;">
+                    <i class="fas fa-shopping-bag" style="font-size: 80px; color: #ddd; margin-bottom: 30px;"></i>
+                    <h2 style="font-size: 28px; margin-bottom: 15px; color: #333;">Your cart is empty</h2>
+                    <p style="color: #666; margin-bottom: 30px; line-height: 1.6;">Looks like you haven't added any products yet. Browse our collection and find something you'll love!</p>
+                    <a href="shoes.html" class="btn btn-primary" style="display: inline-block; padding: 16px 40px; background: #000; color: #fff; border-radius: 50px; text-decoration: none; font-weight: 600;">Browse Products</a>
                 </div>
             `;
         }
