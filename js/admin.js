@@ -1303,7 +1303,13 @@ class AdminPanel {
     }
 
     bindInlineSuggest(inputEl, getItems) {
-        if (!inputEl || inputEl.dataset.inlineSuggestBound === '1') return;
+        if (!inputEl) return;
+
+        // Allow updating suggestion source (e.g., when category changes) without
+        // re-binding event listeners.
+        inputEl._ace1InlineSuggestGetItems = getItems;
+
+        if (inputEl.dataset.inlineSuggestBound === '1') return;
         inputEl.dataset.inlineSuggestBound = '1';
 
         const dropdown = this.createInlineSuggestDropdown(inputEl);
@@ -1366,7 +1372,7 @@ class AdminPanel {
 
         inputEl.addEventListener('input', () => {
             const q = String(inputEl.value || '').trim().toLowerCase();
-            const items = (getItems?.() || [])
+            const items = (inputEl._ace1InlineSuggestGetItems?.() || [])
                 .map(v => String(v || '').trim())
                 .filter(Boolean);
 
@@ -1454,13 +1460,16 @@ class AdminPanel {
             this.addLocalListValue('ace1_admin_image_url_suggestions_v1', imageInput.value, 30);
         });
 
-        // Inventory sizes: bind on focus for each row
-        const primary = modal.querySelector('#product-primary-category')?.value || '';
-        const sizeSuggestions = this.getSizeSuggestions(primary);
+        // Inventory sizes: suggestions depend on selected primary category.
+        // Read it dynamically so switching category doesn't keep stale shoe sizes.
+        const getSizeSuggestionsForCurrentPrimary = () => {
+            const primary = modal.querySelector('#product-primary-category')?.value || '';
+            return this.getSizeSuggestions(primary);
+        };
 
         const bindAllInvSizes = () => {
             modal.querySelectorAll('.inv-size').forEach(el => {
-                this.bindInlineSuggest(el, () => sizeSuggestions);
+                this.bindInlineSuggest(el, getSizeSuggestionsForCurrentPrimary);
             });
         };
 
@@ -1472,6 +1481,16 @@ class AdminPanel {
             addBtn.addEventListener('click', () => {
                 // Wait for row to be added
                 setTimeout(bindAllInvSizes, 0);
+            });
+        }
+
+        // When admin changes primary category (Shoes/Clothing/Accessories), refresh
+        // the size suggestion source for all inventory size inputs.
+        const primarySelect = modal.querySelector('#product-primary-category');
+        if (primarySelect && primarySelect.dataset.inlineSuggestSizesHooked !== '1') {
+            primarySelect.dataset.inlineSuggestSizesHooked = '1';
+            primarySelect.addEventListener('change', () => {
+                bindAllInvSizes();
             });
         }
     }
