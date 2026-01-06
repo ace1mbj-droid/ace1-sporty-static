@@ -5,10 +5,42 @@ import { createClient } from 'npm:@supabase/supabase-js';
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL') ?? '';
 const SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
 const RZ_SECRET = Deno.env.get('RZ_SECRET') ?? '';
+const SENDGRID_API_KEY = Deno.env.get('SENDGRID_API_KEY') ?? '';
+const SENDGRID_FROM = Deno.env.get('SENDGRID_FROM') ?? '';
+const ADMIN_ORDER_EMAIL = Deno.env.get('ADMIN_ORDER_EMAIL') ?? 'hello@ace1.in';
 
 const supabase = createClient(SUPABASE_URL, SERVICE_ROLE_KEY as string, {
   auth: { persistSession: false }
 });
+
+async function sendEmail(to: string, subject: string, text: string): Promise<void> {
+  if (!SENDGRID_API_KEY || !SENDGRID_FROM) {
+    console.warn('webhook-razorpay: email not configured; skipping send');
+    return;
+  }
+  if (!to) return;
+
+  const payload = {
+    personalizations: [{ to: [{ email: to }] }],
+    from: { email: SENDGRID_FROM },
+    subject,
+    content: [{ type: 'text/plain', value: text }]
+  };
+
+  const res = await fetch('https://api.sendgrid.com/v3/mail/send', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${SENDGRID_API_KEY}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(payload)
+  });
+
+  if (!res.ok) {
+    const body = await res.text().catch(() => '');
+    console.warn('webhook-razorpay: sendgrid failed', res.status, body);
+  }
+}
 
 function toHex(bytes: Uint8Array): string {
   return Array.from(bytes)
@@ -80,6 +112,11 @@ export async function handler(req: Request): Promise<Response> {
         if (paymentError) {
           console.error('webhook-razorpay: payment lookup failed', paymentError.message);
         } else if (paymentRecord) {
+          // Idempotency: if we already marked it paid, do nothing.
+          if (String(paymentRecord.status || '').toLowerCase() === 'paid') {
+            return new Response(JSON.stringify({ ok: true, skipped: 'already_paid' }), { status: 200 });
+          }
+
           await supabase
             .from('payments')
             .update({ status: 'paid', metadata: paymentEntity })
@@ -87,8 +124,38 @@ export async function handler(req: Request): Promise<Response> {
 
           await supabase
             .from('orders')
-            .update({ status: 'paid' })
+            .update({ status: 'paid', payment_status: 'paid' })
             .eq('id', paymentRecord.order_id);
+
+          // Email customer + admin (best-effort)
+          try {
+            const { data: order } = await supabase
+              .from('orders')
+              .select('id, total_cents, currency, shipping_address')
+              .eq('id', paymentRecord.order_id)
+              .maybeSingle();
+
+            const customerEmail = String((order as any)?.shipping_address?.email || '').trim();
+            const orderId = String((order as any)?.id || paymentRecord.order_id);
+            const totalCents = Number((order as any)?.total_cents || 0);
+            const currency = String((order as any)?.currency || 'INR');
+            const amountInr = (totalCents / 100).toFixed(2);
+
+            const subject = `Payment received: ${orderId}`;
+            const bodyText = [
+              `Payment received successfully.`,
+              `Order ID: ${orderId}`,
+              `Status: Paid`,
+              `Total: ${currency === 'INR' ? `₹${amountInr}` : `${amountInr} ${currency}`}`
+            ].join('\n');
+
+            await Promise.all([
+              customerEmail ? sendEmail(customerEmail, subject, bodyText) : Promise.resolve(),
+              sendEmail(ADMIN_ORDER_EMAIL, `Order paid: ${orderId}`, bodyText)
+            ]);
+          } catch (e) {
+            console.warn('webhook-razorpay: email send skipped due to error', String(e));
+          }
         }
       }
     }
