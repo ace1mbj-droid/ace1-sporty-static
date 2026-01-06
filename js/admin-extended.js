@@ -6,11 +6,23 @@
 class AdminExtended {
     constructor() {
         this.supabase = window.getSupabase();
+        this.inventoryCategoryFilter = 'all';
         this.init();
     }
 
     async init() {
         console.log('✅ Admin Extended module initialized');
+
+        // Inventory category filter (All / Shoes / Clothing / Accessories)
+        const invFilter = document.getElementById('inventory-category-filter');
+        if (invFilter && invFilter.dataset.bound !== '1') {
+            invFilter.dataset.bound = '1';
+            this.inventoryCategoryFilter = invFilter.value || 'all';
+            invFilter.addEventListener('change', () => {
+                this.inventoryCategoryFilter = invFilter.value || 'all';
+                this.loadInventory();
+            });
+        }
 
         // Add role form submit handler
         const roleForm = document.getElementById('role-form');
@@ -30,16 +42,22 @@ class AdminExtended {
     // ========================================
     async loadInventory() {
         try {
-            const { data, error } = await this.supabase
+            let query = this.supabase
                 .from('products')
                 .select(`
-                    id, name, sku,
+                    id, name, sku, primary_category,
                     inventory(id, size, stock)
                 `)
                 .eq('is_active', true)
-                .eq('primary_category', 'shoes')
                 .is('deleted_at', null)
                 .order('name');
+
+            const filter = String(this.inventoryCategoryFilter || 'all').toLowerCase();
+            if (filter && filter !== 'all') {
+                query = query.eq('primary_category', filter);
+            }
+
+            const { data, error } = await query;
 
             if (error) throw error;
             this.renderInventoryTable(data);
@@ -78,11 +96,15 @@ class AdminExtended {
             const totalStock = product.inventory?.reduce((sum, inv) => sum + (inv.stock || 0), 0) || 0;
             const isLowStock = totalStock > 0 && totalStock < lowStockThreshold;
             const isOutOfStock = totalStock === 0;
+
+            const cat = String(product.primary_category || '').toLowerCase();
+            const categoryLabel = cat ? (cat.charAt(0).toUpperCase() + cat.slice(1)) : '-';
             
             return `
                 <tr class="${isOutOfStock ? 'out-of-stock' : isLowStock ? 'low-stock' : ''}">
                     <td>${product.sku || '-'}</td>
                     <td>${product.name}</td>
+                    <td>${categoryLabel}</td>
                     <td>
                         ${product.inventory?.map(inv => `
                             <span class="size-stock" style="display:inline-block;margin:2px 5px;padding:2px 8px;background:#f0f0f0;border-radius:4px;">${inv.size}: ${inv.stock}</span>
@@ -112,6 +134,7 @@ class AdminExtended {
                     <tr style="background:#f5f5f5;">
                         <th style="padding:12px;text-align:left;border-bottom:2px solid #ddd;">SKU</th>
                         <th style="padding:12px;text-align:left;border-bottom:2px solid #ddd;">Product</th>
+                        <th style="padding:12px;text-align:left;border-bottom:2px solid #ddd;">Category</th>
                         <th style="padding:12px;text-align:left;border-bottom:2px solid #ddd;">Size/Stock</th>
                         <th style="padding:12px;text-align:left;border-bottom:2px solid #ddd;">Total</th>
                         <th style="padding:12px;text-align:left;border-bottom:2px solid #ddd;">Status</th>
@@ -119,7 +142,7 @@ class AdminExtended {
                     </tr>
                 </thead>
                 <tbody>
-                    ${rows || '<tr><td colspan="6" style="padding:20px;text-align:center;">No products found</td></tr>'}
+                    ${rows || '<tr><td colspan="7" style="padding:20px;text-align:center;">No products found</td></tr>'}
                 </tbody>
             </table>
         `;
@@ -140,9 +163,8 @@ class AdminExtended {
         // Otherwise show a product selector
         const { data: products } = await this.supabase
             .from('products')
-            .select('id, name')
+            .select('id, name, primary_category')
             .eq('is_active', true)
-            .eq('primary_category', 'shoes')
             .is('deleted_at', null)
             .order('name');
         
@@ -151,11 +173,13 @@ class AdminExtended {
             return;
         }
         
-        const productOptions = products.map(p => `${p.name}`).join('\n');
-        const selectedName = prompt('Select product to adjust (type product name):\n\n' + productOptions);
+        const productOptions = products
+            .map(p => `${p.name} [${String(p.primary_category || '').toLowerCase() || '-'}]`)
+            .join('\n');
+        const selectedName = prompt('Select product to adjust (type product name exactly):\n\n' + productOptions);
         if (!selectedName) return;
         
-        const selected = products.find(p => p.name.toLowerCase() === selectedName.toLowerCase());
+        const selected = products.find(p => String(p.name || '').toLowerCase() === selectedName.toLowerCase());
         if (selected) {
             this.adjustStock(selected.id, selected.name);
         } else {
