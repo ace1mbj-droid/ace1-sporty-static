@@ -52,14 +52,35 @@
 
             if (!versionText) return;
 
-            const stored = sessionStorage.getItem(key);
+            // Persist across browser restarts (sessionStorage isn't enough for multi-day caching issues)
+            const stored = localStorage.getItem(key) || '';
 
-            if (stored && stored !== versionText) {
+            const changed = Boolean(stored && stored !== versionText);
+            if (changed) {
                 console.log('🔄 New version detected, clearing cache...');
                 clearBrowserCache();
             }
 
+            // Store in both localStorage (persistent) and sessionStorage (quick access)
+            localStorage.setItem(key, versionText);
             sessionStorage.setItem(key, versionText);
+
+            // Expose for other scripts if needed
+            window.__ACE1_ASSET_VERSION__ = versionText;
+
+            // If version changed, force a reload so already-loaded stale JS doesn't keep running
+            if (changed) {
+                setTimeout(() => {
+                    try {
+                        // Avoid deprecated reload(true). A normal reload is sufficient after cache clear.
+                        location.reload();
+                    } catch (e) {
+                        // ignore
+                    }
+                }, 50);
+            }
+
+            return changed;
         } catch (error) {
             console.warn('Version check failed:', error);
         }
@@ -69,21 +90,38 @@
     // ADD CACHE BUSTING TO SCRIPTS/STYLES
     // ===================================
     function addCacheBustingParams() {
-        const version = sessionStorage.getItem('ace1_cache_version') || 'latest';
+        const version = (sessionStorage.getItem('ace1_cache_version') || localStorage.getItem('ace1_cache_version')) || 'latest';
+
+        const withVersion = (rawUrl) => {
+            try {
+                const url = new URL(rawUrl, location.origin);
+                if (url.origin !== location.origin) return rawUrl;
+                url.searchParams.set('v', version);
+                // Keep paths root-relative when possible
+                return url.pathname + url.search + url.hash;
+            } catch {
+                // If URL parsing fails, fall back to simple appending
+                if (String(rawUrl || '').includes('?')) {
+                    // Replace existing v= if present
+                    return String(rawUrl).replace(/([?&])v=[^&#]*/i, `$1v=${encodeURIComponent(version)}`);
+                }
+                return String(rawUrl) + '?v=' + encodeURIComponent(version);
+            }
+        };
         
         // Add timestamp to all script tags (except external CDNs)
         document.querySelectorAll('script[src]').forEach(script => {
             const src = script.getAttribute('src');
-            if (src && !src.includes('http') && !src.includes('?')) {
-                script.src = src + '?v=' + version;
+            if (src && !src.includes('http')) {
+                script.src = withVersion(src);
             }
         });
 
         // Add timestamp to all stylesheet links (except external CDNs)
         document.querySelectorAll('link[rel="stylesheet"]').forEach(link => {
             const href = link.getAttribute('href');
-            if (href && !href.includes('http') && !href.includes('?')) {
-                link.href = href + '?v=' + version;
+            if (href && !href.includes('http')) {
+                link.href = withVersion(href);
             }
         });
 
@@ -156,7 +194,8 @@
         addNoCacheMetaTags();
 
         // 2. Check version and clear cache if needed
-        const versionChanged = checkVersion();
+        // Note: this is async, but we also keep a best-effort v= param pass below.
+        void checkVersion();
 
         // 3. Always clear data caches (products, etc.) on every page load
         clearDataCaches();
@@ -170,11 +209,6 @@
             document.addEventListener('DOMContentLoaded', addCacheBustingParams);
         } else {
             addCacheBustingParams();
-        }
-
-        // 6. Clear browser cache periodically
-        if (versionChanged) {
-            console.log('✅ Full cache clear completed');
         }
 
         // 7. Set up periodic cache clearing (every 5 minutes while page is open)
@@ -193,7 +227,7 @@
         forceReload: function() {
             clearBrowserCache();
             clearDataCaches();
-            location.reload(true);
+            location.reload();
         }
     };
 
