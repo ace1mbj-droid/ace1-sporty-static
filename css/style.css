@@ -1869,6 +1869,8 @@ button {
 /* About Page */
 .mission-section {
     padding: 100px 0;
+    background: linear-gradient(145deg, #fffdfb 0%, #eef2ff 100%);
+    border-bottom: 1px solid rgba(15, 23, 42, 0.08);
 }
 
 .mission-grid {
@@ -1876,6 +1878,10 @@ button {
     grid-template-columns: 1fr 1fr;
     gap: 60px;
     align-items: center;
+}
+
+.mission-text {
+    max-width: 540px;
 }
 
 .mission-text h2 {
@@ -1898,28 +1904,30 @@ button {
 }
 
 .values-section {
-    padding: 100px 0;
-    background: var(--bg-light);
+    padding: 110px 0;
+    background: #ffffff;
 }
 
 .values-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 40px;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 35px;
     margin-top: 60px;
 }
 
 .value-card {
     text-align: center;
-    padding: 50px 30px;
-    background: white;
-    border-radius: 20px;
+    padding: 48px 30px;
+    background: rgba(255, 255, 255, 0.94);
+    border-radius: 28px;
     transition: var(--transition);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    min-height: 240px;
 }
 
 .value-card:hover {
-    transform: translateY(-10px);
-    box-shadow: var(--shadow-lg);
+    transform: translateY(-8px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
 }
 
 .value-card i {
@@ -1941,6 +1949,7 @@ button {
 
 .story-section {
     padding: 100px 0;
+    background: linear-gradient(180deg, #f7f7ff 0%, #eef2ff 100%);
 }
 
 .story-content {
@@ -1965,22 +1974,24 @@ button {
 
 .team-section {
     padding: 100px 0;
-    background: var(--bg-light);
+    background: #ffffff;
 }
 
 .team-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     gap: 40px;
     margin-top: 60px;
 }
 
 .team-member {
     text-align: center;
-    background: white;
-    padding: 40px 30px;
-    border-radius: 20px;
+    background: #ffffff;
+    padding: 42px 28px;
+    border-radius: 28px;
     transition: var(--transition);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    min-height: 320px;
 }
 
 .team-member:hover {
@@ -2024,31 +2035,106 @@ button {
 }
 
 .stats-section {
-    padding: 80px 0;
-    background: var(--primary-color);
+    padding: 120px 0;
+    background: linear-gradient(180deg, #0b1629 0%, #030711 100%);
     color: white;
+    position: relative;
+    overflow: hidden;
+}
+
+.stats-section::before,
+.stats-section::after {
+    content: '';
+    position: absolute;
+    width: 320px;
+    height: 320px;
+    border-radius: 50%;
+    opacity: 0.25;
+    z-index: 0;
+}
+
+.stats-section::before {
+    top: -60px;
+    right: -20px;
+    background: radial-gradient(circle, rgba(255, 107, 0, 0.9), transparent 60%);
+}
+
+.stats-section::after {
+    bottom: -80px;
+    left: -20px;
+    background: radial-gradient(circle, rgba(0, 212, 255, 0.8), transparent 65%);
 }
 
 .stats-grid {
+    position: relative;
+    z-index: 1;
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 40px;
+    gap: 30px;
 }
 
 .stat-card {
     text-align: center;
+    background: rgba(255, 255, 255, 0.06);
+    border-radius: 24px;
+    padding: 30px 20px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(18px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
 }
 
 .stat-number {
     font-family: var(--font-display);
-    font-size: 64px;
+    font-size: clamp(40px, 7vw, 64px);
     color: var(--secondary-color);
     margin-bottom: 10px;
 }
 
 .stat-label {
     font-size: 18px;
-    opacity: 0.9;
+    opacity: 0.95;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+@media (max-width: 992px) {
+    .mission-grid,
+    .values-grid,
+    .team-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .mission-section,
+    .values-section,
+    .story-section,
+    .team-section,
+    .stats-section {
+        padding: 60px 0;
+    }
+
+    .story-content h2 {
+        font-size: 48px;
+    }
+
+    .stat-card {
+        padding: 24px 16px;
+    }
+
+    .stat-number {
+        font-size: clamp(32px, 12vw, 48px);
+    }
+}
+
+@media (max-width: 576px) {
+    .stats-grid {
+        gap: 16px;
+    }
+
+    .value-card {
+        padding: 36px 20px;
+    }
 }
 
 /* Contact Page */
