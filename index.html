@@ -4,9 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
-    <!-- Favicon -->
+    <!-- Favicon & App Icons -->
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link rel="alternate icon" href="favicon.svg">
+    <link rel="apple-touch-icon" href="apple-touch-icon.svg">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#1a1a2e">
+    <meta name="msapplication-TileColor" content="#1a1a2e">
     
     <!-- Auth callback redirect (must be first) -->
     <script>
@@ -31,19 +35,25 @@
     <title>Ace#1 | Quality, Affordable Sneakers</title>
     <link rel="canonical" href="https://ace1.in/">
 
-    <!-- OpenGraph / Social -->
+    <!-- OpenGraph / Social (Facebook-style caching with proper dimensions) -->
     <meta property="og:site_name" content="ACE#1">
     <meta property="og:locale" content="en_IN">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://ace1.in/">
     <meta property="og:title" content="Ace#1 | Quality, Affordable Sneakers">
     <meta property="og:description" content="Ace#1 - Quality, affordable sneakers built for daily wellness, comfort, and long hours on your feet.">
-    <meta property="og:image" content="https://vorqavsuqcjnkjzwkyzr.supabase.co/storage/v1/object/public/Website/Cat1.JPG">
+    <meta property="og:image" content="https://ace1.in/images/og-image.svg">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="ACE#1 - Quality, Affordable Sneakers">
+    <meta property="fb:app_id" content="">
 
     <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:site" content="@ace1sneakers">
     <meta name="twitter:title" content="Ace#1 | Quality, Affordable Sneakers">
     <meta name="twitter:description" content="Ace#1 - Quality, affordable sneakers built for daily wellness, comfort, and long hours on your feet.">
-    <meta name="twitter:image" content="https://vorqavsuqcjnkjzwkyzr.supabase.co/storage/v1/object/public/Website/Cat1.JPG">
+    <meta name="twitter:image" content="https://ace1.in/images/og-image.svg">
+    <meta name="twitter:image:alt" content="ACE#1 - Quality, Affordable Sneakers">
 
     <script type="application/ld+json">
         {
@@ -56,7 +66,7 @@
                     "url": "https://ace1.in/",
                     "logo": {
                         "@type": "ImageObject",
-                        "url": "https://vorqavsuqcjnkjzwkyzr.supabase.co/storage/v1/object/public/Website/brand/ace1-logo.jpeg"
+                        "url": "https://ace1.in/images/ace1-logo.svg"
                     }
                 },
                 {
@@ -480,8 +490,8 @@
         <div class="nav-container">
             <div class="nav-logo">
                 <a href="index.html">
-                    <img class="site-logo-img" src="https://vorqavsuqcjnkjzwkyzr.supabase.co/storage/v1/object/public/Website/brand/ace1-logo.jpeg" alt="ACE#1" decoding="async" loading="eager" onerror="this.remove();">
-                    <span class="logo-text">ACE<span class="logo-accent">#1</span></span>
+                    <img class="site-logo-img" src="images/ace1-logo-horizontal.svg" alt="ACE#1" decoding="async" loading="eager" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';">
+                    <span class="logo-text" style="display:none;">ACE<span class="logo-accent">#1</span></span>
                 </a>
             </div>
             <ul class="nav-menu" id="nav-menu">
@@ -751,7 +761,7 @@
             <div class="footer-content">
                 <div class="footer-section">
                     <div class="footer-logo">
-                        <img class="footer-logo-img" src="https://vorqavsuqcjnkjzwkyzr.supabase.co/storage/v1/object/public/Website/brand/ace1-logo.jpeg" alt="ACE#1" loading="lazy" decoding="async" onerror="this.remove();">
+                        <img class="footer-logo-img" src="images/ace1-logo.svg" alt="ACE#1" loading="lazy" decoding="async" onerror="this.remove();">
                         <span class="logo-text">ACE<span class="logo-accent">#1</span></span>
                     </div>
                     <p>Modern footwear built for comfort and everyday wear.</p>
