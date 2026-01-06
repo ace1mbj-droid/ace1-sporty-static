@@ -480,6 +480,144 @@
         .gallery-content.active {
             display: block;
         }
+
+        /* Media Lightbox/Modal Styles */
+        .media-lightbox {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 10000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .media-lightbox.active {
+            display: flex;
+            opacity: 1;
+        }
+        .lightbox-close {
+            position: absolute;
+            top: 20px;
+            right: 25px;
+            background: rgba(255,255,255,0.1);
+            border: none;
+            color: white;
+            font-size: 2rem;
+            cursor: pointer;
+            z-index: 10001;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.3s;
+        }
+        .lightbox-close:hover {
+            background: rgba(255,255,255,0.2);
+        }
+        .lightbox-content {
+            max-width: 90vw;
+            max-height: 85vh;
+            position: relative;
+        }
+        .lightbox-content img {
+            max-width: 100%;
+            max-height: 85vh;
+            object-fit: contain;
+            border-radius: 8px;
+            box-shadow: 0 10px 50px rgba(0,0,0,0.5);
+        }
+        .lightbox-content iframe {
+            width: 80vw;
+            height: 45vw;
+            max-width: 1200px;
+            max-height: 675px;
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 10px 50px rgba(0,0,0,0.5);
+        }
+        .lightbox-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255,255,255,0.1);
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.3s;
+        }
+        .lightbox-nav:hover {
+            background: rgba(255,255,255,0.2);
+        }
+        .lightbox-prev {
+            left: 20px;
+        }
+        .lightbox-next {
+            right: 20px;
+        }
+        .lightbox-caption {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: white;
+            text-align: center;
+            background: rgba(0,0,0,0.7);
+            padding: 15px 30px;
+            border-radius: 8px;
+            max-width: 80%;
+        }
+        .lightbox-caption h4 {
+            font-size: 1.2rem;
+            margin-bottom: 5px;
+        }
+        .lightbox-caption p {
+            font-size: 0.95rem;
+            opacity: 0.8;
+        }
+        .lightbox-counter {
+            position: absolute;
+            top: 25px;
+            left: 25px;
+            color: white;
+            font-size: 0.95rem;
+            background: rgba(0,0,0,0.5);
+            padding: 8px 15px;
+            border-radius: 20px;
+        }
+        @media (max-width: 768px) {
+            .lightbox-content iframe {
+                width: 95vw;
+                height: 53vw;
+            }
+            .lightbox-nav {
+                width: 40px;
+                height: 40px;
+                font-size: 1.2rem;
+            }
+            .lightbox-prev { left: 10px; }
+            .lightbox-next { right: 10px; }
+            .lightbox-close {
+                top: 10px;
+                right: 10px;
+                width: 40px;
+                height: 40px;
+                font-size: 1.5rem;
+            }
+        }
     </style>
 </head>
 <body>
@@ -555,7 +693,7 @@
                 <div class="gallery-content active" id="videos-content">
                     <div class="video-hero">
                         <div class="video-hero-card">
-                            <a class="video-thumb" href="https://youtu.be/QvilrHBjBLw" target="_blank" rel="noopener" aria-label="Play featured video on YouTube">
+                            <a class="video-thumb video-play-btn" href="#" data-video-id="QvilrHBjBLw" data-title="Featured Launch Video" data-desc="See the energy, the products, and the moment Ace#1 came to life." aria-label="Play featured video">
                                 <img src="https://img.youtube.com/vi/QvilrHBjBLw/hqdefault.jpg" alt="Ace#1 featured video" loading="lazy">
                                 <div class="video-play"><i class="fas fa-play-circle"></i></div>
                             </a>
@@ -564,8 +702,8 @@
                             <div class="video-hero-content">
                                 <h3>Featured Launch Video</h3>
                                 <p>See the energy, the products, and the moment Ace#1 came to life.</p>
-                                <a class="video-cta" href="https://youtu.be/QvilrHBjBLw" target="_blank" rel="noopener">
-                                    Watch on YouTube <i class="fas fa-arrow-right"></i>
+                                <a class="video-cta video-play-btn" href="#" data-video-id="QvilrHBjBLw" data-title="Featured Launch Video">
+                                    <i class="fas fa-play"></i> Watch Now
                                 </a>
                             </div>
                         </div>
@@ -573,7 +711,7 @@
 
                     <div class="video-gallery">
                         <div class="video-item">
-                            <a class="video-thumb" href="https://youtu.be/O2cYQ-KZxbE" target="_blank" rel="noopener" aria-label="Play video on YouTube">
+                            <a class="video-thumb video-play-btn" href="#" data-video-id="O2cYQ-KZxbE" data-title="Product Showcase" data-desc="Explore our terahertz technology products in action" aria-label="Play video">
                                 <img src="https://img.youtube.com/vi/O2cYQ-KZxbE/hqdefault.jpg" alt="Ace#1 video" loading="lazy">
                                 <div class="video-play"><i class="fas fa-play-circle"></i></div>
                             </a>
@@ -584,7 +722,7 @@
                         </div>
 
                         <div class="video-item">
-                            <a class="video-thumb" href="https://youtu.be/DRD0WSg7vIc" target="_blank" rel="noopener" aria-label="Play video on YouTube">
+                            <a class="video-thumb video-play-btn" href="#" data-video-id="DRD0WSg7vIc" data-title="Behind the Scenes" data-desc="A closer look at the preparation and the vibe" aria-label="Play video">
                                 <img src="https://img.youtube.com/vi/DRD0WSg7vIc/hqdefault.jpg" alt="Ace#1 video" loading="lazy">
                                 <div class="video-play"><i class="fas fa-play-circle"></i></div>
                             </a>
@@ -595,7 +733,7 @@
                         </div>
 
                         <div class="video-item">
-                            <a class="video-thumb" href="https://youtu.be/KIiVM77ZWHY" target="_blank" rel="noopener" aria-label="Play video on YouTube">
+                            <a class="video-thumb video-play-btn" href="#" data-video-id="KIiVM77ZWHY" data-title="More Highlights" data-desc="More key moments from our launch journey" aria-label="Play video">
                                 <img src="https://img.youtube.com/vi/KIiVM77ZWHY/hqdefault.jpg" alt="Ace#1 video" loading="lazy">
                                 <div class="video-play"><i class="fas fa-play-circle"></i></div>
                             </a>
@@ -606,7 +744,7 @@
                         </div>
 
                         <div class="video-item">
-                            <a class="video-thumb" href="https://youtu.be/XtePax2rsz0" target="_blank" rel="noopener" aria-label="Play video on YouTube">
+                            <a class="video-thumb video-play-btn" href="#" data-video-id="XtePax2rsz0" data-title="Technology Spotlight" data-desc="A quick view into the story behind the tech" aria-label="Play video">
                                 <img src="https://img.youtube.com/vi/XtePax2rsz0/hqdefault.jpg" alt="Ace#1 video" loading="lazy">
                                 <div class="video-play"><i class="fas fa-play-circle"></i></div>
                             </a>
@@ -623,109 +761,109 @@
                     <div class="photo-gallery">
                         <!-- NOTE: These URLs point to Supabase Storage bucket "Website" folder "Index Image Gallery/". -->
 
-                        <a class="photo-item featured" href="https://vorqavsuqcjnkjzwkyzr.supabase.co/storage/v1/object/public/Website/Index%20Image%20Gallery/PHOTO-2025-10-05-09-34-17.jpg" target="_blank" rel="noopener">
+                        <a class="photo-item featured photo-lightbox-btn" href="#" data-img="https://vorqavsuqcjnkjzwkyzr.supabase.co/storage/v1/object/public/Website/Index%20Image%20Gallery/PHOTO-2025-10-05-09-34-17.jpg" data-title="Launch Moment" data-desc="Highlights from the Ace#1 event">
                             <img src="https://vorqavsuqcjnkjzwkyzr.supabase.co/storage/v1/object/public/Website/Index%20Image%20Gallery/PHOTO-2025-10-05-09-34-17.jpg" alt="Ace#1 launch event photo" loading="lazy" decoding="async" onerror="this.src='images/placeholder.jpg'">
                             <div class="photo-overlay">
                                 <h4>Launch Moment</h4>
                                 <p>Highlights from the Ace#1 event</p>
-                                <span class="view-link">View full size <i class="fas fa-arrow-right"></i></span>
+                                <span class="view-link"><i class="fas fa-expand"></i> View</span>
                             </div>
                         </a>
 
-                        <a class="photo-item" href="https://vorqavsuqcjnkjzwkyzr.supabase.co/storage/v1/object/public/Website/Index%20Image%20Gallery/PHOTO-2025-10-05-08-20-11.jpg" target="_blank" rel="noopener">
+                        <a class="photo-item photo-lightbox-btn" href="#" data-img="https://vorqavsuqcjnkjzwkyzr.supabase.co/storage/v1/object/public/Website/Index%20Image%20Gallery/PHOTO-2025-10-05-08-20-11.jpg" data-title="On-stage Energy" data-desc="Real moments, real excitement">
                             <img src="https://vorqavsuqcjnkjzwkyzr.supabase.co/storage/v1/object/public/Website/Index%20Image%20Gallery/PHOTO-2025-10-05-08-20-11.jpg" alt="Ace#1 event photo" loading="lazy" decoding="async" onerror="this.src='images/placeholder.jpg'">
                             <div class="photo-overlay">
                                 <h4>On-stage Energy</h4>
                                 <p>Real moments, real excitement</p>
-                                <span class="view-link">View full size <i class="fas fa-arrow-right"></i></span>
+                                <span class="view-link"><i class="fas fa-expand"></i> View</span>
                             </div>
                         </a>
 
-                        <a class="photo-item" href="https://vorqavsuqcjnkjzwkyzr.supabase.co/storage/v1/object/public/Website/Index%20Image%20Gallery/PHOTO-2025-10-05-08-20-11%202.jpg" target="_blank" rel="noopener">
+                        <a class="photo-item photo-lightbox-btn" href="#" data-img="https://vorqavsuqcjnkjzwkyzr.supabase.co/storage/v1/object/public/Website/Index%20Image%20Gallery/PHOTO-2025-10-05-08-20-11%202.jpg" data-title="Audience Moments" data-desc="The vibe that made the day special">
                             <img src="https://vorqavsuqcjnkjzwkyzr.supabase.co/storage/v1/object/public/Website/Index%20Image%20Gallery/PHOTO-2025-10-05-08-20-11%202.jpg" alt="Ace#1 event photo" loading="lazy" decoding="async" onerror="this.src='images/placeholder.jpg'">
                             <div class="photo-overlay">
                                 <h4>Audience Moments</h4>
                                 <p>The vibe that made the day special</p>
-                                <span class="view-link">View full size <i class="fas fa-arrow-right"></i></span>
+                                <span class="view-link"><i class="fas fa-expand"></i> View</span>
                             </div>
                         </a>
 
-                        <a class="photo-item" href="https://vorqavsuqcjnkjzwkyzr.supabase.co/storage/v1/object/public/Website/Index%20Image%20Gallery/PHOTO-2025-10-05-08-20-11%203.jpg" target="_blank" rel="noopener">
+                        <a class="photo-item photo-lightbox-btn" href="#" data-img="https://vorqavsuqcjnkjzwkyzr.supabase.co/storage/v1/object/public/Website/Index%20Image%20Gallery/PHOTO-2025-10-05-08-20-11%203.jpg" data-title="Product Display" data-desc="Showcasing the collection">
                             <img src="https://vorqavsuqcjnkjzwkyzr.supabase.co/storage/v1/object/public/Website/Index%20Image%20Gallery/PHOTO-2025-10-05-08-20-11%203.jpg" alt="Ace#1 event photo" loading="lazy" decoding="async" onerror="this.src='images/placeholder.jpg'">
                             <div class="photo-overlay">
                                 <h4>Product Display</h4>
                                 <p>Showcasing the collection</p>
-                                <span class="view-link">View full size <i class="fas fa-arrow-right"></i></span>
+                                <span class="view-link"><i class="fas fa-expand"></i> View</span>
                             </div>
                         </a>
 
-                        <a class="photo-item" href="https://vorqavsuqcjnkjzwkyzr.supabase.co/storage/v1/object/public/Website/Index%20Image%20Gallery/PHOTO-2025-10-05-08-20-11%204.jpg" target="_blank" rel="noopener">
+                        <a class="photo-item photo-lightbox-btn" href="#" data-img="https://vorqavsuqcjnkjzwkyzr.supabase.co/storage/v1/object/public/Website/Index%20Image%20Gallery/PHOTO-2025-10-05-08-20-11%204.jpg" data-title="Close-up Highlights" data-desc="Details from the launch day">
                             <img src="https://vorqavsuqcjnkjzwkyzr.supabase.co/storage/v1/object/public/Website/Index%20Image%20Gallery/PHOTO-2025-10-05-08-20-11%204.jpg" alt="Ace#1 event photo" loading="lazy" decoding="async" onerror="this.src='images/placeholder.jpg'">
                             <div class="photo-overlay">
                                 <h4>Close-up Highlights</h4>
                                 <p>Details from the launch day</p>
-                                <span class="view-link">View full size <i class="fas fa-arrow-right"></i></span>
+                                <span class="view-link"><i class="fas fa-expand"></i> View</span>
                             </div>
                         </a>
 
-                        <a class="photo-item" href="https://vorqavsuqcjnkjzwkyzr.supabase.co/storage/v1/object/public/Website/Index%20Image%20Gallery/PHOTO-2025-10-05-08-20-11%205.jpg" target="_blank" rel="noopener">
+                        <a class="photo-item photo-lightbox-btn" href="#" data-img="https://vorqavsuqcjnkjzwkyzr.supabase.co/storage/v1/object/public/Website/Index%20Image%20Gallery/PHOTO-2025-10-05-08-20-11%205.jpg" data-title="Team & Guests" data-desc="A day to remember">
                             <img src="https://vorqavsuqcjnkjzwkyzr.supabase.co/storage/v1/object/public/Website/Index%20Image%20Gallery/PHOTO-2025-10-05-08-20-11%205.jpg" alt="Ace#1 event photo" loading="lazy" decoding="async" onerror="this.src='images/placeholder.jpg'">
                             <div class="photo-overlay">
                                 <h4>Team & Guests</h4>
                                 <p>A day to remember</p>
-                                <span class="view-link">View full size <i class="fas fa-arrow-right"></i></span>
+                                <span class="view-link"><i class="fas fa-expand"></i> View</span>
                             </div>
                         </a>
 
-                        <a class="photo-item" href="https://vorqavsuqcjnkjzwkyzr.supabase.co/storage/v1/object/public/Website/Index%20Image%20Gallery/PHOTO-2025-10-05-09-34-16.jpg" target="_blank" rel="noopener">
+                        <a class="photo-item photo-lightbox-btn" href="#" data-img="https://vorqavsuqcjnkjzwkyzr.supabase.co/storage/v1/object/public/Website/Index%20Image%20Gallery/PHOTO-2025-10-05-09-34-16.jpg" data-title="More Highlights" data-desc="More moments from the launch day">
                             <img src="https://vorqavsuqcjnkjzwkyzr.supabase.co/storage/v1/object/public/Website/Index%20Image%20Gallery/PHOTO-2025-10-05-09-34-16.jpg" alt="Ace#1 event photo" loading="lazy" decoding="async" onerror="this.src='images/placeholder.jpg'">
                             <div class="photo-overlay">
                                 <h4>More Highlights</h4>
                                 <p>More moments from the launch day</p>
-                                <span class="view-link">View full size <i class="fas fa-arrow-right"></i></span>
+                                <span class="view-link"><i class="fas fa-expand"></i> View</span>
                             </div>
                         </a>
 
-                        <a class="photo-item" href="https://vorqavsuqcjnkjzwkyzr.supabase.co/storage/v1/object/public/Website/Index%20Image%20Gallery/PHOTO-2025-10-05-09-34-17%202.jpg" target="_blank" rel="noopener">
+                        <a class="photo-item photo-lightbox-btn" href="#" data-img="https://vorqavsuqcjnkjzwkyzr.supabase.co/storage/v1/object/public/Website/Index%20Image%20Gallery/PHOTO-2025-10-05-09-34-17%202.jpg" data-title="Event Photo" data-desc="">
                             <img src="https://vorqavsuqcjnkjzwkyzr.supabase.co/storage/v1/object/public/Website/Index%20Image%20Gallery/PHOTO-2025-10-05-09-34-17%202.jpg" alt="Ace#1 event photo" loading="lazy" decoding="async" onerror="this.src='images/placeholder.jpg'">
-                            <div class="photo-overlay"><span class="view-link">View full size <i class="fas fa-arrow-right"></i></span></div>
+                            <div class="photo-overlay"><span class="view-link"><i class="fas fa-expand"></i> View</span></div>
                         </a>
-                        <a class="photo-item" href="https://vorqavsuqcjnkjzwkyzr.supabase.co/storage/v1/object/public/Website/Index%20Image%20Gallery/PHOTO-2025-10-05-09-34-17%203.jpg" target="_blank" rel="noopener">
+                        <a class="photo-item photo-lightbox-btn" href="#" data-img="https://vorqavsuqcjnkjzwkyzr.supabase.co/storage/v1/object/public/Website/Index%20Image%20Gallery/PHOTO-2025-10-05-09-34-17%203.jpg" data-title="Event Photo" data-desc="">
                             <img src="https://vorqavsuqcjnkjzwkyzr.supabase.co/storage/v1/object/public/Website/Index%20Image%20Gallery/PHOTO-2025-10-05-09-34-17%203.jpg" alt="Ace#1 event photo" loading="lazy" decoding="async" onerror="this.src='images/placeholder.jpg'">
-                            <div class="photo-overlay"><span class="view-link">View full size <i class="fas fa-arrow-right"></i></span></div>
+                            <div class="photo-overlay"><span class="view-link"><i class="fas fa-expand"></i> View</span></div>
                         </a>
-                        <a class="photo-item" href="https://vorqavsuqcjnkjzwkyzr.supabase.co/storage/v1/object/public/Website/Index%20Image%20Gallery/PHOTO-2025-10-05-09-34-17%204.jpg" target="_blank" rel="noopener">
+                        <a class="photo-item photo-lightbox-btn" href="#" data-img="https://vorqavsuqcjnkjzwkyzr.supabase.co/storage/v1/object/public/Website/Index%20Image%20Gallery/PHOTO-2025-10-05-09-34-17%204.jpg" data-title="Event Photo" data-desc="">
                             <img src="https://vorqavsuqcjnkjzwkyzr.supabase.co/storage/v1/object/public/Website/Index%20Image%20Gallery/PHOTO-2025-10-05-09-34-17%204.jpg" alt="Ace#1 event photo" loading="lazy" decoding="async" onerror="this.src='images/placeholder.jpg'">
-                            <div class="photo-overlay"><span class="view-link">View full size <i class="fas fa-arrow-right"></i></span></div>
+                            <div class="photo-overlay"><span class="view-link"><i class="fas fa-expand"></i> View</span></div>
                         </a>
-                        <a class="photo-item" href="https://vorqavsuqcjnkjzwkyzr.supabase.co/storage/v1/object/public/Website/Index%20Image%20Gallery/PHOTO-2025-10-05-09-34-17%205.jpg" target="_blank" rel="noopener">
+                        <a class="photo-item photo-lightbox-btn" href="#" data-img="https://vorqavsuqcjnkjzwkyzr.supabase.co/storage/v1/object/public/Website/Index%20Image%20Gallery/PHOTO-2025-10-05-09-34-17%205.jpg" data-title="Event Photo" data-desc="">
                             <img src="https://vorqavsuqcjnkjzwkyzr.supabase.co/storage/v1/object/public/Website/Index%20Image%20Gallery/PHOTO-2025-10-05-09-34-17%205.jpg" alt="Ace#1 event photo" loading="lazy" decoding="async" onerror="this.src='images/placeholder.jpg'">
-                            <div class="photo-overlay"><span class="view-link">View full size <i class="fas fa-arrow-right"></i></span></div>
+                            <div class="photo-overlay"><span class="view-link"><i class="fas fa-expand"></i> View</span></div>
                         </a>
-                        <a class="photo-item" href="https://vorqavsuqcjnkjzwkyzr.supabase.co/storage/v1/object/public/Website/Index%20Image%20Gallery/PHOTO-2025-10-05-09-34-17%206.jpg" target="_blank" rel="noopener">
+                        <a class="photo-item photo-lightbox-btn" href="#" data-img="https://vorqavsuqcjnkjzwkyzr.supabase.co/storage/v1/object/public/Website/Index%20Image%20Gallery/PHOTO-2025-10-05-09-34-17%206.jpg" data-title="Event Photo" data-desc="">
                             <img src="https://vorqavsuqcjnkjzwkyzr.supabase.co/storage/v1/object/public/Website/Index%20Image%20Gallery/PHOTO-2025-10-05-09-34-17%206.jpg" alt="Ace#1 event photo" loading="lazy" decoding="async" onerror="this.src='images/placeholder.jpg'">
-                            <div class="photo-overlay"><span class="view-link">View full size <i class="fas fa-arrow-right"></i></span></div>
+                            <div class="photo-overlay"><span class="view-link"><i class="fas fa-expand"></i> View</span></div>
                         </a>
-                        <a class="photo-item" href="https://vorqavsuqcjnkjzwkyzr.supabase.co/storage/v1/object/public/Website/Index%20Image%20Gallery/PHOTO-2025-10-05-09-34-17%207.jpg" target="_blank" rel="noopener">
+                        <a class="photo-item photo-lightbox-btn" href="#" data-img="https://vorqavsuqcjnkjzwkyzr.supabase.co/storage/v1/object/public/Website/Index%20Image%20Gallery/PHOTO-2025-10-05-09-34-17%207.jpg" data-title="Event Photo" data-desc="">
                             <img src="https://vorqavsuqcjnkjzwkyzr.supabase.co/storage/v1/object/public/Website/Index%20Image%20Gallery/PHOTO-2025-10-05-09-34-17%207.jpg" alt="Ace#1 event photo" loading="lazy" decoding="async" onerror="this.src='images/placeholder.jpg'">
-                            <div class="photo-overlay"><span class="view-link">View full size <i class="fas fa-arrow-right"></i></span></div>
+                            <div class="photo-overlay"><span class="view-link"><i class="fas fa-expand"></i> View</span></div>
                         </a>
 
-                        <a class="photo-item" href="https://vorqavsuqcjnkjzwkyzr.supabase.co/storage/v1/object/public/Website/Index%20Image%20Gallery/PHOTO-2025-10-05-09-42-49.jpg" target="_blank" rel="noopener">
+                        <a class="photo-item photo-lightbox-btn" href="#" data-img="https://vorqavsuqcjnkjzwkyzr.supabase.co/storage/v1/object/public/Website/Index%20Image%20Gallery/PHOTO-2025-10-05-09-42-49.jpg" data-title="Event Photo" data-desc="">
                             <img src="https://vorqavsuqcjnkjzwkyzr.supabase.co/storage/v1/object/public/Website/Index%20Image%20Gallery/PHOTO-2025-10-05-09-42-49.jpg" alt="Ace#1 event photo" loading="lazy" decoding="async" onerror="this.src='images/placeholder.jpg'">
-                            <div class="photo-overlay"><span class="view-link">View full size <i class="fas fa-arrow-right"></i></span></div>
+                            <div class="photo-overlay"><span class="view-link"><i class="fas fa-expand"></i> View</span></div>
                         </a>
-                        <a class="photo-item" href="https://vorqavsuqcjnkjzwkyzr.supabase.co/storage/v1/object/public/Website/Index%20Image%20Gallery/PHOTO-2025-10-05-09-42-49%202.jpg" target="_blank" rel="noopener">
+                        <a class="photo-item photo-lightbox-btn" href="#" data-img="https://vorqavsuqcjnkjzwkyzr.supabase.co/storage/v1/object/public/Website/Index%20Image%20Gallery/PHOTO-2025-10-05-09-42-49%202.jpg" data-title="Event Photo" data-desc="">
                             <img src="https://vorqavsuqcjnkjzwkyzr.supabase.co/storage/v1/object/public/Website/Index%20Image%20Gallery/PHOTO-2025-10-05-09-42-49%202.jpg" alt="Ace#1 event photo" loading="lazy" decoding="async" onerror="this.src='images/placeholder.jpg'">
-                            <div class="photo-overlay"><span class="view-link">View full size <i class="fas fa-arrow-right"></i></span></div>
+                            <div class="photo-overlay"><span class="view-link"><i class="fas fa-expand"></i> View</span></div>
                         </a>
-                        <a class="photo-item" href="https://vorqavsuqcjnkjzwkyzr.supabase.co/storage/v1/object/public/Website/Index%20Image%20Gallery/PHOTO-2025-10-05-09-42-49%203.jpg" target="_blank" rel="noopener">
+                        <a class="photo-item photo-lightbox-btn" href="#" data-img="https://vorqavsuqcjnkjzwkyzr.supabase.co/storage/v1/object/public/Website/Index%20Image%20Gallery/PHOTO-2025-10-05-09-42-49%203.jpg" data-title="Event Photo" data-desc="">
                             <img src="https://vorqavsuqcjnkjzwkyzr.supabase.co/storage/v1/object/public/Website/Index%20Image%20Gallery/PHOTO-2025-10-05-09-42-49%203.jpg" alt="Ace#1 event photo" loading="lazy" decoding="async" onerror="this.src='images/placeholder.jpg'">
-                            <div class="photo-overlay"><span class="view-link">View full size <i class="fas fa-arrow-right"></i></span></div>
+                            <div class="photo-overlay"><span class="view-link"><i class="fas fa-expand"></i> View</span></div>
                         </a>
-                        <a class="photo-item" href="https://vorqavsuqcjnkjzwkyzr.supabase.co/storage/v1/object/public/Website/Index%20Image%20Gallery/PHOTO-2025-10-05-09-42-49%204.jpg" target="_blank" rel="noopener">
+                        <a class="photo-item photo-lightbox-btn" href="#" data-img="https://vorqavsuqcjnkjzwkyzr.supabase.co/storage/v1/object/public/Website/Index%20Image%20Gallery/PHOTO-2025-10-05-09-42-49%204.jpg" data-title="Event Photo" data-desc="">
                             <img src="https://vorqavsuqcjnkjzwkyzr.supabase.co/storage/v1/object/public/Website/Index%20Image%20Gallery/PHOTO-2025-10-05-09-42-49%204.jpg" alt="Ace#1 event photo" loading="lazy" decoding="async" onerror="this.src='images/placeholder.jpg'">
-                            <div class="photo-overlay"><span class="view-link">View full size <i class="fas fa-arrow-right"></i></span></div>
+                            <div class="photo-overlay"><span class="view-link"><i class="fas fa-expand"></i> View</span></div>
                         </a>
                     </div>
                 </div>
@@ -841,6 +979,18 @@
     <script src="js/hcaptcha-manager.js"></script>
     <script src="js/bot-defense.js"></script>
     <script src="js/cache-buster.js"></script>
+    <!-- Media Lightbox Modal -->
+    <div class="media-lightbox" id="media-lightbox">
+        <button class="lightbox-close" aria-label="Close lightbox">&times;</button>
+        <button class="lightbox-nav lightbox-prev" aria-label="Previous image"><i class="fas fa-chevron-left"></i></button>
+        <div class="lightbox-content">
+            <!-- Video iframe or image will be inserted here -->
+        </div>
+        <button class="lightbox-nav lightbox-next" aria-label="Next image"><i class="fas fa-chevron-right"></i></button>
+        <div class="lightbox-caption"></div>
+        <div class="lightbox-counter"></div>
+    </div>
+
     <script>
         // Gallery tab switching
         document.addEventListener('DOMContentLoaded', function() {
@@ -861,6 +1011,152 @@
                     document.getElementById(tabName + '-content').classList.add('active');
                 });
             });
+
+            // ========== Media Lightbox System ==========
+            const lightbox = document.getElementById('media-lightbox');
+            const lightboxContent = lightbox.querySelector('.lightbox-content');
+            const lightboxCaption = lightbox.querySelector('.lightbox-caption');
+            const lightboxCounter = lightbox.querySelector('.lightbox-counter');
+            const lightboxClose = lightbox.querySelector('.lightbox-close');
+            const lightboxPrev = lightbox.querySelector('.lightbox-prev');
+            const lightboxNext = lightbox.querySelector('.lightbox-next');
+
+            let currentMode = null; // 'video' or 'photo'
+            let photoItems = [];
+            let currentPhotoIndex = 0;
+
+            // Open lightbox
+            function openLightbox() {
+                lightbox.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            }
+
+            // Close lightbox
+            function closeLightbox() {
+                lightbox.classList.remove('active');
+                document.body.style.overflow = '';
+                lightboxContent.innerHTML = '';
+                currentMode = null;
+            }
+
+            // Show photo in lightbox
+            function showPhoto(index) {
+                if (index < 0) index = photoItems.length - 1;
+                if (index >= photoItems.length) index = 0;
+                currentPhotoIndex = index;
+
+                const item = photoItems[index];
+                const imgSrc = item.getAttribute('data-img');
+                const title = item.getAttribute('data-title') || '';
+                const desc = item.getAttribute('data-desc') || '';
+
+                lightboxContent.innerHTML = `<img src="${imgSrc}" alt="${title}" class="lightbox-image">`;
+                lightboxCaption.innerHTML = title ? `<strong>${title}</strong>${desc ? '<br>' + desc : ''}` : '';
+                lightboxCounter.textContent = `${index + 1} / ${photoItems.length}`;
+
+                // Show/hide nav buttons
+                lightboxPrev.style.display = photoItems.length > 1 ? 'flex' : 'none';
+                lightboxNext.style.display = photoItems.length > 1 ? 'flex' : 'none';
+            }
+
+            // Video play buttons
+            document.querySelectorAll('.video-play-btn').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const videoId = this.getAttribute('data-video-id');
+                    if (!videoId) return;
+
+                    currentMode = 'video';
+                    lightboxContent.innerHTML = `
+                        <iframe 
+                            src="https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0" 
+                            frameborder="0" 
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                            allowfullscreen
+                            class="lightbox-video">
+                        </iframe>`;
+                    
+                    const title = this.getAttribute('data-title') || '';
+                    lightboxCaption.innerHTML = title ? `<strong>${title}</strong>` : '';
+                    lightboxCounter.textContent = '';
+                    
+                    // Hide nav for videos
+                    lightboxPrev.style.display = 'none';
+                    lightboxNext.style.display = 'none';
+                    
+                    openLightbox();
+                });
+            });
+
+            // Photo lightbox buttons
+            photoItems = Array.from(document.querySelectorAll('.photo-lightbox-btn'));
+            photoItems.forEach((item, index) => {
+                item.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    currentMode = 'photo';
+                    showPhoto(index);
+                    openLightbox();
+                });
+            });
+
+            // Navigation
+            lightboxPrev.addEventListener('click', () => {
+                if (currentMode === 'photo') showPhoto(currentPhotoIndex - 1);
+            });
+
+            lightboxNext.addEventListener('click', () => {
+                if (currentMode === 'photo') showPhoto(currentPhotoIndex + 1);
+            });
+
+            // Close button
+            lightboxClose.addEventListener('click', closeLightbox);
+
+            // Close on background click
+            lightbox.addEventListener('click', function(e) {
+                if (e.target === lightbox) closeLightbox();
+            });
+
+            // Keyboard navigation
+            document.addEventListener('keydown', function(e) {
+                if (!lightbox.classList.contains('active')) return;
+
+                switch(e.key) {
+                    case 'Escape':
+                        closeLightbox();
+                        break;
+                    case 'ArrowLeft':
+                        if (currentMode === 'photo') showPhoto(currentPhotoIndex - 1);
+                        break;
+                    case 'ArrowRight':
+                        if (currentMode === 'photo') showPhoto(currentPhotoIndex + 1);
+                        break;
+                }
+            });
+
+            // Touch swipe support for mobile
+            let touchStartX = 0;
+            let touchEndX = 0;
+
+            lightbox.addEventListener('touchstart', function(e) {
+                touchStartX = e.changedTouches[0].screenX;
+            }, { passive: true });
+
+            lightbox.addEventListener('touchend', function(e) {
+                touchEndX = e.changedTouches[0].screenX;
+                handleSwipe();
+            }, { passive: true });
+
+            function handleSwipe() {
+                if (currentMode !== 'photo') return;
+                const diff = touchStartX - touchEndX;
+                if (Math.abs(diff) > 50) {
+                    if (diff > 0) {
+                        showPhoto(currentPhotoIndex + 1); // Swipe left = next
+                    } else {
+                        showPhoto(currentPhotoIndex - 1); // Swipe right = prev
+                    }
+                }
+            }
         });
     </script>
 
