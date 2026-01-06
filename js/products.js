@@ -465,6 +465,82 @@ class ProductFilterManager {
         if (priceMax) priceMax.textContent = `₹${this.priceBounds.max.toLocaleString('en-IN')}`;
     }
 
+    getAvailableSizesFromProducts() {
+        const sizes = new Set();
+        (this.products || []).forEach(p => {
+            (Array.isArray(p?.sizes) ? p.sizes : []).forEach(s => {
+                const val = String(s ?? '').trim();
+                if (val) sizes.add(val);
+            });
+        });
+        const list = Array.from(sizes);
+
+        const toNumeric = (v) => {
+            const m = String(v).match(/\d+(?:\.\d+)?/);
+            return m ? Number(m[0]) : NaN;
+        };
+
+        // Sort numeric sizes first (6,7,8...), then non-numeric (One Size)
+        list.sort((a, b) => {
+            const na = toNumeric(a);
+            const nb = toNumeric(b);
+            const aNum = Number.isFinite(na);
+            const bNum = Number.isFinite(nb);
+            if (aNum && bNum) return na - nb;
+            if (aNum) return -1;
+            if (bNum) return 1;
+            return a.localeCompare(b, 'en', { sensitivity: 'base' });
+        });
+
+        return list;
+    }
+
+    getAvailableColorsFromProducts() {
+        const colors = new Set();
+        (this.products || []).forEach(p => {
+            (Array.isArray(p?.colors) ? p.colors : []).forEach(c => {
+                const val = String(c ?? '').trim().toLowerCase();
+                if (val) colors.add(val);
+            });
+        });
+        return Array.from(colors).sort((a, b) => a.localeCompare(b, 'en', { sensitivity: 'base' }));
+    }
+
+    syncDynamicFilterOptionsFromProducts() {
+        // Sizes: render from inventory sizes if present.
+        const sizeGrid = document.querySelector('.size-grid');
+        const sizes = this.getAvailableSizesFromProducts();
+        if (sizeGrid && sizes.length > 0) {
+            const active = new Set((this.filters?.sizes || []).map(s => String(s)));
+            sizeGrid.innerHTML = sizes
+                .map(s => `<button class="size-btn${active.has(String(s)) ? ' active' : ''}" type="button">${this.sanitizeText(s)}</button>`)
+                .join('');
+        }
+
+        // Colors: only show if DB actually provides color data.
+        const colorGrid = document.querySelector('.color-grid');
+        const colorGroup = colorGrid ? colorGrid.closest('.filter-group') : null;
+        const colors = this.getAvailableColorsFromProducts();
+        if (colorGroup) {
+            if (!colors.length) {
+                // If no color data exists in DB, hide the UI to avoid mismatch with Admin.
+                colorGroup.hidden = true;
+                this.filters.colors = [];
+            } else {
+                colorGroup.hidden = false;
+                const active = new Set((this.filters?.colors || []).map(c => String(c).toLowerCase()));
+                colorGrid.innerHTML = colors
+                    .map(c => {
+                        const safe = this.sanitizeText(c);
+                        const isActive = active.has(String(c).toLowerCase());
+                        // No hardcoded swatches here; keep a simple label so it's data-driven.
+                        return `<button class="color-btn${isActive ? ' active' : ''}" type="button" data-color="${safe}" title="${safe}">${safe}</button>`;
+                    })
+                    .join('');
+            }
+        }
+    }
+
     renderProducts(products) {
         const grid = document.querySelector('.products-grid');
         if (!grid) {
@@ -630,6 +706,9 @@ class ProductFilterManager {
 
         this.filteredProducts = [...this.products];
         this.updatePriceBoundsFromProducts();
+
+        // Keep filter UI aligned with real product data.
+        this.syncDynamicFilterOptionsFromProducts();
     }
 
     getProductRating(card) {
@@ -687,21 +766,29 @@ class ProductFilterManager {
             });
         }
 
-        // Size filters
-        document.querySelectorAll('.size-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                e.currentTarget.classList.toggle('active');
+        // Size filters (event delegation so dynamic buttons work after refresh)
+        const sizeGrid = document.querySelector('.size-grid');
+        if (sizeGrid && !sizeGrid.dataset.bound) {
+            sizeGrid.dataset.bound = '1';
+            sizeGrid.addEventListener('click', (e) => {
+                const btn = e.target.closest('.size-btn');
+                if (!btn || !sizeGrid.contains(btn)) return;
+                btn.classList.toggle('active');
                 this.updateSizeFilter();
             });
-        });
+        }
 
-        // Color filters
-        document.querySelectorAll('.color-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                e.currentTarget.classList.toggle('active');
+        // Color filters (event delegation)
+        const colorGrid = document.querySelector('.color-grid');
+        if (colorGrid && !colorGrid.dataset.bound) {
+            colorGrid.dataset.bound = '1';
+            colorGrid.addEventListener('click', (e) => {
+                const btn = e.target.closest('.color-btn');
+                if (!btn || !colorGrid.contains(btn)) return;
+                btn.classList.toggle('active');
                 this.updateColorFilter();
             });
-        });
+        }
 
         // Rating filter
         const ratingBtns = document.querySelectorAll('.rating-filter');
