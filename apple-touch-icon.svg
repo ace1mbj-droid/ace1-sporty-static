@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180">
+  <!-- Apple Touch Icon - 180x180 for iOS -->
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1a1a2e"/>
+      <stop offset="100%" style="stop-color:#16213e"/>
+    </linearGradient>
+    <linearGradient id="accentGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#e94560"/>
+      <stop offset="100%" style="stop-color:#ff6b6b"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Background with rounded corners (iOS will clip) -->
+  <rect width="180" height="180" fill="url(#bgGrad)"/>
+  
+  <!-- ACE Text -->
+  <text x="90" y="80" 
+        font-family="Impact, Arial Black, sans-serif" 
+        font-size="52" 
+        font-weight="bold" 
+        fill="#ffffff" 
+        text-anchor="middle"
+        letter-spacing="2">ACE</text>
+  
+  <!-- #1 Text -->
+  <text x="90" y="135" 
+        font-family="Impact, Arial Black, sans-serif" 
+        font-size="45" 
+        font-weight="bold" 
+        fill="url(#accentGrad)" 
+        text-anchor="middle">#1</text>
+</svg>

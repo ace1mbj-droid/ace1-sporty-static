@@ -228,6 +228,20 @@ button {
     transition: var(--transition);
 }
 
+/* Hamburger menu active state - X animation */
+.hamburger.active span:nth-child(1) {
+    transform: rotate(45deg) translate(6px, 6px);
+}
+
+.hamburger.active span:nth-child(2) {
+    opacity: 0;
+    transform: translateX(-10px);
+}
+
+.hamburger.active span:nth-child(3) {
+    transform: rotate(-45deg) translate(6px, -6px);
+}
+
 /* ===================================
    SEARCH OVERLAY
    =================================== */
@@ -1616,6 +1630,41 @@ button {
         background: var(--bg-light);
         padding: 30px;
         border-radius: 15px;
+        margin-bottom: 20px;
+    }
+    
+    /* Mobile filter toggle */
+    .filter-toggle-btn {
+        display: flex;
+        width: 100%;
+        padding: 15px 20px;
+        background: var(--primary-color);
+        color: white;
+        border: none;
+        border-radius: 10px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        margin-bottom: 15px;
+    }
+    
+    .filter-toggle-btn i {
+        transition: transform 0.3s ease;
+    }
+    
+    .filter-toggle-btn.active i {
+        transform: rotate(180deg);
+    }
+    
+    .shop-sidebar .filter-groups {
+        display: none;
+    }
+    
+    .shop-sidebar.filters-visible .filter-groups {
+        display: block;
     }
     
     .page-hero h1 {
