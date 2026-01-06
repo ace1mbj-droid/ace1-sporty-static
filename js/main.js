@@ -219,8 +219,8 @@ async function syncFooterShopLinks() {
         // If products page provides an explicit hook, prefer that
         const explicit = document.getElementById('footer-shop-links');
         if (explicit) {
-            explicit.innerHTML = `<li><a href="products.html">All Products</a></li>` +
-                cats.map(c => `<li><a href="products.html?category=${encodeURIComponent(c.slug)}">${c.name || c.slug}</a></li>`).join('');
+            explicit.innerHTML = `<li><a href="shoes.html">All Products</a></li>` +
+                cats.map(c => `<li><a href="shoes.html?category=${encodeURIComponent(c.slug)}">${c.name || c.slug}</a></li>`).join('');
         }
 
         // Otherwise, update any footer column titled "Shop"
@@ -230,8 +230,8 @@ async function syncFooterShopLinks() {
             if (!title || !ul) return;
             if (title.textContent.trim().toLowerCase() !== 'shop') return;
 
-            ul.innerHTML = `<li><a href="products.html">All Products</a></li>` +
-                cats.map(c => `<li><a href="products.html?category=${encodeURIComponent(c.slug)}">${c.name || c.slug}</a></li>`).join('');
+            ul.innerHTML = `<li><a href="shoes.html">All Products</a></li>` +
+                cats.map(c => `<li><a href="shoes.html?category=${encodeURIComponent(c.slug)}">${c.name || c.slug}</a></li>`).join('');
         });
     } catch (err) {
         console.log('Footer category sync skipped:', err);
