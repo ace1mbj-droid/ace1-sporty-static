@@ -525,9 +525,20 @@
         <div class="admin-content" id="inventory-content">
             <div class="admin-section-header">
                 <h2><i class="fas fa-boxes"></i> Inventory Management</h2>
-                <button onclick="window.inventoryManager?.showAdjustmentModal()" class="btn btn-primary">
-                    <i class="fas fa-plus"></i> New Adjustment
-                </button>
+                <div style="display:flex; gap:10px; align-items:center;">
+                    <label style="display:flex; gap:8px; align-items:center; font-size:13px; color:#444;">
+                        Category
+                        <select id="inventory-category-filter" style="padding:8px 10px; border:1px solid #ddd; border-radius:6px;">
+                            <option value="all" selected>All</option>
+                            <option value="shoes">Shoes</option>
+                            <option value="clothing">Clothing</option>
+                            <option value="accessories">Accessories</option>
+                        </select>
+                    </label>
+                    <button onclick="window.inventoryManager?.showAdjustmentModal()" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> New Adjustment
+                    </button>
+                </div>
             </div>
             <div class="inventory-summary" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 20px;">
                 <div class="stat-card">

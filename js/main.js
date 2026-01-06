@@ -118,7 +118,7 @@ async function syncPrimaryCategoryPageLinks() {
         const availabilityByKey = new Map();
 
         for (const def of pageDefs) {
-            const { count, error } = await supabase
+            let countQuery = supabase
                 .from('products')
                 .select('id', { count: 'exact', head: true })
                 .eq('primary_category', def.key)
@@ -126,6 +126,12 @@ async function syncPrimaryCategoryPageLinks() {
                 .is('deleted_at', null)
                 .or('is_locked.is.null,is_locked.eq.false')
                 .eq('status', 'available');
+
+            // Only consider products that can actually be purchased.
+            // stock_quantity is maintained by Admin save + inventory adjustments.
+            countQuery = countQuery.gt('stock_quantity', 0);
+
+            const { count, error } = await countQuery;
 
             if (error) throw error;
             availabilityByKey.set(def.key, (count || 0) > 0);
@@ -932,8 +938,32 @@ function resolveProductImageUrl(imageOrStoragePath) {
     return `${getSupabaseProjectUrl()}/storage/v1/object/public/Images/${encodedPath}`;
 }
 
-// Open cart
-cartBtn?.addEventListener('click', () => {
+async function ace1IsLoggedIn() {
+    try {
+        if (window.databaseAuth?.isAuthenticated?.()) return true;
+
+        const supabase = window.getSupabase?.();
+        if (!supabase) return false;
+        const { data: { session } } = await supabase.auth.getSession();
+        return !!session?.user;
+    } catch {
+        return false;
+    }
+}
+
+function ace1RedirectToLogin() {
+    const returnTo = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+    window.location.href = `login.html?return=${encodeURIComponent(returnTo)}`;
+}
+
+// Open cart (requires login)
+cartBtn?.addEventListener('click', async () => {
+    const loggedIn = await ace1IsLoggedIn();
+    if (!loggedIn) {
+        ace1RedirectToLogin();
+        return;
+    }
+
     if (cartSidebar) {
         cartSidebar.classList.add('active');
         cartOverlay?.classList.add('active');
@@ -972,6 +1002,13 @@ async function addToCart(productId) {
     try {
         if (window.ACE1_MAINTENANCE_MODE) {
             showNotification('Orders are temporarily paused. Please check back soon.', 'info');
+            return;
+        }
+
+        // Cart requires login (requested behavior).
+        const loggedIn = await ace1IsLoggedIn();
+        if (!loggedIn) {
+            ace1RedirectToLogin();
             return;
         }
 
@@ -1044,6 +1081,21 @@ async function addToCart(productId) {
         showNotification('Error adding product to cart', 'error');
     }
 }
+
+// Expose for dynamically-rendered product pages (e.g. shoes.html uses window.addToCart)
+window.addToCart = addToCart;
+
+// Hide cart UI for logged-out users
+document.addEventListener('DOMContentLoaded', () => {
+    (async () => {
+        const loggedIn = await ace1IsLoggedIn();
+        if (!loggedIn) {
+            if (cartBtn) cartBtn.style.display = 'none';
+            const countEl = document.getElementById('cart-count');
+            if (countEl) countEl.style.display = 'none';
+        }
+    })();
+});
 
 function addProductToCart(product) {
     // Ensure price is a number (handle both price (rupees) and price_cents (paise/cents) from Supabase)
