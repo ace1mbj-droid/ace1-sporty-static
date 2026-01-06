@@ -84,6 +84,63 @@ class ProductFilterManager {
         this.setupRealtimeSync();
     }
 
+    setupMobileFilterToggle() {
+        const sidebar = document.querySelector('.shop-sidebar');
+        if (!sidebar) return;
+        
+        // Create filter toggle button for mobile
+        let filterToggle = sidebar.querySelector('.filter-toggle-btn');
+        if (!filterToggle) {
+            filterToggle = document.createElement('button');
+            filterToggle.className = 'filter-toggle-btn';
+            filterToggle.innerHTML = '<i class="fas fa-filter"></i> Filter Products <i class="fas fa-chevron-down"></i>';
+            filterToggle.type = 'button';
+            
+            // Wrap existing filter groups
+            const filterGroups = sidebar.querySelectorAll('.filter-group');
+            let filterGroupsWrapper = sidebar.querySelector('.filter-groups');
+            
+            if (!filterGroupsWrapper && filterGroups.length > 0) {
+                filterGroupsWrapper = document.createElement('div');
+                filterGroupsWrapper.className = 'filter-groups';
+                filterGroups.forEach(fg => filterGroupsWrapper.appendChild(fg));
+            }
+            
+            // Insert toggle button and wrapper
+            sidebar.innerHTML = '';
+            sidebar.appendChild(filterToggle);
+            if (filterGroupsWrapper) {
+                sidebar.appendChild(filterGroupsWrapper);
+            }
+            
+            // Check if mobile view and set initial state
+            const isMobile = window.innerWidth <= 992;
+            if (isMobile) {
+                sidebar.classList.remove('filters-visible');
+            } else {
+                sidebar.classList.add('filters-visible');
+                filterToggle.style.display = 'none';
+            }
+            
+            // Toggle event
+            filterToggle.addEventListener('click', () => {
+                sidebar.classList.toggle('filters-visible');
+                filterToggle.classList.toggle('active');
+            });
+            
+            // Handle resize
+            window.addEventListener('resize', () => {
+                const mobile = window.innerWidth <= 992;
+                if (mobile) {
+                    filterToggle.style.display = 'flex';
+                } else {
+                    filterToggle.style.display = 'none';
+                    sidebar.classList.add('filters-visible');
+                }
+            });
+        }
+    }
+
     setupRealtimeSync() {
         try {
             if (window.__ace1ProductsRealtimeSetup) return;
@@ -610,6 +667,9 @@ class ProductFilterManager {
     }
 
     setupEventListeners() {
+        // Mobile filter toggle for responsive design
+        this.setupMobileFilterToggle();
+        
         // Attach category event listeners
         this.attachCategoryEventListeners();
 

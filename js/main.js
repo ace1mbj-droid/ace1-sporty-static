@@ -445,9 +445,20 @@ window.addEventListener('scroll', () => {
 
 // Mobile menu toggle
 if (hamburger && navMenu) {
-    hamburger.addEventListener('click', () => {
+    hamburger.addEventListener('click', (e) => {
+        e.stopPropagation();
         navMenu.classList.toggle('active');
         hamburger.classList.toggle('active');
+    });
+    
+    // Close mobile menu when clicking outside
+    document.addEventListener('click', (e) => {
+        if (navMenu.classList.contains('active') && 
+            !navMenu.contains(e.target) && 
+            !hamburger.contains(e.target)) {
+            navMenu.classList.remove('active');
+            hamburger.classList.remove('active');
+        }
     });
 }
 
@@ -998,7 +1009,7 @@ document.querySelectorAll('.add-to-cart-btn').forEach(btn => {
     });
 });
 
-async function addToCart(productId) {
+async function addToCart(productId, selectedSize = null) {
     try {
         if (window.ACE1_MAINTENANCE_MODE) {
             showNotification('Orders are temporarily paused. Please check back soon.', 'info');
@@ -1044,7 +1055,7 @@ async function addToCart(productId) {
                 return;
             }
             
-            addProductToCart(localProduct);
+            addProductToCart({ ...localProduct, size: selectedSize });
         } else {
             // Calculate total stock from inventory table
             const totalStock = (product.inventory || []).reduce((sum, inv) => sum + (inv.stock || 0), 0);
@@ -1071,7 +1082,8 @@ async function addToCart(productId) {
                     ? Number(product.price)
                     : (Number(product.price_cents || 0) / 100),
                 image: product.image_url || product.product_images?.[0]?.storage_path || 'images/placeholder.jpg',
-                stock_quantity: totalStock
+                stock_quantity: totalStock,
+                size: selectedSize
             };
             
             addProductToCart(cartProduct);
@@ -1085,17 +1097,8 @@ async function addToCart(productId) {
 // Expose for dynamically-rendered product pages (e.g. shoes.html uses window.addToCart)
 window.addToCart = addToCart;
 
-// Hide cart UI for logged-out users
-document.addEventListener('DOMContentLoaded', () => {
-    (async () => {
-        const loggedIn = await ace1IsLoggedIn();
-        if (!loggedIn) {
-            if (cartBtn) cartBtn.style.display = 'none';
-            const countEl = document.getElementById('cart-count');
-            if (countEl) countEl.style.display = 'none';
-        }
-    })();
-});
+// Cart is always visible - users are redirected to login when they try to add/view cart
+// This improves UX by letting users browse products before creating an account
 
 function addProductToCart(product) {
     // Ensure price is a number (handle both price (rupees) and price_cents (paise/cents) from Supabase)
@@ -1173,12 +1176,8 @@ async function syncCartToDatabase() {
     try {
         const supabase = window.getSupabase?.();
         if (!supabase) {
-            if (cached?.cart) {
-                cart = cached.cart;
-                cartLoaded = true;
-                publishCartUpdate();
-                renderCart();
-            }
+            // No Supabase available - just render local cart
+            renderCart();
             return;
         }
         
@@ -1371,12 +1370,14 @@ function renderCart() {
     itemsEl.innerHTML = cart.map(item => {
         const price = parseFloat(item.price || 0);
         const imageUrl = resolveProductImageUrl(item.image);
+        const sizeLabel = item.size ? `<span class="cart-item-size">Size: ${item.size}</span>` : '';
         return `
             <div class="cart-item" data-id="${item.id}">
                 <img src="${imageUrl}" alt="${item.name}" onerror="this.src='images/placeholder.jpg'">
                 <div class="cart-item-info">
                     <h4>${item.name}</h4>
                     <p>₹${price.toLocaleString('en-IN')}</p>
+                    ${sizeLabel}
                     <div class="cart-item-quantity">
                         <button class="qty-btn minus" data-id="${item.id}">-</button>
                         <span>${item.quantity}</span>
@@ -1546,7 +1547,17 @@ notificationStyles.textContent = `
     .cart-item-info p {
         color: #666;
         font-weight: 600;
-        margin-bottom: 10px;
+        margin-bottom: 5px;
+    }
+    
+    .cart-item-size {
+        display: inline-block;
+        font-size: 12px;
+        color: #888;
+        background: #f5f5f5;
+        padding: 2px 8px;
+        border-radius: 4px;
+        margin-bottom: 8px;
     }
     
     .cart-item-quantity {
@@ -1556,15 +1567,21 @@ notificationStyles.textContent = `
     }
     
     .qty-btn {
-        width: 28px;
-        height: 28px;
+        width: 36px;
+        height: 36px;
+        min-width: 44px;
+        min-height: 44px;
         border: 1px solid #e5e5e5;
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
         font-weight: bold;
+        font-size: 18px;
         background: white;
+        cursor: pointer;
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: transparent;
     }
     
     .qty-btn:hover {
@@ -1572,19 +1589,42 @@ notificationStyles.textContent = `
         border-color: #000;
     }
     
+    .qty-btn:active {
+        transform: scale(0.95);
+    }
+    
     .remove-item {
         position: absolute;
-        top: 20px;
-        right: 20px;
-        width: 30px;
-        height: 30px;
+        top: 15px;
+        right: 15px;
+        width: 36px;
+        height: 36px;
+        min-width: 44px;
+        min-height: 44px;
         border-radius: 50%;
         color: #666;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        touch-action: manipulation;
     }
     
     .remove-item:hover {
         background: #fee;
         color: #f44;
+    }
+    
+    .remove-item:active {
+        transform: scale(0.95);
+    }
+    
+    /* Mobile touch optimizations */
+    @media (hover: none) and (pointer: coarse) {
+        .qty-btn, .remove-item {
+            min-width: 44px;
+            min-height: 44px;
+        }
     }
 `;
 document.head.appendChild(notificationStyles);
@@ -2073,7 +2113,12 @@ document.addEventListener('click', (e) => {
 // Add to cart from Quick View
 document.getElementById('qv-add-to-cart')?.addEventListener('click', () => {
     if (currentQuickViewProduct && !currentQuickViewProduct.is_locked && currentQuickViewProduct.stock_quantity > 0) {
-        addToCart(currentQuickViewProduct.id);
+        // Get selected size if any
+        const selectedSizeBtn = document.querySelector('#quick-view-modal .size-option.selected');
+        const selectedSize = selectedSizeBtn?.dataset.size || selectedSizeBtn?.textContent?.trim() || null;
+        
+        // Add to cart with size
+        addToCart(currentQuickViewProduct.id, selectedSize);
         closeQuickView();
     }
 });
