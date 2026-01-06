@@ -7,8 +7,53 @@ const SUPABASE_URL = Deno.env.get('SUPABASE_URL') ?? '';
 const SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
 const RZ_KEY = Deno.env.get('RZ_KEY') ?? '';
 const RZ_SECRET = Deno.env.get('RZ_SECRET') ?? '';
+const SENDGRID_API_KEY = Deno.env.get('SENDGRID_API_KEY') ?? '';
+const SENDGRID_FROM = Deno.env.get('SENDGRID_FROM') ?? '';
+const ADMIN_ORDER_EMAIL = Deno.env.get('ADMIN_ORDER_EMAIL') ?? 'hello@ace1.in';
 
 const supabase = createClient(SUPABASE_URL, SERVICE_ROLE_KEY, { auth: { persistSession: false } });
+
+async function sendEmail(to: string, subject: string, text: string): Promise<void> {
+  if (!SENDGRID_API_KEY || !SENDGRID_FROM) {
+    console.warn('create-order: email not configured; skipping send');
+    return;
+  }
+  if (!to) return;
+
+  const payload = {
+    personalizations: [{ to: [{ email: to }] }],
+    from: { email: SENDGRID_FROM },
+    subject,
+    content: [{ type: 'text/plain', value: text }]
+  };
+
+  const res = await fetch('https://api.sendgrid.com/v3/mail/send', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${SENDGRID_API_KEY}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(payload)
+  });
+
+  if (!res.ok) {
+    const body = await res.text().catch(() => '');
+    console.warn('create-order: sendgrid failed', res.status, body);
+  }
+}
+
+function normalizeCart(raw: any): Array<{ id: string; qty: number; size: string }>{
+  const list = Array.isArray(raw) ? raw : [];
+  return list
+    .map((c: any) => {
+      const id = c?.id ?? c?.product_id ?? c?.productId;
+      const qtyRaw = c?.qty ?? c?.quantity ?? c?.q ?? 1;
+      const qty = Math.max(1, Number(qtyRaw) || 1);
+      const size = (c?.size ?? '').toString();
+      return { id: String(id || ''), qty, size };
+    })
+    .filter((c) => Boolean(c.id));
+}
 
 export async function handler(req: Request): Promise<Response> {
   try {
@@ -25,7 +70,10 @@ export async function handler(req: Request): Promise<Response> {
     const userId = userData.user.id;
 
     const body = await req.json();
-    const { cart, shipping } = body;
+    const paymentMethod = String(body?.payment_method || body?.paymentMethod || 'razorpay').toLowerCase();
+    const cart = normalizeCart(body?.cart ?? body?.items);
+    const shipping = body?.shipping ?? null;
+
     if (!cart || cart.length === 0) {
       console.error('create-order: cart empty or missing');
       return new Response(JSON.stringify({ error: 'Cart empty' }), { status: 400 });
@@ -71,7 +119,20 @@ export async function handler(req: Request): Promise<Response> {
     }
 
     // Create order with service role (bypass RLS)
-    const { data: order, error: orderError } = await supabase.from('orders').insert([{ user_id: userId, total_cents: calculatedTotal, currency: 'INR', shipping_address: shipping }]).select().single();
+    const { data: order, error: orderError } = await supabase
+      .from('orders')
+      .insert([
+        {
+          user_id: userId,
+          total_cents: calculatedTotal,
+          currency: 'INR',
+          shipping_address: shipping,
+          status: paymentMethod === 'cod' ? 'processing' : 'pending',
+          payment_status: paymentMethod === 'cod' ? 'pending' : 'pending'
+        }
+      ])
+      .select()
+      .single();
     if (orderError) {
       console.error('create-order: failed to create order', orderError.message);
       return new Response(JSON.stringify({ error: orderError.message }), { status: 500 });
@@ -79,7 +140,13 @@ export async function handler(req: Request): Promise<Response> {
     console.log('create-order: created order id=', order.id);
 
     // Insert order items
-    const orderItems = cart.map((c: any) => ({ order_id: order.id, product_id: c.id, size: c.size, qty: c.qty, price_cents: (products.find((p:any) => p.id === c.id).price_cents) }));
+    const orderItems = cart.map((c: any) => ({
+      order_id: order.id,
+      product_id: c.id,
+      size: c.size,
+      qty: c.qty,
+      price_cents: (products.find((p: any) => p.id === c.id).price_cents)
+    }));
     await supabase.from('order_items').insert(orderItems);
 
     // Deduct stock from inventory for each item
@@ -119,24 +186,42 @@ export async function handler(req: Request): Promise<Response> {
       }
     }
 
-    // Create Razorpay order
+    // COD: no external payment provider. Send confirmation emails now.
+    if (paymentMethod === 'cod') {
+      const customerEmail = String(shipping?.email || '').trim();
+      const orderLabel = String(order.id);
+      const amountInr = (calculatedTotal / 100).toFixed(2);
+
+      const subject = `Order placed: ${orderLabel}`;
+      const bodyText = [
+        `Your order has been placed successfully.`,
+        `Order ID: ${orderLabel}`,
+        `Payment method: Cash on Delivery`,
+        `Total: ₹${amountInr}`,
+        '',
+        `We will update you when it is shipped.`
+      ].join('\n');
+
+      await Promise.all([
+        customerEmail ? sendEmail(customerEmail, subject, bodyText) : Promise.resolve(),
+        sendEmail(ADMIN_ORDER_EMAIL, `New COD order: ${orderLabel}`, bodyText)
+      ]);
+
+      return new Response(JSON.stringify({ orderId: order.id }), { status: 200 });
+    }
+
+    // Razorpay: create provider order and insert payment record (created)
     const razorBody = { amount: calculatedTotal, currency: 'INR', receipt: order.id };
     const authHeader = 'Basic ' + btoa(`${RZ_KEY}:${RZ_SECRET}`);
-    // Call Razorpay with a timeout. If Razorpay is slow/unavailable we should fail fast and return a clear error
     console.log('create-order: creating razorpay order', { razorBody });
-    // Allow tests to ask the function to skip contacting external payment
-    // providers (deterministic, faster) by sending header 'x-e2e-skip-razorpay: 1'
     const e2eSkip = req.headers.get('x-e2e-skip-razorpay');
     const controller = new AbortController();
-    // Increase timeout slightly to be more tolerant in production while still
-    // protecting the function from long hangs. Tests can skip the call.
     const timeoutMs = 30000; // 30s
     const timeout = setTimeout(() => controller.abort(), timeoutMs);
     let razorResp: Response;
     let razorData: any = null;
     try {
       if (e2eSkip === '1' || e2eSkip === 'true') {
-        // Create a deterministic stub for testing and avoid external call
         razorData = { id: `e2e_stub_${Date.now()}`, amount: calculatedTotal, currency: 'INR', status: 'created' };
         console.log('create-order: skipping razorpay call due to E2E header, stubbed razorData', razorData);
       } else {
@@ -152,22 +237,19 @@ export async function handler(req: Request): Promise<Response> {
     } catch (e) {
       console.error('create-order: razorpay request failed', String(e));
       if ((e as Error).name === 'AbortError') {
-        // Timeout
         return new Response(JSON.stringify({ error: 'Payment provider timeout' }), { status: 504 });
       }
-      // Return generic error message to avoid exposing stack traces to clients
       return new Response(JSON.stringify({ error: 'Payment provider error' }), { status: 502 });
     } finally {
       clearTimeout(timeout);
     }
 
-    // Insert payment record (created)
     try {
-      await supabase.from('payments').insert([{ order_id: order.id, provider: 'razorpay', provider_order_id: razorData?.id ?? null, status: 'created', amount_cents: calculatedTotal }]);
+      await supabase.from('payments').insert([
+        { order_id: order.id, provider: 'razorpay', provider_order_id: razorData?.id ?? null, status: 'created', amount_cents: calculatedTotal }
+      ]);
     } catch (e) {
       console.error('create-order: failed to insert payment record', String(e));
-      // continue — we already created the order; surface a 500 so caller knows about partial failure
-      // Return generic error message to avoid exposing stack traces to clients
       return new Response(JSON.stringify({ error: 'Failed to record payment' }), { status: 500 });
     }
 

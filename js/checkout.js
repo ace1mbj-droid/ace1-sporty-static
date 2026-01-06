@@ -397,8 +397,72 @@ class CheckoutManager {
             return;
         }
 
-        // Current behavior: orders are intentionally disabled (placeholder)
-        this.showNotification('Order cannot be fulfilled due to high demand', 'error');
+        try {
+            if (!this.cartItems || this.cartItems.length === 0) {
+                this.showNotification('Your cart is empty', 'error');
+                return;
+            }
+
+            // Ensure shipping details are valid before placing an order.
+            if (!this.validateShippingForm()) return;
+
+            // Persist for inline suggestions next time
+            try {
+                this.saveCheckoutSuggestionSnapshot();
+            } catch {
+                // ignore
+            }
+
+            const paymentMethod = document.querySelector('input[name="payment-method"]:checked')?.value || 'cod';
+            const orderData = this.collectOrderData();
+
+            if (paymentMethod === 'cod') {
+                await this.processCODOrder(orderData);
+                return;
+            }
+
+            // Future-proofing: if more payment methods are enabled later.
+            if (paymentMethod === 'razorpay') {
+                await this.initiateRazorpayPayment(orderData);
+                return;
+            }
+
+            this.showNotification('Unsupported payment method', 'error');
+        } catch (e) {
+            console.error('placeOrder failed:', e);
+            this.showNotification(e?.message || 'Order failed. Please try again.', 'error');
+        }
+    }
+
+    getEdgeCreateOrderUrl() {
+        try {
+            const explicit = window.__ACE1_EDGE_CREATE_ORDER__ || '';
+            if (explicit) return explicit;
+            const base = (window.SUPABASE_CONFIG && window.SUPABASE_CONFIG.url) || window.SUPABASE_URL || '';
+            if (!base) return '';
+            return `${String(base).replace(/\/$/, '')}/functions/v1/create-order`;
+        } catch {
+            return '';
+        }
+    }
+
+    getSupabaseAccessTokenSafe() {
+        return (async () => {
+            try {
+                const supabase = window.getSupabase?.();
+                return (await supabase?.auth.getSession())?.data?.session?.access_token || '';
+            } catch {
+                return '';
+            }
+        })();
+    }
+
+    mapCartForServer() {
+        return (this.cartItems || []).map((item) => ({
+            id: item.id,
+            qty: item.qty != null ? item.qty : (item.quantity != null ? item.quantity : 1),
+            size: item.size || ''
+        }));
     }
 
 
@@ -437,18 +501,12 @@ class CheckoutManager {
         // so the backend can create the Razorpay order and create a payments record.
         // This stores the server response on `this.serverOrder` so we skip duplicating
         // order creation on the client after payment.
-        const EDGE_URL = window.__ACE1_EDGE_CREATE_ORDER__ || '';
+        const EDGE_URL = this.getEdgeCreateOrderUrl();
         if (EDGE_URL) {
             this.serverOrder = null;
             try {
-                // Try to get a Supabase session token if available to authenticate the request
-                const supabase = window.getSupabase?.();
-                let token = '';
-                try {
-                    token = (await supabase?.auth.getSession())?.data?.session?.access_token || '';
-                } catch (e) {
-                    // ignore
-                }
+                const token = await this.getSupabaseAccessTokenSafe();
+                if (!token) throw new Error('Please login to continue');
 
                 const resp = await fetch(EDGE_URL, {
                     method: 'POST',
@@ -456,7 +514,7 @@ class CheckoutManager {
                         'Content-Type': 'application/json',
                         ...(token ? { 'Authorization': `Bearer ${token}` } : {})
                     },
-                    body: JSON.stringify({ items: this.cartItems, shipping: orderData.shipping })
+                    body: JSON.stringify({ cart: this.mapCartForServer(), shipping: orderData.shipping, payment_method: 'razorpay' })
                 });
 
                 const json = await resp.json().catch(() => ({}));
@@ -527,17 +585,32 @@ class CheckoutManager {
 
     async processCODOrder(orderData) {
         try {
-            // Simulate API call
-            await this.simulateAPICall();
+            const EDGE_URL = this.getEdgeCreateOrderUrl();
+            if (!EDGE_URL) throw new Error('Order service not configured');
 
-            orderData.paymentMethod = 'cod';
-            orderData.paymentStatus = 'pending';
+            const token = await this.getSupabaseAccessTokenSafe();
+            if (!token) throw new Error('Please login to place an order');
 
-            this.saveOrder(orderData);
-            this.redirectToConfirmation(orderData.orderId);
+            const resp = await fetch(EDGE_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ cart: this.mapCartForServer(), shipping: orderData.shipping, payment_method: 'cod' })
+            });
+
+            const json = await resp.json().catch(() => ({}));
+            if (!resp.ok || !json?.orderId) {
+                throw new Error(json?.error || 'Failed to place order');
+            }
+
+            // Cart is cleared server-side; no localStorage needed
+            this.redirectToConfirmation(json.orderId);
 
         } catch (error) {
             this.showNotification('Order failed. Please try again.', 'error');
+            throw error;
         }
     }
 
