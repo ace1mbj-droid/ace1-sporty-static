@@ -18,15 +18,15 @@
       "purpose": "any"
     },
     {
-      "src": "/apple-touch-icon.svg",
+      "src": "/images/apple-touch-icon.png",
       "sizes": "180x180",
-      "type": "image/svg+xml",
+      "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "/images/ace1-logo.svg",
+      "src": "/images/ace1-logo-original-512.png",
       "sizes": "512x512",
-      "type": "image/svg+xml",
+      "type": "image/png",
       "purpose": "any maskable"
     }
   ],

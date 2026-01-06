@@ -42,22 +42,34 @@
     // ===================================
     // VERSION CHECK & FORCE RELOAD
     // ===================================
-    async function checkVersion() {
+    async function checkVersion(forceCheck = false) {
         const key = 'ace1_cache_version';
+        const lastCheckKey = 'ace1_last_version_check';
 
         try {
+            // Throttle checks to every 30 seconds unless forced
+            const lastCheck = parseInt(sessionStorage.getItem(lastCheckKey) || '0', 10);
+            const now = Date.now();
+            if (!forceCheck && (now - lastCheck) < 30000) {
+                return false;
+            }
+            sessionStorage.setItem(lastCheckKey, String(now));
+
             // Fetch version file with no-store so it reflects deploy bumps
-            const res = await fetch('/cache-version.txt', { cache: 'no-store' });
+            const res = await fetch('/cache-version.txt?_=' + now, { 
+                cache: 'no-store',
+                headers: { 'Cache-Control': 'no-cache' }
+            });
             const versionText = (await res.text()).trim();
 
-            if (!versionText) return;
+            if (!versionText) return false;
 
             // Persist across browser restarts (sessionStorage isn't enough for multi-day caching issues)
             const stored = localStorage.getItem(key) || '';
 
             const changed = Boolean(stored && stored !== versionText);
             if (changed) {
-                console.log('🔄 New version detected, clearing cache...');
+                console.log('🔄 New version detected:', versionText, '(was:', stored, ')');
                 clearBrowserCache();
             }
 
@@ -70,14 +82,23 @@
 
             // If version changed, force a reload so already-loaded stale JS doesn't keep running
             if (changed) {
+                console.log('🔄 Reloading page for new version...');
                 setTimeout(() => {
                     try {
-                        // Avoid deprecated reload(true). A normal reload is sufficient after cache clear.
-                        location.reload();
+                        // Clear all caches then reload
+                        if ('caches' in window) {
+                            caches.keys().then(names => {
+                                Promise.all(names.map(n => caches.delete(n))).then(() => {
+                                    location.reload();
+                                });
+                            });
+                        } else {
+                            location.reload();
+                        }
                     } catch (e) {
-                        // ignore
+                        location.reload();
                     }
-                }, 50);
+                }, 100);
             }
 
             return changed;
@@ -195,7 +216,7 @@
 
         // 2. Check version and clear cache if needed
         // Note: this is async, but we also keep a best-effort v= param pass below.
-        void checkVersion();
+        void checkVersion(true); // Force check on init
 
         // 3. Always clear data caches (products, etc.) on every page load
         clearDataCaches();
@@ -211,11 +232,25 @@
             addCacheBustingParams();
         }
 
-        // 7. Set up periodic cache clearing (every 5 minutes while page is open)
+        // 6. Check for updates when user returns to tab
+        document.addEventListener('visibilitychange', function() {
+            if (document.visibilityState === 'visible') {
+                console.log('🔄 Tab became visible, checking for updates...');
+                void checkVersion(true);
+            }
+        });
+
+        // 7. Check for updates on focus (backup for visibilitychange)
+        window.addEventListener('focus', function() {
+            void checkVersion(false); // Throttled check
+        });
+
+        // 8. Set up periodic cache clearing (every 2 minutes while page is open)
         setInterval(() => {
-            console.log('🔄 Periodic cache maintenance...');
+            console.log('🔄 Periodic version check...');
+            void checkVersion(false);
             clearDataCaches();
-        }, 300000); // 5 minutes
+        }, 120000); // 2 minutes
     }
 
     // ===================================
@@ -224,9 +259,12 @@
     window.CacheBuster = {
         clear: clearBrowserCache,
         clearData: clearDataCaches,
+        checkVersion: () => checkVersion(true),
         forceReload: function() {
             clearBrowserCache();
             clearDataCaches();
+            localStorage.removeItem('ace1_cache_version');
+            sessionStorage.clear();
             location.reload();
         }
     };
