@@ -197,8 +197,16 @@ test.describe('Admin button execution (stubbed)', () => {
     await expect(page.locator('#role-modal')).toHaveClass(/active/);
 
     await page.evaluate(() => {
-      const btn = document.querySelector('#role-modal')?.querySelector('button:has-text("Cancel"), button:has-text("cancel")');
-      if (btn) btn.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+      const modal = document.querySelector('#role-modal');
+      if (!modal) return;
+      const buttons = modal.querySelectorAll('button');
+      for (const b of buttons) {
+        const txt = (b.textContent || '').trim();
+        if (/^\s*cancel\s*$/i.test(txt) || /cancel/i.test(txt)) {
+          b.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+          break;
+        }
+      }
     });
     await expect(page.locator('#role-modal')).toBeHidden();
 
