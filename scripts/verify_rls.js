@@ -10,7 +10,7 @@ if (!DB_URL) {
   process.exit(0);
 }
 
-const client = new Client({ connectionString: DB_URL });
+const clientFromUrl = (url) => new Client({ connectionString: url });
 
 const FLAGGED_TABLES = [
   'csrf_tokens',
@@ -22,8 +22,38 @@ const FLAGGED_TABLES = [
   'site_settings'
 ];
 
+const dns = require('dns').promises;
+const { URL } = require('url');
+
+async function attemptConnect(url) {
+  let client = clientFromUrl(url);
+  try {
+    await client.connect();
+    return client;
+  } catch (err) {
+    // Try IPv4 fallback if DNS resolved to IPv6 and network unreachable
+    if (err && (err.code === 'ENETUNREACH' || err.code === 'EAI_ADDRFAMILY' || err.code === 'EADDRNOTAVAIL')) {
+      try {
+        const parsed = new URL(url);
+        const host = parsed.hostname;
+        const port = parsed.port || 5432;
+        const family4 = await dns.lookup(host, { family: 4 });
+        const ipv4Host = family4.address;
+        const fallbackUrl = url.replace(host, ipv4Host);
+        console.log(`Retrying DB connection using IPv4 address ${ipv4Host}`);
+        client = clientFromUrl(fallbackUrl);
+        await client.connect();
+        return client;
+      } catch (err2) {
+        throw err2;
+      }
+    }
+    throw err;
+  }
+}
+
 (async () => {
-  await client.connect();
+  const client = await attemptConnect(DB_URL);
 
   const res = await client.query(`
     select schemaname, tablename, policyname, cmd, coalesce(with_check::text, '') as with_check, coalesce(using::text, '') as using
