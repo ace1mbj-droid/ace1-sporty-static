@@ -160,6 +160,7 @@ test.describe('Admin button execution (stubbed)', () => {
     const content = page.locator(`#${tab}-content`).first();
     // Some tabs have async loaders; ensure the panel becomes visible.
     await expect(content).toBeVisible();
+  }
   test('core admin buttons open modals/tabs without errors', async ({ page }) => {
     // Simplified deterministic smoke test for admin page under stubbed mode.
     const consoleErrors = [];
