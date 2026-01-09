@@ -1669,9 +1669,32 @@ class AdminPanel {
             const msg = mutationResult.error.message || String(mutationResult.error);
             // Detect common RLS/permission errors and provide guidance
             if (/row-level security|permission denied|RLS|not allowed by row-level/i.test(msg)) {
-                showNotification('Permission error saving product: ensure you are logged in as admin or use the server admin API', 'error');
+                showNotification('Permission error saving product: attempting server-side save via admin API...', 'error');
                 // Also log more detail to console for debugging
                 console.error('Possible RLS violation when saving product. Confirm ace1-session header or user_roles.admin is set.');
+
+                // Attempt server-side save via configured admin API (if available)
+                const adminApi = this.getResolvedAdminApi();
+                if (adminApi) {
+                    try {
+                        const saved = await this.saveProductViaAdminApi(adminApi, productPayload, inventory, imageUrl);
+                        if (saved && saved.success) {
+                            showNotification('Product saved via admin API', 'success');
+                            await this.refreshAllAdminData();
+                            return;
+                        } else {
+                            showNotification('Server-side save failed: ' + (saved && saved.error ? saved.error : 'unknown'), 'error');
+                            console.error('Admin API save failed:', saved);
+                            return;
+                        }
+                    } catch (err) {
+                        console.error('Admin API request failed:', err);
+                        showNotification('Admin API save failed. Check server logs and admin API configuration.', 'error');
+                        return;
+                    }
+                }
+
+                return;
             } else {
                 alert('Error saving product: ' + msg);
             }
@@ -2041,6 +2064,39 @@ class AdminPanel {
         } catch (error) {
             console.error('Error saving product image:', error);
             // Don't fail the whole save operation for image issues
+        }
+    }
+
+    // Attempt to save product via a server-side admin API when RLS prevents a client-side insert
+    async saveProductViaAdminApi(adminApiUrl, productPayload, inventory, imageUrl) {
+        try {
+            // Try to attach current admin JWT if possible
+            let token = null;
+            try {
+                const { data: { session } } = await this.supabase.auth.getSession();
+                token = session?.access_token || null;
+            } catch (e) {
+                // ignore
+            }
+
+            const resp = await fetch(adminApiUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+                },
+                body: JSON.stringify({ action: 'save_product', product: productPayload, inventory, image_url: imageUrl })
+            });
+
+            if (!resp.ok) {
+                const text = await resp.text().catch(() => null);
+                return { success: false, error: text || `HTTP ${resp.status}` };
+            }
+
+            const json = await resp.json().catch(() => null);
+            return { success: true, data: json };
+        } catch (err) {
+            return { success: false, error: String(err) };
         }
     }
 
