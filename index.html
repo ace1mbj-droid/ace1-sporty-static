@@ -1194,7 +1194,12 @@
                 const title = item.getAttribute('data-title') || '';
                 const desc = item.getAttribute('data-desc') || '';
 
-                lightboxContent.innerHTML = `<img src="${imgSrc}" alt="${title}" class="lightbox-image">`;
+                lightboxContent.innerHTML = '';
+                const img = document.createElement('img');
+                img.src = imgSrc;
+                img.alt = title;
+                img.className = 'lightbox-image';
+                lightboxContent.appendChild(img);
                 lightboxCaption.innerHTML = title ? `<strong>${title}</strong>${desc ? '<br>' + desc : ''}` : '';
                 lightboxCounter.textContent = `${index + 1} / ${photoItems.length}`;
 
