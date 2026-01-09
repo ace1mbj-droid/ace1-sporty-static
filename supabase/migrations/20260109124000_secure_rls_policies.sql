@@ -10,7 +10,7 @@ CREATE POLICY insert_csrf_tokens
   TO authenticated
   WITH CHECK (
     -- allow inserts only for authenticated sessions that match the session_id OR service role
-    (session_id IS NOT NULL AND session_id IN (SELECT id FROM public.sessions WHERE user_id = (select auth.uid())))
+    (session_id IS NOT NULL AND session_id::uuid IN (SELECT id FROM public.sessions WHERE user_id = (select auth.uid())))
   );
 
 -- ==========================================================================
