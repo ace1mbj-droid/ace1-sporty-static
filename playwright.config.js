@@ -33,6 +33,7 @@ module.exports = defineConfig({
   webServer,
   use: {
     headless: true,
+    baseURL: process.env.BASE_URL || DEFAULT_LOCAL_BASE_URL,
     viewport: { width: 1280, height: 800 },
     actionTimeout: 20000,
     navigationTimeout: 30000,
