@@ -3760,6 +3760,31 @@ button {
     object-fit: cover;
 }
 
+/* Quick view sizes highlight for missing selection UX */
+.qv-sizes.highlight {
+    animation: qv-shake 0.7s ease;
+    box-shadow: 0 6px 24px rgba(255,107,0,0.12);
+    border-radius: 8px;
+}
+
+.qv-sizes:focus-within {
+    outline: 3px solid rgba(255,107,0,0.12);
+}
+
+@keyframes qv-shake {
+    0% { transform: translateX(0); }
+    20% { transform: translateX(-6px); }
+    40% { transform: translateX(6px); }
+    60% { transform: translateX(-4px); }
+    80% { transform: translateX(4px); }
+    100% { transform: translateX(0); }
+}
+
+.size-option:focus {
+    outline: 2px solid var(--secondary-color);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
 .quick-view-details {
     display: flex;
     flex-direction: column;

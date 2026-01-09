@@ -2187,6 +2187,32 @@ function updateQuickViewActionButtons() {
     }
 }
 
+// Highlight and focus the quick-view sizes area to guide the user
+function highlightQuickViewSizes() {
+    try {
+        const sizesHost = document.getElementById('qv-sizes');
+        const sizesContainer = document.querySelector('#qv-sizes .size-options');
+        if (!sizesHost || !sizesContainer) return;
+
+        // Add highlight class
+        sizesHost.classList.add('highlight');
+
+        // Focus first selectable size button
+        const firstSelectable = sizesContainer.querySelector('.size-option:not([disabled])');
+        if (firstSelectable && typeof firstSelectable.focus === 'function') {
+            firstSelectable.focus({ preventScroll: false });
+        }
+
+        // Scroll into view if needed
+        sizesHost.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+        // Remove highlight after animation
+        setTimeout(() => sizesHost.classList.remove('highlight'), 900);
+    } catch (e) {
+        // ignore
+    }
+}
+
 // Keep action buttons in sync when user selects a size
 document.addEventListener('click', (e) => {
     if (e.target.classList && e.target.classList.contains('size-option')) {
