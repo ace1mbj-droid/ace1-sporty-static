@@ -29,7 +29,7 @@ module.exports = defineConfig({
   },
   fullyParallel: false,
   workers: 1,
-  reporter: [['list'], ['github']],
+  reporter: process.env.CI ? [['list'], ['junit', { outputFile: 'test-results/junit.xml' }], ['github']] : [['list'], ['github']],
   webServer,
   use: {
     headless: true,
