@@ -28,21 +28,43 @@ jobs:
 
       - name: Run Playwright tests (CI)
         # Run Playwright and produce JUnit XML results for upload
-        run: npx playwright test --reporter=list,junit || true
+        run: npx playwright test --reporter=list,junit
+
+      - name: List test artifacts (debug)
+        if: always()
+        run: |
+          echo "-- playwright-report --" || true
+          ls -la playwright-report || true
+          echo "-- test-results --" || true
+          ls -la test-results || true
 
       - name: Upload JUnit results
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: junit-results
-          path: test-results/**/*.xml
+          path: |
+            test-results/**/*.xml
+            playwright-report/**/*.xml
+
+      - name: Upload Playwright report and artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: |
+            playwright-report
+            test-results
+            **/playwright-report
 
       - name: Publish JUnit results to GitHub Checks
         if: always()
         uses: dorny/test-reporter@v1
         with:
           name: Playwright E2E
-          path: test-results/**/*.xml
+          path: |
+            test-results/**/*.xml
+            playwright-report/**/*.xml
           reporter: junit
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
