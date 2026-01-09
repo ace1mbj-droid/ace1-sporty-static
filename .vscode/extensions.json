@@ -2,7 +2,8 @@
   "recommendations": [
     "Supabase.vscode-supabase-extension",
     "supabase.postgrestools",
-    "supabase-snippets.supabase-javascript-snippets"
+    "supabase-snippets.supabase-javascript-snippets",
+    "ms-edgedevtools.vscode-edge-devtools"
   ],
   "unwantedRecommendations": []
 }

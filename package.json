@@ -2,13 +2,20 @@
   "name": "ace1-sporty-static",
   "version": "1.0.0",
   "private": true,
-  "devDependencies": {
-    "@playwright/test": "^1.36.0",
-    "@supabase/supabase-js": "^2.89.0"
-  },
   "scripts": {
+    "start:static": "node scripts/static-server.js",
     "test:e2e": "npx playwright test --workers=1",
     "test:e2e:headless": "npx playwright test --workers=1",
-    "check:links": "node scripts/check-links.js"
+    "test:e2e:ci": "npx playwright test --reporter=list",
+    "check:links": "node scripts/check-links.js",
+    "check:rls": "node scripts/verify_rls.js",
+    "send:test-email": "node scripts/send_test_email.js"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.36.0",
+    "@supabase/supabase-js": "^2.89.0",
+    "http-server": "^14.1.1",
+    "nodemailer": "^7.0.12",
+    "pg": "^8.11.0"
   }
 }
