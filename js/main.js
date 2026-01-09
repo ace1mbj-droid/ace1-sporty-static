@@ -2165,7 +2165,7 @@ document.addEventListener('click', (e) => {
     }
 });
 
-// Enable Add to Cart / Buy Now buttons only when a required size is selected
+// Enable/disable Add to Cart / Buy Now depending on whether a size is required and selected
 function updateQuickViewActionButtons() {
     const sizesContainer = document.querySelector('#qv-sizes .size-options');
     const addToCartBtn = document.getElementById('qv-add-to-cart');
@@ -2173,10 +2173,18 @@ function updateQuickViewActionButtons() {
 
     if (!addToCartBtn && !buyNowBtn) return;
 
-    // If sizes container exists and has visible children, require selection
-    // Always enable action buttons; if no size selected we'll fallback to first available on action.
-    if (addToCartBtn) addToCartBtn.disabled = false;
-    if (buyNowBtn) buyNowBtn.disabled = false;
+    const hasSizes = sizesContainer && sizesContainer.children.length > 0 && document.getElementById('qv-sizes')?.style.display !== 'none';
+    const selected = document.querySelector('#quick-view-modal .size-option.selected');
+
+    if (hasSizes) {
+        const enabled = !!selected;
+        if (addToCartBtn) addToCartBtn.disabled = !enabled;
+        if (buyNowBtn) buyNowBtn.disabled = !enabled;
+    } else {
+        // No sizes required
+        if (addToCartBtn) addToCartBtn.disabled = false;
+        if (buyNowBtn) buyNowBtn.disabled = false;
+    }
 }
 
 // Keep action buttons in sync when user selects a size
@@ -2189,14 +2197,20 @@ document.addEventListener('click', (e) => {
 // Add to cart from Quick View
 document.getElementById('qv-add-to-cart')?.addEventListener('click', () => {
     if (currentQuickViewProduct && !currentQuickViewProduct.is_locked && currentQuickViewProduct.stock_quantity > 0) {
-        // Get selected size if any; if none selected but sizes exist, pick first available
+        // If sizes are shown, require a selection
+        const sizesContainer = document.querySelector('#qv-sizes .size-options');
+        const hasSizes = sizesContainer && sizesContainer.children.length > 0 && document.getElementById('qv-sizes')?.style.display !== 'none';
         let selectedSizeBtn = document.querySelector('#quick-view-modal .size-option.selected');
-        if (!selectedSizeBtn) {
-            selectedSizeBtn = document.querySelector('#quick-view-modal .size-option:not([disabled])');
+
+        if (hasSizes && !selectedSizeBtn) {
+            showNotification('Please select a size before adding to cart', 'error');
+            return;
         }
+
+        // Use selected size (may be null if no sizes required)
+        if (!selectedSizeBtn) selectedSizeBtn = document.querySelector('#quick-view-modal .size-option:not([disabled])');
         const selectedSize = selectedSizeBtn?.dataset.size || selectedSizeBtn?.textContent?.trim() || null;
 
-        // Add to cart with size (may be null)
         addToCart(currentQuickViewProduct.id, selectedSize);
         closeQuickView();
     }
@@ -2205,19 +2219,22 @@ document.getElementById('qv-add-to-cart')?.addEventListener('click', () => {
 // Buy Now: add to cart then go to checkout
 document.getElementById('qv-buy-now')?.addEventListener('click', async () => {
     if (currentQuickViewProduct && !currentQuickViewProduct.is_locked && currentQuickViewProduct.stock_quantity > 0) {
-        // Get selected size; fallback to first available if none selected
+        // If sizes are shown, require a selection
+        const sizesContainer = document.querySelector('#qv-sizes .size-options');
+        const hasSizes = sizesContainer && sizesContainer.children.length > 0 && document.getElementById('qv-sizes')?.style.display !== 'none';
         let selectedSizeBtn = document.querySelector('#quick-view-modal .size-option.selected');
-        if (!selectedSizeBtn) {
-            selectedSizeBtn = document.querySelector('#quick-view-modal .size-option:not([disabled])');
+
+        if (hasSizes && !selectedSizeBtn) {
+            showNotification('Please select a size before checkout', 'error');
+            return;
         }
+
+        if (!selectedSizeBtn) selectedSizeBtn = document.querySelector('#quick-view-modal .size-option:not([disabled])');
         const selectedSize = selectedSizeBtn?.dataset.size || selectedSizeBtn?.textContent?.trim() || null;
 
-        // Use async addToCart to ensure cart updated before navigation
         try {
             await addToCart(currentQuickViewProduct.id, selectedSize);
-            // Give a short delay for UI sync
             setTimeout(() => {
-                // Close modal and navigate to checkout
                 closeQuickView();
                 window.location.href = 'checkout.html';
             }, 150);
