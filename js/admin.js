@@ -1666,7 +1666,15 @@ class AdminPanel {
 
         if (mutationResult.error) {
             console.error('❌ Save error:', mutationResult.error);
-            alert('Error saving product: ' + mutationResult.error.message);
+            const msg = mutationResult.error.message || String(mutationResult.error);
+            // Detect common RLS/permission errors and provide guidance
+            if (/row-level security|permission denied|RLS|not allowed by row-level/i.test(msg)) {
+                showNotification('Permission error saving product: ensure you are logged in as admin or use the server admin API', 'error');
+                // Also log more detail to console for debugging
+                console.error('Possible RLS violation when saving product. Confirm ace1-session header or user_roles.admin is set.');
+            } else {
+                alert('Error saving product: ' + msg);
+            }
             return;
         }
 
