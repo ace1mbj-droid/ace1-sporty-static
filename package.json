@@ -9,6 +9,12 @@
   "scripts": {
     "test:e2e": "npx playwright test --workers=1",
     "test:e2e:headless": "npx playwright test --workers=1",
-    "check:links": "node scripts/check-links.js"
+    "check:links": "node scripts/check-links.js",
+    "check:rls": "node scripts/verify_rls.js"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.36.0",
+    "@supabase/supabase-js": "^2.89.0",
+    "pg": "^8.11.0"
   }
 }
