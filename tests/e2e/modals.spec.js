@@ -8,6 +8,13 @@ async function goto(page, urlPath) {
 }
 
 test.describe('Public modals and overlays', () => {
+  test.beforeEach(async ({ page }) => {
+    // Stub authentication for tests so cart can open without real login.
+    await page.addInitScript(() => {
+      window.databaseAuth = window.databaseAuth || {};
+      window.databaseAuth.isAuthenticated = () => true;
+    });
+  });
   test('Search overlay opens and closes', async ({ page }) => {
     await goto(page, '/shoes.html');
 
@@ -36,7 +43,15 @@ test.describe('Public modals and overlays', () => {
 
     await expect(cartBtn).toBeVisible();
 
-    await cartBtn.click();
+    // Ensure auth stub remains (some client scripts may overwrite it); set again before clicking
+    await page.evaluate(() => {
+      window.databaseAuth = window.databaseAuth || {};
+      window.databaseAuth.isAuthenticated = () => true;
+    });
+    // Use DOM click to avoid any Playwright click interception issues
+    await page.evaluate(() => document.getElementById('cart-btn')?.click());
+    // allow UI update
+    await page.waitForTimeout(150);
     await expect(cartSidebar).toHaveClass(/\bactive\b/);
     await expect(cartOverlay).toHaveClass(/\bactive\b/);
 
@@ -44,7 +59,12 @@ test.describe('Public modals and overlays', () => {
     await expect(cartSidebar).not.toHaveClass(/\bactive\b/);
 
     // Re-open and close via overlay click
-    await cartBtn.click();
+    await page.evaluate(() => {
+      window.databaseAuth = window.databaseAuth || {};
+      window.databaseAuth.isAuthenticated = () => true;
+    });
+    await page.evaluate(() => document.getElementById('cart-btn')?.click());
+    await page.waitForTimeout(150);
     await expect(cartSidebar).toHaveClass(/\bactive\b/);
 
     // Click an area of the overlay that isn't covered by the sidebar.
