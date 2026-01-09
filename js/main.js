@@ -2053,7 +2053,33 @@ function openQuickView(productData) {
     document.getElementById('qv-name').textContent = productData.name;
     document.getElementById('qv-category').textContent = productData.category || 'Sneakers';
     document.getElementById('qv-price').textContent = `₹${price ? parseFloat(price).toLocaleString('en-IN') : '0'}`;
-    document.getElementById('qv-description').textContent = productData.description || 'Description coming soon.';
+    // Strip optional "Added <date>" lines from description (not relevant in quick view)
+    const rawDesc = productData.description || 'Description coming soon.';
+    const sanitizedDesc = rawDesc.replace(/(^|\n)\s*Added\s+\d{1,2}\s+\w+\s+\d{4}\s*(\n|$)/ig, '\n').trim();
+    document.getElementById('qv-description').textContent = sanitizedDesc || 'Description coming soon.';
+    
+    // Populate size options dynamically from inventory (show only available sizes)
+    const sizesContainer = document.querySelector('#qv-sizes .size-options');
+    if (sizesContainer) {
+        sizesContainer.innerHTML = '';
+        const inventory = productData.inventory || [];
+        const availableSizes = inventory.filter(i => (i.stock || 0) > 0).map(i => ({ size: i.size, stock: i.stock }));
+
+        if (availableSizes.length === 0) {
+            // If no inventory info or no available sizes, hide size selector
+            document.getElementById('qv-sizes').style.display = 'none';
+        } else {
+            document.getElementById('qv-sizes').style.display = '';
+            availableSizes.forEach(s => {
+                const btn = document.createElement('button');
+                btn.className = 'size-option';
+                btn.dataset.size = String(s.size);
+                btn.textContent = String(s.size);
+                if (!s.stock || s.stock === 0) btn.disabled = true;
+                sizesContainer.appendChild(btn);
+            });
+        }
+    }
     
     // Stock status
     const stockEl = document.getElementById('qv-stock');
