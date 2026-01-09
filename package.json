@@ -14,8 +14,8 @@
   "devDependencies": {
     "@playwright/test": "^1.36.0",
     "@supabase/supabase-js": "^2.89.0",
-    "pg": "^8.11.0",
     "http-server": "^14.1.1",
-    "nodemailer": "^6.9.4"
+    "nodemailer": "^7.0.12",
+    "pg": "^8.11.0"
   }
 }
