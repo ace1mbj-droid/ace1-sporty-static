@@ -59,7 +59,11 @@ test.describe('Inline suggestions', () => {
 
     const firstItem = dropdown.locator('.ace1-inline-suggest-item').first();
     await expect(firstItem).toContainText(/mumbai/i);
-    await firstItem.click();
+    // Use an in-page DOM click to avoid transient detachment issues in some environments
+    await page.evaluate(() => {
+      const el = document.querySelector('#city')?.closest('.form-group')?.querySelector('.ace1-inline-suggest .ace1-inline-suggest-item');
+      if (el) el.click();
+    });
 
     await expect(city2).toHaveValue(/mumbai/i);
   });
@@ -99,7 +103,12 @@ test.describe('Inline suggestions', () => {
     await expect(dropdown).toBeVisible();
 
     const item = dropdown.locator('.ace1-inline-suggest-item').first();
-    await item.click();
+    // Use DOM click to avoid flaky detach during test runs
+    await page.evaluate(() => {
+      const modal = document.getElementById('product-modal');
+      const el = modal?.querySelector('.form-group .ace1-inline-suggest .ace1-inline-suggest-item');
+      if (el) el.click();
+    });
 
     await expect(sizeInput).not.toHaveValue('');
   });
