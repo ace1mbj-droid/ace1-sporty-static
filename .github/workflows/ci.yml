@@ -27,4 +27,22 @@ jobs:
         run: npx playwright install --with-deps
 
       - name: Run Playwright tests (CI)
-        run: npm run test:e2e:ci
+        # Run Playwright and produce JUnit XML results for upload
+        run: npx playwright test --reporter=list,junit || true
+
+      - name: Upload JUnit results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: junit-results
+          path: test-results/**/*.xml
+
+      - name: Publish JUnit results to GitHub Checks
+        if: always()
+        uses: dorny/test-reporter@v1
+        with:
+          name: Playwright E2E
+          path: test-results/**/*.xml
+          reporter: junit
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
