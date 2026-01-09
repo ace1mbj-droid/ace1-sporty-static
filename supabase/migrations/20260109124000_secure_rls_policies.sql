@@ -49,6 +49,14 @@ CREATE POLICY payments_insert_system
 -- ==========================================================================
 -- SECURITY LOGS: don't allow public deletes or anonymous inserts
 -- ==========================================================================
+-- Ensure the table has a user_id column to allow ownership checks in policies.
+DO $$
+BEGIN
+  ALTER TABLE public.security_logs ADD COLUMN IF NOT EXISTS user_id uuid REFERENCES auth.users(id);
+EXCEPTION WHEN OTHERS THEN
+  RAISE NOTICE 'Could not ensure user_id on security_logs';
+END$$;
+
 DROP POLICY IF EXISTS security_logs_delete_all ON public.security_logs;
 CREATE POLICY security_logs_delete_all
   ON public.security_logs FOR DELETE
