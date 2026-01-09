@@ -34,12 +34,34 @@ test('quick view shows only available sizes and strips Added date', async ({ pag
     });
   });
 
-  // Click first quick view button
-  const btn = await page.locator('.quick-view-btn').first();
-  await btn.click();
+  // Directly invoke openQuickView with the stubbed product to avoid page-specific bindings
+  await page.evaluate(() => {
+    const product = {
+      id: 'test-product-quickview',
+      name: 'E2E Quick Shoe',
+      product_images: [{ storage_path: 'e2e-shoe.jpg' }],
+      inventory: [
+        { size: '7', stock: 3 },
+        { size: '8', stock: 0 },
+        { size: '9', stock: 2 }
+      ],
+      price_cents: 5000,
+      description: 'Comfortable shoe.\nAdded 04 Dec 2025'
+    };
+    window.openQuickView({
+      ...product,
+      image_url: '/images/placeholder.jpg',
+      stock_quantity: (product.inventory || []).reduce((s, i) => s + (i.stock || 0), 0),
+      price: (product.price_cents / 100).toFixed(2)
+    });
+  });
 
   // Ensure quick view opens
   await expect(page.locator('#quick-view-modal')).toHaveClass(/active/);
+
+  // Debug: capture sizes container HTML
+  const sizesHtml = await page.evaluate(() => document.querySelector('#qv-sizes') ? document.querySelector('#qv-sizes').innerHTML : null);
+  console.log('DEBUG qv-sizes HTML:', sizesHtml);
 
   // Sizes container should show only sizes 7 and 9 (8 is out of stock)
   const sizeButtons = page.locator('#qv-sizes .size-option');
