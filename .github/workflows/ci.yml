@@ -28,7 +28,7 @@ jobs:
 
       - name: Run Playwright tests (CI)
         # Run Playwright and produce JUnit XML results for upload
-        run: npx playwright test --reporter=list,junit
+        run: npx playwright test --output=test-results --reporter=list --reporter=junit
 
       - name: List test artifacts (debug)
         if: always()
