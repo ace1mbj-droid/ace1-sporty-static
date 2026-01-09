@@ -1642,6 +1642,11 @@ class AdminPanel {
 
         console.log('Product data being saved:', productPayload);
 
+        // Capture inventory & image early so fallback server-side save includes them
+        const inventory = this.getInventoryFromForm();
+        console.log('Inventory from form:', inventory);
+        const imageUrl = (document.getElementById('product-image') && document.getElementById('product-image').value) ? document.getElementById('product-image').value.trim() : '';
+
         let savedProductId = productId;
         let mutationResult;
         
@@ -1733,13 +1738,10 @@ class AdminPanel {
         
         // Handle inventory (multi-size)
         console.log('📦 Processing inventory');
-        const inventory = this.getInventoryFromForm();
-        console.log('Inventory from form:', inventory);
         await this.saveProductInventory(savedProductId, inventory);
         
         // Handle product image URL
         console.log('🖼️ Processing product image URL');
-        const imageUrl = document.getElementById('product-image').value.trim();
         if (imageUrl) {
             await this.saveProductImage(savedProductId, imageUrl);
         }
