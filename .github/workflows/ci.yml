@@ -63,9 +63,7 @@ jobs:
         uses: dorny/test-reporter@v1
         with:
           name: Playwright E2E
-          path: |
-            test-results/**/*.xml
-            playwright-report/**/*.xml
+          path: test-results/junit.xml
           reporter: java-junit
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
