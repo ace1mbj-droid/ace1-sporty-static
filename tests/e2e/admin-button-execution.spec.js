@@ -190,7 +190,6 @@ test.describe('Admin button execution (stubbed)', () => {
 
     expect(pageErrors, `Page errors:\n${pageErrors.join('\n')}`).toEqual([]);
     expect(consoleErrors, `Console errors:\n${consoleErrors.join('\n')}`).toEqual([]);
-  });
 
     // Roles -> Create Role opens role modal.
     await clickTab(page, 'roles');
