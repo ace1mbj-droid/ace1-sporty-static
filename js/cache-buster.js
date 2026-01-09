@@ -83,7 +83,8 @@
             currentVersion = nextVersion;
             return { changed, version: nextVersion };
         } catch (error) {
-            console.warn('Version check failed:', error);
+            // Degrade quietly if the version endpoint is unavailable (offline, blocked, etc.)
+            console.debug('Version check skipped:', error);
             return { changed: false, version: currentVersion || 'latest' };
         }
     }
