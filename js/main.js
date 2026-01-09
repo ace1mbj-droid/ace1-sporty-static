@@ -101,6 +101,35 @@ function scheduleCartSync() {
     }
 })();
 
+// Ensure a global "Main Site" external link is present in navigation across pages
+function ensureMainSiteNavLink() {
+    try {
+        const navMenu = document.getElementById('nav-menu') || document.querySelector('.nav-menu');
+        if (!navMenu) return;
+        // If an external main site link already exists, do nothing
+        const existing = navMenu.querySelector('a[href^="https://ace1.in"]');
+        if (existing) return;
+
+        const li = document.createElement('li');
+        const a = document.createElement('a');
+        a.href = 'https://ace1.in/';
+        a.className = 'nav-link';
+        a.target = '_blank';
+        a.rel = 'noopener';
+        a.textContent = 'Main Site';
+        li.appendChild(a);
+        navMenu.appendChild(li);
+    } catch (e) {
+        // ignore errors
+    }
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', ensureMainSiteNavLink);
+} else {
+    ensureMainSiteNavLink();
+}
+
 // ===================================
 // CATEGORY SYNC (FOOTER SHOP LINKS)
 // ===================================
