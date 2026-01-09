@@ -2174,18 +2174,9 @@ function updateQuickViewActionButtons() {
     if (!addToCartBtn && !buyNowBtn) return;
 
     // If sizes container exists and has visible children, require selection
-    const hasSizes = sizesContainer && sizesContainer.children.length > 0 && document.getElementById('qv-sizes')?.style.display !== 'none';
-    const selected = document.querySelector('#quick-view-modal .size-option.selected');
-
-    if (hasSizes) {
-        const enabled = !!selected;
-        if (addToCartBtn) addToCartBtn.disabled = !enabled;
-        if (buyNowBtn) buyNowBtn.disabled = !enabled;
-    } else {
-        // No sizes required
-        if (addToCartBtn) addToCartBtn.disabled = false;
-        if (buyNowBtn) buyNowBtn.disabled = false;
-    }
+    // Always enable action buttons; if no size selected we'll fallback to first available on action.
+    if (addToCartBtn) addToCartBtn.disabled = false;
+    if (buyNowBtn) buyNowBtn.disabled = false;
 }
 
 // Keep action buttons in sync when user selects a size
@@ -2198,11 +2189,14 @@ document.addEventListener('click', (e) => {
 // Add to cart from Quick View
 document.getElementById('qv-add-to-cart')?.addEventListener('click', () => {
     if (currentQuickViewProduct && !currentQuickViewProduct.is_locked && currentQuickViewProduct.stock_quantity > 0) {
-        // Get selected size if any
-        const selectedSizeBtn = document.querySelector('#quick-view-modal .size-option.selected');
+        // Get selected size if any; if none selected but sizes exist, pick first available
+        let selectedSizeBtn = document.querySelector('#quick-view-modal .size-option.selected');
+        if (!selectedSizeBtn) {
+            selectedSizeBtn = document.querySelector('#quick-view-modal .size-option:not([disabled])');
+        }
         const selectedSize = selectedSizeBtn?.dataset.size || selectedSizeBtn?.textContent?.trim() || null;
-        
-        // Add to cart with size
+
+        // Add to cart with size (may be null)
         addToCart(currentQuickViewProduct.id, selectedSize);
         closeQuickView();
     }
@@ -2211,7 +2205,11 @@ document.getElementById('qv-add-to-cart')?.addEventListener('click', () => {
 // Buy Now: add to cart then go to checkout
 document.getElementById('qv-buy-now')?.addEventListener('click', async () => {
     if (currentQuickViewProduct && !currentQuickViewProduct.is_locked && currentQuickViewProduct.stock_quantity > 0) {
-        const selectedSizeBtn = document.querySelector('#quick-view-modal .size-option.selected');
+        // Get selected size; fallback to first available if none selected
+        let selectedSizeBtn = document.querySelector('#quick-view-modal .size-option.selected');
+        if (!selectedSizeBtn) {
+            selectedSizeBtn = document.querySelector('#quick-view-modal .size-option:not([disabled])');
+        }
         const selectedSize = selectedSizeBtn?.dataset.size || selectedSizeBtn?.textContent?.trim() || null;
 
         // Use async addToCart to ensure cart updated before navigation
