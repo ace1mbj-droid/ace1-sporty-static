@@ -2136,6 +2136,36 @@ document.addEventListener('click', (e) => {
     }
 });
 
+// Enable Add to Cart / Buy Now buttons only when a required size is selected
+function updateQuickViewActionButtons() {
+    const sizesContainer = document.querySelector('#qv-sizes .size-options');
+    const addToCartBtn = document.getElementById('qv-add-to-cart');
+    const buyNowBtn = document.getElementById('qv-buy-now');
+
+    if (!addToCartBtn && !buyNowBtn) return;
+
+    // If sizes container exists and has visible children, require selection
+    const hasSizes = sizesContainer && sizesContainer.children.length > 0 && document.getElementById('qv-sizes')?.style.display !== 'none';
+    const selected = document.querySelector('#quick-view-modal .size-option.selected');
+
+    if (hasSizes) {
+        const enabled = !!selected;
+        if (addToCartBtn) addToCartBtn.disabled = !enabled;
+        if (buyNowBtn) buyNowBtn.disabled = !enabled;
+    } else {
+        // No sizes required
+        if (addToCartBtn) addToCartBtn.disabled = false;
+        if (buyNowBtn) buyNowBtn.disabled = false;
+    }
+}
+
+// Keep action buttons in sync when user selects a size
+document.addEventListener('click', (e) => {
+    if (e.target.classList && e.target.classList.contains('size-option')) {
+        setTimeout(updateQuickViewActionButtons, 0);
+    }
+});
+
 // Add to cart from Quick View
 document.getElementById('qv-add-to-cart')?.addEventListener('click', () => {
     if (currentQuickViewProduct && !currentQuickViewProduct.is_locked && currentQuickViewProduct.stock_quantity > 0) {
@@ -2146,6 +2176,27 @@ document.getElementById('qv-add-to-cart')?.addEventListener('click', () => {
         // Add to cart with size
         addToCart(currentQuickViewProduct.id, selectedSize);
         closeQuickView();
+    }
+});
+
+// Buy Now: add to cart then go to checkout
+document.getElementById('qv-buy-now')?.addEventListener('click', async () => {
+    if (currentQuickViewProduct && !currentQuickViewProduct.is_locked && currentQuickViewProduct.stock_quantity > 0) {
+        const selectedSizeBtn = document.querySelector('#quick-view-modal .size-option.selected');
+        const selectedSize = selectedSizeBtn?.dataset.size || selectedSizeBtn?.textContent?.trim() || null;
+
+        // Use async addToCart to ensure cart updated before navigation
+        try {
+            await addToCart(currentQuickViewProduct.id, selectedSize);
+            // Give a short delay for UI sync
+            setTimeout(() => {
+                // Close modal and navigate to checkout
+                closeQuickView();
+                window.location.href = 'checkout.html';
+            }, 150);
+        } catch (e) {
+            console.error('Buy now failed:', e);
+        }
     }
 });
 
