@@ -71,7 +71,6 @@ jobs:
             **/*.sass
             **/*.less
             **/*.psd
-            **/*.ai
             **/*.sketch
             **/.DS_Store
             package.json
