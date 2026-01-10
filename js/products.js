@@ -619,7 +619,7 @@ class ProductFilterManager {
                 : (Number(product.stock_quantity) === 0 ? 'Out of Stock' : 'Unavailable');
 
             return `
-            <div class="product-card" data-product-id="${product.id}" data-category="${this.normalizeCategoryToSlug(product.category || 'casual')}">
+            <div class="product-card" data-animate="fade-up" data-product-id="${product.id}" data-category="${this.normalizeCategoryToSlug(product.category || 'casual')}">
                 <div class="product-image">
                     <img src="${product.image_url || 'images/product-placeholder.svg'}" alt="${name}" onerror="this.src='images/product-placeholder.svg'" loading="lazy" decoding="async">
                     ${product.is_locked ? '<div class="product-badge bg-gray">Locked</div>' : ''}
@@ -660,6 +660,9 @@ class ProductFilterManager {
         }).join('');
 
         console.log('✅ Grid HTML updated successfully');
+
+        // Notify animations loader that new product DOM has been rendered
+        try { document.dispatchEvent(new CustomEvent('ace1:products-rendered')); } catch (e) { /* ignore */ }
 
         // Re-attach event listeners for add to cart buttons
         document.querySelectorAll('.add-to-cart-btn:not([disabled])').forEach(btn => {

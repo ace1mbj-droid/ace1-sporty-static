@@ -27,11 +27,15 @@
     });
   }
 
+  // Persistent observer used for dynamically added elements
+  let obs = null;
   function initObserver() {
     // Respect user preference for reduced motion — if set, do nothing
     if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
-    const obs = new IntersectionObserver((entries, observer) => {
+    if (obs) return; // already initialized
+
+    obs = new IntersectionObserver((entries, observer) => {
       entries.forEach(entry => {
         const el = entry.target;
         if (entry.intersectionRatio > 0.08) {
@@ -52,7 +56,12 @@
       });
     }, { threshold: [0.08] });
 
-    document.querySelectorAll('[data-animate]').forEach(el => obs.observe(el));
+    document.querySelectorAll('[data-animate]').forEach(el => {
+      if (!el.hasAttribute('data-animate-observed')) {
+        obs.observe(el);
+        el.setAttribute('data-animate-observed', '1');
+      }
+    });
   }
 
   function initAnimations() {
@@ -61,6 +70,23 @@
       if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
       applyDefaults();
       initObserver();
+
+      // Listen for dynamic product renders and apply to new elements
+      document.addEventListener('ace1:products-rendered', () => {
+        try {
+          applyDefaults();
+          if (!window.matchMedia || !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            initObserver();
+            // Observe newly added elements
+            document.querySelectorAll('[data-animate]:not([data-animate-observed])').forEach(el => {
+              if (typeof obs !== 'undefined' && obs) {
+                obs.observe(el);
+                el.setAttribute('data-animate-observed','1');
+              }
+            });
+          }
+        } catch (e) { console.error('Products render animation hook failed:', e); }
+      });
     } catch (e) {
       console.error('Animations init failed:', e);
     }
