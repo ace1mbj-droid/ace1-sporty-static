@@ -342,7 +342,7 @@ class ProductFilterManager {
 
             if (error) throw error;
 
-            console.log(`✅ Fetched ${products?.length || 0} products from Supabase (fresh data)`);
+            console.log('✅ Fetched products from Supabase:', products);
             
             const getProjectUrl = () => (
                 (window.SUPABASE_CONFIG && window.SUPABASE_CONFIG.url) || window.SUPABASE_URL || 'https://vorqavsuqcjnkjzwkyzr.supabase.co'
@@ -367,6 +367,27 @@ class ProductFilterManager {
             };
             
             // Process the data to flatten related tables
+            // Build inventoryByProduct from nested inventory array in each product
+                        console.log('🔎 Raw products before inventory mapping:', products);
+                        // Build inventoryByProduct from nested inventory array in each product
+                        const inventoryByProduct = {};
+                        (products || []).forEach(product => {
+                            if (Array.isArray(product.inventory)) {
+                                inventoryByProduct[product.id] = product.inventory;
+                            } else {
+                                inventoryByProduct[product.id] = [];
+                            }
+                        });
+                        console.log('🔎 inventoryByProduct mapping:', inventoryByProduct);
+            const inventoryByProduct = {};
+            (products || []).forEach(product => {
+                if (Array.isArray(product.inventory)) {
+                    inventoryByProduct[product.id] = product.inventory;
+                } else {
+                    inventoryByProduct[product.id] = [];
+                }
+            });
+
             let processedProducts = (products || []).map(product => {
                 const productInventory = inventoryByProduct[product.id] || [];
                 return {
