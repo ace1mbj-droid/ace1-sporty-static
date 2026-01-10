@@ -33,7 +33,19 @@ jobs:
           mkdir -p dist
           rsync -av --exclude='.git' --exclude='.github' --exclude='node_modules' --exclude='dist' ./ dist/
 
+      - name: SFTP Deploy
+        if: steps.ftp_vars.outputs.protocol == 'sftp'
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.FTP_HOST }}
+          username: ${{ secrets.FTP_USER }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          port: ${{ steps.ftp_vars.outputs.port }}
+          source: "./dist/*"
+          target: ${{ steps.ftp_vars.outputs.server_dir }}
+
       - name: FTP Deploy
+        if: steps.ftp_vars.outputs.protocol != 'sftp'
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ${{ secrets.FTP_HOST }}
