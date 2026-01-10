@@ -1,0 +1,46 @@
+<svg width="280" height="280" viewBox="0 0 280 280" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="280" height="280" rx="16" fill="#f8fafc"/>
+
+  <!-- Sneaker shadow -->
+  <ellipse cx="140" cy="250" rx="80" ry="8" fill="rgba(0,0,0,0.1)" opacity="0.3"/>
+
+  <!-- Main sneaker body -->
+  <g transform="translate(40, 80)">
+    <!-- Sneaker sole -->
+    <path d="M80 120 Q90 110 100 120 Q110 130 120 120 Q130 110 140 120 L140 135 Q130 145 120 135 Q110 125 100 135 Q90 145 80 135 Z"
+          fill="#f59e0b"/>
+
+    <!-- Upper sneaker body -->
+    <path d="M80 120 Q70 100 80 80 Q90 70 100 80 Q110 90 120 80 Q130 70 140 80 Q150 90 140 120 Z"
+          fill="#6366f1"/>
+
+    <!-- Laces area -->
+    <rect x="100" y="85" width="40" height="8" rx="4" fill="#ffffff" opacity="0.9"/>
+    <rect x="103" y="87" width="34" height="2" rx="1" fill="#374151"/>
+    <rect x="103" y="90" width="34" height="2" rx="1" fill="#374151"/>
+    <rect x="103" y="93" width="34" height="2" rx="1" fill="#374151"/>
+
+    <!-- Eyelets -->
+    <circle cx="108" cy="89" r="1.5" fill="#6b7280"/>
+    <circle cx="118" cy="89" r="1.5" fill="#6b7280"/>
+    <circle cx="128" cy="89" r="1.5" fill="#6b7280"/>
+    <circle cx="138" cy="89" r="1.5" fill="#6b7280"/>
+
+    <!-- Tongue -->
+    <path d="M110 88 Q115 78 120 88 Q125 98 120 108 Q115 98 110 88 Z"
+          fill="#ffffff" opacity="0.8"/>
+
+    <!-- Side stripes -->
+    <rect x="88" y="95" width="3" height="18" rx="1.5" fill="#f59e0b"/>
+    <rect x="130" y="95" width="3" height="18" rx="1.5" fill="#f59e0b"/>
+  </g>
+
+  <!-- Subtle pattern overlay -->
+  <defs>
+    <pattern id="productPattern" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
+      <circle cx="10" cy="10" r="0.5" fill="rgba(99,102,241,0.1)"/>
+    </pattern>
+  </defs>
+  <rect width="280" height="280" rx="16" fill="url(#productPattern)" opacity="0.2"/>
+</svg>

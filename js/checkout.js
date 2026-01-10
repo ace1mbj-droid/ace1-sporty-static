@@ -33,9 +33,13 @@ class CheckoutManager {
 
         // Keep checkout in sync if cart changes while this page is open
         window.addEventListener('ace1:cart-updated', () => {
+            console.log('Checkout: Cart updated event received');
             this.cartItems = window.cart || [];
             this.calculateTotals();
             this.displayCartItems();
+            
+            // Add visual feedback
+            this.showCartUpdateNotification();
         });
 
         // Continue to payment
@@ -226,6 +230,37 @@ class CheckoutManager {
         inputEl.addEventListener('blur', () => {
             setTimeout(close, 120);
         });
+    }
+
+    showCartUpdateNotification() {
+        // Remove existing notification
+        const existing = document.querySelector('.cart-update-notification');
+        if (existing) existing.remove();
+
+        // Create new notification
+        const notification = document.createElement('div');
+        notification.className = 'cart-update-notification';
+        notification.textContent = 'Cart updated successfully!';
+        notification.style.cssText = `
+            position: fixed;
+            top: 100px;
+            right: 20px;
+            background: var(--success-color, #10b981);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 1000;
+            animation: slideInRight 0.3s ease;
+        `;
+
+        document.body.appendChild(notification);
+
+        // Remove after 3 seconds
+        setTimeout(() => {
+            notification.style.animation = 'slideOutRight 0.3s ease';
+            setTimeout(() => notification.remove(), 300);
+        }, 3000);
     }
 
     setupInlineSuggestions() {
