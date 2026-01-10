@@ -297,7 +297,6 @@ class ProductFilterManager {
 
     async loadProductsFromSupabase() {
         try {
-            const supabase = window.getSupabase();
             
             // Determine which primary category to filter by based on current page
             const primaryCategoryFilter = this.getPrimaryCategoryFilterFromPath();
@@ -331,7 +330,7 @@ class ProductFilterManager {
                 .eq('is_active', true)
                 .is('deleted_at', null)
                 .or('is_locked.is.null,is_locked.eq.false')
-                .eq('status', 'available')
+                // .eq('status', 'available') // Temporarily disabled for testing
                 .order('created_at', { ascending: false });
             
             // Apply primary category filter if on shoes or clothing page
@@ -351,7 +350,7 @@ class ProductFilterManager {
 
             // Helper function to convert storage path to public URL
             const getImageUrl = (storagePath) => {
-                if (!storagePath) return 'images/placeholder.jpg';
+                if (!storagePath) return 'images/product-placeholder.svg';
                 const projectUrl = getProjectUrl().replace(/\/$/, '');
                 const storagePrefix = `${projectUrl}/storage`;
                 // If it's already a full Supabase Storage URL, return as is
@@ -368,19 +367,22 @@ class ProductFilterManager {
             };
             
             // Process the data to flatten related tables
-            let processedProducts = (products || []).map(product => ({
-                ...product,
-                image_url: getImageUrl(product.product_images?.[0]?.storage_path) || null,
-                // Sum stock across all sizes for total availability
-                stock_quantity: (product.inventory || []).reduce((sum, inv) => sum + (inv.stock || 0), 0),
-                // Also keep per-size inventory for detailed view
-                inventory_by_size: (product.inventory || []).reduce((acc, inv) => {
-                    acc[inv.size] = inv.stock || 0;
-                    return acc;
-                }, {}),
-                price: (product.price_cents / 100).toFixed(2), // Convert cents to rupees
-                category: this.normalizeCategoryToSlug(product.category)
-            }));
+            let processedProducts = (products || []).map(product => {
+                const productInventory = inventoryByProduct[product.id] || [];
+                return {
+                    ...product,
+                    image_url: getImageUrl(product.product_images?.[0]?.storage_path) || null,
+                    // Sum stock across all sizes for total availability
+                    stock_quantity: productInventory.reduce((sum, inv) => sum + (inv.stock || 0), 0),
+                    // Also keep per-size inventory for detailed view
+                    inventory_by_size: productInventory.reduce((acc, inv) => {
+                        acc[inv.size] = inv.stock || 0;
+                        return acc;
+                    }, {}),
+                    price: (product.price_cents / 100).toFixed(2), // Convert cents to rupees
+                    category: this.normalizeCategoryToSlug(product.category)
+                };
+            });
 
             // Only show products that are actually available to buy (in-stock).
             // The DB query already filters is_active + not deleted + not locked + status=available.
@@ -569,7 +571,7 @@ class ProductFilterManager {
         }
 
         const path = window.location.pathname || '';
-        const showCreatedAt = path.includes('shoes.html') || path.includes('clothing.html') || path.includes('accessories.html');
+        const showCreatedAt = false; // Always hide dates
 
         grid.innerHTML = products.map(product => {
             const createdAtLabel = showCreatedAt ? this.formatProductCreatedAt(product.created_at) : '';
@@ -594,12 +596,17 @@ class ProductFilterManager {
             return `
             <div class="product-card" data-product-id="${product.id}" data-category="${this.normalizeCategoryToSlug(product.category || 'casual')}">
                 <div class="product-image">
-                    <img src="${product.image_url || 'images/placeholder.jpg'}" alt="${name}" onerror="this.src='images/placeholder.jpg'" loading="lazy" decoding="async">
+                    <img src="${product.image_url || 'images/product-placeholder.svg'}" alt="${name}" onerror="this.src='images/product-placeholder.svg'" loading="lazy" decoding="async">
                     ${product.is_locked ? '<div class="product-badge bg-gray">Locked</div>' : ''}
                     ${product.stock_quantity === 0 ? '<div class="product-badge bg-red">Out of Stock</div>' : ''}
                     ${product.stock_quantity > 0 && product.stock_quantity < 10 ? '<div class="product-badge bg-orange">Low Stock</div>' : ''}
+                    ${product.is_featured ? '<div class="product-badge bg-primary">Featured</div>' : ''}
                     <div class="product-overlay">
-                        <button class="quick-view-btn" data-product-id="${product.id}" aria-label="Quick view ${name}">Quick View</button>
+                        <div class="overlay-actions">
+                            <button class="quick-view-btn" data-product-id="${product.id}" aria-label="Quick view ${name}" title="Quick View">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
                     </div>
                 </div>
                 <div class="product-info">
@@ -610,15 +617,17 @@ class ProductFilterManager {
                     <h3 class="product-name">${name}</h3>
                     ${description ? `<p class="product-description">${description}</p>` : ''}
                     <div class="product-footer">
-                        <span class="product-price">${priceLabel}</span>
-                        ${isAvailable
-                            ? `<button class="add-to-cart-btn" data-id="${product.id}" aria-label="Add ${name} to cart" title="Add to cart">
-                                <i class="fas fa-shopping-bag" aria-hidden="true"></i>
-                               </button>`
-                            : `<button class="add-to-cart-btn" disabled title="${disabledReason}">
-                                <i class="fas fa-times-circle" style="margin-right: 5px;" aria-hidden="true"></i> ${disabledReason}
-                               </button>`
-                        }
+                        <div class="product-price">${priceLabel}</div>
+                        <div class="action-buttons">
+                            ${isAvailable
+                                ? `<button class="add-to-cart-btn" data-id="${product.id}" aria-label="Add ${name} to cart" title="Add to cart">
+                                    <i class="fas fa-shopping-bag" aria-hidden="true"></i>
+                                   </button>`
+                                : `<button class="add-to-cart-btn" disabled title="${disabledReason}">
+                                    <i class="fas fa-times-circle" style="margin-right: 5px;" aria-hidden="true"></i> ${disabledReason}
+                                   </button>`
+                            }
+                        </div>
                     </div>
                 </div>
             </div>
@@ -720,6 +729,23 @@ class ProductFilterManager {
     getProductRating(card) {
         const stars = card.querySelectorAll('.fa-star:not(.fa-star-half-alt)');
         return stars.length;
+    }
+
+    renderStars(rating) {
+        let stars = '';
+        const fullStars = Math.floor(rating);
+        const hasHalfStar = rating % 1 >= 0.5;
+
+        for (let i = 0; i < 5; i++) {
+            if (i < fullStars) {
+                stars += '<i class="fas fa-star"></i>';
+            } else if (i === fullStars && hasHalfStar) {
+                stars += '<i class="fas fa-star-half-alt"></i>';
+            } else {
+                stars += '<i class="far fa-star"></i>';
+            }
+        }
+        return stars;
     }
 
     attachCategoryEventListeners() {
@@ -1240,10 +1266,10 @@ class ProductFilterManager {
 }
 
 // Initialize filter manager on products page
-if (document.querySelector('.products-grid')) {
-    document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', () => {
+    if (document.querySelector('.products-grid')) {
         window.productFilterManager = new ProductFilterManager();
-    });
-}
+    }
+});
 
 // Pagination is now rendered dynamically by ProductFilterManager.
