@@ -2464,6 +2464,26 @@ function bindClearCacheButton() {
     });
 }
 
+// --- Animations loader: loads lightweight animations.js which auto-applies data-animate attributes
+(function () {
+    function loadAnimationsScript() {
+        try {
+            const s = document.createElement('script');
+            s.src = 'js/animations.js';
+            s.defer = true;
+            document.head.appendChild(s);
+        } catch (e) {
+            // ignore
+        }
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', loadAnimationsScript);
+    } else {
+        loadAnimationsScript();
+    }
+})();
+
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', bindClearCacheButton);
 } else {
