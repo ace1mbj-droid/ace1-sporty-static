@@ -28,6 +28,9 @@
   }
 
   function initObserver() {
+    // Respect user preference for reduced motion — if set, do nothing
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
     const obs = new IntersectionObserver((entries, observer) => {
       entries.forEach(entry => {
         const el = entry.target;
@@ -39,7 +42,8 @@
           if (el.classList.contains('stagger')) {
             el.classList.add('in');
             Array.from(el.children).forEach((child, i) => {
-              setTimeout(() => child.classList.add('in'), i * 60);
+              const delay = i * (parseInt(getComputedStyle(el).getPropertyValue('--anim-stagger-step')) || 60);
+              setTimeout(() => child.classList.add('in'), delay);
             });
           }
           // optionally unobserve if we don't want repeated animations
@@ -53,6 +57,8 @@
 
   function initAnimations() {
     try {
+      // Skip applying and observing if user prefers reduced motion
+      if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
       applyDefaults();
       initObserver();
     } catch (e) {
