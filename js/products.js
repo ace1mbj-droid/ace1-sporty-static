@@ -312,6 +312,14 @@ class ProductFilterManager {
                 shopSection.hidden = isEmpty;
             };
             
+            // Ensure Supabase client is available
+            const supabase = window.getSupabase ? window.getSupabase() : null;
+            if (!supabase) {
+                console.log('Supabase client not found; falling back to DOM-rendered products');
+                this.loadProducts();
+                return;
+            }
+
             // Always fetch fresh data - no caching
             console.log('🔄 Fetching products from Supabase...', primaryCategoryFilter ? `(filtering by primary_category: ${primaryCategoryFilter})` : '(no primary category filter)');
             let query = supabase
@@ -343,7 +351,7 @@ class ProductFilterManager {
             if (error) throw error;
 
             console.log('✅ Fetched products from Supabase:', products);
-            
+
             const getProjectUrl = () => (
                 (window.SUPABASE_CONFIG && window.SUPABASE_CONFIG.url) || window.SUPABASE_URL || 'https://vorqavsuqcjnkjzwkyzr.supabase.co'
             );
@@ -368,18 +376,14 @@ class ProductFilterManager {
             
             // Process the data to flatten related tables
             // Build inventoryByProduct from nested inventory array in each product
-                        console.log('🔎 Raw products before inventory mapping:', products);
-                        // Build inventoryByProduct from nested inventory array in each product
-                        const inventoryByProduct = {};
-                        (products || []).forEach(product => {
-                            if (Array.isArray(product.inventory)) {
-                                inventoryByProduct[product.id] = product.inventory;
-                            } else {
-                                inventoryByProduct[product.id] = [];
-                            }
-                        });
-                        console.log('🔎 inventoryByProduct mapping:', inventoryByProduct);
             const inventoryByProduct = {};
+            (products || []).forEach(product => {
+                if (Array.isArray(product.inventory)) {
+                    inventoryByProduct[product.id] = product.inventory;
+                } else {
+                    inventoryByProduct[product.id] = [];
+                }
+            });
             (products || []).forEach(product => {
                 if (Array.isArray(product.inventory)) {
                     inventoryByProduct[product.id] = product.inventory;
