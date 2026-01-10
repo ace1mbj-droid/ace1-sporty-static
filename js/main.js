@@ -3,6 +3,21 @@
 // ===================================
 // Cart is loaded from database (no localStorage)
 let cart = [];
+
+// Suppress verbose logs in production to avoid leaking internal state
+// Console errors and warnings are preserved.
+(function () {
+    try {
+        const host = (location && location.hostname) || '';
+        const isLocal = host === 'localhost' || host === '127.0.0.1' || host === '';
+        if (!isLocal) {
+            console.log = function () {};
+            console.debug = function () {};
+        }
+    } catch (e) {
+        // ignore
+    }
+})();
 let cartTotal = 0;
 let cartSessionId = sessionStorage.getItem('ace1_session_id') || generateSessionId();
 let cartLoaded = false;
