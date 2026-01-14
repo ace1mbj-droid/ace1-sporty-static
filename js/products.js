@@ -647,6 +647,9 @@ class ProductFilterManager {
                             ${isAvailable
                                 ? `<button class="add-to-cart-btn" data-id="${product.id}" aria-label="Add ${name} to cart" title="Add to cart">
                                     <i class="fas fa-shopping-bag" aria-hidden="true"></i>
+                                   </button>
+                                   <button class="buy-now-btn btn" data-id="${product.id}" aria-label="Buy ${name} now" title="Buy now">
+                                    <i class="fas fa-bolt" aria-hidden="true"></i>
                                    </button>`
                                 : `<button class="add-to-cart-btn" disabled title="${disabledReason}">
                                     <i class="fas fa-times-circle" style="margin-right: 5px;" aria-hidden="true"></i> ${disabledReason}
@@ -671,6 +674,22 @@ class ProductFilterManager {
                 const productId = btn.dataset.id;
                 if (window.addToCart) {
                     window.addToCart(productId);
+                }
+            });
+        });
+
+        // Buy Now: add to cart then go to checkout
+        document.querySelectorAll('.buy-now-btn:not([disabled])').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                e.stopPropagation();
+                const productId = btn.dataset.id;
+                try {
+                    if (window.addToCart) await window.addToCart(productId);
+                    // Redirect to checkout
+                    window.location.href = 'checkout.html';
+                } catch (err) {
+                    console.error('Buy now failed:', err);
+                    if (window.showNotification) window.showNotification('Unable to proceed to checkout', 'error');
                 }
             });
         });
