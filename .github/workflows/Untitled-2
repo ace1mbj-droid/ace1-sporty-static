@@ -1,0 +1,5 @@
+sudo cp /Applications/XAMPP/xamppfiles/phpmyadmin/config.inc.php /Applications/XAMPP/xamppfiles/phpmyadmin/config.inc.php.bak && echo 'backup created' && sudo bash -lc "cat >> /Applications/XAMPP/xamppfiles/phpmyadmin/config.inc.php <<'PHP'
+\$cfg['Servers'][1]['host'] = '127.0.0.1';
+\$cfg['Servers'][1]['user'] = 'root';
+\$cfg['Servers'][1]['password'] = '1111';
+PHP"

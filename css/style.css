@@ -225,11 +225,28 @@ button {
     transition: var(--transition);
 }
 
+/* Circular grey background behind the navbar (centered) */
+.navbar::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    background: var(--bg-light);
+    z-index: 0;
+    pointer-events: none;
+}
+
 .navbar.scrolled {
     box-shadow: var(--shadow-md);
 }
 
 .nav-container {
+    position: relative;
+    z-index: 1;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -6456,6 +6473,22 @@ button {
     }
 }
 
+/* Responsive adjustments for navbar circular background */
+@media (max-width: 1024px) {
+    .navbar::before {
+        width: 160px;
+        height: 160px;
+    }
+}
+
+@media (max-width: 640px) {
+    .navbar::before {
+        width: 110px;
+        height: 110px;
+        top: 50%;
+        transform: translate(-50%, -45%);
+    }
+}
 /* ===================================
    WISHLIST & COMPARE FEATURES
    =================================== */
