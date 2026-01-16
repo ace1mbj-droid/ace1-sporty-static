@@ -1,0 +1,122 @@
+name: Build & FTP Deploy (manual)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Resolve FTP settings
+        id: ftp_vars
+        run: |
+          SERVER_DIR='${{ secrets.FTP_SERVER_DIR }}'
+          if [ -z "$SERVER_DIR" ]; then SERVER_DIR='${{ secrets.FTP_PUBLIC_DIR }}'; fi
+          if [ -z "$SERVER_DIR" ]; then SERVER_DIR='/'; fi
+
+          PORT='${{ secrets.FTP_PORT }}'
+          if [ -z "$PORT" ]; then PORT='21'; fi
+
+          PROTOCOL='${{ secrets.FTP_PROTOCOL }}'
+          if [ -z "$PROTOCOL" ]; then PROTOCOL='ftps'; fi
+
+          echo "server_dir=$SERVER_DIR" >> "$GITHUB_OUTPUT"
+          echo "port=$PORT" >> "$GITHUB_OUTPUT"
+          echo "protocol=$PROTOCOL" >> "$GITHUB_OUTPUT"
+
+      - name: CI guard — automatic deploys enabled
+        run: |
+          echo "Manual dispatch deploy (debug run)."
+
+      - name: Use Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Prepare dist folder
+        run: |
+          rm -rf dist || true
+          mkdir -p dist
+          # Copy only what we need for the static site; drop tooling/docs/tests/server content before FTP
+          rsync -av \
+            --exclude='.git' \
+            --exclude='.github' \
+            --exclude='node_modules' \
+            --exclude='.vscode' \
+            --exclude='dist' \
+            --exclude='.gitignore' \
+            --exclude='.env*' \
+            --exclude='*.tgz' \
+            --exclude='package.json' \
+            --exclude='package-lock.json' \
+            --exclude='vercel.json' \
+            --exclude='tests' \
+            --exclude='test-results' \
+            --exclude='sql' \
+            --exclude='supabase' \
+            --exclude='server' \
+            --exclude='package' \
+            --exclude='docs' \
+            --exclude='reproduction' \
+            --exclude='scripts' \
+            --exclude='**/*.md' \
+            ./ dist/ || true
+
+      - name: FTP Health Check (FTPS)
+        if: steps.ftp_vars.outputs.protocol == 'ftps'
+        env:
+          FTP_HOST: ${{ secrets.FTP_HOST }}
+          FTP_USER: ${{ secrets.FTP_USER }}
+          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+          FTP_PORT: ${{ steps.ftp_vars.outputs.port }}
+        run: |
+          sudo apt-get update && sudo apt-get install -y lftp
+          set -e
+          PORT=${FTP_PORT:-21}
+          echo "Running FTP health check against ${FTP_HOST}:${PORT} (debug enabled)"
+          # Run lftp in debug mode and capture both stdout and stderr to ftp-healthcheck.log.
+          # Make the command non-fatal (|| true) so the job can upload the debug log even on auth failures.
+          lftp -d -p "$PORT" -e "set net:max-retries 1; set net:timeout 20; set ftp:ssl-force true; set ftp:ssl-protect-data true; set ssl:verify-certificate true; set cmd:fail-exit true; open -u $FTP_USER,$FTP_PASSWORD $FTP_HOST; pwd; ls; bye" 2>&1 | tee ftp-healthcheck.log || true
+          echo "FTP health check finished (debug log: ftp-healthcheck.log)"
+
+      - name: Upload healthcheck & manifests
+        if: steps.ftp_vars.outputs.protocol == 'ftps'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ftp-scan-report
+          path: |
+            ftp-healthcheck.log
+
+      - name: SFTP Deploy (public)
+        if: steps.ftp_vars.outputs.protocol == 'sftp'
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.FTP_HOST }}
+          username: ${{ secrets.FTP_USER }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          port: ${{ steps.ftp_vars.outputs.port }}
+          source: "./dist/*"
+          target: ${{ steps.ftp_vars.outputs.server_dir }}
+
+      - name: FTP Deploy (public, using lftp)
+        if: steps.ftp_vars.outputs.protocol != 'sftp'
+        env:
+          FTP_HOST: ${{ secrets.FTP_HOST }}
+          FTP_USER: ${{ secrets.FTP_USER }}
+          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+          FTP_PORT: ${{ steps.ftp_vars.outputs.port }}
+          SERVER_DIR: ${{ steps.ftp_vars.outputs.server_dir }}
+        run: |
+          sudo apt-get update && sudo apt-get install -y lftp
+          PORT=${FTP_PORT:-21}
+          echo "Deploying ./dist to ${SERVER_DIR} on ${FTP_HOST}:${PORT}"
+          lftp -u "${FTP_USER}","${FTP_PASSWORD}" -p "$PORT" "${FTP_HOST}" -e "set ftp:ssl-force true; set ftp:ssl-protect-data true; set ssl:verify-certificate false; mirror -R --delete --parallel=4 --verbose ./dist ${SERVER_DIR}; bye"
+
+
+# Secrets to set: FTP_HOST, FTP_USER, FTP_PASSWORD
+# Optional secrets: FTP_SERVER_DIR (preferred) or FTP_PUBLIC_DIR, FTP_PORT, FTP_PROTOCOL (default 'ftps')
+# Optional hardening: ALLOW_PRODUCTION_DEPLOY (require manual approval)
+# Alternative: use SSH key or other deployment action if host requires it.
