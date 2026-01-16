@@ -36,10 +36,12 @@ ollama run llama2 --name my-llama
 You can test your local Ollama/LM Studio server quickly using the included script:
 
 ```bash
-# From the repo root:
+# From the repo root (Node wrapper with retries):
 npm run check:ollama
+# or use the original shell script directly:
+npm run check:ollama:sh
 # or point to a different URL:
-./scripts/check-ollama.sh http://localhost:11434
+node scripts/check-ollama.js http://localhost:11434
 ```
 
 The script probes common endpoints (`/v1/models`, `/models`, `/health`, `/`) and prints a short response preview when successful.
