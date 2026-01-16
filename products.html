@@ -1,16 +1,78 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
-    <meta http-equiv="refresh" content="0; url=https://ace1.in/shoes.html">
-    <meta name="robots" content="noindex,follow">
-    <meta name="description" content="Redirecting to Ace#1 shoes.">
-    <link rel="canonical" href="https://ace1.in/shoes.html">
-    <title>Ace#1 | Redirecting…</title>
+    <title>Ace#1 | Products</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/reviews.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
     <div id="dev-banner">This website is under development</div>
-    <p>Redirecting to <a href="shoes.html">shoes</a>...</p>
+    <nav class="navbar" id="navbar">
+        <!-- ...existing nav markup... -->
+    </nav>
+    <main>
+        <section class="products-section">
+            <h1>Our Products</h1>
+            <div id="products-grid" class="products-grid"></div>
+        </section>
+    </main>
+    <script src="js/supabase-config.js"></script>
+    <script src="js/ecommerce-backend.js"></script>
+    <script src="js/products.js"></script>
+    <script>
+    // Render products with price and buy/checkout buttons
+    document.addEventListener('DOMContentLoaded', async () => {
+        const grid = document.getElementById('products-grid');
+        if (!window.productFilterManager) {
+            window.productFilterManager = new ProductFilterManager();
+            await window.productFilterManager.init();
+        }
+        const products = window.productFilterManager.products;
+        if (!products.length) {
+            grid.innerHTML = '<p>No products found.</p>';
+            return;
+        }
+        grid.innerHTML = products.map(product => {
+            const price = (product.price_cents / 100).toLocaleString('en-IN', { style: 'currency', currency: 'INR' });
+            return `
+            <div class="product-card">
+                <img src="${product.product_images?.[0]?.storage_path || 'images/product-placeholder.svg'}" alt="${product.name}" class="product-img" />
+                <h2 class="product-title">${product.name}</h2>
+                <p class="product-price">${price}</p>
+                <button class="buy-now-btn" data-id="${product.id}">Buy Now</button>
+                <button class="checkout-btn" data-id="${product.id}">Checkout</button>
+            </div>
+            `;
+        }).join('');
+        grid.querySelectorAll('.buy-now-btn').forEach(btn => {
+            btn.addEventListener('click', async e => {
+                const id = btn.getAttribute('data-id');
+                const result = await window.ecommerceBackend.addToCart(id, 1);
+                if (result.success) {
+                    alert('Added to cart!');
+                } else {
+                    alert(result.error || 'Failed to add to cart');
+                }
+            });
+        });
+        grid.querySelectorAll('.checkout-btn').forEach(btn => {
+            btn.addEventListener('click', async e => {
+                // Simple: add to cart, then redirect to checkout
+                const id = btn.getAttribute('data-id');
+                const result = await window.ecommerceBackend.addToCart(id, 1);
+                if (result.success) {
+                    window.location.href = 'checkout.html';
+                } else {
+                    alert(result.error || 'Failed to add to cart');
+                }
+            });
+        });
+    });
+    </script>
 </body>
 </html>

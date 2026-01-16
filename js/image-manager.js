@@ -153,6 +153,7 @@ class WebsiteImageManager {
             </div>
         `;
 
+        // TODO: Sanitize html before injecting
         container.innerHTML = html;
         this.attachEventListeners();
     }
@@ -162,6 +163,7 @@ class WebsiteImageManager {
     // ===================================
     async scanImages(category) {
         const container = document.getElementById(`images-${category}`);
+        // SAFE: Static HTML
         container.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i> Scanning images...</div>';
 
         try {
@@ -208,6 +210,7 @@ class WebsiteImageManager {
 
         } catch (error) {
             console.error('Scan error:', error);
+            // SAFE: Static HTML
             container.innerHTML = '<p class="error">Failed to scan images. Please try again.</p>';
         }
     }
@@ -217,6 +220,7 @@ class WebsiteImageManager {
     // ===================================
     renderImagesGrid(images, category, container) {
         if (!images || images.length === 0) {
+            // SAFE: Static HTML
             container.innerHTML = '<p class="no-images">No images found in this category</p>';
             return;
         }
@@ -252,6 +256,7 @@ class WebsiteImageManager {
         });
 
         html += '</div>';
+        // TODO: Sanitize html before injecting
         container.innerHTML = html;
     }
 
@@ -271,7 +276,8 @@ class WebsiteImageManager {
         const modal = document.getElementById('edit-modal');
         const preview = document.getElementById('edit-preview');
         
-        preview.innerHTML = `<img src="${imageData.src}" alt="${imageData.alt}">`;
+        // TODO: Sanitize imageData.src and imageData.alt before injecting
+        preview.innerHTML = `<img src="${escapeHTML(imageData.src)}" alt="${escapeHTML(imageData.alt)}">`;
         document.getElementById('edit-url').value = imageData.src || '';
         document.getElementById('edit-alt').value = imageData.alt || '';
         document.getElementById('edit-selector').value = imageData.selector || '';

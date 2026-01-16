@@ -1179,7 +1179,8 @@
             function closeLightbox() {
                 lightbox.classList.remove('active');
                 document.body.style.overflow = '';
-                lightboxContent.innerHTML = '';
+                // SAFE: No user content injected
+                lightboxContent.textContent = '';
                 currentMode = null;
             }
 
@@ -1194,13 +1195,15 @@
                 const title = item.getAttribute('data-title') || '';
                 const desc = item.getAttribute('data-desc') || '';
 
-                lightboxContent.innerHTML = '';
+                // SAFE: No user content injected
+                lightboxContent.textContent = '';
                 const img = document.createElement('img');
                 img.src = imgSrc;
                 img.alt = title;
                 img.className = 'lightbox-image';
                 lightboxContent.appendChild(img);
-                lightboxCaption.innerHTML = title ? `<strong>${title}</strong>${desc ? '<br>' + desc : ''}` : '';
+                // TODO: Sanitize title and desc before injecting
+                lightboxCaption.innerHTML = title ? `<strong>${escapeHTML(title)}</strong>${desc ? '<br>' + escapeHTML(desc) : ''}` : '';
                 lightboxCounter.textContent = `${index + 1} / ${photoItems.length}`;
 
                 // Show/hide nav buttons
@@ -1216,6 +1219,7 @@
                     if (!videoId) return;
 
                     currentMode = 'video';
+                    // TODO: Sanitize content before injecting
                     lightboxContent.innerHTML = `
                         <iframe 
                             src="https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0" 
@@ -1226,7 +1230,8 @@
                         </iframe>`;
                     
                     const title = this.getAttribute('data-title') || '';
-                    lightboxCaption.innerHTML = title ? `<strong>${title}</strong>` : '';
+                    // TODO: Sanitize title before injecting
+                    lightboxCaption.innerHTML = title ? `<strong>${escapeHTML(title)}</strong>` : '';
                     lightboxCounter.textContent = '';
                     
                     // Hide nav for videos

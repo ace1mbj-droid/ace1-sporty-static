@@ -33,6 +33,7 @@ const IGNORE_DIRS = new Set([
 
 function isExternalRef(ref) {
   return (
+    // TODO: Ensure strict URL scheme validation to prevent incomplete checks
     ref.startsWith('http://') ||
     ref.startsWith('https://') ||
     ref.startsWith('mailto:') ||

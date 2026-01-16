@@ -8,14 +8,23 @@ This document explains how to install a local LLM endpoint (Ollama or LM Studio)
 - Click **Install** and then **Restart VS Code** if prompted
 
 ## 2) Run a local server (Ollama example)
-- Install Ollama and run a model locally (example):
+- Install Ollama and run a model locally (recommended example):
 
 ```bash
-# install ollama (macOS Linux):
-# https://docs.ollama.com
-# start the server and run a model (example)
-ollama run llama2 --name my-llama
-# server listens on http://localhost:11434
+# Install Ollama (macOS / Linux) — follow https://docs.ollama.com
+# Pull a model (example: CodeLlama 7b is M1/M2 friendly, ~4GB):
+ollama pull codellama:7b
+# Run the pulled model as a local service:
+ollama run codellama:7b --name codellama
+# Alternative: run another model (e.g., Llama2) if you have it:
+# ollama run llama2 --name my-llama
+
+# Quick checks:
+# list running models/services
+ollama ps
+# list downloaded images
+ollama images
+# The Ollama server listens on http://localhost:11434 by default
 ```
 
 ## 3) Configure workspace
@@ -69,9 +78,38 @@ Continue is an excellent open-source AI code assistant for VS Code that works we
 
 - Pull the model locally and run it with Ollama:
 ```bash
-ollama pull codellama:7b-code
-ollama run codellama:7b-code --name codellama
+# Example: CodeLlama 7b (fits M1/M2, ~4GB)
+ollama pull codellama:7b
+ollama run codellama:7b --name codellama
 ```
+
+### Install the repo Continue config automatically
+To place the sample Continue config from this repo into your user Continue config (backs up any existing config):
+
+```bash
+# Prefer to verify Ollama is running (recommended):
+npm run continue:config
+# If Ollama is not running and you still want to install the config:
+# (force will skip the Ollama check and install the config anyway)
+npm run continue:config -- --force
+# or
+bash scripts/setup-continue-local.sh --force
+```
+
+After running the script, restart VS Code and open the Continue sidebar; it should show "CodeLlama (local)" and avoid Hub billing.
+
+## Optional: automated start helper
+If you want a convenience script that pulls and starts the model for you (backgrounded) use:
+
+```bash
+# Start or pull+start the default model (codellama:7b) in background
+npm run start:ollama
+# Or specify model and name explicitly
+./scripts/start-ollama.sh codellama:7b codellama
+```
+
+The helper tries to pull the model if missing, starts it in the background, and waits for the HTTP API to respond. Check `/tmp/ollama-<name>.log` for logs if something fails.
+
 
 - Use Continue commands (highlight code → Cmd+L to autocomplete, or run `/edit` to refactor).
 

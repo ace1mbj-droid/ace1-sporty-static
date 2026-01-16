@@ -11,7 +11,9 @@
     "check:rls": "node scripts/verify_rls.js",
     "send:test-email": "node scripts/send_test_email.js",
     "check:ollama": "node scripts/check-ollama.js",
-    "check:ollama:sh": "bash scripts/check-ollama.sh"
+    "check:ollama:sh": "bash scripts/check-ollama.sh",
+    "continue:config": "bash scripts/setup-continue-local.sh",
+    "start:ollama": "bash scripts/start-ollama.sh"
   },
   "devDependencies": {
     "@playwright/test": "^1.36.0",
