@@ -7,10 +7,11 @@
 ☐ Read: ACE1-IN-DEPLOYMENT.md (complete guide)
 
 ☐ FTP credentials ready:
-  - Host:  (or provider's FTP)
-  - Username: _______________
-  - Password: _______________
-  - Port: 21 or 22
+  - Host: 185.224.138.135
+  - Username: <redacted: FTP_USERNAME>
+  - Password: (set via secret `FTP_PASSWORD`)
+  - Port: 21
+  - Protocol: FTP
 
 ☐ SSL/HTTPS working on ace1.in
 
