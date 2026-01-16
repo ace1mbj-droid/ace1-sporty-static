@@ -10,7 +10,8 @@
     "check:links": "node scripts/check-links.js",
     "check:rls": "node scripts/verify_rls.js",
     "send:test-email": "node scripts/send_test_email.js",
-    "check:ollama": "bash scripts/check-ollama.sh"
+    "check:ollama": "node scripts/check-ollama.js",
+    "check:ollama:sh": "bash scripts/check-ollama.sh"
   },
   "devDependencies": {
     "@playwright/test": "^1.36.0",
