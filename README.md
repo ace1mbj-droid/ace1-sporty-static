@@ -203,9 +203,11 @@ GitHub & Supabase: Full setup from scratch
 	export SUPABASE_DB_URL="postgres://user:pass@host:port/postgres"
 	export RZ_KEY="<razorpay key_id>"
 	export RZ_SECRET="<razorpay key_secret>"
-	export FTP_HOST="<ftp.host.net>"
-	export FTP_USER="<ftpuser>"
-	export FTP_PASSWORD="<ftppassword>"
+	# FTP settings (do not store plaintext passwords in the repo)
+	export FTP_HOST="185.224.138.135"
+	export FTP_USER="<redacted: FTP_USERNAME>"
+	# Set `FTP_PASSWORD` as a repository/CI secret; do not store it in plaintext
+	# export FTP_PASSWORD="<set-in-secrets>"
 
 	./scripts/setup_github_secrets.sh
 	```
