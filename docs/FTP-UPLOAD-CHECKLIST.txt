@@ -75,7 +75,7 @@
 **FTP Server Details**
 
 FTP_HOST: 185.224.138.135
-FTP_USER: <redacted: FTP_USERNAME>
+FTP_USER: u788576096.ace1.in
 FTP_PASSWORD: (set via secret `FTP_PASSWORD`)
 FTP_PORT: 21
 - Protocol: FTP
