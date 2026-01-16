@@ -844,10 +844,12 @@ class AdminPanel {
         const grid = document.getElementById('products-grid');
         
         if (this.products.length === 0) {
+            // SAFE: Static HTML
             grid.innerHTML = '<p style="text-align: center; padding: 40px; color: #666;">No products found. Add your first product!</p>';
             return;
         }
 
+        // TODO: Sanitize product fields before injecting
         grid.innerHTML = this.products.map(product => `
             <div class="product-admin-card">
                 <img src="${product.image_url || 'images/placeholder.jpg'}" 
@@ -1043,6 +1045,7 @@ class AdminPanel {
         }
 
         const label = category === 'shoes' ? 'Shoes' : 'Clothing';
+        // TODO: Sanitize visible before injecting
         note.innerHTML = visible
             ? `<strong>Public page:</strong> Visible (${publicCount} active product${publicCount === 1 ? '' : 's'}).`
             : `<strong>Public page:</strong> Hidden (no active products). Add at least 1 active ${label.toLowerCase()} product to show it on the website.`;
@@ -1060,10 +1063,12 @@ class AdminPanel {
         
         if (this.products.length === 0) {
             const categoryName = category ? category.charAt(0).toUpperCase() + category.slice(1) : '';
-            grid.innerHTML = `<p style="text-align: center; padding: 40px; color: #666;">No ${categoryName.toLowerCase()} products found. Add your first ${categoryName.toLowerCase()} product!</p>`;
+            // TODO: Sanitize categoryName before injecting
+            grid.innerHTML = `<p style="text-align: center; padding: 40px; color: #666;">No ${escapeHTML(categoryName.toLowerCase())} products found. Add your first ${escapeHTML(categoryName.toLowerCase())} product!</p>`;
             return;
         }
 
+        // TODO: Sanitize product fields before injecting
         grid.innerHTML = this.products.map(product => `
             <div class="product-admin-card">
                 <img src="${product.image_url || 'images/placeholder.jpg'}" 
@@ -1098,6 +1103,7 @@ class AdminPanel {
     escapeHtml(text) {
         const div = document.createElement('div');
         div.textContent = text;
+        // TODO: Sanitize content before returning
         return div.innerHTML;
     }
 
@@ -1129,10 +1135,12 @@ class AdminPanel {
         const tbody = document.getElementById('orders-table-body');
         
         if (this.orders.length === 0) {
+            // SAFE: Static HTML
             tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 40px;">No orders yet</td></tr>';
             return;
         }
 
+        // TODO: Sanitize order fields before injecting
         tbody.innerHTML = this.orders.map(order => `
             <tr>
                 <td>#${order.id}</td>
@@ -1215,12 +1223,14 @@ class AdminPanel {
                         const container = document.getElementById('history-body');
                         if (!container) return;
                         if (!data || data.length === 0) {
+                            // SAFE: Static HTML
                             container.innerHTML = '<div style="padding:16px; color:#666">No history records for this product.</div>';
                         } else {
                             const rows = data.map(r => {
                                 const lines = (r.change_diff || []).map(cd => `\n  • ${cd.label}\n      before: ${cd.before}\n      after: ${cd.after}`).join('');
                                 return `<div style="border-bottom:1px solid #eee; padding:12px 0;"><div style="font-weight:600; display:flex; justify-content:space-between; align-items:center;"><div>${r.actor_email || 'unknown'}</div><div style="color:#888; font-size:12px;">${new Date(r.change_time).toLocaleString()}</div></div><div style="margin-top:8px;color:#444;">${this.escapeHtml(r.change_summary || '(no summary)')}</div><pre style="background:#f8f8fb; padding:10px; border-radius:6px; margin-top:8px; white-space:pre-wrap;">${this.escapeHtml(lines)}</pre></div>`;
                             }).join('');
+                            // TODO: Sanitize rows before injecting
                             container.innerHTML = rows;
                         }
 
@@ -1233,6 +1243,7 @@ class AdminPanel {
             }
         } else {
             document.getElementById('modal-title').textContent = 'Add New Product';
+            // SAFE: Static HTML
             document.getElementById('image-preview').innerHTML = '<span style="color: #999;">Image preview will appear here</span>';
             // Set primary category if provided
             if (primaryCategory) {
@@ -1320,6 +1331,7 @@ class AdminPanel {
 
         const close = () => {
             dropdown.hidden = true;
+            // SAFE: Empty string
             dropdown.innerHTML = '';
             activeIndex = -1;
             lastItems = [];
@@ -1334,6 +1346,7 @@ class AdminPanel {
                 return;
             }
 
+            // TODO: Sanitize lastItems before injecting
             dropdown.innerHTML = lastItems
                 .slice(0, 8)
                 .map((txt, idx) => `<button type="button" class="ace1-inline-suggest-item" data-idx="${idx}">${this.escapeHtml(txt)}</button>`)
@@ -1510,6 +1523,7 @@ class AdminPanel {
 
         // Preserve the placeholder option
         const placeholder = select.querySelector('option[value=""]')?.outerHTML || '<option value="">-- Select Category --</option>';
+        // TODO: Sanitize placeholder before injecting
         select.innerHTML = placeholder;
 
         try {
@@ -1585,6 +1599,7 @@ class AdminPanel {
     updateImagePreview(url) {
         const preview = document.getElementById('image-preview');
         // Clear previous preview content
+        // SAFE: Empty string
         preview.innerHTML = "";
         if (url) {
             const img = document.createElement("img");
@@ -1862,10 +1877,12 @@ class AdminPanel {
                 console.warn('Error recording history', err);
             }
             if (!changes.length) {
+                // SAFE: Static HTML
                 summaryEl.innerHTML = '<div style="padding:10px">No visible changes detected.</div>';
             } else {
                 // Create side-by-side table: field | before | after
                 const rows = changes.map(c => `<tr><td style="padding:8px; border-bottom:1px solid #eee; font-weight:600; width:33%">${this.escapeHtml(c.label)}</td><td style="padding:8px; border-bottom:1px solid #eee; width:33%; color:#777">${this.escapeHtml(String(c.before))}</td><td style="padding:8px; border-bottom:1px solid #eee; width:34%; color:#222">${this.escapeHtml(String(c.after))}</td></tr>`).join('');
+                // TODO: Sanitize rows before injecting
                 summaryEl.innerHTML = `<div style="overflow:auto"><table style="width:100%; border-collapse:collapse;"><thead><tr><th style="text-align:left; padding:8px; border-bottom:2px solid #ddd;">Field</th><th style="text-align:left; padding:8px; border-bottom:2px solid #ddd;">Before</th><th style="text-align:left; padding:8px; border-bottom:2px solid #ddd;">After</th></tr></thead><tbody>${rows}</tbody></table></div>`;
             }
             document.getElementById('change-summary-modal').classList.add('active');
@@ -1987,6 +2004,7 @@ class AdminPanel {
     renderInventoryRows(rows) {
         const container = document.getElementById('inventory-rows');
         if (!container) return;
+        // SAFE: Empty string
         container.innerHTML = '';
         if (!rows || rows.length === 0) {
             this.addInventoryRow();
@@ -2003,6 +2021,7 @@ class AdminPanel {
         row.style.display = 'flex';
         row.style.gap = '8px';
         row.style.marginBottom = '8px';
+        // TODO: Sanitize row content before injecting
         row.innerHTML = `
             <input type="text" class="inv-size" placeholder="Size (e.g. M, 9)" value="${this.escapeHtml(size)}" style="flex:1; padding:6px" />
             <input type="number" class="inv-stock" placeholder="Stock" value="${stock}" min="0" style="width:100px; padding:6px" />
@@ -2280,7 +2299,9 @@ class AdminPanel {
         try {
             // Show loading state
             const downloadBtn = document.querySelector('#export-orders-modal .btn-success');
+            // TODO: Sanitize originalText if reused
             const originalText = downloadBtn.innerHTML;
+            // SAFE: Static HTML
             downloadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
             downloadBtn.disabled = true;
             
@@ -2328,6 +2349,7 @@ class AdminPanel {
             
             if (!orders || orders.length === 0) {
                 alert('No orders found for the selected criteria');
+                // TODO: Sanitize originalText if reused
                 downloadBtn.innerHTML = originalText;
                 downloadBtn.disabled = false;
                 return;
@@ -2443,6 +2465,7 @@ class AdminPanel {
             XLSX.writeFile(wb, filename);
             
             // Reset button
+            // TODO: Sanitize originalText if reused
             downloadBtn.innerHTML = originalText;
             downloadBtn.disabled = false;
             
@@ -2460,6 +2483,7 @@ class AdminPanel {
             // Reset button
             const downloadBtn = document.querySelector('#export-orders-modal .btn-success');
             if (downloadBtn) {
+                // SAFE: Static HTML
                 downloadBtn.innerHTML = '<i class="fas fa-download"></i> Download Excel';
                 downloadBtn.disabled = false;
             }
@@ -2686,10 +2710,12 @@ class AdminPanel {
         const tbody = document.getElementById('users-table-body');
         
         if (this.users.length === 0) {
+            // SAFE: Static HTML
             tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 40px;">No users found</td></tr>';
             return;
         }
 
+        // TODO: Sanitize user fields before injecting
         tbody.innerHTML = this.users.map(user => `
             <tr>
                 <td>${user.email}</td>
@@ -2878,7 +2904,9 @@ class AdminPanel {
             }
 
             const submitBtn = document.getElementById('user-reset-password-btn');
+            // TODO: Sanitize orig if reused
             const orig = submitBtn ? submitBtn.innerHTML : null;
+            // SAFE: Static HTML
             if (submitBtn) { submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Resetting...'; submitBtn.disabled = true; }
 
             // Delegate actual reset to server-side endpoint which must run with service_role privileges
@@ -2903,6 +2931,7 @@ class AdminPanel {
             document.getElementById('admin-new-password').value = '';
             document.getElementById('admin-confirm-new-password').value = '';
 
+            // TODO: Sanitize orig if reused
             if (submitBtn) { submitBtn.innerHTML = orig || 'Reset Password'; submitBtn.disabled = false; }
             if (window.showNotification) window.showNotification('Password reset successfully', 'success');
 
@@ -2910,6 +2939,7 @@ class AdminPanel {
             console.error('Reset user password failed:', err);
             this.showInlineError('user-form-error', err.message || 'Reset failed');
             const submitBtn = document.getElementById('user-reset-password-btn');
+            // SAFE: Static HTML
             if (submitBtn) { submitBtn.innerHTML = '<i class="fas fa-trash"></i> Reset Password'; submitBtn.disabled = false; }
         }
     }
@@ -3069,6 +3099,7 @@ class AdminPanel {
         if (!tbody) return;
 
         if (!this.revocations || this.revocations.length === 0) {
+            // SAFE: Static HTML
             tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 40px; color:#666;">No revocations found</td></tr>';
             return;
         }
@@ -3079,6 +3110,7 @@ class AdminPanel {
             return `${t.slice(0,8)}…${t.slice(-4)}`;
         };
 
+        // TODO: Sanitize revocation fields before injecting
         tbody.innerHTML = this.revocations.map(r => `
             <tr>
                 <td>${r.revoked_at ? new Date(r.revoked_at).toLocaleString('en-IN') : ''}</td>
@@ -3163,10 +3195,12 @@ class AdminPanel {
         const tbody = document.getElementById('logs-table-body');
         
         if (this.logs.length === 0) {
+            // SAFE: Static HTML
             tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 40px;">No logs found</td></tr>';
             return;
         }
 
+        // TODO: Sanitize log fields before injecting
         tbody.innerHTML = this.logs.map(log => `
             <tr>
                 <td>${new Date(log.timestamp).toLocaleString('en-IN')}</td>

@@ -1,0 +1,16 @@
+{
+  "name": "ace1-local-config",
+  "version": "1.0.0",
+  "models": [
+    {
+      "title": "CodeLlama",
+      "provider": "ollama",
+      "model": "codellama:7b"
+    }
+  ],
+  "tabAutocompleteModel": {
+    "title": "CodeLlama Autocomplete",
+    "provider": "ollama",
+    "model": "codellama:7b"
+  }
+}
