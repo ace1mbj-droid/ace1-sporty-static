@@ -39,6 +39,15 @@
         "copilot/oswe-vscode-prime"
       ]
     }
+  },
+
+  // Workspace AI provider defaults (local Ollama/LM Studio)
+  "ai.provider": "ollama",
+  "ai.ollama.serverUrl": "http://localhost:11434",
+  "ai.lmStudio.serverUrl": "http://localhost:11435",
+  "ai.enableFor": {
+    "github": true,
+    "supabase": true
   }
 }
 
