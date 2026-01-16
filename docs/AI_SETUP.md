@@ -44,6 +44,39 @@ npm run check:ollama:sh
 node scripts/check-ollama.js http://localhost:11434
 ```
 
+## 6) VS Code Task (Run from Command Palette)
+A convenience Task is included so you can run the check directly from VS Code's Command Palette:
+
+- Open Command Palette (Cmd+Shift+P) → `Tasks: Run Task` → select `Check Ollama`.
+- Or open the `Terminal` → `Run Task...` and pick `Check Ollama`.
+
+This is wired to `npm run check:ollama` and will show output in the shared terminal panel.
+
+## 7) Continue (optional, local models)
+Continue is an excellent open-source AI code assistant for VS Code that works well with local models. Quick notes:
+
+- Install the Continue extension via the Extensions pane (Cmd+Shift+X) and pin its sidebar.
+- Configure models in Continue's `~/.continue/config.json` (Cmd+Shift+P → "Continue: Open config.json").
+- Example config to use an Ollama-hosted model:
+
+```json
+{
+  "models": [
+    { "title": "CodeLlama", "provider": "ollama", "model": "codellama:7b-code" }
+  ]
+}
+```
+
+- Pull the model locally and run it with Ollama:
+```bash
+ollama pull codellama:7b-code
+ollama run codellama:7b-code --name codellama
+```
+
+- Use Continue commands (highlight code → Cmd+L to autocomplete, or run `/edit` to refactor).
+
+> Security note: Continue and local models avoid cloud API limits and keep your code on-device. Don't store API keys in repo files.
+
 The script probes common endpoints (`/v1/models`, `/models`, `/health`, `/`) and prints a short response preview when successful.
 > **Security:** Do NOT commit real API keys or secrets. Set them via your user settings or environment variables.
 
