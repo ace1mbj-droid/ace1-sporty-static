@@ -205,7 +205,7 @@ GitHub & Supabase: Full setup from scratch
 	export RZ_SECRET="<razorpay key_secret>"
 	# FTP settings (do not store plaintext passwords in the repo)
 	export FTP_HOST="185.224.138.135"
-	export FTP_USER="<redacted: FTP_USERNAME>"
+		export FTP_USER="u788576096.ace1.in"
 	# Set `FTP_PASSWORD` as a repository/CI secret; do not store it in plaintext
 	# export FTP_PASSWORD="<set-in-secrets>"
 
