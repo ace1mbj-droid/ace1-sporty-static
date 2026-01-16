@@ -62,6 +62,16 @@
 			"problemMatcher": []
 		},
 		{
+			"label": "Check Ollama",
+			"type": "shell",
+			"command": "npm run check:ollama",
+			"presentation": {
+				"reveal": "always",
+				"panel": "shared"
+			},
+			"problemMatcher": []
+		},
+		{
 			"label": "Playwright: Public Zero Console",
 			"type": "shell",
 			"command": "E2E_BASE_URL=\"${input:e2eBaseUrl}\" npx playwright test tests/e2e/public-zero-console.spec.js --workers=1 --reporter=list",
