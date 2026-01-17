@@ -1,0 +1,115 @@
+---- Resolving host address...
+---- IPv6 is not supported or configured
+---- 1 address found: 185.224.138.135
+ftp://u788576096.adminace1:2TrT0bycokZJrWU?@ftp.ace1.in
+---- Connecting to ftp.ace1.in (185.224.138.135) port 21
+<--- 220 FTP Server ready.
+---> FEAT
+<--- 211-Features:
+<---  AUTH TLS
+<---  CCC
+<---  CLNT
+<---  EPRT
+<---  EPSV
+<---  HOST
+<---  LANG zh-CN;fr-FR;bg-BG;it-IT;ko-KR;ru-RU;en-US;ja-JP;zh-TW;es-ES
+<---  MDTM
+<---  MFF modify;UNIX.group;UNIX.mode;
+<---  MFMT
+<---  MLST modify*;perm*;size*;type*;unique*;UNIX.group*;UNIX.groupname*;UNIX.mode*;UNIX.owner*;UNIX.ownername*;
+<---  PBSZ
+<---  PROT
+<---  REST STREAM
+<---  SIZE
+<---  SSCN
+<---  TVFS
+<---  UTF8
+<--- 211 End
+---> AUTH TLS
+<--- 234 AUTH TLS successful
+Loaded 146 CAs
+Loaded 0 CRLs
+---> CLNT lftp/4.9.2
+WARNING: Certificate verification: certificate common name doesn't match requested host name ‘ftp.ace1.in’ (5E:28:ED:D1:D9:69:2C:74:46:03:F4:B3:DB:0D:BE:C8:B6:4F:D9:90)
+<--- 200 OK
+---> LANG
+<--- 200 Using default language en_US.UTF-8
+---> OPTS UTF8 ON
+<--- 200 UTF8 set to on
+---> HOST ftp.ace1.in
+<--- 504 ftp.ace1.in: Unknown hostname provided
+---> USER u788576096.adminace1
+<--- 331 Password required for u788576096.adminace1
+---> PASS 2TrT0bycokZJrWU?
+<--- 230 User u788576096.adminace1 logged in
+---> OPTS MLST modify;perm;size;type;UNIX.group;UNIX.mode;UNIX.owner;
+<--- 200 MLST OPTS modify;perm;size;type;UNIX.group;UNIX.mode;UNIX.owner;
+---> PWD
+<--- 257 "/public_html" is the current directory
+---> PBSZ 0
+<--- 200 PBSZ 0 successful
+---> PROT P
+<--- 200 Protection set to Private
+---> PASV
+<--- 227 Entering Passive Mode (185,224,138,135,8,208).
+---- Connecting data socket to (185.224.138.135) port 2256
+---- Data connection established
+---> LIST
+<--- 150 Opening ASCII mode data connection for file list
+Loaded 146 CAs
+Loaded 0 CRLs
+WARNING: Certificate verification: certificate common name doesn't match requested host name ‘ftp.ace1.in’ (5E:28:ED:D1:D9:69:2C:74:46:03:F4:B3:DB:0D:BE:C8:B6:4F:D9:90)
+---- Got EOF on data connection
+---- Closing data socket
+drwxr-xr-x   8 u788576096.adminace1 o52339043     4096 Jan 17 05:11 .
+drwxr-xr-x  14 u788576096.adminace1 o52339043     4096 Jan 17 05:11 ..
+-rw-r--r--   1 u788576096.adminace1 o52339043    17377 Jan 17 05:11 about.html
+-rw-r--r--   1 u788576096.adminace1 o52339043    14040 Jan 17 05:11 accessories.html
+-rw-r--r--   1 u788576096.adminace1 o52339043    87496 Jan 17 05:11 admin.html
+-rw-r--r--   1 u788576096.adminace1 o52339043    15698 Jan 17 05:11 admin-login.html
+-rw-r--r--   1 u788576096.adminace1 o52339043     1121 Jan 17 05:11 apple-touch-icon.svg
+-rw-r--r--   1 u788576096.adminace1 o52339043     7410 Jan 17 05:11 auth-callback.html
+-rw-r--r--   1 u788576096.adminace1 o52339043    17399 Jan 17 05:11 auth-test.html
+-rw-r--r--   1 u788576096.adminace1 o52339043       29 Jan 17 05:11 cache-version.txt
+-rw-r--r--   1 u788576096.adminace1 o52339043      520 Jan 17 05:11 check_inventory.sql
+-rw-r--r--   1 u788576096.adminace1 o52339043    19731 Jan 17 05:11 checkout.html
+-rw-r--r--   1 u788576096.adminace1 o52339043    16826 Jan 17 05:11 clothing.html
+-rw-r--r--   1 u788576096.adminace1 o52339043    13783 Jan 17 05:11 contact.html
+drwxr-xr-x   4 u788576096.adminace1 o52339043     4096 Jan 17 05:11 .continue
+drwxr-xr-x   2 u788576096.adminace1 o52339043     4096 Jan 17 05:11 css
+-rw-r--r--   1 u788576096.adminace1 o52339043    19037 Jan 17 05:11 data-deletion.html
+drwxr-xr-x   2 u788576096.adminace1 o52339043     4096 Jan 17 05:11 emails
+-rw-r--r--   1 u788576096.adminace1 o52339043    23572 Jan 17 05:11 faq.html
+-rw-r--r--   1 u788576096.adminace1 o52339043      834 Jan 17 05:11 favicon.svg
+-rw-r--r--   1 u788576096.adminace1 o52339043    11376 Jan 17 05:11 forgot-password.html
+-rw-r--r--   1 u788576096.adminace1 o52339043     4248 Jan 17 05:11 .htaccess
+drwxr-xr-x   2 u788576096.adminace1 o52339043     4096 Jan 17 05:12 images
+-rw-r--r--   1 u788576096.adminace1 o52339043    58824 Jan 17 05:11 index.html
+drwxr-xr-x   2 u788576096.adminace1 o52339043     4096 Jan 17 05:12 js
+-rw-r--r--   1 u788576096.adminace1 o52339043    11432 Jan 17 05:11 login.html
+-rw-r--r--   1 u788576096.adminace1 o52339043     1532 Jan 17 05:11 manifest.json
+-rw-r--r--   1 u788576096.adminace1 o52339043   377649 Jan 17 05:11 navbar-after-circle.png
+-rw-r--r--   1 u788576096.adminace1 o52339043    15266 Jan 17 05:11 order-confirmation.html
+-rw-r--r--   1 u788576096.adminace1 o52339043     1347 Jan 17 05:11 playwright.config.js
+-rw-r--r--   1 u788576096.adminace1 o52339043   129987 Jan 17 05:11 preview-index.png
+-rw-r--r--   1 u788576096.adminace1 o52339043    21226 Jan 17 05:11 privacy-policy.html
+-rw-r--r--   1 u788576096.adminace1 o52339043   383838 Jan 17 05:11 product-card-after-fix.png
+-rw-r--r--   1 u788576096.adminace1 o52339043     3427 Jan 17 05:11 products.html
+-rw-r--r--   1 u788576096.adminace1 o52339043    12979 Jan 17 05:11 register.html
+-rw-r--r--   1 u788576096.adminace1 o52339043       61 Jan 17 05:11 robots.txt
+-rw-r--r--   1 u788576096.adminace1 o52339043    25177 Jan 17 05:11 SECURITY_AUDIT_REPORT.html
+-rw-r--r--   1 u788576096.adminace1 o52339043    20592 Jan 17 05:11 shoes.html
+-rw-r--r--   1 u788576096.adminace1 o52339043     1886 Jan 17 05:11 sitemap.xml
+-rw-r--r--   1 u788576096.adminace1 o52339043    18526 Jan 17 05:11 size-guide.html
+-rw-r--r--   1 u788576096.adminace1 o52339043    17308 Jan 17 05:11 technology.html
+-rw-r--r--   1 u788576096.adminace1 o52339043      166 Jan 17 05:11 temp_query.sql
+-rw-r--r--   1 u788576096.adminace1 o52339043    14674 Jan 17 05:11 terms-of-service.html
+drwxr-xr-x   2 u788576096.adminace1 o52339043     4096 Jan 17 05:11 test-results-ci
+-rw-r--r--   1 u788576096.adminace1 o52339043    18544 Jan 17 05:11 update-password.html
+-rw-r--r--   1 u788576096.adminace1 o52339043    17408 Jan 17 05:11 user-profile.html
+-rw-r--r--   1 u788576096.adminace1 o52339043     5170 Jan 17 05:11 web.config
+-rw-r--r--   1 u788576096.adminace1 o52339043     3073 Jan 17 05:11 welcome.html
+<--- 226 Transfer complete
+---> QUIT
+<--- 221 Goodbye.
+---- Closing control socket
