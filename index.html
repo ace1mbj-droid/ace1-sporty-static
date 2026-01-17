@@ -762,9 +762,74 @@
                 height: 140px;
             }
         }
+
+    </style>
+
+    <style>
+        /* Page-specific index styles — inspired tone only (original implementation) */
+        .index-home .hero-section {
+            display: flex;
+            align-items: center;
+            min-height: 68vh;
+            padding: 100px 0;
+            background-position: center;
+            color: #fff;
+            background-blend-mode: multiply;
+        }
+        .index-home .hero-content {
+            max-width: 980px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 360px;
+            gap: 40px;
+            align-items: center;
+        }
+        .index-home .hero-text { text-align: left; }
+        .index-home .hero-eyebrow {
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.85rem;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.92);
+            margin-bottom: 12px;
+            opacity: 0.95;
+        }
+        .index-home .hero-title {
+            font-family: 'Bebas Neue', 'Poppins', sans-serif;
+            font-size: 4.2rem;
+            line-height: 1;
+            color: #fff;
+            margin: 0 0 18px;
+            font-weight: 700;
+        }
+        .index-home .hero-subtitle {
+            font-size: 1.15rem;
+            color: rgba(255,255,255,0.92);
+            margin-bottom: 22px;
+        }
+        .index-home .hero-cta {
+            display: inline-block;
+            background: #fff;
+            color: #111;
+            padding: 14px 26px;
+            border-radius: 8px;
+            font-weight: 700;
+            text-decoration: none;
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+        .index-home .hero-cta:focus,
+        .index-home .hero-cta:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+        }
+        @media (max-width: 900px) {
+            .index-home .hero-content { grid-template-columns: 1fr; padding: 0 20px; }
+            .index-home .hero-title { font-size: 3rem; }
+            .index-home .hero-subtitle { max-width: none; }
+        }
     </style>
 </head>
-<body>
+<body class="index-home">
     <div id="dev-banner">This website is under development</div>
 
     <!-- Navigation -->
@@ -806,11 +871,16 @@
     <!-- Main Content -->
     <main class="main-content">
         <!-- Hero Section -->
-        <section class="hero-section">
+        <section class="hero-section" role="region" aria-label="Homepage hero">
             <div class="hero-container">
                 <div class="hero-content">
-                    <h1 class="hero-title">Quality, Affordable Sneakers</h1>
-                    <p class="hero-subtitle">Built for walking, tracking, jogging, and long shifts — made for everyday comfort and middle-class value.</p>
+                    <div class="hero-text">
+                        <p class="hero-eyebrow">Designed for everyday movement</p>
+                        <h1 class="hero-title">Comfort, crafted</h1>
+                        <p class="hero-subtitle">Lightweight, durable sneakers for long days — made to move with you.</p>
+                        <a href="shoes.html" class="hero-cta" aria-label="Shop shoes at Ace#1">Shop New Arrivals</a>
+                    </div>
+                    <div class="hero-aside" aria-hidden="true"></div>
                 </div>
             </div>
         </section>
