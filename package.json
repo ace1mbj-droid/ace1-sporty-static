@@ -17,9 +17,13 @@
   },
   "devDependencies": {
     "@playwright/test": "^1.36.0",
-    "@supabase/supabase-js": "^2.89.0",
+    "@supabase/supabase-js": "^2.90.1",
     "http-server": "^14.1.1",
     "nodemailer": "^7.0.12",
-    "pg": "^8.11.0"
+    "pg": "^8.17.1"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.25.2",
+    "hono": "^4.11.4"
   }
 }
