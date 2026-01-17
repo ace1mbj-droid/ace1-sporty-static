@@ -13,7 +13,7 @@
     "orientationAngle": 0,
     "orientationType": "landscape-primary"
   },
-  "timestamp": "2026-01-17T07:10:09.710Z",
+  "timestamp": "2026-01-17T07:20:11.555Z",
   "url": "https://ace1.in/shoes.html",
   "toolOptions": {
     "runOnly": {
@@ -210,21 +210,6 @@
       "description": "Ensure <dt> and <dd> elements are contained by a <dl>",
       "help": "<dt> and <dd> elements must be contained by a <dl>",
       "helpUrl": "https://dequeuniversity.com/rules/axe/4.10/dlitem?application=axeAPI",
-      "nodes": []
-    },
-    {
-      "id": "duplicate-id-aria",
-      "impact": null,
-      "tags": [
-        "cat.parsing",
-        "wcag2a",
-        "wcag412",
-        "EN-301-549",
-        "EN-9.4.1.2"
-      ],
-      "description": "Ensure every id attribute value used in ARIA and in labels is unique",
-      "help": "IDs used in ARIA and labels must be unique",
-      "helpUrl": "https://dequeuniversity.com/rules/axe/4.10/duplicate-id-aria?application=axeAPI",
       "nodes": []
     },
     {
@@ -737,6 +722,58 @@
             }
           ],
           "impact": null,
+          "html": "<input type=\"range\" min=\"0\" max=\"6999\" value=\"15000\" id=\"price-slider\" aria-label=\"Price slider\" aria-valuemin=\"0\" aria-valuemax=\"15000\">",
+          "target": [
+            "#price-slider"
+          ]
+        },
+        {
+          "any": [],
+          "all": [
+            {
+              "id": "aria-allowed-attr",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "ARIA attributes are used correctly for the defined role"
+            }
+          ],
+          "none": [
+            {
+              "id": "aria-unsupported-attr",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "ARIA attribute is supported"
+            }
+          ],
+          "impact": null,
+          "html": "<select class=\"sort-select\" id=\"sort-select\" aria-label=\"Sort products\">",
+          "target": [
+            "#sort-select"
+          ]
+        },
+        {
+          "any": [],
+          "all": [
+            {
+              "id": "aria-allowed-attr",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "ARIA attributes are used correctly for the defined role"
+            }
+          ],
+          "none": [
+            {
+              "id": "aria-unsupported-attr",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "ARIA attribute is supported"
+            }
+          ],
+          "impact": null,
           "html": "<button class=\"quick-view-btn button-animated\" data-product-id=\"87d8c7f2-671a-4bd8-b536-198b31851539\" aria-label=\"Quick view Thz - F\" title=\"Quick View\">\n                                <i class=\"fas fa-eye\"></i>\n                            </button>",
           "target": [
             ".product-card[data-category=\"runners\"][data-animate=\"fade-up\"]:nth-child(1) > .product-image > .product-overlay > .overlay-actions > .quick-view-btn[aria-label=\"Quick view Thz - F\"][title=\"Quick View\"]"
@@ -1052,6 +1089,32 @@
           "html": "<a class=\"footer-login-btn admin\" href=\"admin-login.html\" aria-label=\"Admin login\">\n            <i class=\"fas fa-user-shield\"></i>\n            <span>Admin Login</span>\n        </a>",
           "target": [
             ".admin"
+          ]
+        },
+        {
+          "any": [],
+          "all": [
+            {
+              "id": "aria-allowed-attr",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "ARIA attributes are used correctly for the defined role"
+            }
+          ],
+          "none": [
+            {
+              "id": "aria-unsupported-attr",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "ARIA attribute is supported"
+            }
+          ],
+          "impact": null,
+          "html": "<button class=\"cart-close\" id=\"cart-close\" aria-label=\"Close cart\">\n                <i class=\"fas fa-times\"></i>\n            </button>",
+          "target": [
+            "#cart-close"
           ]
         }
       ]
@@ -1155,6 +1218,42 @@
           ],
           "none": [],
           "impact": null,
+          "html": "<input type=\"range\" min=\"0\" max=\"6999\" value=\"15000\" id=\"price-slider\" aria-label=\"Price slider\" aria-valuemin=\"0\" aria-valuemax=\"15000\">",
+          "target": [
+            "#price-slider"
+          ]
+        },
+        {
+          "any": [],
+          "all": [
+            {
+              "id": "aria-conditional-attr",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "ARIA attribute is allowed"
+            }
+          ],
+          "none": [],
+          "impact": null,
+          "html": "<select class=\"sort-select\" id=\"sort-select\" aria-label=\"Sort products\">",
+          "target": [
+            "#sort-select"
+          ]
+        },
+        {
+          "any": [],
+          "all": [
+            {
+              "id": "aria-conditional-attr",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "ARIA attribute is allowed"
+            }
+          ],
+          "none": [],
+          "impact": null,
           "html": "<button class=\"quick-view-btn button-animated\" data-product-id=\"87d8c7f2-671a-4bd8-b536-198b31851539\" aria-label=\"Quick view Thz - F\" title=\"Quick View\">\n                                <i class=\"fas fa-eye\"></i>\n                            </button>",
           "target": [
             ".product-card[data-category=\"runners\"][data-animate=\"fade-up\"]:nth-child(1) > .product-image > .product-overlay > .overlay-actions > .quick-view-btn[aria-label=\"Quick view Thz - F\"][title=\"Quick View\"]"
@@ -1374,6 +1473,24 @@
           "html": "<a class=\"footer-login-btn admin\" href=\"admin-login.html\" aria-label=\"Admin login\">\n            <i class=\"fas fa-user-shield\"></i>\n            <span>Admin Login</span>\n        </a>",
           "target": [
             ".admin"
+          ]
+        },
+        {
+          "any": [],
+          "all": [
+            {
+              "id": "aria-conditional-attr",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "ARIA attribute is allowed"
+            }
+          ],
+          "none": [],
+          "impact": null,
+          "html": "<button class=\"cart-close\" id=\"cart-close\" aria-label=\"Close cart\">\n                <i class=\"fas fa-times\"></i>\n            </button>",
+          "target": [
+            "#cart-close"
           ]
         }
       ]
@@ -1907,6 +2024,42 @@
             }
           ],
           "impact": null,
+          "html": "<input type=\"range\" min=\"0\" max=\"6999\" value=\"15000\" id=\"price-slider\" aria-label=\"Price slider\" aria-valuemin=\"0\" aria-valuemax=\"15000\">",
+          "target": [
+            "#price-slider"
+          ]
+        },
+        {
+          "any": [],
+          "all": [],
+          "none": [
+            {
+              "id": "aria-prohibited-attr",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "ARIA attribute is allowed"
+            }
+          ],
+          "impact": null,
+          "html": "<select class=\"sort-select\" id=\"sort-select\" aria-label=\"Sort products\">",
+          "target": [
+            "#sort-select"
+          ]
+        },
+        {
+          "any": [],
+          "all": [],
+          "none": [
+            {
+              "id": "aria-prohibited-attr",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "ARIA attribute is allowed"
+            }
+          ],
+          "impact": null,
           "html": "<button class=\"quick-view-btn button-animated\" data-product-id=\"87d8c7f2-671a-4bd8-b536-198b31851539\" aria-label=\"Quick view Thz - F\" title=\"Quick View\">\n                                <i class=\"fas fa-eye\"></i>\n                            </button>",
           "target": [
             ".product-card[data-category=\"runners\"][data-animate=\"fade-up\"]:nth-child(1) > .product-image > .product-overlay > .overlay-actions > .quick-view-btn[aria-label=\"Quick view Thz - F\"][title=\"Quick View\"]"
@@ -2126,6 +2279,24 @@
           "html": "<a class=\"footer-login-btn admin\" href=\"admin-login.html\" aria-label=\"Admin login\">\n            <i class=\"fas fa-user-shield\"></i>\n            <span>Admin Login</span>\n        </a>",
           "target": [
             ".admin"
+          ]
+        },
+        {
+          "any": [],
+          "all": [],
+          "none": [
+            {
+              "id": "aria-prohibited-attr",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "ARIA attribute is allowed"
+            }
+          ],
+          "impact": null,
+          "html": "<button class=\"cart-close\" id=\"cart-close\" aria-label=\"Close cart\">\n                <i class=\"fas fa-times\"></i>\n            </button>",
+          "target": [
+            "#cart-close"
           ]
         }
       ]
@@ -2635,6 +2806,70 @@
           ],
           "none": [],
           "impact": null,
+          "html": "<input type=\"range\" min=\"0\" max=\"6999\" value=\"15000\" id=\"price-slider\" aria-label=\"Price slider\" aria-valuemin=\"0\" aria-valuemax=\"15000\">",
+          "target": [
+            "#price-slider"
+          ]
+        },
+        {
+          "any": [],
+          "all": [
+            {
+              "id": "aria-valid-attr-value",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "ARIA attribute values are valid"
+            },
+            {
+              "id": "aria-errormessage",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "aria-errormessage exists and references elements visible to screen readers that use a supported aria-errormessage technique"
+            },
+            {
+              "id": "aria-level",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "aria-level values are valid"
+            }
+          ],
+          "none": [],
+          "impact": null,
+          "html": "<select class=\"sort-select\" id=\"sort-select\" aria-label=\"Sort products\">",
+          "target": [
+            "#sort-select"
+          ]
+        },
+        {
+          "any": [],
+          "all": [
+            {
+              "id": "aria-valid-attr-value",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "ARIA attribute values are valid"
+            },
+            {
+              "id": "aria-errormessage",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "aria-errormessage exists and references elements visible to screen readers that use a supported aria-errormessage technique"
+            },
+            {
+              "id": "aria-level",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "aria-level values are valid"
+            }
+          ],
+          "none": [],
+          "impact": null,
           "html": "<button class=\"quick-view-btn button-animated\" data-product-id=\"87d8c7f2-671a-4bd8-b536-198b31851539\" aria-label=\"Quick view Thz - F\" title=\"Quick View\">\n                                <i class=\"fas fa-eye\"></i>\n                            </button>",
           "target": [
             ".product-card[data-category=\"runners\"][data-animate=\"fade-up\"]:nth-child(1) > .product-image > .product-overlay > .overlay-actions > .quick-view-btn[aria-label=\"Quick view Thz - F\"][title=\"Quick View\"]"
@@ -3022,6 +3257,38 @@
           "html": "<a class=\"footer-login-btn admin\" href=\"admin-login.html\" aria-label=\"Admin login\">\n            <i class=\"fas fa-user-shield\"></i>\n            <span>Admin Login</span>\n        </a>",
           "target": [
             ".admin"
+          ]
+        },
+        {
+          "any": [],
+          "all": [
+            {
+              "id": "aria-valid-attr-value",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "ARIA attribute values are valid"
+            },
+            {
+              "id": "aria-errormessage",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "aria-errormessage exists and references elements visible to screen readers that use a supported aria-errormessage technique"
+            },
+            {
+              "id": "aria-level",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "aria-level values are valid"
+            }
+          ],
+          "none": [],
+          "impact": null,
+          "html": "<button class=\"cart-close\" id=\"cart-close\" aria-label=\"Close cart\">\n                <i class=\"fas fa-times\"></i>\n            </button>",
+          "target": [
+            "#cart-close"
           ]
         }
       ]
@@ -3125,6 +3392,42 @@
           "all": [],
           "none": [],
           "impact": null,
+          "html": "<input type=\"range\" min=\"0\" max=\"6999\" value=\"15000\" id=\"price-slider\" aria-label=\"Price slider\" aria-valuemin=\"0\" aria-valuemax=\"15000\">",
+          "target": [
+            "#price-slider"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "aria-valid-attr",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "ARIA attribute name is valid"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
+          "html": "<select class=\"sort-select\" id=\"sort-select\" aria-label=\"Sort products\">",
+          "target": [
+            "#sort-select"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "aria-valid-attr",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "ARIA attribute name is valid"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
           "html": "<button class=\"quick-view-btn button-animated\" data-product-id=\"87d8c7f2-671a-4bd8-b536-198b31851539\" aria-label=\"Quick view Thz - F\" title=\"Quick View\">\n                                <i class=\"fas fa-eye\"></i>\n                            </button>",
           "target": [
             ".product-card[data-category=\"runners\"][data-animate=\"fade-up\"]:nth-child(1) > .product-image > .product-overlay > .overlay-actions > .quick-view-btn[aria-label=\"Quick view Thz - F\"][title=\"Quick View\"]"
@@ -3345,12 +3648,30 @@
           "target": [
             ".admin"
           ]
+        },
+        {
+          "any": [
+            {
+              "id": "aria-valid-attr",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "ARIA attribute name is valid"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
+          "html": "<button class=\"cart-close\" id=\"cart-close\" aria-label=\"Close cart\">\n                <i class=\"fas fa-times\"></i>\n            </button>",
+          "target": [
+            "#cart-close"
+          ]
         }
       ]
     },
     {
       "id": "button-name",
-      "impact": "critical",
+      "impact": null,
       "tags": [
         "cat.name-role-value",
         "wcag2a",
@@ -3510,13 +3831,6 @@
         {
           "any": [
             {
-              "id": "button-has-visible-text",
-              "data": null,
-              "relatedNodes": [],
-              "impact": "critical",
-              "message": "Element has inner text that is visible to screen readers"
-            },
-            {
               "id": "aria-label",
               "data": null,
               "relatedNodes": [],
@@ -3541,13 +3855,6 @@
         },
         {
           "any": [
-            {
-              "id": "button-has-visible-text",
-              "data": null,
-              "relatedNodes": [],
-              "impact": "critical",
-              "message": "Element has inner text that is visible to screen readers"
-            },
             {
               "id": "aria-label",
               "data": null,
@@ -3599,13 +3906,6 @@
         {
           "any": [
             {
-              "id": "button-has-visible-text",
-              "data": null,
-              "relatedNodes": [],
-              "impact": "critical",
-              "message": "Element has inner text that is visible to screen readers"
-            },
-            {
               "id": "aria-label",
               "data": null,
               "relatedNodes": [],
@@ -3630,13 +3930,6 @@
         },
         {
           "any": [
-            {
-              "id": "button-has-visible-text",
-              "data": null,
-              "relatedNodes": [],
-              "impact": "critical",
-              "message": "Element has inner text that is visible to screen readers"
-            },
             {
               "id": "aria-label",
               "data": null,
@@ -3688,13 +3981,6 @@
         {
           "any": [
             {
-              "id": "button-has-visible-text",
-              "data": null,
-              "relatedNodes": [],
-              "impact": "critical",
-              "message": "Element has inner text that is visible to screen readers"
-            },
-            {
               "id": "aria-label",
               "data": null,
               "relatedNodes": [],
@@ -3720,13 +4006,6 @@
         {
           "any": [
             {
-              "id": "button-has-visible-text",
-              "data": null,
-              "relatedNodes": [],
-              "impact": "critical",
-              "message": "Element has inner text that is visible to screen readers"
-            },
-            {
               "id": "aria-label",
               "data": null,
               "relatedNodes": [],
@@ -3747,6 +4026,24 @@
           "html": "<button class=\"buy-now-btn btn button-animated\" data-id=\"8e35aa57-c8cb-4c58-80d3-23dee5cf982b\" aria-label=\"Buy Thz - F now\" title=\"Buy now\">",
           "target": [
             ".product-card[data-category=\"runners\"][data-animate=\"fade-up\"]:nth-child(3) > .product-info > .product-footer > .action-buttons > .buy-now-btn[aria-label=\"Buy Thz - F now\"][title=\"Buy now\"]"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "aria-label",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "aria-label attribute exists and is not empty"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
+          "html": "<button class=\"cart-close\" id=\"cart-close\" aria-label=\"Close cart\">\n                <i class=\"fas fa-times\"></i>\n            </button>",
+          "target": [
+            "#cart-close"
           ]
         },
         {
@@ -4170,7 +4467,7 @@
           "impact": null,
           "html": "<span>Runners</span>",
           "target": [
-            "label:nth-child(1) > span"
+            ".filter-checkbox:nth-child(1) > span"
           ]
         },
         {
@@ -4195,7 +4492,7 @@
           "impact": null,
           "html": "<span>Trekking</span>",
           "target": [
-            "label:nth-child(2) > span"
+            ".filter-checkbox:nth-child(2) > span"
           ]
         },
         {
@@ -4418,7 +4715,7 @@
           "all": [],
           "none": [],
           "impact": null,
-          "html": "<select class=\"sort-select\" id=\"sort-select\">",
+          "html": "<select class=\"sort-select\" id=\"sort-select\" aria-label=\"Sort products\">",
           "target": [
             "#sort-select"
           ]
@@ -4563,6 +4860,58 @@
       ]
     },
     {
+      "id": "duplicate-id-aria",
+      "impact": null,
+      "tags": [
+        "cat.parsing",
+        "wcag2a",
+        "wcag412",
+        "EN-301-549",
+        "EN-9.4.1.2"
+      ],
+      "description": "Ensure every id attribute value used in ARIA and in labels is unique",
+      "help": "IDs used in ARIA and labels must be unique",
+      "helpUrl": "https://dequeuniversity.com/rules/axe/4.10/duplicate-id-aria?application=axeAPI",
+      "nodes": [
+        {
+          "any": [
+            {
+              "id": "duplicate-id-aria",
+              "data": "price-slider",
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "Document has no elements referenced with ARIA or labels that share the same id attribute"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
+          "html": "<input type=\"range\" min=\"0\" max=\"6999\" value=\"15000\" id=\"price-slider\" aria-label=\"Price slider\" aria-valuemin=\"0\" aria-valuemax=\"15000\">",
+          "target": [
+            "#price-slider"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "duplicate-id-aria",
+              "data": "sort-select",
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "Document has no elements referenced with ARIA or labels that share the same id attribute"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": null,
+          "html": "<select class=\"sort-select\" id=\"sort-select\" aria-label=\"Sort products\">",
+          "target": [
+            "#sort-select"
+          ]
+        }
+      ]
+    },
+    {
       "id": "form-field-multiple-labels",
       "impact": null,
       "tags": [
@@ -4589,7 +4938,7 @@
                 {
                   "html": "<label class=\"filter-checkbox\">\n                    <input type=\"checkbox\" name=\"category\" value=\"runners\" checked=\"\">\n                    <span>Runners</span>\n                </label>",
                   "target": [
-                    "label:nth-child(1)"
+                    ".filter-checkbox:nth-child(1)"
                   ]
                 }
               ],
@@ -4614,7 +4963,7 @@
                 {
                   "html": "<label class=\"filter-checkbox\">\n                    <input type=\"checkbox\" name=\"category\" value=\"trekking\" checked=\"\">\n                    <span>Trekking</span>\n                </label>",
                   "target": [
-                    "label:nth-child(2)"
+                    ".filter-checkbox:nth-child(2)"
                   ]
                 }
               ],
@@ -4635,13 +4984,20 @@
             {
               "id": "multiple-label",
               "data": null,
-              "relatedNodes": [],
+              "relatedNodes": [
+                {
+                  "html": "<label for=\"price-slider\" class=\"sr-only\">Maximum price</label>",
+                  "target": [
+                    "label[for=\"price-slider\"]"
+                  ]
+                }
+              ],
               "impact": "moderate",
               "message": "Form field does not have multiple label elements"
             }
           ],
           "impact": null,
-          "html": "<input type=\"range\" min=\"0\" max=\"6999\" value=\"15000\" id=\"price-slider\">",
+          "html": "<input type=\"range\" min=\"0\" max=\"6999\" value=\"15000\" id=\"price-slider\" aria-label=\"Price slider\" aria-valuemin=\"0\" aria-valuemax=\"15000\">",
           "target": [
             "#price-slider"
           ]
@@ -4653,13 +5009,20 @@
             {
               "id": "multiple-label",
               "data": null,
-              "relatedNodes": [],
+              "relatedNodes": [
+                {
+                  "html": "<label for=\"sort-select\" class=\"sr-only\">Sort products</label>",
+                  "target": [
+                    "label[for=\"sort-select\"]"
+                  ]
+                }
+              ],
               "impact": "moderate",
               "message": "Form field does not have multiple label elements"
             }
           ],
           "impact": null,
-          "html": "<select class=\"sort-select\" id=\"sort-select\">",
+          "html": "<select class=\"sort-select\" id=\"sort-select\" aria-label=\"Sort products\">",
           "target": [
             "#sort-select"
           ]
@@ -4920,7 +5283,7 @@
     },
     {
       "id": "label",
-      "impact": "critical",
+      "impact": null,
       "tags": [
         "cat.forms",
         "wcag2a",
@@ -4948,7 +5311,7 @@
                 {
                   "html": "<label class=\"filter-checkbox\">\n                    <input type=\"checkbox\" name=\"category\" value=\"runners\" checked=\"\">\n                    <span>Runners</span>\n                </label>",
                   "target": [
-                    "label:nth-child(1)"
+                    ".filter-checkbox:nth-child(1)"
                   ]
                 }
               ],
@@ -4983,7 +5346,7 @@
                 {
                   "html": "<label class=\"filter-checkbox\">\n                    <input type=\"checkbox\" name=\"category\" value=\"trekking\" checked=\"\">\n                    <span>Trekking</span>\n                </label>",
                   "target": [
-                    "label:nth-child(2)"
+                    ".filter-checkbox:nth-child(2)"
                   ]
                 }
               ],
@@ -5005,6 +5368,46 @@
           "html": "<input type=\"checkbox\" name=\"category\" value=\"trekking\" checked=\"\">",
           "target": [
             "input[value=\"trekking\"]"
+          ]
+        },
+        {
+          "any": [
+            {
+              "id": "explicit-label",
+              "data": null,
+              "relatedNodes": [
+                {
+                  "html": "<label for=\"price-slider\" class=\"sr-only\">Maximum price</label>",
+                  "target": [
+                    "label[for=\"price-slider\"]"
+                  ]
+                }
+              ],
+              "impact": "critical",
+              "message": "Element has an explicit <label>"
+            },
+            {
+              "id": "aria-label",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "aria-label attribute exists and is not empty"
+            }
+          ],
+          "all": [],
+          "none": [
+            {
+              "id": "hidden-explicit-label",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "Form element has a visible explicit <label>"
+            }
+          ],
+          "impact": null,
+          "html": "<input type=\"range\" min=\"0\" max=\"6999\" value=\"15000\" id=\"price-slider\" aria-label=\"Price slider\" aria-valuemin=\"0\" aria-valuemax=\"15000\">",
+          "target": [
+            "#price-slider"
           ]
         }
       ]
@@ -6469,7 +6872,7 @@
           "all": [],
           "none": [],
           "impact": null,
-          "html": "<input type=\"range\" min=\"0\" max=\"6999\" value=\"15000\" id=\"price-slider\">",
+          "html": "<input type=\"range\" min=\"0\" max=\"6999\" value=\"15000\" id=\"price-slider\" aria-label=\"Price slider\" aria-valuemin=\"0\" aria-valuemax=\"15000\">",
           "target": [
             "#price-slider"
           ]
@@ -6865,7 +7268,7 @@
           "all": [],
           "none": [],
           "impact": null,
-          "html": "<button class=\"cart-close\" id=\"cart-close\">\n                <i class=\"fas fa-times\"></i>\n            </button>",
+          "html": "<button class=\"cart-close\" id=\"cart-close\" aria-label=\"Close cart\">\n                <i class=\"fas fa-times\"></i>\n            </button>",
           "target": [
             "#cart-close"
           ]
@@ -6886,6 +7289,67 @@
           "html": "<button class=\"btn btn-primary btn-block\">Checkout</button>",
           "target": [
             ".btn-block"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "select-name",
+      "impact": null,
+      "tags": [
+        "cat.forms",
+        "wcag2a",
+        "wcag412",
+        "section508",
+        "section508.22.n",
+        "TTv5",
+        "TT5.c",
+        "EN-301-549",
+        "EN-9.4.1.2",
+        "ACT"
+      ],
+      "description": "Ensure select element has an accessible name",
+      "help": "Select element must have an accessible name",
+      "helpUrl": "https://dequeuniversity.com/rules/axe/4.10/select-name?application=axeAPI",
+      "nodes": [
+        {
+          "any": [
+            {
+              "id": "explicit-label",
+              "data": null,
+              "relatedNodes": [
+                {
+                  "html": "<label for=\"sort-select\" class=\"sr-only\">Sort products</label>",
+                  "target": [
+                    "label[for=\"sort-select\"]"
+                  ]
+                }
+              ],
+              "impact": "critical",
+              "message": "Element has an explicit <label>"
+            },
+            {
+              "id": "aria-label",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "aria-label attribute exists and is not empty"
+            }
+          ],
+          "all": [],
+          "none": [
+            {
+              "id": "hidden-explicit-label",
+              "data": null,
+              "relatedNodes": [],
+              "impact": "critical",
+              "message": "Form element has a visible explicit <label>"
+            }
+          ],
+          "impact": null,
+          "html": "<select class=\"sort-select\" id=\"sort-select\" aria-label=\"Sort products\">",
+          "target": [
+            "#sort-select"
           ]
         }
       ]
@@ -7501,253 +7965,5 @@
       ]
     }
   ],
-  "violations": [
-    {
-      "id": "button-name",
-      "impact": "critical",
-      "tags": [
-        "cat.name-role-value",
-        "wcag2a",
-        "wcag412",
-        "section508",
-        "section508.22.a",
-        "TTv5",
-        "TT6.a",
-        "EN-301-549",
-        "EN-9.4.1.2",
-        "ACT"
-      ],
-      "description": "Ensure buttons have discernible text",
-      "help": "Buttons must have discernible text",
-      "helpUrl": "https://dequeuniversity.com/rules/axe/4.10/button-name?application=axeAPI",
-      "nodes": [
-        {
-          "any": [
-            {
-              "id": "button-has-visible-text",
-              "data": null,
-              "relatedNodes": [],
-              "impact": "critical",
-              "message": "Element does not have inner text that is visible to screen readers"
-            },
-            {
-              "id": "aria-label",
-              "data": null,
-              "relatedNodes": [],
-              "impact": "critical",
-              "message": "aria-label attribute does not exist or is empty"
-            },
-            {
-              "id": "aria-labelledby",
-              "data": null,
-              "relatedNodes": [],
-              "impact": "critical",
-              "message": "aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty"
-            },
-            {
-              "id": "non-empty-title",
-              "data": {
-                "messageKey": "noAttr"
-              },
-              "relatedNodes": [],
-              "impact": "critical",
-              "message": "Element has no title attribute"
-            },
-            {
-              "id": "implicit-label",
-              "data": null,
-              "relatedNodes": [],
-              "impact": "critical",
-              "message": "Element does not have an implicit (wrapped) <label>"
-            },
-            {
-              "id": "explicit-label",
-              "data": null,
-              "relatedNodes": [],
-              "impact": "critical",
-              "message": "Element does not have an explicit <label>"
-            },
-            {
-              "id": "presentational-role",
-              "data": null,
-              "relatedNodes": [],
-              "impact": "critical",
-              "message": "Element's default semantics were not overridden with role=\"none\" or role=\"presentation\""
-            }
-          ],
-          "all": [],
-          "none": [],
-          "impact": "critical",
-          "html": "<button class=\"cart-close\" id=\"cart-close\">\n                <i class=\"fas fa-times\"></i>\n            </button>",
-          "target": [
-            "#cart-close"
-          ],
-          "failureSummary": "Fix any of the following:\n  Element does not have inner text that is visible to screen readers\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute\n  Element does not have an implicit (wrapped) <label>\n  Element does not have an explicit <label>\n  Element's default semantics were not overridden with role=\"none\" or role=\"presentation\""
-        }
-      ]
-    },
-    {
-      "id": "label",
-      "impact": "critical",
-      "tags": [
-        "cat.forms",
-        "wcag2a",
-        "wcag412",
-        "section508",
-        "section508.22.n",
-        "TTv5",
-        "TT5.c",
-        "EN-301-549",
-        "EN-9.4.1.2",
-        "ACT"
-      ],
-      "description": "Ensure every form element has a label",
-      "help": "Form elements must have labels",
-      "helpUrl": "https://dequeuniversity.com/rules/axe/4.10/label?application=axeAPI",
-      "nodes": [
-        {
-          "any": [
-            {
-              "id": "implicit-label",
-              "data": null,
-              "relatedNodes": [],
-              "impact": "critical",
-              "message": "Element does not have an implicit (wrapped) <label>"
-            },
-            {
-              "id": "explicit-label",
-              "data": null,
-              "relatedNodes": [],
-              "impact": "critical",
-              "message": "Element does not have an explicit <label>"
-            },
-            {
-              "id": "aria-label",
-              "data": null,
-              "relatedNodes": [],
-              "impact": "critical",
-              "message": "aria-label attribute does not exist or is empty"
-            },
-            {
-              "id": "aria-labelledby",
-              "data": null,
-              "relatedNodes": [],
-              "impact": "critical",
-              "message": "aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty"
-            },
-            {
-              "id": "non-empty-title",
-              "data": {
-                "messageKey": "noAttr"
-              },
-              "relatedNodes": [],
-              "impact": "critical",
-              "message": "Element has no title attribute"
-            },
-            {
-              "id": "non-empty-placeholder",
-              "data": {
-                "messageKey": "noAttr"
-              },
-              "relatedNodes": [],
-              "impact": "critical",
-              "message": "Element has no placeholder attribute"
-            },
-            {
-              "id": "presentational-role",
-              "data": null,
-              "relatedNodes": [],
-              "impact": "critical",
-              "message": "Element's default semantics were not overridden with role=\"none\" or role=\"presentation\""
-            }
-          ],
-          "all": [],
-          "none": [],
-          "impact": "critical",
-          "html": "<input type=\"range\" min=\"0\" max=\"6999\" value=\"15000\" id=\"price-slider\">",
-          "target": [
-            "#price-slider"
-          ],
-          "failureSummary": "Fix any of the following:\n  Element does not have an implicit (wrapped) <label>\n  Element does not have an explicit <label>\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute\n  Element has no placeholder attribute\n  Element's default semantics were not overridden with role=\"none\" or role=\"presentation\""
-        }
-      ]
-    },
-    {
-      "id": "select-name",
-      "impact": "critical",
-      "tags": [
-        "cat.forms",
-        "wcag2a",
-        "wcag412",
-        "section508",
-        "section508.22.n",
-        "TTv5",
-        "TT5.c",
-        "EN-301-549",
-        "EN-9.4.1.2",
-        "ACT"
-      ],
-      "description": "Ensure select element has an accessible name",
-      "help": "Select element must have an accessible name",
-      "helpUrl": "https://dequeuniversity.com/rules/axe/4.10/select-name?application=axeAPI",
-      "nodes": [
-        {
-          "any": [
-            {
-              "id": "implicit-label",
-              "data": null,
-              "relatedNodes": [],
-              "impact": "critical",
-              "message": "Element does not have an implicit (wrapped) <label>"
-            },
-            {
-              "id": "explicit-label",
-              "data": null,
-              "relatedNodes": [],
-              "impact": "critical",
-              "message": "Element does not have an explicit <label>"
-            },
-            {
-              "id": "aria-label",
-              "data": null,
-              "relatedNodes": [],
-              "impact": "critical",
-              "message": "aria-label attribute does not exist or is empty"
-            },
-            {
-              "id": "aria-labelledby",
-              "data": null,
-              "relatedNodes": [],
-              "impact": "critical",
-              "message": "aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty"
-            },
-            {
-              "id": "non-empty-title",
-              "data": {
-                "messageKey": "noAttr"
-              },
-              "relatedNodes": [],
-              "impact": "critical",
-              "message": "Element has no title attribute"
-            },
-            {
-              "id": "presentational-role",
-              "data": null,
-              "relatedNodes": [],
-              "impact": "critical",
-              "message": "Element's default semantics were not overridden with role=\"none\" or role=\"presentation\""
-            }
-          ],
-          "all": [],
-          "none": [],
-          "impact": "critical",
-          "html": "<select class=\"sort-select\" id=\"sort-select\">",
-          "target": [
-            "#sort-select"
-          ],
-          "failureSummary": "Fix any of the following:\n  Element does not have an implicit (wrapped) <label>\n  Element does not have an explicit <label>\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute\n  Element's default semantics were not overridden with role=\"none\" or role=\"presentation\""
-        }
-      ]
-    }
-  ]
+  "violations": []
 }
