@@ -49,6 +49,9 @@ test.describe('Site animations QA', () => {
       if (!gotIn) {
         // Fallback check: ensure animation defaults were applied (e.g., buttons marked button-animated)
         const hasButtonAnim = await page.$$eval('.button-animated', els => els.length > 0);
+        const dataAnimateCount = await page.$$eval('[data-animate]', els => els.length);
+        const productCardCount = await page.$$eval('.product-card', els => els.length);
+        console.log('ANIM DEBUG: data-animate=', dataAnimateCount, 'product-cards=', productCardCount, 'button-animated=', hasButtonAnim);
         expect(hasButtonAnim).toBeTruthy();
       } else {
         expect(gotIn).toBeTruthy();
