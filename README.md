@@ -209,10 +209,14 @@ GitHub & Supabase: Full setup from scratch
 <<<<<<< HEAD
 		export FTP_USER="u788576096.ace1.in"
 =======
+<<<<<<< HEAD
+		export FTP_USER="u788576096.ace1.in"
+=======
 =======
 		export FTP_HOST="ftp.ace1.in"
 >>>>>>> origin/main
 		export FTP_USER="u788576096.adminace1"
+>>>>>>> origin/main
 >>>>>>> origin/main
 	# Set `FTP_PASSWORD` as a repository/CI secret; do not store it in plaintext
 	# export FTP_PASSWORD="<set-in-secrets>"
