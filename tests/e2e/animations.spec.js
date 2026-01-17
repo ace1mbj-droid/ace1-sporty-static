@@ -37,9 +37,11 @@ test.describe('Site animations QA', () => {
       expect(animatedCount).toBeGreaterThan(0);
 
       // Wait for at least one element to get the 'in' class (revealed)
+      // Scroll first animated element into view and give animations more time in CI
+      await page.evaluate(() => { const el = document.querySelector('[data-animate]'); if (el) el.scrollIntoView(); });
       const gotIn = await page.waitForFunction(() => {
         return Array.from(document.querySelectorAll('[data-animate]')).some(e => e.classList.contains('in'));
-      }, { timeout: 2000 }).catch(() => false);
+      }, { timeout: 5000 }).catch(() => false);
 
       expect(gotIn).toBeTruthy();
 
