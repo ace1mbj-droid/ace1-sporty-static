@@ -31,12 +31,12 @@ const variants = [
 
     for (const v of variants) {
       // inject style with an id so we can remove it later
-      await page.evaluate((id, css) => {
+      await page.evaluate(({id, css}) => {
         const s = document.createElement('style');
         s.id = `variant-${id}`;
         s.textContent = css;
         document.head.appendChild(s);
-      }, v.id, v.css);
+      }, { id: v.id, css: v.css });
 
       // wait briefly for fonts/styles to apply
       await page.waitForTimeout(400);
@@ -51,10 +51,10 @@ const variants = [
       console.log(`wrote ${pngPath} and ${domPath} for variant: ${v.id}`);
 
       // remove injected style
-      await page.evaluate((id) => {
+      await page.evaluate(({id}) => {
         const el = document.getElementById(`variant-${id}`);
         if (el) el.remove();
-      }, v.id);
+      }, { id: v.id });
 
       // small pause between variants
       await page.waitForTimeout(220);
