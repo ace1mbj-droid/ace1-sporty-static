@@ -1033,27 +1033,36 @@ button {
 }
 
 .add-to-cart-btn {
-    min-width: 50px;
+    width: 50px;
     height: 50px;
     background: var(--primary-color);
     color: white;
-    border-radius: 8px;
+    border-radius: 50%;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     font-size: 18px;
-    padding: 0 12px;
-    gap: 8px;
+    padding: 0;
+    gap: 0;
     transition: var(--transition);
 }
 
-/* Visible text fallback for icon-only buttons */
+/* Utility for screen-reader only text (accessible but visually hidden) */
+.sr-only {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    padding: 0 !important;
+    margin: -1px !important;
+    overflow: hidden !important;
+    clip: rect(0 0 0 0) !important;
+    white-space: nowrap !important;
+    border: 0 !important;
+}
+
+/* Keep .btn-text for backward compatibility but visually hidden by default */
 .btn-text {
-    display: inline-block;
-    font-size: 0.95rem;
-    font-weight: 700;
-    color: inherit;
-    line-height: 1;
+    display: none;
 }
 
 /* Ensure product price is clearly visible */

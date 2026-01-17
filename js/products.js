@@ -646,13 +646,13 @@ class ProductFilterManager {
                         <div class="action-buttons">
                             ${isAvailable
                                 ? `<button class="add-to-cart-btn" data-id="${product.id}" aria-label="Add ${name} to cart" title="Add to cart">
-                                    <i class="fas fa-shopping-bag" aria-hidden="true"></i><span class="btn-text">Add to cart</span>
+                                    <i class="fas fa-shopping-bag" aria-hidden="true"></i><span class="sr-only">Add to cart</span>
                                    </button>
                                    <button class="buy-now-btn btn" data-id="${product.id}" aria-label="Buy ${name} now" title="Buy now">
-                                    <i class="fas fa-bolt" aria-hidden="true"></i><span class="btn-text">Buy now</span>
+                                    <i class="fas fa-bolt" aria-hidden="true"></i><span class="sr-only">Buy now</span>
                                    </button>`
                                 : `<button class="add-to-cart-btn" disabled title="${disabledReason}">
-                                    <i class="fas fa-times-circle" style="margin-right: 8px;" aria-hidden="true"></i><span class="btn-text">${disabledReason}</span>
+                                    <i class="fas fa-times-circle" style="margin-right: 8px;" aria-hidden="true"></i><span class="sr-only">${disabledReason}</span>
                                    </button>`
                             }
                         </div>

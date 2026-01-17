@@ -1856,10 +1856,10 @@ async function refreshProductsIfNeeded() {
                         <span class="product-price">₹${parseFloat(product.price).toLocaleString('en-IN')}</span>
                         ${(!product.is_locked && product.stock_quantity > 0 && (product.status === undefined || String(product.status).toLowerCase() === 'available'))
                             ? `<button class="add-to-cart-btn" data-id="${product.id}" aria-label="Add ${product.name} to cart" title="Add to cart">
-                                <i class="fas fa-shopping-bag" aria-hidden="true"></i><span class="btn-text">Add to cart</span>
+                                <i class="fas fa-shopping-bag" aria-hidden="true"></i><span class="sr-only">Add to cart</span>
                                </button>`
                             : `<button class="add-to-cart-btn" disabled>
-                                <i class="fas fa-times-circle" style="margin-right: 8px;" aria-hidden="true"></i><span class="btn-text">${product.is_locked ? 'Unavailable' : 'Out of Stock'}</span>
+                                <i class="fas fa-times-circle" style="margin-right: 8px;" aria-hidden="true"></i><span class="sr-only">${product.is_locked ? 'Unavailable' : 'Out of Stock'}</span>
                                </button>`
                         }
                     </div>
