@@ -1785,6 +1785,13 @@ button {
 .cart-overlay.active {
     opacity: 1;
     visibility: visible;
+    /* Allow overlay to receive pointer events when active so click-to-close works reliably in tests */
+    pointer-events: auto;
+}
+
+/* Default: don't receive pointer events when not visible to avoid intercepting clicks */
+.cart-overlay {
+    pointer-events: none;
 }
 
 /* ===================================

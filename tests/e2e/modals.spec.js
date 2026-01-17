@@ -67,8 +67,9 @@ test.describe('Public modals and overlays', () => {
     await page.waitForTimeout(150);
     await expect(cartSidebar).toHaveClass(/\bactive\b/);
 
-    // Click an area of the overlay that isn't covered by the sidebar.
-    await cartOverlay.click({ position: { x: 10, y: 10 } });
+    // Click an area of the viewport that isn't covered by the sidebar. Use a raw viewport click
+    // (more robust than relying on the overlay locator visibility in headless CI environments).
+    await page.mouse.click(10, 10);
     await expect(cartSidebar).not.toHaveClass(/\bactive\b/);
   });
 
