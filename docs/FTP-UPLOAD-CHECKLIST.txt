@@ -74,7 +74,7 @@
 
 **FTP Server Details**
 
-FTP_HOST: 185.224.138.135
+FTP_HOST: ftp.ace1.in
 FTP_USER: u788576096.adminace1
 FTP_PASSWORD: (set via secret `FTP_PASSWORD`)
 FTP_PORT: 21
