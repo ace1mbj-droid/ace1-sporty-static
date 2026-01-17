@@ -1,6 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
+<!DOCTYPE html><html lang="en"><head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
     
@@ -34,8 +32,8 @@
     <meta http-equiv="X-Content-Type-Options" content="nosniff">
     <meta http-equiv="X-XSS-Protection" content="1; mode=block">
     <meta name="referrer" content="strict-origin-when-cross-origin">
-    <meta name="description" content="Ace#1 - Quality, affordable sneakers built for daily wellness, comfort, and long hours on your feet.">
-    <title>Ace#1 | Quality, Affordable Sneakers</title>
+    <meta name="description" content="Revolutionary footwear integrated with terahertz technology for enhanced wellness and lifestyle.">
+    <title>ACE#1 - Revolutionary Footwear</title>
     <link rel="canonical" href="https://ace1.in/">
 
     <!-- OpenGraph / Social (Facebook-style caching with proper dimensions) -->
@@ -98,9 +96,9 @@
             ]
         }
     </script>
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="/css/style.css?v=v-1767721982-stateless-cache">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&amp;family=Poppins:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet">
     <style>
         .categories-section {
             padding: 80px 0;
@@ -194,7 +192,7 @@
         }
         .hero-section {
             background: linear-gradient(135deg, rgba(102, 126, 234, 0.9) 0%, rgba(118, 75, 162, 0.9) 100%),
-                        url('/images/hero-2026.jpg') center/cover;
+                        url('https://vorqavsuqcjnkjzwkyzr.supabase.co/storage/v1/object/public/Website/Cat1.JPG') center/cover;
             color: white;
             padding: 120px 0;
             text-align: center;
@@ -356,7 +354,7 @@
             gap: 8px;
             margin-top: 6px;
             background: var(--secondary-color);
-            color: #111827; /* improved contrast for accessibility */
+            color: white;
             padding: 12px 18px;
             border-radius: 8px;
             font-weight: 700;
@@ -763,38 +761,184 @@
             }
         }
     </style>
-</head>
+<style>
+    .notification {
+        position: fixed;
+        top: 100px;
+        right: 20px;
+        background: white;
+        padding: 20px 30px;
+        border-radius: 10px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        z-index: 10000;
+        transform: translateX(400px);
+        transition: transform 0.3s ease;
+        font-weight: 500;
+    }
+    
+    .notification.show {
+        transform: translateX(0);
+    }
+    
+    .notification-success {
+        border-left: 4px solid #00C853;
+    }
+    
+    .notification-success i {
+        color: #00C853;
+        font-size: 20px;
+    }
+    
+    .notification-error {
+        border-left: 4px solid #FF3D00;
+    }
+    
+    .notification-error i {
+        color: #FF3D00;
+        font-size: 20px;
+    }
+    
+    .cart-item {
+        display: flex;
+        gap: 15px;
+        padding: 20px;
+        border-bottom: 1px solid #e5e5e5;
+        position: relative;
+    }
+    
+    .cart-item img {
+        width: 80px;
+        height: 80px;
+        object-fit: cover;
+        border-radius: 10px;
+    }
+    
+    .cart-item-info {
+        flex: 1;
+    }
+    
+    .cart-item-info h4 {
+        font-size: 16px;
+        margin-bottom: 5px;
+    }
+    
+    .cart-item-info p {
+        color: #666;
+        font-weight: 600;
+        margin-bottom: 5px;
+    }
+    
+    .cart-item-size {
+        display: inline-block;
+        font-size: 12px;
+        color: #888;
+        background: #f5f5f5;
+        padding: 2px 8px;
+        border-radius: 4px;
+        margin-bottom: 8px;
+    }
+    
+    .cart-item-quantity {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .qty-btn {
+        width: 36px;
+        height: 36px;
+        min-width: 44px;
+        min-height: 44px;
+        border: 1px solid #e5e5e5;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 18px;
+        background: white;
+        cursor: pointer;
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: transparent;
+    }
+    
+    .qty-btn:hover {
+        background: #f5f5f5;
+        border-color: #000;
+    }
+    
+    .qty-btn:active {
+        transform: scale(0.95);
+    }
+    
+    .remove-item {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        width: 36px;
+        height: 36px;
+        min-width: 44px;
+        min-height: 44px;
+        border-radius: 50%;
+        color: #666;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        touch-action: manipulation;
+    }
+    
+    .remove-item:hover {
+        background: #fee;
+        color: #f44;
+    }
+    
+    .remove-item:active {
+        transform: scale(0.95);
+    }
+    
+    /* Mobile touch optimizations */
+    @media (hover: none) and (pointer: coarse) {
+        .qty-btn, .remove-item {
+            min-width: 44px;
+            min-height: 44px;
+        }
+    }
+</style><script src="/js/animations.js?v=v-1767721982-stateless-cache" defer=""></script></head>
 <body>
     <div id="dev-banner">This website is under development</div>
 
     <!-- Navigation -->
     <nav class="navbar" id="navbar">
-        <div class="nav-container">
-            <div class="nav-logo">
+        <div class="nav-container stagger in fade-up" data-animate="fade-up" data-animate-observed="1">
+            <div class="nav-logo in">
                 <a href="index.html">
                     <img class="site-logo-img" src="https://vorqavsuqcjnkjzwkyzr.supabase.co/storage/v1/object/public/Website/brand/ace1-logo.jpeg" alt="ACE#1" decoding="async" loading="eager" onerror="this.src='images/ace1-logo-original-512.png'; this.onerror=function(){this.style.display='none'; this.nextElementSibling.style.display='inline';};">
                     <span class="logo-text" style="display:none;">ACE<span class="logo-accent">#1</span></span>
                 </a>
             </div>
-            <ul class="nav-menu" id="nav-menu">
+            <ul class="nav-menu in" id="nav-menu">
                 <li><a href="index.html" class="nav-link active">Discover</a></li>
                 <li><a href="shoes.html" class="nav-link">Shoes</a></li>
                 <li><a href="technology.html" class="nav-link">Technology</a></li>
                 <li><a href="about.html" class="nav-link">About</a></li>
                 <li><a href="contact.html" class="nav-link">Contact</a></li>
             </ul>
-            <div class="nav-icons">
-                <button class="icon-btn search-btn" id="search-btn" aria-label="Search products">
+            <div class="nav-icons in">
+                <button class="icon-btn search-btn button-animated" id="search-btn" aria-label="Search products">
                     <i class="fas fa-search"></i>
                 </button>
-                <button class="icon-btn cart-btn" id="cart-btn" aria-label="Shopping cart">
+                <button class="icon-btn cart-btn button-animated" id="cart-btn" aria-label="Shopping cart">
                     <i class="fas fa-shopping-bag"></i>
                     <span class="cart-count" id="cart-count">0</span>
                 </button>
-                <button class="icon-btn user-btn" aria-label="User account">
+                <button class="icon-btn user-btn button-animated" aria-label="User account">
                     <i class="fas fa-user"></i>
                 </button>
-                <button class="hamburger" id="hamburger" aria-label="Toggle menu">
+                <button class="hamburger button-animated" id="hamburger" aria-label="Toggle menu">
                     <span></span>
                     <span></span>
                     <span></span>
@@ -802,6 +946,15 @@
             </div>
         </div>
     </nav>
+    <!-- Search Overlay -->
+    <div class="search-overlay" id="search-overlay">
+        <div class="search-container">
+            <input type="text" class="search-input" placeholder="Search for products...">
+            <button class="search-close" id="search-close">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    </div>
 
     <!-- Main Content -->
     <main class="main-content">
@@ -817,24 +970,24 @@
 
         <!-- Launch Event Gallery Section (Homepage highlight) -->
         <section class="launch-gallery-section">
-            <div class="container">
-                <div class="section-header">
+            <div class="container stagger in fade-up" data-animate="fade-up" data-animate-observed="1">
+                <div class="section-header in">
                     <h2 class="section-title">Watch Ace#1 in Action</h2>
                     <p class="section-subtitle">Launch moments, product showcases, and behind-the-scenes — these videos are the charm of our homepage.</p>
                 </div>
 
                 <!-- Gallery Tabs -->
-                <div class="gallery-tabs">
-                    <button class="gallery-tab active" data-tab="videos">
+                <div class="gallery-tabs in">
+                    <button class="gallery-tab active button-animated" data-tab="videos">
                         <i class="fas fa-play-circle"></i> Videos
                     </button>
-                    <button class="gallery-tab" data-tab="photos">
+                    <button class="gallery-tab button-animated" data-tab="photos">
                         <i class="fas fa-camera"></i> Photos
                     </button>
                 </div>
 
                 <!-- Video Gallery -->
-                <div class="gallery-content active" id="videos-content">
+                <div class="gallery-content active in" id="videos-content">
                     <div class="video-hero">
                         <div class="video-hero-card">
                             <a class="video-thumb video-play-btn" href="#" data-video-id="QvilrHBjBLw" data-title="Featured Launch Video" data-desc="See the energy, the products, and the moment Ace#1 came to life." aria-label="Play featured video">
@@ -901,7 +1054,7 @@
                 </div>
 
                 <!-- Photo Gallery -->
-                <div class="gallery-content" id="photos-content">
+                <div class="gallery-content in" id="photos-content">
                     <div class="photo-gallery">
                         <!-- NOTE: These URLs point to Supabase Storage bucket "Website" folder "Index Image Gallery/". -->
 
@@ -950,10 +1103,10 @@
                             </div>
                         </a>
 
-                        <a class="photo-item photo-lightbox-btn" href="#" data-img="https://vorqavsuqcjnkjzwkyzr.supabase.co/storage/v1/object/public/Website/Index%20Image%20Gallery/PHOTO-2025-10-05-08-20-11%205.jpg" data-title="Team & Guests" data-desc="A day to remember">
+                        <a class="photo-item photo-lightbox-btn" href="#" data-img="https://vorqavsuqcjnkjzwkyzr.supabase.co/storage/v1/object/public/Website/Index%20Image%20Gallery/PHOTO-2025-10-05-08-20-11%205.jpg" data-title="Team &amp; Guests" data-desc="A day to remember">
                             <img src="https://vorqavsuqcjnkjzwkyzr.supabase.co/storage/v1/object/public/Website/Index%20Image%20Gallery/PHOTO-2025-10-05-08-20-11%205.jpg" alt="Ace#1 event photo" loading="lazy" decoding="async" onerror="this.src='images/placeholder.jpg'">
                             <div class="photo-overlay">
-                                <h4>Team & Guests</h4>
+                                <h4>Team &amp; Guests</h4>
                                 <p>A day to remember</p>
                                 <span class="view-link"><i class="fas fa-expand"></i> View</span>
                             </div>
@@ -1016,7 +1169,7 @@
 
         <!-- Categories Grid -->
         <section class="categories-section">
-            <div class="container">
+            <div class="container" data-animate="fade-up" data-animate-observed="1">
                 <div class="categories-grid">
                     <!-- Shoes Category -->
                     <div class="category-card">
@@ -1039,13 +1192,10 @@
 
     <!-- Footer -->
     <footer class="footer">
-        <div class="container">
+        <div class="container" data-animate="fade-up" data-animate-observed="1">
             <div class="footer-content">
                 <div class="footer-section">
-                    <div class="footer-logo">
-                        <img class="footer-logo-img" src="https://vorqavsuqcjnkjzwkyzr.supabase.co/storage/v1/object/public/Website/brand/ace1-logo.jpeg" alt="ACE#1" loading="lazy" decoding="async" onerror="this.src='images/ace1-logo-original-512.png';">
-                        <span class="logo-text">ACE<span class="logo-accent">#1</span></span>
-                    </div>
+                    <div class="footer-logo"><img class="site-logo-img footer-logo-img" src="https://vorqavsuqcjnkjzwkyzr.supabase.co/storage/v1/object/public/Website/Index%20Image%20Gallery/WhatsApp%20Image%202026-01-04%20at%2005.09.49.jpeg" alt="Ace#1" decoding="async" loading="lazy"></div>
                     <p>Modern footwear built for comfort and everyday wear.</p>
                     <p style="opacity:0.85;margin-top:10px;">Accessories &amp; apparel coming in the future — for now we’re focused on footwear.</p>
                     <div class="social-links">
@@ -1079,8 +1229,17 @@
                 </div>
             </div>
             <div class="footer-bottom">
-                <p>&copy; 2025 Ace#1. All rights reserved.</p>
-            </div>
+                <p>© 2025 Ace#1. All rights reserved.</p>
+            <div class="footer-login-cta">
+        <a class="footer-login-btn" href="login.html" aria-label="User login">
+            <i class="fas fa-user-circle"></i>
+            <span>User Login</span>
+        </a>
+        <a class="footer-login-btn admin" href="admin-login.html" aria-label="Admin login">
+            <i class="fas fa-user-shield"></i>
+            <span>Admin Login</span>
+        </a>
+    </div></div>
         </div>
     </footer>
 
@@ -1112,20 +1271,20 @@
 
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.89.0"></script>
-    <script src="js/main.js"></script>
-    <script src="js/auth.js"></script>
-    <script src="js/supabase-config.js"></script>
-    <script src="js/supabase-service.js"></script>
-    <script src="js/ecommerce-backend.js"></script>
-    <script src="js/products.js"></script>
-    <script src="js/reviews.js"></script>
-    <script src="js/hcaptcha-config.js"></script>
-    <script src="js/hcaptcha-manager.js"></script>
-    <script src="js/bot-defense.js"></script>
-    <script src="js/cache-buster.js"></script>
+    <script src="/js/main.js?v=v-1767721982-stateless-cache"></script>
+    <script src="/js/auth.js?v=v-1767721982-stateless-cache"></script>
+    <script src="/js/supabase-config.js?v=v-1767721982-stateless-cache"></script>
+    <script src="/js/supabase-service.js?v=v-1767721982-stateless-cache"></script>
+    <script src="/js/ecommerce-backend.js?v=v-1767721982-stateless-cache"></script>
+    <script src="/js/products.js?v=v-1767721982-stateless-cache"></script>
+    <script src="/js/reviews.js?v=v-1767721982-stateless-cache"></script>
+    <script src="/js/hcaptcha-config.js?v=v-1767721982-stateless-cache"></script>
+    <script src="/js/hcaptcha-manager.js?v=v-1767721982-stateless-cache"></script>
+    <script src="/js/bot-defense.js?v=v-1767721982-stateless-cache"></script>
+    <script src="/js/cache-buster.js?v=v-1767721982-stateless-cache"></script>
     <!-- Media Lightbox Modal -->
     <div class="media-lightbox" id="media-lightbox">
-        <button class="lightbox-close" aria-label="Close lightbox">&times;</button>
+        <button class="lightbox-close" aria-label="Close lightbox">×</button>
         <button class="lightbox-nav lightbox-prev" aria-label="Previous image"><i class="fas fa-chevron-left"></i></button>
         <div class="lightbox-content">
             <!-- Video iframe or image will be inserted here -->
@@ -1314,5 +1473,6 @@
         });
     </script>
 
-</body>
-</html>
+
+
+</body></html>
