@@ -163,11 +163,14 @@
 }
 
 body {
-    font-family: var(--font-primary);
+    --navbar-height: 72px;
+    font-family: var(--font-family-main, var(--font-primary));
     color: var(--text-color);
     line-height: 1.6;
     overflow-x: hidden;
     background: var(--bg-white);
+    /* Ensure main content is not hidden under the fixed navbar */
+    padding-top: calc(var(--navbar-height) + env(safe-area-inset-top));
 }
 
 /* Palette enforcement: ensure the site uses only the two approved colors */
