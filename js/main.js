@@ -1115,8 +1115,13 @@ async function addToCart(productId, selectedSize = null) {
 // Expose for dynamically-rendered product pages (e.g. shoes.html uses window.addToCart)
 window.addToCart = addToCart;
 
-// Cart is always visible - users are redirected to login when they try to add/view cart
-// This improves UX by letting users browse products before creating an account
+
+// Ensure cart loads from database/session on page load
+document.addEventListener('DOMContentLoaded', () => {
+    if (typeof loadCartFromDatabase === 'function') {
+        loadCartFromDatabase();
+    }
+});
 
 function addProductToCart(product) {
     // Ensure price is a number (handle both price (rupees) and price_cents (paise/cents) from Supabase)
