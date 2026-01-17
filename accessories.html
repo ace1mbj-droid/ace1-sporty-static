@@ -201,7 +201,8 @@
                     <div class="filter-group">
                         <h3>Price Range</h3>
                         <div class="price-range">
-                            <input type="range" min="0" max="15000" value="15000" id="price-slider">
+                            <label for="price-slider" class="sr-only">Maximum price</label>
+                            <input type="range" min="0" max="15000" value="15000" id="price-slider" aria-label="Price slider" aria-valuemin="0" aria-valuemax="15000">
                             <div class="price-labels">
                                 <span>₹0</span>
                                 <span id="price-value">₹15,000</span>
@@ -236,7 +237,8 @@
                     <div class="shop-header">
                         <h2>All Accessories</h2>
                         <div class="shop-controls">
-                            <select class="sort-select" id="sort-select">
+                            <label for="sort-select" class="sr-only">Sort products</label>
+                            <select class="sort-select" id="sort-select" aria-label="Sort products">
                                 <option value="featured">Featured</option>
                                 <option value="price-low">Price: Low to High</option>
                                 <option value="price-high">Price: High to Low</option>

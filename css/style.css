@@ -1071,6 +1071,24 @@ button {
     font-weight: 700;
 }
 
+/* Responsive tweaks for small screens */
+@media (max-width: 600px) {
+    .add-to-cart-btn, .buy-now-btn {
+        width: 44px;
+        height: 44px;
+        font-size: 16px;
+    }
+    .action-buttons {
+        gap: 8px;
+    }
+    .product-price {
+        font-size: 18px;
+    }
+    .product-card {
+        min-height: 420px;
+    }
+}
+
 .add-to-cart-btn:focus-visible,
 .quick-view-btn:focus-visible {
     outline: 3px solid rgba(255, 107, 0, 0.25);
