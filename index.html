@@ -193,24 +193,30 @@
             font-weight: 600;
             font-size: 0.9rem;
         }
+        /* Use global theme variables so homepage matches site-wide styles */
         .hero-section {
-            background: linear-gradient(135deg, rgba(102, 126, 234, 0.9) 0%, rgba(118, 75, 162, 0.9) 100%),
-                        url('/images/hero-2026.jpg') center/cover;
-            color: white;
+            /* fallback keeps the current look if variables aren't set */
+            background: var(--index-hero-bg, linear-gradient(135deg, rgba(102, 126, 234, 0.9) 0%, rgba(118, 75, 162, 0.9) 100%), url('/images/hero-2026.jpg') center/cover);
+            color: var(--hero-text, var(--primary-text-on-dark, #fff));
             padding: 120px 0;
             text-align: center;
             position: relative;
+            font-family: var(--font-family-main);
         }
         .hero-title {
-            font-size: 3.5rem;
+            font-size: var(--hero-title-size, 3.5rem);
             font-weight: 800;
             margin-bottom: 20px;
+            color: var(--hero-text, var(--primary-text-on-dark, #fff));
+            font-family: var(--font-family-main);
         }
         .hero-subtitle {
-            font-size: 1.3rem;
+            font-size: var(--hero-subtitle-size, 1.3rem);
             opacity: 0.9;
             max-width: 600px;
             margin: 0 auto;
+            color: var(--hero-subtext, rgba(255,255,255,0.9));
+            font-family: var(--font-family-main);
         }
 
         /* Mobile hero: ensure the background image frames well on phones */
