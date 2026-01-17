@@ -1,0 +1,1703 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="alternate icon" href="favicon.svg">
+    <link rel="apple-touch-icon" href="images/apple-touch-icon.png" sizes="180x180">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#1a1a2e">
+    
+    <!-- Cache Control Meta Tags -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    
+    <!-- Security Meta Tags -->
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta http-equiv="X-XSS-Protection" content="1; mode=block">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <title>Admin Dashboard | Ace#1</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/image-manager.css">
+    <link rel="stylesheet" href="css/password-manager.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- SheetJS for Excel Export -->
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        .admin-container {
+            max-width: 1400px;
+            margin: 100px auto 50px;
+            padding: 20px;
+        }
+        .refresh-spinner {
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            border: 2.5px solid #FF6B00;
+            border-top: 2.5px solid #fff;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+            vertical-align: middle;
+            margin-left: 8px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #FF6B00;
+        }
+        .admin-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #eee;
+            overflow-x: auto;
+            overflow-y: hidden;
+            padding-bottom: 5px;
+        }
+        .admin-tabs::-webkit-scrollbar {
+            height: 6px;
+        }
+        .admin-tabs::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 3px;
+        }
+        .admin-tabs::-webkit-scrollbar-thumb {
+            background: #FF6B00;
+            border-radius: 3px;
+        }
+        .admin-tabs::-webkit-scrollbar-thumb:hover {
+            background: #e55f00;
+        }
+        .admin-tab {
+            padding: 15px 30px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            color: #666;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+        .admin-tab.active {
+            color: #FF6B00;
+            border-bottom-color: #FF6B00;
+        }
+        .admin-content {
+            display: none;
+        }
+        .admin-content.active {
+            display: block;
+        }
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        .product-admin-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .product-admin-card img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+        .product-admin-info h3 {
+            margin-bottom: 10px;
+            color: #333;
+        }
+        .product-admin-info p {
+            color: #666;
+            margin: 5px 0;
+        }
+        .stock-badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin: 10px 0;
+        }
+        .stock-badge.in-stock {
+            background: #d4edda;
+            color: #155724;
+        }
+        .stock-badge.out-of-stock {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .product-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 8px;
+            margin-top: 15px;
+        }
+        .product-actions button {
+            padding: 10px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 13px;
+            transition: all 0.3s;
+        }
+        .btn-edit {
+            background: #007bff;
+            color: white;
+        }
+        .btn-edit:hover {
+            background: #0056b3;
+        }
+        .btn-duplicate {
+            background: #28a745;
+            color: white;
+        }
+        .btn-duplicate:hover {
+            background: #218838;
+        }
+        .btn-delete {
+            background: #dc3545;
+            color: white;
+        }
+        .btn-delete:hover {
+            background: #c82333;
+        }
+        .btn-add {
+            background: #FF6B00;
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+        }
+        .btn-add:hover {
+            background: #ff8533;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 10000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal.active {
+            display: flex;
+        }
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            max-width: 700px;
+            width: 90%;
+            max-height: 95vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+        
+        #product-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #666;
+        }
+        .form-group {
+            margin-bottom: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        
+        #inventory-rows {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 10px;
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid #eee;
+            padding: 10px;
+            border-radius: 6px;
+        }
+        
+        .inventory-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr auto;
+            gap: 8px;
+            align-items: center;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #333;
+        }
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        .form-group textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        .image-preview {
+            width: 100%;
+            height: 200px;
+            border: 2px dashed #ddd;
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 10px;
+            overflow: hidden;
+        }
+        .image-preview img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .stat-card h4 {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+        .stat-card .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: #FF6B00;
+        }
+        .orders-table {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            overflow-x: auto;
+        }
+        .orders-table table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .orders-table th,
+        .orders-table td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+        .orders-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #333;
+        }
+        .status-badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .status-paid {
+            background: #d4edda;
+            color: #155724;
+        }
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+    </style>
+</head>
+<body>
+    <div id="dev-banner">This website is under development</div>
+
+    <!-- Navigation -->
+    <nav class="navbar" id="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <a href="index.html">
+                    <img class="site-logo-img" src="https://vorqavsuqcjnkjzwkyzr.supabase.co/storage/v1/object/public/Website/brand/ace1-logo.jpeg" alt="ACE#1" decoding="async" loading="eager" onerror="this.remove();">
+                    <span class="logo-text">ACE<span class="logo-accent">#1</span></span>
+                    <span class="admin-badge">Admin</span>
+                </a>
+            </div>
+            <div class="nav-icons">
+                <a href="index.html" class="btn btn-secondary">View Site</a>
+                <!-- TOTP setup removed -->
+                <button class="btn btn-primary" id="logout-btn">Logout</button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="admin-container">
+        <div class="admin-header">
+            <h1>Admin Dashboard</h1>
+            <div id="admin-user"></div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="admin-tabs">
+            <button class="admin-tab active" data-tab="dashboard">Dashboard</button>
+            <button class="admin-tab" data-tab="shoes">Shoes</button>
+            <button class="admin-tab" data-tab="clothing">Clothing</button>
+            <button class="admin-tab" data-tab="accessories">Accessories</button>
+            <button class="admin-tab" data-tab="inventory">Inventory</button>
+            <button class="admin-tab" data-tab="categories">Categories</button>
+            <button class="admin-tab" data-tab="orders">Orders</button>
+            <button class="admin-tab" data-tab="customers">Customers</button>
+            <button class="admin-tab" data-tab="coupons">Coupons</button>
+            <button class="admin-tab" data-tab="shipping">Shipping</button>
+            <button class="admin-tab" data-tab="content">Content</button>
+            <button class="admin-tab" data-tab="analytics">Analytics</button>
+            <button class="admin-tab" data-tab="communications">Communications</button>
+            <button class="admin-tab" data-tab="users">Users</button>
+            <button class="admin-tab" data-tab="roles">Roles</button>
+            <button class="admin-tab" data-tab="images">Site Images</button>
+            <button class="admin-tab" data-tab="settings">Settings</button>
+            <button class="admin-tab" data-tab="logs">Audit Logs</button>
+            <button class="admin-tab" data-tab="password">Change Password</button>
+        </div>
+
+        <!-- Dashboard Tab -->
+        <div class="admin-content active" id="dashboard-content">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h4>Total Products</h4>
+                    <div class="stat-value" id="total-products">0</div>
+                </div>
+                <div class="stat-card">
+                    <h4>Out of Stock</h4>
+                    <div class="stat-value" id="out-of-stock" style="color:#c62828;">0</div>
+                </div>
+                <div class="stat-card">
+                    <h4>Low Stock</h4>
+                    <div class="stat-value" id="low-stock" style="color:#ef6c00;">0</div>
+                </div>
+                <div class="stat-card">
+                    <h4>Total Orders</h4>
+                    <div class="stat-value" id="total-orders">0</div>
+                </div>
+                <div class="stat-card">
+                    <h4>Total Revenue</h4>
+                    <div class="stat-value" id="total-revenue" style="color:#2e7d32;">₹0</div>
+                </div>
+                <div class="stat-card">
+                    <h4>Refunded Amount</h4>
+                    <div class="stat-value" id="refunded-amount" style="color:#c62828;">₹0</div>
+                </div>
+            </div>
+        </div>
+
+                <!-- Change Summary Modal -->
+                <div class="modal" id="change-summary-modal">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h2 id="summary-title">Changes saved</h2>
+                            <button class="modal-close" id="summary-close">&times;</button>
+                        </div>
+                        <div id="change-summary-body" style="max-height:50vh; overflow:auto; font-family: monospace; white-space:pre-wrap;">
+                            <!-- Change details injected here -->
+                        </div>
+                        <div style="display:flex; gap:10px; margin-top:18px; justify-content:flex-end;">
+                            <button class="btn btn-secondary" id="summary-ok">OK</button>
+                        </div>
+                    </div>
+                </div>
+
+        <!-- Shoes Tab -->
+        <div class="admin-content" id="shoes-content">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2><i class="fas fa-shoe-prints"></i> Manage Shoes</h2>
+                <button class="btn-add" id="add-shoes-btn">
+                    <i class="fas fa-plus"></i> Add New Shoe
+                </button>
+            </div>
+            <div class="product-grid" id="shoes-grid"></div>
+        </div>
+
+        <!-- Clothing Tab -->
+        <div class="admin-content" id="clothing-content">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2><i class="fas fa-tshirt"></i> Manage Clothing</h2>
+                <button class="btn-add" id="add-clothing-btn">
+                    <i class="fas fa-plus"></i> Add New Clothing Item
+                </button>
+            </div>
+            <div class="product-grid" id="clothing-grid"></div>
+        </div>
+
+        <!-- Accessories Tab -->
+        <div class="admin-content" id="accessories-content">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2><i class="fas fa-gem"></i> Manage Accessories</h2>
+                <button class="btn-add" id="add-accessories-btn">
+                    <i class="fas fa-plus"></i> Add New Accessory
+                </button>
+            </div>
+            <div class="product-grid" id="accessories-grid"></div>
+        </div>
+
+        <!-- Orders Tab -->
+        <div class="admin-content" id="orders-content">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2>Recent Orders</h2>
+                <div style="display: flex; gap: 10px;">
+                    <button onclick="if(window.adminPanel) window.adminPanel.showExportOrdersModal(); else alert('Admin panel not loaded yet');" class="btn btn-success" style="padding: 10px 20px; background: #28a745;">
+                        <i class="fas fa-file-excel"></i> Export Excel
+                    </button>
+                    <button onclick="if(window.adminPanel) window.adminPanel.loadOrders(); else alert('Admin panel not loaded yet');" class="btn btn-secondary" style="padding: 10px 20px;">
+                        <i class="fas fa-sync-alt"></i> Refresh
+                    </button>
+                    <button onclick="if(window.adminPanel) window.adminPanel.testAdminAccess(); else alert('Admin panel not loaded yet');" class="btn btn-primary" style="padding: 10px 20px;">
+                        <i class="fas fa-bug"></i> Debug
+                    </button>
+                </div>
+            </div>
+            <div class="orders-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Customer</th>
+                            <th>Date</th>
+                            <th>Total</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="orders-table-body">
+                        <tr>
+                            <td colspan="6" style="text-align: center; padding: 40px;">Loading orders...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Inventory Tab -->
+        <div class="admin-content" id="inventory-content">
+            <div class="admin-section-header">
+                <h2><i class="fas fa-boxes"></i> Inventory Management</h2>
+                <div style="display:flex; gap:10px; align-items:center;">
+                    <label style="display:flex; gap:8px; align-items:center; font-size:13px; color:#444;">
+                        Category
+                        <select id="inventory-category-filter" style="padding:8px 10px; border:1px solid #ddd; border-radius:6px;">
+                            <option value="all" selected>All</option>
+                            <option value="shoes">Shoes</option>
+                            <option value="clothing">Clothing</option>
+                            <option value="accessories">Accessories</option>
+                        </select>
+                    </label>
+                    <button onclick="window.inventoryManager?.showAdjustmentModal()" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> New Adjustment
+                    </button>
+                </div>
+            </div>
+            <div class="inventory-summary" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 20px;">
+                <div class="stat-card">
+                    <h4>Total Products</h4>
+                    <span id="inv-total-products">-</span>
+                </div>
+                <div class="stat-card">
+                    <h4>Low Stock Items</h4>
+                    <span id="inv-low-stock" style="color: orange;">-</span>
+                </div>
+                <div class="stat-card">
+                    <h4>Out of Stock</h4>
+                    <span id="inv-out-of-stock" style="color: red;">-</span>
+                </div>
+                <div class="stat-card">
+                    <h4>Recent Adjustments</h4>
+                    <span id="inv-recent-adj">-</span>
+                </div>
+            </div>
+            <div id="inventory-table-container">Loading inventory...</div>
+        </div>
+
+        <!-- Categories Tab -->
+        <div class="admin-content" id="categories-content">
+            <div class="admin-section-header">
+                <h2><i class="fas fa-tags"></i> Category Management</h2>
+                <div style="display: flex; gap: 10px;">
+                    <button onclick="if(window.categoryManager) window.categoryManager.load(); else alert('Loading...');" class="btn btn-secondary" style="padding: 10px 20px;">
+                        <i class="fas fa-sync-alt"></i> Refresh
+                    </button>
+                    <button onclick="if(window.categoryManager) window.categoryManager.showCategoryModal(); else alert('Loading...');" class="btn btn-primary" style="padding: 10px 20px;">
+                        <i class="fas fa-plus"></i> Add Category
+                    </button>
+                </div>
+            </div>
+            <div class="categories-summary" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 20px;">
+                <div class="stat-card">
+                    <h4>Total Categories</h4>
+                    <span id="categories-total">-</span>
+                </div>
+                <div class="stat-card">
+                    <h4>Parent Categories</h4>
+                    <span id="categories-parent">-</span>
+                </div>
+                <div class="stat-card">
+                    <h4>Subcategories</h4>
+                    <span id="categories-sub">-</span>
+                </div>
+            </div>
+            <div id="categories-container">Loading categories...</div>
+        </div>
+
+        <!-- Customers Tab -->
+        <div class="admin-content" id="customers-content">
+            <div class="admin-section-header">
+                <h2><i class="fas fa-users"></i> Customer Management</h2>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <div class="search-box">
+                        <input type="text" id="customer-search" placeholder="Search customers..." onkeyup="window.customerManager?.searchCustomers(this.value)">
+                    </div>
+                    <button id="refresh-customers" class="btn btn-secondary" style="padding: 10px 20px;">
+                        <i class="fas fa-sync-alt"></i> Refresh
+                    </button>
+                </div>
+            </div>
+            <div class="customers-summary" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 20px;">
+                <div class="stat-card">
+                    <h4>Total Customers</h4>
+                    <span id="customers-total">-</span>
+                </div>
+                <div class="stat-card">
+                    <h4>New This Month</h4>
+                    <span id="customers-new" style="color: #28a745;">-</span>
+                </div>
+                <div class="stat-card">
+                    <h4>Active (30 days)</h4>
+                    <span id="customers-active" style="color: #007bff;">-</span>
+                </div>
+                <div class="stat-card">
+                    <h4>With Orders</h4>
+                    <span id="customers-with-orders">-</span>
+                </div>
+            </div>
+            <div id="customers-container">Loading customers...</div>
+        </div>
+
+        <!-- Coupons Tab -->
+        <div class="admin-content" id="coupons-content">
+            <div class="admin-section-header">
+                <h2><i class="fas fa-ticket-alt"></i> Coupons & Promotions</h2>
+                <button onclick="window.couponManager?.showCouponModal()" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Create Coupon
+                </button>
+            </div>
+            <div class="coupons-summary" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 20px;">
+                <div class="stat-card">
+                    <h4>Active Coupons</h4>
+                    <span id="coupons-active">-</span>
+                </div>
+                <div class="stat-card">
+                    <h4>Total Uses</h4>
+                    <span id="coupons-uses">-</span>
+                </div>
+                <div class="stat-card">
+                    <h4>Total Discounts</h4>
+                    <span id="coupons-discounts">-</span>
+                </div>
+            </div>
+            <div id="coupons-container">Loading coupons...</div>
+        </div>
+
+        <!-- Shipping Tab -->
+        <div class="admin-content" id="shipping-content">
+            <div class="admin-section-header">
+                <h2><i class="fas fa-truck"></i> Shipping Methods</h2>
+                <button onclick="window.shippingManager?.showShippingModal()" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Add Method
+                </button>
+            </div>
+            <div id="shipping-container">Loading shipping methods...</div>
+        </div>
+
+        <!-- Content Tab -->
+        <div class="admin-content" id="content-content">
+            <div class="admin-section-header">
+                <h2><i class="fas fa-file-alt"></i> Content Management</h2>
+                <button onclick="window.contentManager?.showContentModal()" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Add Content Block
+                </button>
+            </div>
+            <div class="content-filters" style="margin-bottom: 20px;">
+                <select id="content-location-filter" onchange="window.contentManager?.filterByLocation(this.value)">
+                    <option value="">All Locations</option>
+                    <option value="homepage_hero">Homepage Hero</option>
+                    <option value="homepage_promo">Homepage Promo</option>
+                    <option value="products_banner">Products Banner</option>
+                    <option value="announcement">Announcement Bar</option>
+                </select>
+            </div>
+            <div id="content-container">Loading content blocks...</div>
+        </div>
+
+        <!-- Analytics Tab -->
+        <div class="admin-content" id="analytics-content">
+            <div class="admin-section-header">
+                <h2><i class="fas fa-chart-line"></i> Analytics & Reports</h2>
+                <div class="date-range-picker">
+                    <input type="date" id="analytics-start" onchange="window.analyticsManager?.loadAnalytics()">
+                    <span>to</span>
+                    <input type="date" id="analytics-end" onchange="window.analyticsManager?.loadAnalytics()">
+                </div>
+            </div>
+            <div class="analytics-summary" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 20px;">
+                <div class="stat-card">
+                    <h4>Total Revenue</h4>
+                    <span id="analytics-revenue">-</span>
+                </div>
+                <div class="stat-card">
+                    <h4>Total Orders</h4>
+                    <span id="analytics-orders">-</span>
+                </div>
+                <div class="stat-card">
+                    <h4>Avg Order Value</h4>
+                    <span id="analytics-aov">-</span>
+                </div>
+                <div class="stat-card">
+                    <h4>Conversion Rate</h4>
+                    <span id="analytics-conversion">-</span>
+                </div>
+            </div>
+            <!-- Footfall Analytics Row -->
+            <div class="analytics-summary" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 20px;">
+                <div class="stat-card" style="background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);">
+                    <h4><i class="fas fa-users" style="color: #388e3c;"></i> Total Page Views</h4>
+                    <span id="analytics-pageviews" style="color: #2e7d32;">-</span>
+                </div>
+                <div class="stat-card" style="background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);">
+                    <h4><i class="fas fa-user-friends" style="color: #1976d2;"></i> Unique Visitors</h4>
+                    <span id="analytics-visitors" style="color: #1565c0;">-</span>
+                </div>
+                <div class="stat-card" style="background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);">
+                    <h4><i class="fas fa-mobile-alt" style="color: #f57c00;"></i> Mobile Traffic</h4>
+                    <span id="analytics-mobile" style="color: #ef6c00;">-</span>
+                </div>
+                <div class="stat-card" style="background: linear-gradient(135deg, #f3e5f5 0%, #e1bee7 100%);">
+                    <h4><i class="fas fa-chart-line" style="color: #7b1fa2;"></i> Avg Pages/Visit</h4>
+                    <span id="analytics-pages-per-visit" style="color: #6a1b9a;">-</span>
+                </div>
+            </div>
+            <div id="analytics-charts-container">
+                <canvas id="revenue-chart" height="200"></canvas>
+            </div>
+            <div id="analytics-table-container" style="margin-top: 20px;">Loading analytics...</div>
+        </div>
+
+        <!-- Communications Tab -->
+        <div class="admin-content" id="communications-content">
+            <div class="admin-section-header">
+                <h2><i class="fas fa-envelope"></i> Communications</h2>
+                <button onclick="window.communicationManager?.showTemplateModal()" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> New Template
+                </button>
+            </div>
+            <div class="comm-tabs" style="margin-bottom: 20px;">
+                <button class="comm-tab active" onclick="window.communicationManager?.showTab('templates')">Email Templates</button>
+                <button class="comm-tab" onclick="window.communicationManager?.showTab('history')">Send History</button>
+            </div>
+            <div id="communications-container">Loading templates...</div>
+        </div>
+
+        <!-- Roles Tab -->
+        <div class="admin-content" id="roles-content">
+            <div class="admin-section-header">
+                <h2><i class="fas fa-user-shield"></i> User Roles & Permissions</h2>
+                <button onclick="window.rolesManager?.showRoleModal()" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Create Role
+                </button>
+            </div>
+            <div id="roles-container">Loading roles...</div>
+        </div>
+
+        <!-- Site Images Tab -->
+        <div class="admin-content" id="images-content">
+            <h2 style="margin-bottom: 20px;">Site Images Management</h2>
+            <div style="margin-bottom: 30px; padding: 20px; background: #f5f5f5; border-radius: 8px;">
+                <h3 style="margin-top: 0;">Image Guide</h3>
+                <p><strong>Product Images:</strong> Used on product cards, product detail pages, and quick view modal. Upload and manage these in the <strong>Products</strong> tab.</p>
+                <p><strong>Hero Banner:</strong> Large banner image on the homepage (coming soon)</p>
+                <p><strong>Category Images:</strong> Images for product categories (coming soon)</p>
+                <p><strong>About/Team Images:</strong> Images for the About page team section (coming soon)</p>
+                <p><strong>Logo:</strong> Site logo (currently text-based, no image needed)</p>
+            </div>
+            
+            <div style="margin-bottom: 30px;">
+                <h3>Current Image Storage</h3>
+                <p style="color: #666;">All site images are stored in Supabase Storage bucket: <strong>Images</strong></p>
+                
+                <div class="orders-table" style="margin-top: 20px;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Image Type</th>
+                                <th>Location/Purpose</th>
+                                <th>Dimensions</th>
+                                <th>Usage</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Product Images</strong></td>
+                                <td>Product Detail Pages, Cards, Quick View Modal</td>
+                                <td>500x500px (recommended)</td>
+                                <td>Upload in Products tab → Edit Product → Upload Images</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Hero Banner</strong></td>
+                                <td>Homepage top section</td>
+                                <td>1920x600px</td>
+                                <td>Available in settings (coming soon)</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Category Icons</strong></td>
+                                <td>Category filters on Products page</td>
+                                <td>200x200px</td>
+                                <td>Available in settings (coming soon)</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Team Photos</strong></td>
+                                <td>About page team section</td>
+                                <td>300x400px</td>
+                                <td>Available in settings (coming soon)</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Testimonial Photos</strong></td>
+                                <td>Testimonials section on homepage</td>
+                                <td>150x150px (circular)</td>
+                                <td>Available in settings (coming soon)</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <!-- Image manager container: image-manager renders here when tab clicked -->
+            <div id="image-manager-container" style="margin-top: 20px;"></div>
+
+            <div style="padding: 20px; background: #e8f5e9; border-radius: 8px; border-left: 4px solid #4caf50;">
+                <h3 style="margin-top: 0; color: #2e7d32;">Quick Tips</h3>
+                <ul style="margin: 10px 0; padding-left: 20px;">
+                    <li>Always optimize images before uploading (use TinyPNG or similar)</li>
+                    <li>Use descriptive filenames for easier management</li>
+                    <li>Product images should be square (1:1 aspect ratio) for best display</li>
+                    <li>Keep file sizes under 500KB for faster loading</li>
+                    <li>All images are automatically compressed by Supabase Storage</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Change Password Tab -->
+        <div class="admin-content" id="password-content">
+                <div id="password-change-container"></div>
+                <!-- Build-time injected admin API URL (CI will replace) -->
+                <script>window.ADMIN_API_URL = "__ADMIN_API_URL__";</script>
+        </div>
+
+        <!-- Users Tab -->
+        <div class="admin-content" id="users-content">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2>User Management</h2>
+                <button onclick="window.adminPanel?.loadUsers()" class="btn btn-secondary" style="padding: 10px 20px;">
+                    <i class="fas fa-sync-alt"></i> Refresh
+                </button>
+            </div>
+            <div class="orders-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Email</th>
+                            <th>Name</th>
+                            <th>Role</th>
+                            <th>Last Login</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="users-table-body">
+                        <tr>
+                            <td colspan="5" style="text-align: center; padding: 40px;">Loading users...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- User Edit Modal -->
+        <div class="modal" id="user-modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 id="user-modal-title">Edit User</h2>
+                    <button class="modal-close" id="user-modal-close">&times;</button>
+                </div>
+                <form id="user-form">
+                    <input type="hidden" id="user-id">
+                    <div class="form-group">
+                        <label for="user-first-name">First name</label>
+                        <input type="text" id="user-first-name" required />
+                    </div>
+                    <div class="form-group">
+                        <label for="user-last-name">Last name</label>
+                        <input type="text" id="user-last-name" />
+                    </div>
+                    <div class="form-group">
+                        <label for="user-phone">Phone</label>
+                        <input type="tel" id="user-phone" />
+                    </div>
+                    <div class="form-group">
+                        <label for="user-role-select">Role</label>
+                        <select id="user-role-select">
+                            <option value="customer">Customer</option>
+                            <option value="admin">Admin</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="user-avatar">Avatar URL</label>
+                        <input id="user-avatar" type="url" placeholder="https://example.com/avatar.jpg" />
+                    </div>
+                    <!-- Admin: Reset password for this user -->
+                    <div class="form-group" id="admin-reset-section" style="margin-top:10px; border-top:1px dashed #ddd; padding-top:10px; display:none;">
+                        <label>Reset user password</label>
+                        <div style="display:flex; gap:8px; align-items:center;">
+                            <input type="password" id="admin-new-password" placeholder="New password for user" style="flex:1; min-width:260px;" />
+                            <input type="password" id="admin-confirm-new-password" placeholder="Confirm password" style="flex:1; min-width:260px;" />
+                        </div>
+                        <div style="display:flex; gap:8px; margin-top:8px;">
+                            <button type="button" class="btn btn-secondary" id="user-generate-password">Generate</button>
+                            <button type="button" class="btn btn-danger" id="user-reset-password-btn">Reset Password</button>
+                            <span id="user-reset-notice" style="color:#2e7d32; display:none; align-self:center;">Password reset sent</span>
+                        </div>
+                        <small style="display:block; margin-top:8px; color:#666;">This action performs a server-side reset (service_role required) and will invalidate existing sessions for the user.</small>
+                    </div>
+                    <div id="user-form-error" style="display:none;color:#b00020;margin-bottom:8px;"></div>
+                    <div style="display:flex; gap:10px; margin-top:12px;">
+                        <button type="button" class="btn btn-secondary" id="user-cancel-btn">Cancel</button>
+                        <button type="submit" class="btn btn-primary" id="user-save-btn">Save User</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Order Modal -->
+        <div class="modal" id="order-modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 id="order-modal-title">Order</h2>
+                    <button class="modal-close" id="order-modal-close">&times;</button>
+                </div>
+                <div id="order-modal-body">
+                    <div style="display:flex; flex-direction:column; gap:10px;">
+                        <div id="order-details-area" style="font-family: monospace; white-space: pre-wrap; max-height:35vh; overflow:auto;"></div>
+                        <div class="form-group">
+                            <label for="order-status-select">Status</label>
+                            <select id="order-status-select">
+                                <option value="pending">pending</option>
+                                <option value="processing">processing</option>
+                                <option value="shipped">shipped</option>
+                                <option value="delivered">delivered</option>
+                                <option value="cancelled">cancelled</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="order-tracking-number">Tracking Number</label>
+                            <input id="order-tracking-number" type="text" placeholder="e.g. DTDC123456789" />
+                        </div>
+                        <div class="form-group">
+                            <label for="order-shipped-at">Shipped At</label>
+                            <input id="order-shipped-at" type="datetime-local" />
+                        </div>
+                        <div class="form-group">
+                            <label for="order-delivered-at">Delivered At</label>
+                            <input id="order-delivered-at" type="datetime-local" />
+                        </div>
+                        <div class="form-group">
+                            <label for="order-notes">Notes / Admin comment</label>
+                            <textarea id="order-notes"></textarea>
+                        </div>
+                        <div id="order-form-error" style="display:none;color:#b00020;margin-bottom:8px;"></div>
+                        <div style="display:flex; gap:8px;">
+                            <button class="btn btn-secondary" id="order-cancel-btn" type="button" onclick="document.getElementById('order-modal').classList.remove('active')">Close</button>
+                            <button class="btn btn-primary" id="order-update-btn" type="button" onclick="adminPanel.updateOrderFromModal()">Save Changes</button>
+                            <button class="btn btn-danger" id="order-cancel-order-btn" type="button" onclick="adminPanel.cancelOrderFromModal()">Cancel Order</button>
+                            <button class="btn btn-secondary" id="order-refund-btn" type="button" onclick="adminPanel.refundOrderFromModal()">Refund</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Export Orders Modal -->
+        <div class="modal" id="export-orders-modal">
+            <div class="modal-content" style="max-width: 500px;">
+                <div class="modal-header">
+                    <h2><i class="fas fa-file-excel"></i> Export Orders to Excel</h2>
+                    <button class="modal-close" onclick="document.getElementById('export-orders-modal').classList.remove('active')">&times;</button>
+                </div>
+                <div class="modal-body" style="padding: 20px;">
+                    <form id="export-orders-form">
+                        <div class="form-group">
+                            <label for="export-date-from">From Date</label>
+                            <input type="date" id="export-date-from" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label for="export-date-to">To Date</label>
+                            <input type="date" id="export-date-to" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label for="export-status-filter">Order Status</label>
+                            <select id="export-status-filter" class="form-control">
+                                <option value="all">All Statuses</option>
+                                <option value="pending">Pending</option>
+                                <option value="processing">Processing</option>
+                                <option value="shipped">Shipped</option>
+                                <option value="delivered">Delivered</option>
+                                <option value="cancelled">Cancelled</option>
+                                <option value="refunded">Refunded</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="export-include-items" checked>
+                                Include Order Items (Detailed)
+                            </label>
+                        </div>
+                        <div id="export-preview" style="background: #f5f5f5; padding: 10px; border-radius: 5px; margin-bottom: 15px;">
+                            <strong>Preview:</strong> <span id="export-count">0</span> orders will be exported
+                        </div>
+                        <div id="export-form-error" style="display:none;color:#b00020;margin-bottom:8px;"></div>
+                        <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                            <button type="button" class="btn btn-secondary" onclick="document.getElementById('export-orders-modal').classList.remove('active')">Cancel</button>
+                            <button type="button" id="export-download-btn" class="btn btn-success" style="background: #28a745;" onclick="if(window.adminPanel) window.adminPanel.exportOrdersToExcel(); else alert('Admin panel not loaded');">
+                                <i class="fas fa-download"></i> Download Excel
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Role Modal -->
+        <div class="modal" id="role-modal">
+            <div class="modal-content" style="max-width: 600px;">
+                <div class="modal-header">
+                    <h2 id="role-modal-title">Create Role</h2>
+                    <button class="modal-close" id="role-modal-close">&times;</button>
+                </div>
+                <div class="modal-body" style="padding: 20px;">
+                    <form id="role-form">
+                        <div class="form-group">
+                            <label for="role-name">Role Name *</label>
+                            <input type="text" id="role-name" class="form-control" placeholder="e.g., manager, editor, support" required>
+                            <small class="form-hint">Use lowercase letters, numbers, and hyphens only</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="role-description">Description</label>
+                            <textarea id="role-description" class="form-control" placeholder="Describe what this role can do..." rows="3"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Permissions</label>
+                            <div class="permissions-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 10px;">
+                                <div class="permission-item">
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="perm-products" class="permission-checkbox">
+                                        <span class="checkmark"></span>
+                                        <i class="fas fa-box"></i> Products Management
+                                    </label>
+                                    <small>Manage products, inventory, categories</small>
+                                </div>
+                                <div class="permission-item">
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="perm-orders" class="permission-checkbox">
+                                        <span class="checkmark"></span>
+                                        <i class="fas fa-shopping-cart"></i> Orders Management
+                                    </label>
+                                    <small>View and manage customer orders</small>
+                                </div>
+                                <div class="permission-item">
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="perm-customers" class="permission-checkbox">
+                                        <span class="checkmark"></span>
+                                        <i class="fas fa-users"></i> Customer Management
+                                    </label>
+                                    <small>View customer data and interactions</small>
+                                </div>
+                                <div class="permission-item">
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="perm-analytics" class="permission-checkbox">
+                                        <span class="checkmark"></span>
+                                        <i class="fas fa-chart-bar"></i> Analytics & Reports
+                                    </label>
+                                    <small>Access analytics and reporting tools</small>
+                                </div>
+                                <div class="permission-item">
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="perm-settings" class="permission-checkbox">
+                                        <span class="checkmark"></span>
+                                        <i class="fas fa-cog"></i> Site Settings
+                                    </label>
+                                    <small>Modify site configuration and settings</small>
+                                </div>
+                                <div class="permission-item">
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="perm-users" class="permission-checkbox">
+                                        <span class="checkmark"></span>
+                                        <i class="fas fa-user-shield"></i> User Management
+                                    </label>
+                                    <small>Manage user accounts and roles</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="role-form-error" style="display:none;color:#b00020;margin-bottom:8px;"></div>
+                        <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
+                            <button type="button" class="btn btn-secondary" onclick="adminExtended.closeModal('role-modal')">Cancel</button>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Save Role
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Settings Tab -->
+        <div class="admin-content" id="settings-content">
+            <h2 style="margin-bottom: 20px;">Site Settings</h2>
+            <form id="settings-form">
+                <div class="form-group">
+                    <label for="site-title">Site Title</label>
+                    <input type="text" id="site-title" value="ACE#1 - Revolutionary Footwear">
+                </div>
+                <div class="form-group">
+                    <label for="site-description">Site Description</label>
+                    <textarea id="site-description">Revolutionary footwear integrated with terahertz technology for enhanced wellness and lifestyle.</textarea>
+                </div>
+                <div class="form-group">
+                    <label for="contact-email">Contact Email</label>
+                    <input type="email" id="contact-email" value="hello@ace1.in">
+                </div>
+                <div class="form-group">
+                    <label for="contact-phone">Contact Phone</label>
+                    <input type="tel" id="contact-phone" value="+91 98765 43210">
+                </div>
+                <div class="form-group">
+                    <label for="instagram-url">Instagram URL</label>
+                    <input type="url" id="instagram-url" value="https://instagram.com/ace_1_official/">
+                </div>
+                <div id="settings-form-error" style="display:none;color:#b00020;margin-bottom:8px;"></div>
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="maintenance-mode">
+                        Maintenance Mode (disable orders)
+                    </label>
+                </div>
+                <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:center;">
+                    <button type="submit" class="btn btn-primary">Save Settings</button>
+                    <button type="button" class="btn btn-danger" id="cleanup-site-settings">
+                        Clean Up Old Settings Rows
+                    </button>
+                </div>
+                <p style="margin-top:10px; font-size:13px; color:#666;">
+                    Cleans up duplicate rows in <code>site_settings</code> by keeping the most recently updated row and deleting older ones.
+                </p>
+            </form>
+        </div>
+
+        <!-- Logs Tab -->
+        <div class="admin-content" id="logs-content">
+            <h2 style="margin-bottom: 20px;">Security Logs</h2>
+            <div style="margin-bottom: 20px;">
+                <button class="btn btn-secondary" id="refresh-logs">Refresh Logs</button>
+                <button class="btn btn-secondary" id="clear-logs">Clear Old Logs</button>
+            </div>
+            <div class="orders-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Timestamp</th>
+                            <th>Event</th>
+                            <th>Details</th>
+                            <th>User Agent</th>
+                        </tr>
+                    </thead>
+                    <tbody id="logs-table-body">
+                        <tr>
+                            <td colspan="4" style="text-align: center; padding: 40px;">Loading logs...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Session Revocations -->
+            <h2 style="margin-top: 30px; margin-bottom: 10px;">Session Revocations</h2>
+            <div style="display:flex; gap:12px; align-items:center; margin-bottom:14px;">
+                <button class="btn btn-secondary" id="refresh-revocations">Refresh Revocations</button>
+                <div style="display:flex; gap:8px; align-items:center;">
+                    <input type="text" id="revoke-token-input" placeholder="Enter token to revoke (or leave blank for user-wide)" style="padding:8px; width:360px;" />
+                    <input type="text" id="revoke-reason-input" placeholder="Reason (optional)" style="padding:8px; width:200px;" />
+                    <label style="display:flex; gap:8px; align-items:center; font-size:13px; color:#444;">
+                        <input type="checkbox" id="revoke-include-ip" />
+                        <span>Include client IP</span>
+                    </label>
+                    <button class="btn btn-danger" id="revoke-token-btn">Revoke Token</button>
+                </div>
+            </div>
+
+            <div class="orders-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Revoked At</th>
+                            <th>Token (masked)</th>
+                            <th>User ID</th>
+                            <th>Revoked By</th>
+                            <th>Reason</th>
+                            <th>IP Address</th>
+                            <th>User Agent</th>
+                        </tr>
+                    </thead>
+                    <tbody id="revocations-table-body">
+                        <tr>
+                            <td colspan="7" style="text-align: center; padding: 40px;">Loading revocations...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stock Adjustment Modal -->
+    <div class="modal" id="stock-adjust-modal" style="display:none;">
+        <div class="modal-content" style="max-width:450px;">
+            <div class="modal-header">
+                <h2>Adjust Stock</h2>
+                <button class="modal-close" onclick="adminExtended.closeModal('stock-adjust-modal')">&times;</button>
+            </div>
+            <form onsubmit="event.preventDefault(); adminExtended.saveStockAdjustment();">
+                <input type="hidden" id="adjust-product-id">
+                <div class="form-group" style="margin-bottom:15px;">
+                    <label style="display:block;margin-bottom:5px;font-weight:600;">Product</label>
+                    <p id="adjust-product-name" style="font-size:1.1em;font-weight:500;margin:0;">-</p>
+                </div>
+                <div class="form-group" style="margin-bottom:15px;">
+                    <label style="display:block;margin-bottom:5px;font-weight:600;">Size *</label>
+                    <select id="adjust-size" required style="width:100%;padding:10px;border:1px solid #ddd;border-radius:4px;">
+                        <option>Loading sizes...</option>
+                    </select>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;margin-bottom:15px;">
+                    <div class="form-group">
+                        <label style="display:block;margin-bottom:5px;font-weight:600;">Type *</label>
+                        <select id="adjust-type" required style="width:100%;padding:10px;border:1px solid #ddd;border-radius:4px;">
+                            <option value="add">Add Stock</option>
+                            <option value="remove">Remove Stock</option>
+                            <option value="set">Set Stock</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label style="display:block;margin-bottom:5px;font-weight:600;">Quantity *</label>
+                        <input type="number" id="adjust-quantity" required min="0" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:4px;" placeholder="0">
+                    </div>
+                </div>
+                <div class="form-group" style="margin-bottom:20px;">
+                    <label style="display:block;margin-bottom:5px;font-weight:600;">Reason</label>
+                    <select id="adjust-reason" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:4px;">
+                        <option value="restock">Restock</option>
+                        <option value="return">Customer Return</option>
+                        <option value="damage">Damaged/Lost</option>
+                        <option value="correction">Inventory Correction</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                <div style="display:flex;gap:10px;justify-content:flex-end;">
+                    <button type="button" class="btn btn-secondary" onclick="adminExtended.closeModal('stock-adjust-modal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Adjustment</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Category Modal -->
+    <div class="modal" id="category-modal">
+        <div class="modal-content" style="max-width:450px;">
+            <div class="modal-header">
+                <h2 id="category-modal-title">Add Category</h2>
+                <button class="modal-close" onclick="document.getElementById('category-modal').classList.remove('active')">&times;</button>
+            </div>
+            <form onsubmit="event.preventDefault(); adminExtended.saveCategoryFromModal();">
+                <input type="hidden" id="category-id">
+                <div class="form-group" style="margin-bottom:15px;">
+                    <label style="display:block;margin-bottom:5px;font-weight:600;">Category Name *</label>
+                    <input type="text" id="category-name" required style="width:100%;padding:10px;border:1px solid #ddd;border-radius:4px;" placeholder="e.g., Running Shoes">
+                </div>
+                <div class="form-group" style="margin-bottom:15px;">
+                    <label style="display:block;margin-bottom:5px;font-weight:600;">Slug</label>
+                    <input type="text" id="category-slug" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:4px;" placeholder="e.g., running-shoes (auto-generated)">
+                </div>
+                <div class="form-group" style="margin-bottom:15px;">
+                    <label style="display:block;margin-bottom:5px;font-weight:600;">Description</label>
+                    <textarea id="category-description" rows="3" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:4px;" placeholder="Category description..."></textarea>
+                </div>
+                <div class="form-group" style="margin-bottom:20px;">
+                    <label style="display:block;margin-bottom:5px;font-weight:600;">Parent Category</label>
+                    <select id="category-parent" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:4px;">
+                        <option value="">None (Top Level)</option>
+                    </select>
+                </div>
+                <div id="category-form-error" style="display:none;color:#b00020;margin-bottom:8px;"></div>
+                <div style="display:flex;gap:10px;justify-content:flex-end;">
+                    <button type="button" class="btn btn-secondary" onclick="document.getElementById('category-modal').classList.remove('active')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Category</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Content Block Modal -->
+    <div class="modal" id="content-block-modal" style="display:none;">
+        <div class="modal-content" style="max-width:550px;">
+            <div class="modal-header">
+                <h2 id="content-modal-title">Add Content</h2>
+                <button class="modal-close" onclick="adminExtended.closeModal('content-block-modal')">&times;</button>
+            </div>
+            <form id="content-block-form" onsubmit="event.preventDefault(); adminExtended.saveContentBlock();">
+                <input type="hidden" id="content-block-id">
+                <input type="hidden" id="content-block-type">
+                <div class="form-group" style="margin-bottom:15px;">
+                    <label style="display:block;margin-bottom:5px;font-weight:600;">Title *</label>
+                    <input type="text" id="content-title" required style="width:100%;padding:10px;border:1px solid #ddd;border-radius:4px;" placeholder="Content title">
+                </div>
+                <div class="form-group" style="margin-bottom:15px;">
+                    <label style="display:block;margin-bottom:5px;font-weight:600;">Content</label>
+                    <textarea id="content-body" rows="4" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:4px;" placeholder="Content body text..."></textarea>
+                </div>
+                <div class="form-group" style="margin-bottom:15px;">
+                    <label style="display:block;margin-bottom:5px;font-weight:600;">Image URL</label>
+                    <input type="url" id="content-image" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:4px;" placeholder="https://...">
+                </div>
+                <div class="form-group" style="margin-bottom:15px;">
+                    <label style="display:block;margin-bottom:5px;font-weight:600;">Link URL</label>
+                    <input type="url" id="content-link" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:4px;" placeholder="https://...">
+                </div>
+                <div class="form-group" style="margin-bottom:15px;">
+                    <label style="display:block;margin-bottom:5px;font-weight:600;">Position</label>
+                    <select id="content-position" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:4px;">
+                        <option value="homepage-hero">Homepage Hero</option>
+                        <option value="homepage-banner">Homepage Banner</option>
+                        <option value="sidebar">Sidebar</option>
+                        <option value="footer">Footer</option>
+                        <option value="product-page">Product Page</option>
+                    </select>
+                </div>
+                <div class="form-group" style="margin-bottom:20px;">
+                    <label style="display:flex;align-items:center;gap:10px;cursor:pointer;">
+                        <input type="checkbox" id="content-active" checked style="width:18px;height:18px;">
+                        <span style="font-weight:600;">Active</span>
+                    </label>
+                </div>
+                <div style="display:flex;gap:10px;justify-content:flex-end;">
+                    <button type="button" class="btn btn-secondary" onclick="adminExtended.closeModal('content-block-modal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Content</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Customer Details Modal -->
+    <div class="modal" id="customer-details-modal">
+        <div class="modal-content" style="max-width:700px;max-height:80vh;overflow:auto;">
+            <div class="modal-header">
+                <h2><i class="fas fa-user"></i> Customer Details</h2>
+                <button class="modal-close" onclick="document.getElementById('customer-details-modal').classList.remove('active')">&times;</button>
+            </div>
+            <div id="customer-details-body" style="padding: 20px;">
+                <!-- Dynamically populated -->
+            </div>
+            <div class="modal-footer" style="padding: 15px 20px; border-top: 1px solid #eee; display: flex; gap: 10px; justify-content: flex-end;">
+                <button class="btn btn-secondary" onclick="document.getElementById('customer-details-modal').classList.remove('active')">Close</button>
+                <button class="btn btn-primary" onclick="adminExtended.sendCustomerEmail()">
+                    <i class="fas fa-envelope"></i> Send Email
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Coupon Modal -->
+    <div class="modal" id="coupon-modal">
+        <div class="modal-content" style="max-width:500px;">
+            <div class="modal-header">
+                <h2 id="coupon-modal-title">Create Coupon</h2>
+                <button class="modal-close" onclick="adminExtended.closeModal('coupon-modal')">&times;</button>
+            </div>
+            <form onsubmit="event.preventDefault(); adminExtended.saveCoupon();">
+                <input type="hidden" id="coupon-id">
+                <div class="form-group" style="margin-bottom:15px;">
+                    <label style="display:block;margin-bottom:5px;font-weight:600;">Coupon Code *</label>
+                    <input type="text" id="coupon-code" required style="width:100%;padding:10px;border:1px solid #ddd;border-radius:4px;" placeholder="e.g., SAVE20">
+                </div>
+                <div class="form-group" style="margin-bottom:15px;">
+                    <label style="display:block;margin-bottom:5px;font-weight:600;">Description</label>
+                    <input type="text" id="coupon-description" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:4px;" placeholder="e.g., 20% off your order">
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;margin-bottom:15px;">
+                    <div class="form-group">
+                        <label style="display:block;margin-bottom:5px;font-weight:600;">Discount Type</label>
+                        <select id="coupon-type" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:4px;">
+                            <option value="percentage">Percentage</option>
+                            <option value="fixed">Fixed Amount</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label style="display:block;margin-bottom:5px;font-weight:600;">Discount Value *</label>
+                        <input type="number" id="coupon-value" required min="0" step="0.01" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:4px;" placeholder="e.g., 20">
+                    </div>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;margin-bottom:15px;">
+                    <div class="form-group">
+                        <label style="display:block;margin-bottom:5px;font-weight:600;">Min Order (₹)</label>
+                        <input type="number" id="coupon-min-order" min="0" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:4px;" placeholder="0">
+                    </div>
+                    <div class="form-group">
+                        <label style="display:block;margin-bottom:5px;font-weight:600;">Usage Limit</label>
+                        <input type="number" id="coupon-usage-limit" min="0" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:4px;" placeholder="Unlimited">
+                    </div>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;margin-bottom:15px;">
+                    <div class="form-group">
+                        <label style="display:block;margin-bottom:5px;font-weight:600;">Start Date</label>
+                        <input type="date" id="coupon-start" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:4px;">
+                    </div>
+                    <div class="form-group">
+                        <label style="display:block;margin-bottom:5px;font-weight:600;">End Date</label>
+                        <input type="date" id="coupon-end" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:4px;">
+                    </div>
+                </div>
+                <div class="form-group" style="margin-bottom:20px;">
+                    <label style="display:flex;align-items:center;gap:10px;cursor:pointer;">
+                        <input type="checkbox" id="coupon-active" checked style="width:18px;height:18px;">
+                        <span style="font-weight:600;">Active</span>
+                    </label>
+                </div>
+                <div style="display:flex;gap:10px;justify-content:flex-end;">
+                    <button type="button" class="btn btn-secondary" onclick="adminExtended.closeModal('coupon-modal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Coupon</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Shipping Modal -->
+    <div class="modal" id="shipping-modal">
+        <div class="modal-content" style="max-width:500px;">
+            <div class="modal-header">
+                <h2 id="shipping-modal-title">Add Shipping Method</h2>
+                <button class="modal-close" onclick="adminExtended.closeModal('shipping-modal')">&times;</button>
+            </div>
+            <form onsubmit="event.preventDefault(); adminExtended.saveShippingMethod();">
+                <input type="hidden" id="shipping-id">
+                <div class="form-group" style="margin-bottom:15px;">
+                    <label style="display:block;margin-bottom:5px;font-weight:600;">Method Name *</label>
+                    <input type="text" id="shipping-name" required style="width:100%;padding:10px;border:1px solid #ddd;border-radius:4px;" placeholder="e.g., Standard Shipping">
+                </div>
+                <div class="form-group" style="margin-bottom:15px;">
+                    <label style="display:block;margin-bottom:5px;font-weight:600;">Description</label>
+                    <input type="text" id="shipping-description" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:4px;" placeholder="e.g., Delivery in 5-7 business days">
+                </div>
+                <div class="form-group" style="margin-bottom:15px;">
+                    <label style="display:block;margin-bottom:5px;font-weight:600;">Carrier</label>
+                    <input type="text" id="shipping-carrier" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:4px;" placeholder="e.g., India Post, BlueDart">
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:15px;margin-bottom:15px;">
+                    <div class="form-group">
+                        <label style="display:block;margin-bottom:5px;font-weight:600;">Rate (₹) *</label>
+                        <input type="number" id="shipping-rate" required min="0" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:4px;" placeholder="99">
+                    </div>
+                    <div class="form-group">
+                        <label style="display:block;margin-bottom:5px;font-weight:600;">Min Days</label>
+                        <input type="number" id="shipping-days-min" min="1" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:4px;" placeholder="3">
+                    </div>
+                    <div class="form-group">
+                        <label style="display:block;margin-bottom:5px;font-weight:600;">Max Days</label>
+                        <input type="number" id="shipping-days-max" min="1" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:4px;" placeholder="7">
+                    </div>
+                </div>
+                <div class="form-group" style="margin-bottom:15px;">
+                    <label style="display:block;margin-bottom:5px;font-weight:600;">Free Shipping Above (₹)</label>
+                    <input type="number" id="shipping-free-threshold" min="0" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:4px;" placeholder="e.g., 999 (leave empty for no free shipping)">
+                </div>
+                <div class="form-group" style="margin-bottom:20px;">
+                    <label style="display:flex;align-items:center;gap:10px;cursor:pointer;">
+                        <input type="checkbox" id="shipping-active" checked style="width:18px;height:18px;">
+                        <span style="font-weight:600;">Active</span>
+                    </label>
+                </div>
+                <div style="display:flex;gap:10px;justify-content:flex-end;">
+                    <button type="button" class="btn btn-secondary" onclick="adminExtended.closeModal('shipping-modal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Method</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- History Modal -->
+    <div class="modal" id="history-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="history-title">Product Change History</h2>
+                <button class="modal-close" id="history-close">&times;</button>
+            </div>
+            <div id="history-body" style="max-height:55vh; overflow:auto; font-family: monospace; white-space:pre-wrap;">
+                <!-- History lines injected here -->
+            </div>
+            <div style="display:flex; gap:10px; margin-top:18px; justify-content:flex-end;">
+                <button class="btn btn-secondary" id="history-ok">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Product Modal -->
+    <div class="modal" id="product-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modal-title">Add New Product</h2>
+                <div style="display:flex; gap:8px; align-items:center;">
+                    <button class="btn btn-secondary" id="view-history-btn" type="button">View History</button>
+                </div>
+                <button class="modal-close" id="modal-close">&times;</button>
+            </div>
+            <form id="product-form">
+                <input type="hidden" id="product-id">
+                
+                <div class="form-group">
+                    <label for="product-name">Product Name *</label>
+                    <input type="text" id="product-name" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="product-description">Description</label>
+                    <textarea id="product-description"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="product-price">Price (₹) *</label>
+                    <input type="number" id="product-price" step="0.01" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="product-category">Category *</label>
+                    <select id="product-category" required>
+                        <option value="">-- Select Category --</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="product-primary-category">Primary Category *</label>
+                    <select id="product-primary-category" required>
+                        <option value="">-- Select Primary Category --</option>
+                        <option value="shoes">Shoes</option>
+                        <option value="clothing">Clothing</option>
+                        <option value="accessories">Accessories</option>
+                    </select>
+                    <small style="color: #666;">Determines which page (shoes.html, clothing.html, or accessories.html) this product appears on</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="product-stock">Stock Quantity *</label>
+                    <!-- Multi-size inventory: dynamic rows of size + stock -->
+                    <div id="inventory-rows">
+                        <!-- Rows are injected here by admin.js -->
+                    </div>
+                    <div style="display:flex; gap:8px; margin-top:8px;">
+                        <button type="button" class="btn btn-secondary" id="add-size-btn">Add Size</button>
+                        <small style="align-self:center; color:#666;">Add multiple sizes/stock entries</small>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="product-image">Product Image URL</label>
+                    <input type="url" id="product-image" placeholder="Enter image URL (e.g., https://example.com/image.jpg)">
+                    <small style="color: #666;">Provide a direct URL to the product image (JPEG, PNG, GIF, WebP)</small>
+                    <div class="image-preview" id="image-preview">
+                        <span style="color: #999;">Image preview will appear here</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="product-active" checked>
+                        Active (visible to customers)
+                    </label>
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="product-featured" checked>
+                        Show on Homepage (index.html)
+                    </label>
+                    <small style="color: #666;">Display this product in the Featured Collection section on the homepage</small>
+                </div>
+
+                <div style="display: flex; gap: 10px;">
+                    <button type="button" class="btn btn-secondary" id="cancel-btn" style="flex: 1;">Cancel</button>
+                    <button type="submit" class="btn btn-primary" style="flex: 1;">Save Product</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Cache Buster (must load first) -->
+    <script src="js/cache-buster.js" defer></script>
+    <!-- Supabase Integration -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.89.0"></script>
+    <script src="js/supabase-config.js"></script>
+    <!-- Security Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.6/dist/purify.min.js"></script>
+    <script src="js/password-hasher.js"></script>
+    <script src="js/security.js"></script>
+    <script src="js/database-auth.js"></script>
+    <script src="js/supabase-service.js"></script>
+    <script src="js/admin.js"></script>
+    <!-- Extended Admin Features -->
+    <script src="js/admin-extended.js?v=20251218"></script>
+    <!-- Image Optimization -->
+    <script src="js/image-optimizer.js"></script>
+    <!-- Image Manager -->
+    <script src="js/image-manager.js"></script>
+    <!-- Password Manager -->
+    <script src="js/password-manager.js"></script>
+    <script>
+        // Initialize Image Manager when tab is clicked
+        document.addEventListener('DOMContentLoaded', () => {
+            const imagesTab = document.querySelector('[data-tab="images"]');
+            if (imagesTab) {
+                imagesTab.addEventListener('click', () => {
+                    if (window.websiteImageManager && !document.querySelector('.image-manager')) {
+                        websiteImageManager.renderImageManager('image-manager-container');
+                    }
+                });
+            }
+
+            // Initialize Password Manager when tab is clicked
+            const passwordTab = document.querySelector('[data-tab="password"]');
+            if (passwordTab) {
+                passwordTab.addEventListener('click', () => {
+                    if (window.passwordManager && !document.querySelector('.password-manager')) {
+                        passwordManager.renderPasswordChangeForm('password-change-container');
+                    }
+                });
+            }
+
+            // Initialize Extended Admin Managers when their tabs are clicked
+            const tabManagerMap = {
+                'inventory': 'inventoryManager',
+                'categories': 'categoryManager',
+                'customers': 'customerManager',
+                'coupons': 'couponManager',
+                'shipping': 'shippingManager',
+                'content': 'contentManager',
+                'analytics': 'analyticsManager',
+                'communications': 'communicationManager',
+                'roles': 'rolesManager'
+            };
+
+            Object.entries(tabManagerMap).forEach(([tabName, managerName]) => {
+                const tab = document.querySelector(`[data-tab="${tabName}"]`);
+                if (tab) {
+                    tab.addEventListener('click', () => {
+                        const manager = window[managerName];
+                        if (manager && typeof manager.load === 'function') {
+                            manager.load();
+                        }
+                    });
+                }
+            });
+
+            // Set default date range for analytics (last 30 days)
+            const endDate = new Date();
+            const startDate = new Date();
+            startDate.setDate(startDate.getDate() - 30);
+            
+            const analyticsStart = document.getElementById('analytics-start');
+            const analyticsEnd = document.getElementById('analytics-end');
+            if (analyticsStart) analyticsStart.value = startDate.toISOString().split('T')[0];
+            if (analyticsEnd) analyticsEnd.value = endDate.toISOString().split('T')[0];
+        });
+    </script>
+
+    <!-- Stock History Modal -->
+    <div class="modal" id="stock-history-modal" style="display:none;">
+        <div class="modal-content" style="max-width:700px;">
+            <div class="modal-header">
+                <h2>Stock Adjustment History</h2>
+                <button class="modal-close" onclick="document.getElementById('stock-history-modal').style.display='none'">&times;</button>
+            </div>
+            <div style="max-height:60vh; overflow:auto;">
+                <table style="width:100%;border-collapse:collapse;">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Type</th>
+                            <th>Change</th>
+                            <th>Before → After</th>
+                            <th>Reason</th>
+                        </tr>
+                    </thead>
+                    <tbody id="stock-history-body">
+                        <tr><td colspan="5" style="text-align:center;padding:30px;">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

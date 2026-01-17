@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="alternate icon" href="favicon.svg">
+    <link rel="apple-touch-icon" href="images/apple-touch-icon.png" sizes="180x180">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#1a1a2e">
+    
+    <!-- Auth callback redirect (must be first) -->
+    <script>
+        (function() {
+            // If this page is hit with an auth hash, forward to auth callback.
+            // Otherwise, welcome.html is deprecated and should redirect to index.html.
+            var hash = window.location.hash || '';
+            var search = window.location.search || '';
+            if (hash && (hash.includes('access_token=') || hash.includes('error='))) {
+                window.location.href = 'auth-callback.html' + hash;
+                return;
+            }
+
+            // Preserve query/hash in case something legacy depends on it.
+            window.location.replace('index.html' + search + hash);
+        })();
+    </script>
+    
+    <!-- Cache Control Meta Tags -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    
+    <!-- Security Meta Tags -->
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta http-equiv="X-XSS-Protection" content="1; mode=block">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="description" content="ACE#1 - Footwear built for comfort and everyday wear">
+    <title>Ace#1 | Page Moved</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <noscript>
+        <meta http-equiv="refresh" content="0; url=index.html">
+    </noscript>
+
+    <section class="page-hero">
+        <div class="container">
+            <h1>Page Moved</h1>
+            <p>This page is deprecated. Redirecting you to the homepage.</p>
+            <div class="hero-buttons">
+                <a href="index.html" class="btn btn-primary">Go to Home</a>
+                <a href="shoes.html" class="btn btn-secondary">Shop Shoes</a>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        // If JS is enabled but the earlier redirect didn't run for any reason, redirect here too.
+        window.location.replace('index.html' + window.location.search + window.location.hash);
+    </script>
+</body>
+</html>
+

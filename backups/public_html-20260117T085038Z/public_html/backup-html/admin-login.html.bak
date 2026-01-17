@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="alternate icon" href="favicon.svg">
+    <link rel="apple-touch-icon" href="images/apple-touch-icon.png" sizes="180x180">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#1a1a2e">
+    <title>Admin Login | Ace#1</title>
+
+    <!-- Cache Control Meta Tags -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+
+    <!-- Security Meta Tags -->
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta http-equiv="X-XSS-Protection" content="1; mode=block">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        .admin-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 16px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 600;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: #fff;
+            text-transform: uppercase;
+        }
+
+        .admin-notice {
+            background: #fff8e1;
+            border-left: 4px solid #ffc107;
+            padding: 12px 14px;
+            border-radius: 8px;
+            font-size: 13px;
+            color: #7a6200;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div id="dev-banner">This website is under development</div>
+
+    <!-- Navigation -->
+    <nav class="navbar" id="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <a href="index.html">
+                    <img class="site-logo-img" src="https://vorqavsuqcjnkjzwkyzr.supabase.co/storage/v1/object/public/Website/brand/ace1-logo.jpeg" alt="ACE#1" decoding="async" loading="eager" onerror="this.remove();">
+                    <span class="logo-text">ACE<span class="logo-accent">#1</span></span>
+                </a>
+            </div>
+            <ul class="nav-menu" id="nav-menu">
+                <li><a href="shoes.html" class="nav-link">Shoes</a></li>
+                <li><a href="technology.html" class="nav-link">Technology</a></li>
+                <li><a href="about.html" class="nav-link">About</a></li>
+                <li><a href="contact.html" class="nav-link">Contact</a></li>
+                <li><a href="https://ace1.in/index.html" class="nav-link" target="_blank" rel="noopener">Main Site</a></li>
+            </ul>
+            <div class="nav-icons">
+                <button class="icon-btn search-btn" id="search-btn" aria-label="Search products">
+                    <i class="fas fa-search"></i>
+                </button>
+                <button class="icon-btn cart-btn" id="cart-btn" aria-label="Shopping cart">
+                    <i class="fas fa-shopping-bag"></i>
+                    <span class="cart-count" id="cart-count">0</span>
+                </button>
+                <button class="icon-btn user-btn" aria-label="User account">
+                    <i class="fas fa-user"></i>
+                </button>
+                <button class="hamburger" id="hamburger" aria-label="Toggle menu">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Search Overlay -->
+    <div class="search-overlay" id="search-overlay">
+        <div class="search-container">
+            <input type="text" class="search-input" placeholder="Search for products...">
+            <button class="search-close" id="search-close">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Admin Login Section -->
+    <section class="auth-section">
+        <div class="container">
+            <div class="auth-container">
+                <div class="auth-card">
+                    <div class="auth-header">
+                        <div class="admin-badge">
+                            <i class="fas fa-user-shield"></i>
+                            Admin Access
+                        </div>
+                        <h1>Administrator Login</h1>
+                        <p>Restricted console | Authorized personnel only</p>
+                    </div>
+
+                    <div class="admin-notice">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        All admin sign-ins are audited. Use dedicated credentials and keep them confidential.
+                    </div>
+
+                    <div class="error-message" id="errorMessage" style="display:none"></div>
+
+                    <form class="auth-form" id="adminLoginForm" data-requires-hcaptcha="true" data-hcaptcha-error="Please complete the verification to access admin panel.">
+                        <div class="form-group">
+                            <label for="email">Admin Email *</label>
+                            <input type="email" id="email" name="email" required autocomplete="username">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="password">Password *</label>
+                            <div class="password-input">
+                                <input type="password" id="password" name="password" required autocomplete="current-password">
+                                <button type="button" class="toggle-password">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="form-row space-between">
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="remember">
+                                <span>Remember admin session</span>
+                            </label>
+                            <a href="forgot-password.html" class="text-link">Reset via email</a>
+                        </div>
+
+                        <div class="captcha-container" data-hcaptcha-placeholder="true"></div>
+
+                        <button type="submit" class="btn btn-primary btn-block">
+                            <i class="fas fa-right-to-bracket"></i> Sign In to Admin
+                        </button>
+                    </form>
+
+                    <div class="auth-footer">
+                        <p>Need customer login instead? <a href="login.html">Go to user login</a></p>
+                        <p style="margin-top: 10px;">
+                            <i class="fas fa-home"></i> <a href="index.html">Back to storefront</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-column">
+                    <h3 class="footer-logo"><img class="footer-logo-img" src="https://vorqavsuqcjnkjzwkyzr.supabase.co/storage/v1/object/public/Website/brand/ace1-logo.jpeg" alt="ACE#1" loading="lazy" decoding="async" onerror="this.remove();"><span class="logo-text">ACE<span class="logo-accent">#1</span></span></h3>
+                    <p>Revolutionary footwear integrated with terahertz technology for enhanced wellness and lifestyle.</p>
+                    <div class="social-icons">
+                        <a href="https://instagram.com/ace_1_official/" target="_blank" rel="noopener noreferrer" aria-label="Ace#1 on Instagram"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+                <div class="footer-column">
+                    <h4>Shop</h4>
+                    <ul>
+                        <li><a href="shoes.html">All Products</a></li>
+                        <li><a href="index.html?category=runners">Runners</a></li>
+                        <li><a href="index.html?category=sneakers">Sneakers</a></li>
+                        <li><a href="index.html?category=trekking">Trekking</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h4>Company</h4>
+                    <ul>
+                        <li><a href="about.html">About Us</a></li>
+                        <li><a href="technology.html">Technology</a></li>
+                        <li><a href="contact.html">Contact</a></li>
+                        
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h4>Support</h4>
+                    <ul>
+                        <li><a href="faq.html">FAQ</a></li>
+                        <li><a href="faq.html#shipping">Shipping Info</a></li>
+                        <li><a href="faq.html#returns">Returns</a></li>
+                        <li><a href="size-guide.html">Size Guide</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 Ace#1. All rights reserved.</p>
+                <div class="footer-links">
+                    <a href="privacy-policy.html">Privacy Policy</a>
+                    <a href="terms-of-service.html">Terms of Service</a>
+                    <a href="#" id="clearCacheBtn" style="color: #ff8c00; font-weight: 600;" title="Clear browser cache">🧹 Clear Cache</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Shopping Cart Sidebar -->
+    <div class="cart-sidebar" id="cart-sidebar">
+        <div class="cart-header">
+            <h3>Shopping Cart</h3>
+            <button class="cart-close" id="cart-close">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="cart-items" id="cart-items">
+            <div class="cart-empty">
+                <i class="fas fa-shopping-bag"></i>
+                <p>Your cart is empty</p>
+            </div>
+        </div>
+        <div class="cart-footer">
+            <div class="cart-total">
+                <span>Subtotal:</span>
+                <span id="cart-total">$0.00</span>
+            </div>
+            <button class="btn btn-primary btn-block">Checkout</button>
+            <a href="shoes.html" class="btn btn-secondary">Continue Shopping</a>
+        </div>
+    </div>
+
+    <div class="cart-overlay" id="cart-overlay"></div>
+
+    <!-- Cache Buster (must load first) -->
+    <script src="js/cache-buster.js"></script>
+    <!-- Supabase Integration -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.89.0"></script>
+    <script src="js/supabase-config.js"></script>
+
+    <!-- Security Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.6/dist/purify.min.js"></script>
+    <script src="js/password-hasher.js"></script>
+    <script src="js/security.js"></script>
+    <script src="js/database-auth.js"></script>
+    <!-- Bot Defense -->
+    <script src="js/hcaptcha-config.js"></script>
+    <script src="js/hcaptcha-manager.js"></script>
+    <script src="js/bot-defense.js"></script>
+
+    <script src="js/main.js"></script>
+    <script src="js/auth.js"></script>
+
+    <script>
+        const adminLoginForm = document.getElementById('adminLoginForm');
+        const errorMessage = document.getElementById('errorMessage');
+        const toggleButtons = document.querySelectorAll('.toggle-password');
+
+        toggleButtons.forEach((btn) => {
+            btn.addEventListener('click', () => {
+                const input = btn.previousElementSibling;
+                const icon = btn.querySelector('i');
+                if (input.type === 'password') {
+                    input.type = 'text';
+                    icon.classList.replace('fa-eye', 'fa-eye-slash');
+                } else {
+                    input.type = 'password';
+                    icon.classList.replace('fa-eye-slash', 'fa-eye');
+                }
+            });
+        });
+
+        adminLoginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+
+            // Check if Supabase is available
+            const supabase = window.getSupabase ? window.getSupabase() : null;
+            if (!supabase || !window.databaseAuth) {
+                errorMessage.textContent = 'Authentication service unavailable.';
+                errorMessage.style.display = 'block';
+                return;
+            }
+
+            const captchaToken = typeof window.requireHCaptchaToken === 'function'
+                ? window.requireHCaptchaToken(adminLoginForm)
+                : '';
+
+            if (captchaToken === null) {
+                return;
+            }
+
+            if (typeof window.verifyHCaptchaWithServer === 'function' && captchaToken) {
+                const verification = await window.verifyHCaptchaWithServer(captchaToken, { action: 'admin-login' });
+                if (!verification?.success) {
+                    errorMessage.textContent = verification?.error || 'Verification failed. Please try again.';
+                    errorMessage.style.display = 'block';
+                    if (typeof window.resetHCaptchaToken === 'function') {
+                        window.resetHCaptchaToken(adminLoginForm);
+                    }
+                    return;
+                }
+            }
+
+            try {
+                const result = await window.databaseAuth.login(email, password);
+
+                if (result.success && (result.user.role === 'admin' || result.user.email === 'hello@ace1.in')) {
+                    window.showNotification('Welcome, Admin!', 'success');
+                    setTimeout(() => {
+                        window.location.href = 'admin.html';
+                    }, 500);
+                } else {
+                    errorMessage.textContent = result.error || 'Access denied. This login is for administrators only.';
+                    errorMessage.style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                
+                // Provide specific error messages
+                if (error.message?.includes('Invalid login credentials')) {
+                    errorMessage.textContent = 'Invalid email or password';
+                } else if (error.message?.includes('Email not confirmed')) {
+                    errorMessage.textContent = 'Please confirm your email before logging in';
+                } else {
+                    errorMessage.textContent = error.message || 'An error occurred. Please try again.';
+                }
+                errorMessage.style.display = 'block';
+            } finally {
+                if (typeof window.resetHCaptchaToken === 'function') {
+                    window.resetHCaptchaToken(adminLoginForm);
+                }
+            }
+        });
+    </script>
+    <!-- Image Optimization -->
+    <script src="js/image-optimizer.js"></script>
+</body>
+</html>

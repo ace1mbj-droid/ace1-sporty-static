@@ -1,0 +1,519 @@
+{
+    "description": "DO NOT DELETE THIS FILE. This file is used to keep track of which files have been synced in the most recent deployment. If you delete this file a resync will need to be done (which can take a while) - read more: https://github.com/SamKirkland/FTP-Deploy-Action",
+    "version": "1.0.0",
+    "generatedTime": 1768051766514,
+    "data": [
+        {
+            "type": "file",
+            "name": ".htaccess",
+            "size": 4248,
+            "hash": "c57129264fca37c54194a0eb2478ab5a14dd0aa42fe6af4b657c84c23d9dc300"
+        },
+        {
+            "type": "file",
+            "name": "SECURITY_AUDIT_REPORT.html",
+            "size": 25177,
+            "hash": "ca7e5138e9b618426b26ff23a3a22486fdd29c76e9fe103c65ddc8e531e8a3b0"
+        },
+        {
+            "type": "file",
+            "name": "about.html",
+            "size": 17377,
+            "hash": "d0d825d92efa711c6c129cc8607eafd942b8efb7a25c8f1640bc721579db3317"
+        },
+        {
+            "type": "file",
+            "name": "accessories.html",
+            "size": 14163,
+            "hash": "8b8c7369ef0d59ee56f214d2652a569cc2217d40c6c40c30926090f222e51dce"
+        },
+        {
+            "type": "file",
+            "name": "admin-login.html",
+            "size": 15821,
+            "hash": "d9f39d01811b471241080b08f3cc3d1f664b59c015248d2bf8ff349937950d65"
+        },
+        {
+            "type": "file",
+            "name": "admin.html",
+            "size": 87496,
+            "hash": "8b6c2e69e843996fc2c659069ecc5271bd788d5963595a896c99a475b86a74a3"
+        },
+        {
+            "type": "file",
+            "name": "apple-touch-icon.svg",
+            "size": 1121,
+            "hash": "0a35c57f15f436e71d3c47e68fb79169c15c2efdf2adca2d5f3f9c3723433353"
+        },
+        {
+            "type": "file",
+            "name": "auth-callback.html",
+            "size": 7410,
+            "hash": "527a7eade4d2e19c2cc5493769e611f315d5db5f225e60f8b3a230034b2c8c1a"
+        },
+        {
+            "type": "file",
+            "name": "auth-test.html",
+            "size": 17399,
+            "hash": "07f48cc6a56b5e94142fce7c42acebd89a60228ee2e0df3b24f55e0c113aa5bd"
+        },
+        {
+            "type": "file",
+            "name": "cache-version.txt",
+            "size": 29,
+            "hash": "1034267108dde4ddf0c3fd9112071ebfb937baa59a8fbc442812e2f6efcdfd27"
+        },
+        {
+            "type": "file",
+            "name": "check_inventory.sql",
+            "size": 520,
+            "hash": "e71b645f8ae7abf8e3e0a3116122780cf57880b4507f36b4013e44c4d1911065"
+        },
+        {
+            "type": "file",
+            "name": "checkout.html",
+            "size": 19731,
+            "hash": "dca8bad5baa81b56fc86eced236245a9ac84e8d3846d0608438265a1fbd94f66"
+        },
+        {
+            "type": "file",
+            "name": "clothing.html",
+            "size": 16826,
+            "hash": "faf9ea04e92b7cde536e3b0966f1615f4768c356a570c3d5b01f8f04a5fcd185"
+        },
+        {
+            "type": "file",
+            "name": "contact.html",
+            "size": 13783,
+            "hash": "4bcc0cfba72fc88a9cdfafab25a61a540b2633ba8036c177bd564215f3c4104c"
+        },
+        {
+            "type": "folder",
+            "name": "css"
+        },
+        {
+            "type": "file",
+            "name": "data-deletion.html",
+            "size": 19037,
+            "hash": "0b5f9d306a8cb37707384fb3652570585e13fbc362b486ebfa2aac9a248d296c"
+        },
+        {
+            "type": "folder",
+            "name": "emails"
+        },
+        {
+            "type": "file",
+            "name": "faq.html",
+            "size": 23711,
+            "hash": "6d694365e5c45572b0827dbac1b03b3729ec638f8be627b9626d26d9bd2dc96c"
+        },
+        {
+            "type": "file",
+            "name": "favicon.svg",
+            "size": 834,
+            "hash": "952f8f8bcd3ecd9aa56ddee496d3f48048c34437d6d8562a6ac62f30d1ea7802"
+        },
+        {
+            "type": "file",
+            "name": "forgot-password.html",
+            "size": 11376,
+            "hash": "2705e8e6c1948b3c03af2fe1688d6f9547b6017202c8846efa43335a08de4cd5"
+        },
+        {
+            "type": "folder",
+            "name": "images"
+        },
+        {
+            "type": "folder",
+            "name": "js"
+        },
+        {
+            "type": "file",
+            "name": "index.html",
+            "size": 58494,
+            "hash": "c08d5cf193fb217bd7345ec91982e158b69c0a1a251acdc259deb14ba3bf463b"
+        },
+        {
+            "type": "file",
+            "name": "login.html",
+            "size": 11432,
+            "hash": "2d9716a17c370319e7d7337eee3b706398cb1fee6e150bc1c0a56628b5058934"
+        },
+        {
+            "type": "file",
+            "name": "manifest.json",
+            "size": 1532,
+            "hash": "5de24094aab574fad8aaaa45b891f895300a212742fac8a81f307abdef9d6881"
+        },
+        {
+            "type": "file",
+            "name": "order-confirmation.html",
+            "size": 15389,
+            "hash": "ae7a6aff1a775f0a47016b2a348e05aed81a5708abb9a1d6a507360a94fc77ad"
+        },
+        {
+            "type": "file",
+            "name": "playwright.config.js",
+            "size": 1347,
+            "hash": "457143d8eb3e328e1c26748bbd15f3b1aed8af8b7da3cb621f635db5f5647119"
+        },
+        {
+            "type": "file",
+            "name": "privacy-policy.html",
+            "size": 21226,
+            "hash": "3e794921f2636e3b58a865401b732206789dca547e90332adcf69875b681bddc"
+        },
+        {
+            "type": "file",
+            "name": "products.html",
+            "size": 633,
+            "hash": "6cbec702081dc7898fca59ab6603da632f82d619d84f0362926c7b0cd1573047"
+        },
+        {
+            "type": "file",
+            "name": "register.html",
+            "size": 12979,
+            "hash": "aec6b0b9a6598c25464bb4cc4b3e399ea0145ce9749512265394cc10129a97f4"
+        },
+        {
+            "type": "file",
+            "name": "robots.txt",
+            "size": 61,
+            "hash": "6ba09b1110a846c93b3b2be3b9ee1e04d3905edccf9ecc6215118242a840ea94"
+        },
+        {
+            "type": "file",
+            "name": "shoes.html",
+            "size": 20592,
+            "hash": "a3b2fd104b8f13b9ba41ab149027ff4a60ac530cd4b39729b60f82629cd90589"
+        },
+        {
+            "type": "file",
+            "name": "sitemap.xml",
+            "size": 1886,
+            "hash": "5b18cd05ae6f34081703bcd5106131f50da38afd31d12ab830a147b0338e7112"
+        },
+        {
+            "type": "file",
+            "name": "size-guide.html",
+            "size": 18526,
+            "hash": "e588b9d72d0b889c6d01d924c7842d475365cd52f2bc6c84e63c5b05bd176fe0"
+        },
+        {
+            "type": "file",
+            "name": "technology.html",
+            "size": 17308,
+            "hash": "26fa9c028a3764fd092676def675eb3220bbcd1c2cebc3be4a1cc73b2ab16c2d"
+        },
+        {
+            "type": "file",
+            "name": "temp_query.sql",
+            "size": 166,
+            "hash": "04e010c7bcd4a8d4c43f3e476bb7cdfa2e053f2c9a028a7887c9561ff075e832"
+        },
+        {
+            "type": "file",
+            "name": "terms-of-service.html",
+            "size": 14674,
+            "hash": "c1d178207ad23b0eecce3d23a0a7a2a4ecacfad1c0844abf2564ff36f3c7fb66"
+        },
+        {
+            "type": "folder",
+            "name": "test-results-ci"
+        },
+        {
+            "type": "file",
+            "name": "update-password.html",
+            "size": 18544,
+            "hash": "19f209e1bf0c6a036601c3aa87b7ca2642e51a592256e5a0d8177d9b5f37fc84"
+        },
+        {
+            "type": "file",
+            "name": "user-profile.html",
+            "size": 17408,
+            "hash": "c37852f00e653af9ef7c7a26a6703913311a0f10104793c90157f845653ae72b"
+        },
+        {
+            "type": "file",
+            "name": "web.config",
+            "size": 5170,
+            "hash": "718dfc88526e28426472120589ce7075ce1704a9417cbd93639fbb0e7014ba60"
+        },
+        {
+            "type": "file",
+            "name": "welcome.html",
+            "size": 3073,
+            "hash": "afd2acebb85dafb260f7c984a7d371006b548f0cc5985ce701ccb9cb189c024b"
+        },
+        {
+            "type": "file",
+            "name": "css/animations.css",
+            "size": 2831,
+            "hash": "60573b98176d36bde872fb2f5c0fb0f3b5cf58f5d2d5575e99b15b732d507233"
+        },
+        {
+            "type": "file",
+            "name": "css/image-manager.css",
+            "size": 9479,
+            "hash": "4429215ddbc21fe2328882cacc41920af213321f53b0a263a6e63805a518437d"
+        },
+        {
+            "type": "file",
+            "name": "css/password-manager.css",
+            "size": 6700,
+            "hash": "fe54491637f28d81ebda1bc9c67f8af66389b8df83d7dcd9f91f49784958ac4c"
+        },
+        {
+            "type": "file",
+            "name": "css/reviews.css",
+            "size": 6173,
+            "hash": "ac7f9e6329f8a05c7b2e35f5e337579e1c64cecdaf210b9a154ea8c7810179eb"
+        },
+        {
+            "type": "file",
+            "name": "css/style.css",
+            "size": 118401,
+            "hash": "93285454fac94ff512069b6553b254a17a529d7f49181b58ea9c0d5f0e440b8e"
+        },
+        {
+            "type": "file",
+            "name": "emails/order_confirmation.html",
+            "size": 221,
+            "hash": "989fef332269b5464f6aeb4194e7f340fae7e851c6e47b142368d548a56c2693"
+        },
+        {
+            "type": "file",
+            "name": "emails/order_confirmation.txt",
+            "size": 88,
+            "hash": "4606b8fad8def6947be48d9caf587e24e11420e5d8ca1e3440912412549ee0e0"
+        },
+        {
+            "type": "file",
+            "name": "images/ace1-logo-180.png",
+            "size": 31954,
+            "hash": "59f46823baa26e1ec0ded22b36ab28ed66d849e87f158cfd440bb9552d6019c7"
+        },
+        {
+            "type": "file",
+            "name": "images/ace1-logo-512.png",
+            "size": 188451,
+            "hash": "a65fdd026c66444eed1d69b99937b6f30cca78960fe60f9517b30dc53d4b5c6d"
+        },
+        {
+            "type": "file",
+            "name": "images/ace1-logo-horizontal.svg",
+            "size": 808,
+            "hash": "651cf9114de1b49911ad2992a680f7a2f7a0fe3cbfb4f31bfc0516cc1ad7535e"
+        },
+        {
+            "type": "file",
+            "name": "images/ace1-logo-original-512.png",
+            "size": 228689,
+            "hash": "95ce5e1e548d08c527265a250794bb06143a02eaf09f2ef94a6b444a418c484a"
+        },
+        {
+            "type": "file",
+            "name": "images/ace1-logo.jpeg",
+            "size": 40410,
+            "hash": "2aecd26cd59e9d676a21163218bdb03bcafd25ef60d27f1b271387b3050fe7cf"
+        },
+        {
+            "type": "file",
+            "name": "images/ace1-logo.svg",
+            "size": 1798,
+            "hash": "420ae4347558354dbd8ec84aa88955051b95cd0322a79c6769f93c11027a9238"
+        },
+        {
+            "type": "file",
+            "name": "images/apple-touch-icon.png",
+            "size": 39226,
+            "hash": "25bb7c6c02e6695fe13fddc1aac995a8b5795a71f621d34f3bdbb811a7e9d93f"
+        },
+        {
+            "type": "file",
+            "name": "images/hero-sneaker.svg",
+            "size": 3566,
+            "hash": "ebcffc0953a8b078815d853f40ffd5045821e6263571ad34706b72dc46b4ed30"
+        },
+        {
+            "type": "file",
+            "name": "images/og-image.svg",
+            "size": 2304,
+            "hash": "1e6cc0454629a529b2458c5536c9eec9330d2874b71bb4048e450ea572fe473f"
+        },
+        {
+            "type": "file",
+            "name": "images/placeholder.jpg",
+            "size": 185,
+            "hash": "a5a7ea9975ad40da69792c6779de2092ee6ee574f0b4760a83f54fbbe57a7ae8"
+        },
+        {
+            "type": "file",
+            "name": "images/product-placeholder.svg",
+            "size": 1898,
+            "hash": "ddafb45b079e795d3ed98540c0af16bdfe5beca344b8082aa790b969f4bb2945"
+        },
+        {
+            "type": "file",
+            "name": "js/about-page.js",
+            "size": 6425,
+            "hash": "c19b803a86e006643b93911924bb7e5a5c5d6a9671970fae6458c687005a36cf"
+        },
+        {
+            "type": "file",
+            "name": "js/admin-extended.js",
+            "size": 104699,
+            "hash": "02ecf3bd82688c137e0ba08ec792d1f59b36771f4ccadb8e937b63a887d72059"
+        },
+        {
+            "type": "file",
+            "name": "js/admin.js",
+            "size": 143751,
+            "hash": "a76fb6b43b4c76e9cdee06ca30f37900c9502aba67caa71c88270eb4239647da"
+        },
+        {
+            "type": "file",
+            "name": "js/animations.js",
+            "size": 3585,
+            "hash": "5cf8e53c0b732cc3024ff3e8be4c822986ef490bcfc99b47654ffbd23a4e5051"
+        },
+        {
+            "type": "file",
+            "name": "js/auth.js",
+            "size": 16963,
+            "hash": "00d09b0e067fb8d3b01e4136397fa00611e1c952c2b74e1c310136da24987982"
+        },
+        {
+            "type": "file",
+            "name": "js/bot-defense.js",
+            "size": 2132,
+            "hash": "ec7c04abc026ed7debc97d63510b39aab612b2a6742506e75ae5e056656e053b"
+        },
+        {
+            "type": "file",
+            "name": "js/cache-buster.js",
+            "size": 9771,
+            "hash": "9750739530714f71d3a6f8c1f4d8ca7afca55d642f18aba0c901e63d4a15c32f"
+        },
+        {
+            "type": "file",
+            "name": "js/contact.js",
+            "size": 1938,
+            "hash": "4154bedcfa780560d7f6bd7478a2e4800d5b1a0f3384b0d2ea47e362596d0226"
+        },
+        {
+            "type": "file",
+            "name": "js/checkout.js",
+            "size": 30882,
+            "hash": "19a9d5c68c8cf95cad73663d58b71bb97ee1603f0c04260018aac1efcea6e3a9"
+        },
+        {
+            "type": "file",
+            "name": "js/database-auth.js",
+            "size": 32439,
+            "hash": "5c3ad05f7e088f9ef88fafe51f8a33dd1d1291945a98341d43be00138688571b"
+        },
+        {
+            "type": "file",
+            "name": "js/ecommerce-backend.js",
+            "size": 20273,
+            "hash": "9c594c1f8aebf05e9dc88eb834255534d6192d944582c8fc0b7707c8fc18952c"
+        },
+        {
+            "type": "file",
+            "name": "js/hcaptcha-config.js",
+            "size": 456,
+            "hash": "7aa10350660cbc8bca51c279ebddd6cf01e3b9872e59e09653306d78b27ac78b"
+        },
+        {
+            "type": "file",
+            "name": "js/hcaptcha-manager.js",
+            "size": 7002,
+            "hash": "be7fef91ece94663fba81fe31bd13f0085a35ca1606a1a434364b79242332702"
+        },
+        {
+            "type": "file",
+            "name": "js/image-manager.js",
+            "size": 26771,
+            "hash": "32f60111012ff20d2518512295d809f36de28d4055964d292b2446e2a091bd6c"
+        },
+        {
+            "type": "file",
+            "name": "js/image-optimizer.js",
+            "size": 5608,
+            "hash": "477e3b0b4b90aa23b844fe25f4862023db49ee47ecee5c088f3a4a13750bf0cd"
+        },
+        {
+            "type": "file",
+            "name": "js/main.js",
+            "size": 92265,
+            "hash": "5e8aea0ade326c2eb5bea6dc7563c31c8d684d64118cc289f1d09e3f4e2148af"
+        },
+        {
+            "type": "file",
+            "name": "js/password-hasher.js",
+            "size": 5828,
+            "hash": "dcb844c6aa587573ea0c08a19f9591e9f54d29cea9b904748f9cbe993ce12d91"
+        },
+        {
+            "type": "file",
+            "name": "js/password-manager.js",
+            "size": 18690,
+            "hash": "bd7dbd55f2f7a5a83a40b62c28e4e2ec4f26a765775703c0f75f95015a2195e6"
+        },
+        {
+            "type": "file",
+            "name": "js/products.js",
+            "size": 54352,
+            "hash": "ff77982ca259317d9f9b7d62213f96e10a9d5cdb3b6865dc880d7458454b13a2"
+        },
+        {
+            "type": "file",
+            "name": "js/razorpay-config.js",
+            "size": 515,
+            "hash": "c98b045768d5ec15c14c19b5781aa398596db54244a5254e8c7666649c0acaed"
+        },
+        {
+            "type": "file",
+            "name": "js/reviews-manager.js",
+            "size": 13664,
+            "hash": "a8e5812bbb9caf69f1d6d77d130cc361b9bcd36aad3c2ec4d938a5c13e2ff809"
+        },
+        {
+            "type": "file",
+            "name": "js/reviews.js",
+            "size": 13902,
+            "hash": "868613841fc2da8a01e403b519c35446443ed097e7fdf7317feec7f55b6305b1"
+        },
+        {
+            "type": "file",
+            "name": "js/supabase-config.js",
+            "size": 3711,
+            "hash": "456f197241e44dfcc78828a19710ab9377dd30d78ef0a3fe51d908af93bb204e"
+        },
+        {
+            "type": "file",
+            "name": "js/security.js",
+            "size": 13371,
+            "hash": "e22048b231b1f315846d3a59942d205444ca323c5f5c2d20ec3c49d29ba876d2"
+        },
+        {
+            "type": "file",
+            "name": "js/supabase-service.js",
+            "size": 36618,
+            "hash": "0920f9bfbd72df7a9d98dfedf9703ebb070185411ed070c722fb66200f6e16dd"
+        },
+        {
+            "type": "file",
+            "name": "js/user-profile.js",
+            "size": 60055,
+            "hash": "ee3e5e535c866fce3bcd8bb0c52469bc6399152225e2723fc4d175e867eb5e60"
+        },
+        {
+            "type": "file",
+            "name": "test-results-ci/.last-run.json",
+            "size": 45,
+            "hash": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903"
+        }
+    ]
+}

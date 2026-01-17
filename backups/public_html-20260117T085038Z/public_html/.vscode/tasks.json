@@ -1,0 +1,139 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Supabase: Login",
+			"type": "shell",
+			"command": "supabase login",
+			"presentation": {
+				"reveal": "always",
+				"panel": "shared"
+			},
+			"problemMatcher": []
+		},
+		{
+			"label": "Supabase: Link (hosted project)",
+			"type": "shell",
+			"command": "supabase link --project-ref vorqavsuqcjnkjzwkyzr",
+			"presentation": {
+				"reveal": "always",
+				"panel": "shared"
+			},
+			"problemMatcher": []
+		},
+		{
+			"label": "Supabase: DB Pull",
+			"type": "shell",
+			"command": "bash scripts/supabase-db-pull-safe.sh",
+			"presentation": {
+				"reveal": "always",
+				"panel": "shared"
+			},
+			"problemMatcher": []
+		},
+		{
+			"label": "Supabase: DB Push",
+			"type": "shell",
+			"command": "supabase db push --yes",
+			"presentation": {
+				"reveal": "always",
+				"panel": "shared"
+			},
+			"problemMatcher": []
+		},
+		{
+			"label": "Supabase: Run SQL file (prompt)",
+			"type": "shell",
+			"command": "supabase db query --file ${input:sqlFilePath} --project-ref vorqavsuqcjnkjzwkyzr",
+			"presentation": {
+				"reveal": "always",
+				"panel": "shared"
+			},
+			"problemMatcher": []
+		},
+		{
+			"label": "MCP: Verify access (dry-run)",
+			"type": "shell",
+			"command": "echo 'Verifying MCP connection...' && curl -f -H \"Authorization: Bearer ${input:supabaseServiceRoleKey}\" \"https://mcp.supabase.com/mcp?project_ref=vorqavsuqcjnkjzwkyzr&features=docs,account,database,debugging,development,functions,storage,branching\" > /dev/null 2>&1 && echo 'MCP access verified successfully.' || (echo 'MCP access verification failed. Check your service role key.' && exit 1)",
+			"presentation": {
+				"reveal": "always",
+				"panel": "shared"
+			},
+			"problemMatcher": []
+		},
+		{
+			"label": "Check Ollama",
+			"type": "shell",
+			"command": "npm run check:ollama",
+			"presentation": {
+				"reveal": "always",
+				"panel": "shared"
+			},
+			"problemMatcher": []
+		},
+		{
+			"label": "Playwright: Public Zero Console",
+			"type": "shell",
+			"command": "E2E_BASE_URL=\"${input:e2eBaseUrl}\" npx playwright test tests/e2e/public-zero-console.spec.js --workers=1 --reporter=list",
+			"isBackground": false,
+			"problemMatcher": [],
+			"group": "test"
+		},
+		{
+			"label": "Playwright: Modals (local)",
+			"type": "shell",
+			"command": "BASE_URL=\"http://127.0.0.1:3000\" npx playwright test tests/e2e/modals.spec.js --workers=1 --reporter=list",
+			"isBackground": false,
+			"problemMatcher": [],
+			"group": "test"
+		},
+		{
+			"label": "Playwright: Admin Modals (local)",
+			"type": "shell",
+			"command": "BASE_URL=\"http://127.0.0.1:3000\" ADMIN_EMAIL=\"${input:adminEmail}\" ADMIN_PASSWORD=\"${input:adminPassword}\" npx playwright test tests/e2e/admin-modals.spec.js --workers=1 --reporter=list",
+			"isBackground": false,
+			"problemMatcher": [],
+			"group": "test"
+		},
+		{
+			"label": "Playwright: Admin CRUD (local)",
+			"type": "shell",
+			"command": "BASE_URL=\"http://127.0.0.1:3000\" ADMIN_EMAIL=\"${input:adminEmail}\" ADMIN_PASSWORD=\"${input:adminPassword}\" npx playwright test tests/e2e/admin-crud.spec.js --workers=1 --reporter=list",
+			"isBackground": false,
+			"problemMatcher": [],
+			"group": "test"
+		}
+	],
+	"inputs": [
+		{
+			"id": "e2eBaseUrl",
+			"type": "promptString",
+			"description": "E2E base URL (hosted site)",
+			"default": "https://ace1.in"
+		},
+		{
+			"id": "sqlFilePath",
+			"type": "promptString",
+			"description": "Path to SQL file (relative to workspace root)",
+			"default": "sql/revoke_one_time_admin_session.sql"
+		},
+		{
+			"id": "supabaseServiceRoleKey",
+			"type": "promptString",
+			"description": "Supabase service role key (for MCP verification)",
+			"default": ""
+		},
+		{
+			"id": "adminEmail",
+			"type": "promptString",
+			"description": "Admin email for E2E tests",
+			"default": "hello@ace1.in"
+		},
+		{
+			"id": "adminPassword",
+			"type": "promptString",
+			"description": "Admin password for E2E tests (not stored)",
+			"default": ""
+		}
+	]
+}

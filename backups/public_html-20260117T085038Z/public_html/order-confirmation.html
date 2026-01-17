@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="alternate icon" href="favicon.svg">
+    <link rel="apple-touch-icon" href="images/apple-touch-icon.png" sizes="180x180">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#1a1a2e">
+    <title>Order Confirmed | Ace#1</title>
+
+    <!-- Cache Control Meta Tags -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+
+    <!-- Security Meta Tags -->
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta http-equiv="X-XSS-Protection" content="1; mode=block">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div id="dev-banner">This website is under development</div>
+
+    <!-- Navigation -->
+    <nav class="navbar" id="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <a href="index.html">
+                    <img class="site-logo-img" src="https://vorqavsuqcjnkjzwkyzr.supabase.co/storage/v1/object/public/Website/brand/ace1-logo.jpeg" alt="ACE#1" decoding="async" loading="eager" onerror="this.remove();">
+                    <span class="logo-text">ACE<span class="logo-accent">#1</span></span>
+                </a>
+            </div>
+            <ul class="nav-menu" id="nav-menu">
+                <li><a href="shoes.html" class="nav-link">Shoes</a></li>
+                <li><a href="technology.html" class="nav-link">Technology</a></li>
+                <li><a href="about.html" class="nav-link">About</a></li>
+                <li><a href="contact.html" class="nav-link">Contact</a></li>
+
+            </ul>
+            <div class="nav-icons">
+                <button class="icon-btn search-btn" id="search-btn" aria-label="Search products">
+                    <i class="fas fa-search"></i>
+                </button>
+                <button class="icon-btn cart-btn" id="cart-btn" aria-label="Shopping cart">
+                    <i class="fas fa-shopping-bag"></i>
+                    <span class="cart-count" id="cart-count">0</span>
+                </button>
+                <button class="icon-btn user-btn" aria-label="User account">
+                    <i class="fas fa-user"></i>
+                </button>
+                <button class="hamburger" id="hamburger" aria-label="Toggle menu">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Search Overlay -->
+    <div class="search-overlay" id="search-overlay">
+        <div class="search-container">
+            <input type="text" class="search-input" placeholder="Search for products...">
+            <button class="search-close" id="search-close">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Order Confirmation Section -->
+    <section class="confirmation-section">
+        <div class="container">
+            <div class="confirmation-container">
+                <div class="confirmation-icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <h1>Order Confirmed!</h1>
+                <p class="confirmation-message">Thank you for your order. You can track updates in your profile as your order status changes.</p>
+                
+                <div class="order-number">
+                    <strong>Order Number:</strong> <span id="order-id">ACE001234</span>
+                </div>
+
+                <div class="confirmation-card" id="order-live-card" style="display:none;">
+                    <h3>Order Status</h3>
+                    <div class="next-steps">
+                        <div class="step">
+                            <i class="fas fa-receipt"></i>
+                            <div>
+                                <h4>Status</h4>
+                                <p id="order-status-text">-</p>
+                            </div>
+                        </div>
+                        <div class="step">
+                            <i class="fas fa-truck"></i>
+                            <div>
+                                <h4>Tracking</h4>
+                                <p id="order-tracking-text">-</p>
+                            </div>
+                        </div>
+                        <div class="step">
+                            <i class="fas fa-clock"></i>
+                            <div>
+                                <h4>Timeline</h4>
+                                <p id="order-timeline-text">-</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="confirmation-card">
+                    <h3>What's Next?</h3>
+                    <div class="next-steps">
+                        <div class="step">
+                            <i class="fas fa-box"></i>
+                            <div>
+                                <h4>Order Processing</h4>
+                                <p>We're preparing your items for shipment</p>
+                            </div>
+                        </div>
+                        <div class="step">
+                            <i class="fas fa-truck"></i>
+                            <div>
+                                <h4>Shipping</h4>
+                                <p>Your order will be shipped within 2-3 business days</p>
+                            </div>
+                        </div>
+                        <div class="step">
+                            <i class="fas fa-home"></i>
+                            <div>
+                                <h4>Delivery</h4>
+                                <p>Expected delivery in 5-7 business days</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="confirmation-card">
+                    <h3>Need help with your order?</h3>
+                    <div class="next-steps">
+                        <div class="step">
+                            <i class="fas fa-envelope"></i>
+                            <div>
+                                <h4>Email support</h4>
+                                <p><a href="mailto:hello@ace1.in">hello@ace1.in</a></p>
+                            </div>
+                        </div>
+                        <div class="step">
+                            <i class="fas fa-question-circle"></i>
+                            <div>
+                                <h4>Shipping & returns</h4>
+                                <p>See <a href="faq.html#shipping">Shipping Info</a> and <a href="faq.html#returns">Returns</a>, or <a href="contact.html">contact us</a>.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="confirmation-actions">
+                    <a href="user-profile.html?tab=orders" class="btn btn-primary">View Order Details</a>
+                    <a href="shoes.html" class="btn btn-secondary">Continue Shopping</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-column">
+                    <h3 class="footer-logo"><img class="footer-logo-img" src="https://vorqavsuqcjnkjzwkyzr.supabase.co/storage/v1/object/public/Website/brand/ace1-logo.jpeg" alt="ACE#1" loading="lazy" decoding="async" onerror="this.remove();"><span class="logo-text">ACE<span class="logo-accent">#1</span></span></h3>
+                    <p>Modern footwear built for comfort and everyday wear.</p>
+                    <div class="social-icons">
+                        <a href="https://instagram.com/ace_1_official/" target="_blank" rel="noopener noreferrer" aria-label="Ace#1 on Instagram"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+                <div class="footer-column">
+                    <h4>Shop</h4>
+                    <ul>
+                        <li><a href="shoes.html">All Products</a></li>
+                        <li><a href="index.html?category=runners">Runners</a></li>
+                        <li><a href="index.html?category=sneakers">Sneakers</a></li>
+                        <li><a href="index.html?category=trekking">Trekking</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h4>Company</h4>
+                    <ul>
+                        <li><a href="about.html">About Us</a></li>
+                        <li><a href="technology.html">Technology</a></li>
+                        <li><a href="contact.html">Contact</a></li>
+                        
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h4>Support</h4>
+                    <ul>
+                        <li><a href="faq.html">FAQ</a></li>
+                        <li><a href="faq.html#shipping">Shipping Info</a></li>
+                        <li><a href="faq.html#returns">Returns</a></li>
+                        <li><a href="size-guide.html">Size Guide</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 Ace#1. All rights reserved.</p>
+                <div class="footer-links">
+                    <a href="privacy-policy.html">Privacy Policy</a>
+                    <a href="terms-of-service.html">Terms of Service</a>
+                    <a href="#" id="clearCacheBtn" style="color: #ff8c00; font-weight: 600;" title="Clear browser cache">🧹 Clear Cache</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Shopping Cart Sidebar -->
+    <div class="cart-sidebar" id="cart-sidebar">
+        <div class="cart-header">
+            <h3>Shopping Cart</h3>
+            <button class="cart-close" id="cart-close" aria-label="Close cart">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="cart-items" id="cart-items">
+            <div class="cart-empty">
+                <i class="fas fa-shopping-bag"></i>
+                <p>Your cart is empty</p>
+            </div>
+        </div>
+        <div class="cart-footer">
+            <div class="cart-total">
+                <span>Subtotal:</span>
+                <span id="cart-total">$0.00</span>
+            </div>
+            <button class="btn btn-primary btn-block">Checkout</button>
+            <a href="shoes.html" class="btn btn-secondary">Continue Shopping</a>
+        </div>
+    </div>
+
+    <div class="cart-overlay" id="cart-overlay"></div>
+
+    <!-- Cache Buster (must load first) -->
+    <script src="js/cache-buster.js"></script>
+    <!-- Supabase Integration -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.89.0"></script>
+    <script src="js/supabase-config.js"></script>
+    <script src="js/supabase-service.js"></script>
+    <script src="js/main.js"></script>
+
+    <script>
+        // Display order ID from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const orderId = urlParams.get('order');
+        if (orderId) {
+            document.getElementById('order-id').textContent = orderId;
+        }
+
+        const formatDateTime = (value) => {
+            if (!value) return '';
+            const d = new Date(value);
+            if (!Number.isFinite(d.getTime())) return '';
+            return d.toLocaleString('en-IN');
+        };
+
+        const renderOrderLive = (order) => {
+            const liveCard = document.getElementById('order-live-card');
+            if (!liveCard) return;
+
+            const status = order?.status ? String(order.status) : 'unknown';
+            const tracking = order?.tracking_number ? String(order.tracking_number) : 'Not assigned yet';
+            const shipped = formatDateTime(order?.shipped_at);
+            const delivered = formatDateTime(order?.delivered_at);
+
+            const statusEl = document.getElementById('order-status-text');
+            const trackingEl = document.getElementById('order-tracking-text');
+            const timelineEl = document.getElementById('order-timeline-text');
+
+            if (statusEl) statusEl.textContent = status;
+            if (trackingEl) trackingEl.textContent = tracking;
+            if (timelineEl) {
+                const parts = [];
+                if (shipped) parts.push(`Shipped: ${shipped}`);
+                if (delivered) parts.push(`Delivered: ${delivered}`);
+                timelineEl.textContent = parts.length ? parts.join(' | ') : 'Timeline will appear here once shipped.';
+            }
+
+            liveCard.style.display = '';
+        };
+
+        const loadOrderDetails = async () => {
+            try {
+                if (!orderId) return;
+                if (!window.supabaseService?.getOrder) return;
+                const result = await window.supabaseService.getOrder(orderId);
+                if (result?.success && result?.order) {
+                    renderOrderLive(result.order);
+                }
+            } catch (e) {
+                // Best-effort only
+            }
+        };
+
+        const setupOrderRealtime = () => {
+            try {
+                if (!orderId) return;
+                if (!window.supabaseService?.subscribeToOrder) return;
+
+                const supabase = window.supabaseService?.supabase;
+                if (!supabase) return;
+
+                // Initial fetch (will only work for authenticated users)
+                loadOrderDetails();
+
+                let timer = null;
+                const schedule = () => {
+                    if (timer) clearTimeout(timer);
+                    timer = setTimeout(() => loadOrderDetails(), 400);
+                };
+
+                const channel = window.supabaseService.subscribeToOrder(orderId, () => schedule());
+                window.addEventListener('beforeunload', () => {
+                    try {
+                        if (channel) supabase.removeChannel(channel);
+                    } catch (e) {
+                        // ignore
+                    }
+                });
+            } catch (e) {
+                // ignore
+            }
+        };
+
+        setupOrderRealtime();
+    </script>
+    <!-- Image Optimization -->
+    <script src="js/image-optimizer.js"></script>
+</body>
+</html>

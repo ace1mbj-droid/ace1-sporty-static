@@ -1,0 +1,19 @@
+/.DS_Store
+supabase/.DS_Store
+supabase/.temp/
+dist/
+node_modules/
+.env
+.env.local
+.DS_Store
+
+# VS Code
+/.vscode/*
+!/.vscode/tasks.json
+
+# Playwright artifacts
+test-results/
+playwright-report/
+
+# Local preview server logs
+.http-server.log

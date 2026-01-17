@@ -1,0 +1,52 @@
+const { test, expect } = require('@playwright/test');
+const path = require('path');
+const fs = require('fs');
+
+const BASE = process.env.BASE_URL || 'http://127.0.0.1:8003';
+const outDir = path.resolve(__dirname, '../../test-results/animations');
+if (!fs.existsSync(outDir)) fs.mkdirSync(outDir, { recursive: true });
+
+const pages = [
+  '/',
+  '/index.html',
+  '/shoes.html',
+  '/products.html',
+  '/checkout.html',
+  '/contact.html',
+  '/about.html',
+  '/user-profile.html'
+];
+
+test.describe('Site animations QA', () => {
+  for (const p of pages) {
+    test(p.replace('/', '') || 'root', async ({ page }, testInfo) => {
+      const url = `${BASE}${p}`;
+      await page.goto(url, { waitUntil: 'domcontentloaded' });
+      // Wait for animations.js to be loaded (if present)
+      await page.waitForTimeout(300);
+
+      // Check for elements with data-animate (retry if navigation happened)
+      let animatedCount = 0;
+      try {
+        animatedCount = await page.$$eval('[data-animate]', els => els.length);
+      } catch (e) {
+        // maybe the page navigated - wait and retry once
+        await page.waitForLoadState('networkidle');
+        animatedCount = await page.$$eval('[data-animate]', els => els.length);
+      }
+      expect(animatedCount).toBeGreaterThan(0);
+
+      // Wait for at least one element to get the 'in' class (revealed)
+      const gotIn = await page.waitForFunction(() => {
+        return Array.from(document.querySelectorAll('[data-animate]')).some(e => e.classList.contains('in'));
+      }, { timeout: 2000 }).catch(() => false);
+
+      expect(gotIn).toBeTruthy();
+
+      // Screenshot
+      const fileName = path.join(outDir, `${p.replace(/\W+/g, '_') || 'root'}.png`);
+      await page.screenshot({ path: fileName, fullPage: true });
+      testInfo.attachments = testInfo.attachments || [];
+    });
+  }
+});

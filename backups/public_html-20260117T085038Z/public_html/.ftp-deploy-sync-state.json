@@ -1,0 +1,1067 @@
+{
+    "description": "DO NOT DELETE THIS FILE. This file is used to keep track of which files have been synced in the most recent deployment. If you delete this file a resync will need to be done (which can take a while) - read more: https://github.com/SamKirkland/FTP-Deploy-Action",
+    "version": "1.0.0",
+    "generatedTime": 1767527735944,
+    "data": [
+        {
+            "type": "file",
+            "name": ".env.example",
+            "size": 1157,
+            "hash": "15660b58737307885d2b432955ba330985f2765f57fe15c75a645c14c5c08a97"
+        },
+        {
+            "type": "file",
+            "name": ".htaccess",
+            "size": 4248,
+            "hash": "c57129264fca37c54194a0eb2478ab5a14dd0aa42fe6af4b657c84c23d9dc300"
+        },
+        {
+            "type": "file",
+            "name": "SECURITY_AUDIT_REPORT.html",
+            "size": 24959,
+            "hash": "d03f634381ef64954bc1e5624df018b1dcaf4cb6ff4712f408044d276f98c95f"
+        },
+        {
+            "type": "file",
+            "name": "about.html",
+            "size": 19723,
+            "hash": "125194aa3e20e9c28e3c102494fc44b848da6fe83d8cc13baaba9120aa8670d5"
+        },
+        {
+            "type": "file",
+            "name": "admin-login.html",
+            "size": 15479,
+            "hash": "b68c8cd7413b6e64c75c0ac7e69ddd72255bea56ca92c203f488ff4de51c03ce"
+        },
+        {
+            "type": "file",
+            "name": "admin.html",
+            "size": 85076,
+            "hash": "217aac0fc19a74a0aa49c3eacd96d2f13a53faf9b2f3e99c5d8a5840debf358c"
+        },
+        {
+            "type": "file",
+            "name": "auth-callback.html",
+            "size": 7192,
+            "hash": "1b48cc91a41f55aba43f2956b670cd0d903609c8cae1bcd6158bac563c334caf"
+        },
+        {
+            "type": "file",
+            "name": "auth-test.html",
+            "size": 17181,
+            "hash": "c08f70e96613d1f52e2dfac4b5e1f5a141edf54f9613703968e74495eacfc999"
+        },
+        {
+            "type": "file",
+            "name": "cache-version.txt",
+            "size": 21,
+            "hash": "79f623e762833820b1f659733aff157501e7a4391f82a66ba7b812f882f3b9a6"
+        },
+        {
+            "type": "file",
+            "name": "checkout.html",
+            "size": 19513,
+            "hash": "19b5a65358042c980c59872ebcbc7769253d3119a6c128145c30d51d62493d17"
+        },
+        {
+            "type": "file",
+            "name": "clothing.html",
+            "size": 16608,
+            "hash": "8dbecc221521d7daf75df7216431eb371fe2ad13cb94002fe7ad7e65e79df02b"
+        },
+        {
+            "type": "file",
+            "name": "contact.html",
+            "size": 13683,
+            "hash": "203dcd62136309bba4abda825d0151f1118b99d74cd03c3cecff54487dce12ea"
+        },
+        {
+            "type": "folder",
+            "name": "css"
+        },
+        {
+            "type": "file",
+            "name": "data-deletion.html",
+            "size": 18937,
+            "hash": "af5b2675d0b0587b789c7983d94176ab13508e71c1414e02b6f4127065120440"
+        },
+        {
+            "type": "file",
+            "name": "faq.html",
+            "size": 23471,
+            "hash": "d24991295b84e3c2249805c7b37e1081dcf44f89c5d26a8b173461d9d530bee1"
+        },
+        {
+            "type": "file",
+            "name": "favicon.svg",
+            "size": 257,
+            "hash": "83c8d34d70971965038af3634f74d84db2a92f67fc1a8e4b8e090e2ff7d248e0"
+        },
+        {
+            "type": "file",
+            "name": "forgot-password.html",
+            "size": 11158,
+            "hash": "15baceef2221d4eaefc8576402b78e7b673fc78383f7c66e20806e8b1d3ff65f"
+        },
+        {
+            "type": "folder",
+            "name": "images"
+        },
+        {
+            "type": "file",
+            "name": "index.html",
+            "size": 40466,
+            "hash": "bf414fab02255624d64e267f415a5dea274fb7a2a203276b025d92ee58d08ccf"
+        },
+        {
+            "type": "folder",
+            "name": "js"
+        },
+        {
+            "type": "file",
+            "name": "login.html",
+            "size": 11214,
+            "hash": "ce1d4fd2a471c810a491f7a591d73d10c0c44f79d5669d9561dc3a2200fad77d"
+        },
+        {
+            "type": "file",
+            "name": "order-confirmation.html",
+            "size": 10866,
+            "hash": "c90db83edbba8ee98953337aa3bd71425063b14132d2c95f9077b07277827907"
+        },
+        {
+            "type": "folder",
+            "name": "package"
+        },
+        {
+            "type": "file",
+            "name": "playwright.config.js",
+            "size": 1191,
+            "hash": "3a64be972d62a6eddd8723349843a5240921319106785ae056257d82d328b51e"
+        },
+        {
+            "type": "file",
+            "name": "privacy-policy.html",
+            "size": 21126,
+            "hash": "221a85e02c4f45e010a59573f284a51bfa41764cdc59dc4107c6f2c07c08caa2"
+        },
+        {
+            "type": "file",
+            "name": "products.html",
+            "size": 595,
+            "hash": "446065709d1ab4c26759f28b3e3d5aaa67b8aff1624cd81dcd6bec001e251218"
+        },
+        {
+            "type": "file",
+            "name": "register.html",
+            "size": 12761,
+            "hash": "47fe45b22deea2318b8d5c74e032a6e2765d2a934b7d874b6fde55cb2fdde156"
+        },
+        {
+            "type": "folder",
+            "name": "reproduction"
+        },
+        {
+            "type": "file",
+            "name": "robots.txt",
+            "size": 61,
+            "hash": "6ba09b1110a846c93b3b2be3b9ee1e04d3905edccf9ecc6215118242a840ea94"
+        },
+        {
+            "type": "folder",
+            "name": "scripts"
+        },
+        {
+            "type": "folder",
+            "name": "server"
+        },
+        {
+            "type": "file",
+            "name": "shoes.html",
+            "size": 19106,
+            "hash": "9c369503d82a5d8af136a6bb1c427f6810dded0f0e9d42a57f1c2051270f2ef1"
+        },
+        {
+            "type": "file",
+            "name": "size-guide.html",
+            "size": 18426,
+            "hash": "87f03b80a4b87ca9ce11c6f63fc9ba902f5e71efe57d58fb28babfdbf236ea66"
+        },
+        {
+            "type": "file",
+            "name": "sitemap.xml",
+            "size": 1722,
+            "hash": "0fb277f16deef90764d0cad4ea08307ca9ce782311651f48125ff58ebc4ee103"
+        },
+        {
+            "type": "folder",
+            "name": "sql"
+        },
+        {
+            "type": "folder",
+            "name": "supabase"
+        },
+        {
+            "type": "file",
+            "name": "supabase-mcp-server-supabase-0.5.9.tgz",
+            "size": 91717,
+            "hash": "a8d1bfec928aee2286ff9fbe393f41576f2e8b5b74488679d6140496e3a66a18"
+        },
+        {
+            "type": "file",
+            "name": "technology.html",
+            "size": 17208,
+            "hash": "3287ff546a8b3653776bc2c8ccade46241f0d541686ac5ea28d7282bfd51dd06"
+        },
+        {
+            "type": "file",
+            "name": "terms-of-service.html",
+            "size": 14574,
+            "hash": "b99656abad21fa63adbf930ffa6c97a683a23d2f8fad2722a667107a4136b41c"
+        },
+        {
+            "type": "file",
+            "name": "update-password.html",
+            "size": 18326,
+            "hash": "81655a22562ff64c2c227b219c2437532f0cefa058d2d23229392d0ed14fcaca"
+        },
+        {
+            "type": "file",
+            "name": "user-profile.html",
+            "size": 17190,
+            "hash": "f0a594b741d8325edf6212197b1faa74ea4215d026940a6a39efc54fee50f086"
+        },
+        {
+            "type": "file",
+            "name": "web.config",
+            "size": 4935,
+            "hash": "c4bb67f0d3a649faf9449828a68ef7e7b8ea3efc408796da4ede6d1de7fd52e5"
+        },
+        {
+            "type": "file",
+            "name": "vercel.json",
+            "size": 1884,
+            "hash": "db8255ce462ebd2c77a4ede32e4ee7c4bcd5d91a414382f5ffc39296a761197b"
+        },
+        {
+            "type": "file",
+            "name": "welcome.html",
+            "size": 2855,
+            "hash": "dfd7e0027c3b35d47267310f85a4659e12e5ef465ca976d80d25597d5466c168"
+        },
+        {
+            "type": "file",
+            "name": "css/image-manager.css",
+            "size": 9479,
+            "hash": "4429215ddbc21fe2328882cacc41920af213321f53b0a263a6e63805a518437d"
+        },
+        {
+            "type": "file",
+            "name": "css/password-manager.css",
+            "size": 6700,
+            "hash": "fe54491637f28d81ebda1bc9c67f8af66389b8df83d7dcd9f91f49784958ac4c"
+        },
+        {
+            "type": "file",
+            "name": "css/reviews.css",
+            "size": 6173,
+            "hash": "ac7f9e6329f8a05c7b2e35f5e337579e1c64cecdaf210b9a154ea8c7810179eb"
+        },
+        {
+            "type": "file",
+            "name": "css/style.css",
+            "size": 92608,
+            "hash": "4f92ab94d7150b2d4c63f98d5698aeb1e772d0a470d0106c5dae953507424aeb"
+        },
+        {
+            "type": "file",
+            "name": "images/ace1-logo.jpeg",
+            "size": 40410,
+            "hash": "2aecd26cd59e9d676a21163218bdb03bcafd25ef60d27f1b271387b3050fe7cf"
+        },
+        {
+            "type": "file",
+            "name": "images/placeholder.jpg",
+            "size": 185,
+            "hash": "a5a7ea9975ad40da69792c6779de2092ee6ee574f0b4760a83f54fbbe57a7ae8"
+        },
+        {
+            "type": "file",
+            "name": "js/admin-extended.js",
+            "size": 103141,
+            "hash": "77ac9e9e268a4e1a7e4a13237f8cd0b430e398c4246a6b7e15e47b1c38efc3d7"
+        },
+        {
+            "type": "file",
+            "name": "js/admin.js",
+            "size": 122200,
+            "hash": "1bf92e123a1c844f57eba67f8cb09210bbfe4e78ec504a051ec002478bfc995d"
+        },
+        {
+            "type": "file",
+            "name": "js/auth.js",
+            "size": 16963,
+            "hash": "00d09b0e067fb8d3b01e4136397fa00611e1c952c2b74e1c310136da24987982"
+        },
+        {
+            "type": "file",
+            "name": "js/bot-defense.js",
+            "size": 2132,
+            "hash": "ec7c04abc026ed7debc97d63510b39aab612b2a6742506e75ae5e056656e053b"
+        },
+        {
+            "type": "file",
+            "name": "js/cache-buster.js",
+            "size": 7613,
+            "hash": "6f0b8cfb44c9f1a3589145f97dac984846ccff2b5fb3482c0904bbd272f27aa6"
+        },
+        {
+            "type": "file",
+            "name": "js/checkout.js",
+            "size": 18901,
+            "hash": "79b221bef1e2121977dcda3a58ae447ed6b896f7691c2c1a42454f845a8ea1b2"
+        },
+        {
+            "type": "file",
+            "name": "js/contact.js",
+            "size": 1938,
+            "hash": "4154bedcfa780560d7f6bd7478a2e4800d5b1a0f3384b0d2ea47e362596d0226"
+        },
+        {
+            "type": "file",
+            "name": "js/database-auth.js",
+            "size": 29683,
+            "hash": "7f8d814504a902b1a38acc904eee7e37705d1f8d34e02e5ade712c08474af926"
+        },
+        {
+            "type": "file",
+            "name": "js/ecommerce-backend.js",
+            "size": 20273,
+            "hash": "9c594c1f8aebf05e9dc88eb834255534d6192d944582c8fc0b7707c8fc18952c"
+        },
+        {
+            "type": "file",
+            "name": "js/hcaptcha-config.js",
+            "size": 456,
+            "hash": "7aa10350660cbc8bca51c279ebddd6cf01e3b9872e59e09653306d78b27ac78b"
+        },
+        {
+            "type": "file",
+            "name": "js/hcaptcha-manager.js",
+            "size": 7002,
+            "hash": "be7fef91ece94663fba81fe31bd13f0085a35ca1606a1a434364b79242332702"
+        },
+        {
+            "type": "file",
+            "name": "js/image-manager.js",
+            "size": 26771,
+            "hash": "32f60111012ff20d2518512295d809f36de28d4055964d292b2446e2a091bd6c"
+        },
+        {
+            "type": "file",
+            "name": "js/image-optimizer.js",
+            "size": 5608,
+            "hash": "477e3b0b4b90aa23b844fe25f4862023db49ee47ecee5c088f3a4a13750bf0cd"
+        },
+        {
+            "type": "file",
+            "name": "js/main.js",
+            "size": 76738,
+            "hash": "304a9d2a29f16fa4d61fc880feccbffd0d3d857364eb2626325b108cf58ced1f"
+        },
+        {
+            "type": "file",
+            "name": "js/password-hasher.js",
+            "size": 5828,
+            "hash": "dcb844c6aa587573ea0c08a19f9591e9f54d29cea9b904748f9cbe993ce12d91"
+        },
+        {
+            "type": "file",
+            "name": "js/password-manager.js",
+            "size": 18690,
+            "hash": "bd7dbd55f2f7a5a83a40b62c28e4e2ec4f26a765775703c0f75f95015a2195e6"
+        },
+        {
+            "type": "file",
+            "name": "js/products.js",
+            "size": 43464,
+            "hash": "dda41a446e360edd111b14f3ca03c1887b40410dd50cf5c82bde5ac35afad132"
+        },
+        {
+            "type": "file",
+            "name": "js/razorpay-config.js",
+            "size": 515,
+            "hash": "c98b045768d5ec15c14c19b5781aa398596db54244a5254e8c7666649c0acaed"
+        },
+        {
+            "type": "file",
+            "name": "js/reviews-manager.js",
+            "size": 13664,
+            "hash": "a8e5812bbb9caf69f1d6d77d130cc361b9bcd36aad3c2ec4d938a5c13e2ff809"
+        },
+        {
+            "type": "file",
+            "name": "js/security.js",
+            "size": 13371,
+            "hash": "e22048b231b1f315846d3a59942d205444ca323c5f5c2d20ec3c49d29ba876d2"
+        },
+        {
+            "type": "file",
+            "name": "js/supabase-config.js",
+            "size": 3711,
+            "hash": "456f197241e44dfcc78828a19710ab9377dd30d78ef0a3fe51d908af93bb204e"
+        },
+        {
+            "type": "file",
+            "name": "js/reviews.js",
+            "size": 13902,
+            "hash": "868613841fc2da8a01e403b519c35446443ed097e7fdf7317feec7f55b6305b1"
+        },
+        {
+            "type": "file",
+            "name": "js/supabase-service.js",
+            "size": 34384,
+            "hash": "52f1a324fc402be45f2aa067d6488af10131c611778b4e24dffd0f95ee92702e"
+        },
+        {
+            "type": "file",
+            "name": "js/user-profile.js",
+            "size": 41413,
+            "hash": "fb17388e17365fc7e74c867a2cec394f4dcb2307fac501762916cb47879482d2"
+        },
+        {
+            "type": "file",
+            "name": "package/LICENSE",
+            "size": 10928,
+            "hash": "2709b46247ffa63d4ac07a9df00de1a47995d6fec89d1390e107d7543eee41fd"
+        },
+        {
+            "type": "folder",
+            "name": "reproduction/src"
+        },
+        {
+            "type": "folder",
+            "name": "reproduction/www"
+        },
+        {
+            "type": "file",
+            "name": "scripts/check-links.js",
+            "size": 3618,
+            "hash": "f6e79f906a770d6371aae4d50e76ca68e6e59f5f88b56473cd2339105844a665"
+        },
+        {
+            "type": "file",
+            "name": "scripts/check_schema.sql",
+            "size": 390,
+            "hash": "01be86b7bd519edec512f490293738c65f845d38d1aa6c385e463f2137b3e38c"
+        },
+        {
+            "type": "file",
+            "name": "scripts/check_wishlists.sql",
+            "size": 369,
+            "hash": "06e1d653117b0300d3f9d913fe06ed0b79624159c1a533ef9779039a8bf543d0"
+        },
+        {
+            "type": "file",
+            "name": "scripts/create-admin-user.js",
+            "size": 6422,
+            "hash": "fd0f4120332bd279230b70bd6575c912b4dc02a78039a49bc2c41f00204bf733"
+        },
+        {
+            "type": "file",
+            "name": "scripts/create-test-admin.js",
+            "size": 4114,
+            "hash": "bd3e2e93a915f7dac4b3e65fc6e3e7aa6fa3e752edb0058cd653cb0492196303"
+        },
+        {
+            "type": "file",
+            "name": "scripts/disable_user_roles_rls.sql",
+            "size": 353,
+            "hash": "3bcd4e8f9ecdd1023df9faa553cdc9c8d27b9a36973c93888bcac2bb07b52ce0"
+        },
+        {
+            "type": "file",
+            "name": "scripts/enable_admin_header_access.sql",
+            "size": 7671,
+            "hash": "ddc004dd3885978ca6ad16e0440467e0ebf8202e0920c32afa9292efbc5127d6"
+        },
+        {
+            "type": "file",
+            "name": "scripts/find_admin.sql",
+            "size": 73,
+            "hash": "0477937e4a05fccdf443f017d75143817f8a9b7136610e05e43c59eb35b563b2"
+        },
+        {
+            "type": "file",
+            "name": "scripts/fix_admin_password_hash.sql",
+            "size": 1540,
+            "hash": "34a5bba34eeadb535f1f1c490876f2559ddb978031959a2fe11ed56f5c71128f"
+        },
+        {
+            "type": "file",
+            "name": "scripts/fix_function_search_path.sql",
+            "size": 683,
+            "hash": "d2e09a0bd32b45c1cc276e1e71047221051d8e4cded202948542fb4ca1ab4a83"
+        },
+        {
+            "type": "file",
+            "name": "scripts/fix_user_roles_recursion.sql",
+            "size": 1464,
+            "hash": "ac8cf5c7ecaec310b7462f2d06ce4c9bc25cb98e49ef595034d585f2dbb02150"
+        },
+        {
+            "type": "file",
+            "name": "scripts/optimize_rls_policies.sql",
+            "size": 12853,
+            "hash": "cd29b0be1ad9a1e584d07eee4e626f75341004cd808c8435f1a2dd99541b3b30"
+        },
+        {
+            "type": "file",
+            "name": "scripts/revoke_one_time_admin_session.sql",
+            "size": 829,
+            "hash": "b23247cfee170eb36c0a28a1369437d7e094c457803b55b6f51f272ad3e155c7"
+        },
+        {
+            "type": "file",
+            "name": "scripts/seed_admin.sql",
+            "size": 2536,
+            "hash": "e9c3f9c6ba5a562edfb1b2c27cdce522319532bf389b7e5d3e65ea653bdda312"
+        },
+        {
+            "type": "file",
+            "name": "scripts/session_functions.sql",
+            "size": 4594,
+            "hash": "b6575d1fdccc316334dfdd3b23288c3736f2502a3ef91274690b308d92d2e870"
+        },
+        {
+            "type": "file",
+            "name": "scripts/set_admin_api_url.sql",
+            "size": 747,
+            "hash": "ec4b0274b15062777b8d01fbcda22065ad450ef17f69be6c949ab1b0fb528bbf"
+        },
+        {
+            "type": "file",
+            "name": "scripts/static-server.js",
+            "size": 2058,
+            "hash": "86f915d5c4c3692487c7a3a398e31ac3646327fb9e6d02b20d05875caa6c503b"
+        },
+        {
+            "type": "file",
+            "name": "scripts/sync-admin-password.js",
+            "size": 4140,
+            "hash": "9bc356c91f5280006f173b749856a7d35319bd49172a94b8854b32b158c0a1ab"
+        },
+        {
+            "type": "file",
+            "name": "scripts/upload-event-photos.mjs",
+            "size": 4582,
+            "hash": "8f4222b879794007bbd49d720b79a2c0bd45c7eef47a6e3c2ab056d589dc7ce9"
+        },
+        {
+            "type": "file",
+            "name": "scripts/verify_deletion_safeguards.sql",
+            "size": 5731,
+            "hash": "a769532253f62909b6a012f7bb2c94c1a1c6a9fc9feb4cfaad8c83154a85b73a"
+        },
+        {
+            "type": "file",
+            "name": "server/.env.example",
+            "size": 113,
+            "hash": "fc6728f143687fe15340e8ed54171e838e3fbdf937dac9c7b98b61a23787bb74"
+        },
+        {
+            "type": "file",
+            "name": "server/index.js",
+            "size": 8176,
+            "hash": "5cfd09d9c30fe966cfe32db903be5cc01f7bc5e9b8d633df6803491e28cac4f1"
+        },
+        {
+            "type": "file",
+            "name": "sql/affordable_price_adjustments.sql",
+            "size": 898,
+            "hash": "fb39c7c6a719d93b11ec92c7cf09b43d73faf6e81934a97834cef94737a6cdb0"
+        },
+        {
+            "type": "file",
+            "name": "sql/manual_primary_category_update.sql",
+            "size": 1523,
+            "hash": "7adc66559195a715d41ac4f41f3fad582120fb29d4a1e5b8d51f64e58717a8ac"
+        },
+        {
+            "type": "file",
+            "name": "sql/quick_category_fix.sql",
+            "size": 418,
+            "hash": "5a8e4a7884f5165cab83c3d311deafd1081016d2ce2f9d332c1d0a00dbc03081"
+        },
+        {
+            "type": "file",
+            "name": "sql/setup_admin.sql",
+            "size": 966,
+            "hash": "2e18241fe82a9793a2a41cb73bbb200e8153b153d622c49494fe2054bfd9d1d3"
+        },
+        {
+            "type": "file",
+            "name": "sql/update_product_categories.sql",
+            "size": 830,
+            "hash": "44ef06832e07e5f8b8da935cd5b5c59c65d86b9778903df1d648f9b0378b35d4"
+        },
+        {
+            "type": "folder",
+            "name": "supabase/functions"
+        },
+        {
+            "type": "file",
+            "name": "supabase/.env.example",
+            "size": 234,
+            "hash": "ed64d0094d534b633b1c647a8f6b905271c7e0bfcc0dfb32f8554e13f1a4e3e0"
+        },
+        {
+            "type": "folder",
+            "name": "supabase/migrations"
+        },
+        {
+            "type": "file",
+            "name": "supabase/schema.sql",
+            "size": 5086,
+            "hash": "4efd960594f9a2199e9f17e1f176d2c7dd26942552fc05fd0b877b92f890c752"
+        },
+        {
+            "type": "file",
+            "name": "supabase/rls.sql",
+            "size": 1698,
+            "hash": "99fea5d553268b96ba08fd4e8c16a5c1b0a969fc83c396ec2ab4dc3127f3571a"
+        },
+        {
+            "type": "file",
+            "name": "supabase/seed.sql",
+            "size": 0,
+            "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+            "type": "folder",
+            "name": "supabase/snippets"
+        },
+        {
+            "type": "file",
+            "name": "reproduction/www/index.html",
+            "size": 230,
+            "hash": "01a147d3d14a4f76e685c88b5bf978a72ca1dac06902e726e85a4d6439946243"
+        },
+        {
+            "type": "folder",
+            "name": "supabase/functions/admin-reset"
+        },
+        {
+            "type": "folder",
+            "name": "supabase/functions/create-order"
+        },
+        {
+            "type": "folder",
+            "name": "supabase/functions/get_cart_with_session"
+        },
+        {
+            "type": "folder",
+            "name": "supabase/functions/send-2fa-code"
+        },
+        {
+            "type": "folder",
+            "name": "supabase/functions/verify-hcaptcha"
+        },
+        {
+            "type": "folder",
+            "name": "supabase/functions/verify-user-2fa"
+        },
+        {
+            "type": "folder",
+            "name": "supabase/functions/webhook-razorpay"
+        },
+        {
+            "type": "file",
+            "name": "supabase/migrations/20251121090000_init_schema.sql",
+            "size": 1760,
+            "hash": "b3eba145ae625ae4dcd5a8cd5cfbbd3e9501d94a9af2208c2988d76f7c2cfd77"
+        },
+        {
+            "type": "file",
+            "name": "supabase/migrations/20251202074425_create_users_and_sessions_tables.sql",
+            "size": 913,
+            "hash": "f6f21501de25dd29a7ea7690662a097c8229d3706ee42a9884f94144cb040517"
+        },
+        {
+            "type": "file",
+            "name": "supabase/migrations/20251204161000_harden_session_revocations.sql",
+            "size": 2911,
+            "hash": "a5240e0b3e1e22ffacf498e6708450c9c233b265427af332b3502b4c1ddde146"
+        },
+        {
+            "type": "file",
+            "name": "supabase/migrations/20251204163000_fix_revoke_service_role_check.sql",
+            "size": 2545,
+            "hash": "b4a5c51decf917bd774a36ceaa67765a78bcb75f22eb31179d2860e043fbded7"
+        },
+        {
+            "type": "file",
+            "name": "supabase/migrations/20251204164000_fix_revoke_rows_count.sql",
+            "size": 2535,
+            "hash": "11029f81e67beb3b666bd241320c091d3a815683e807414283524b93d9dd700f"
+        },
+        {
+            "type": "file",
+            "name": "supabase/migrations/20251204170000_create_sync_active_products.sql",
+            "size": 3382,
+            "hash": "614706ace0c51cdce97a7aa6fa63798b78ead961394b5045b04860a821bbde66"
+        },
+        {
+            "type": "file",
+            "name": "supabase/migrations/20251204171000_populate_active_products.sql",
+            "size": 931,
+            "hash": "9e936a31d6bbcc3244db7694a055c7e301984b6d4c8109d84c361ca6b6776b41"
+        },
+        {
+            "type": "file",
+            "name": "supabase/migrations/20251204173000_add_ip_user_agent_to_session_revocations.sql",
+            "size": 3020,
+            "hash": "918ecb435c81a82ebfc091686faa5f10ce811b80e94e65a40a9d624cd9a091d6"
+        },
+        {
+            "type": "file",
+            "name": "supabase/migrations/20251204180000_revoke_one_time_admin_session.sql",
+            "size": 439,
+            "hash": "ac4bb203be4e972f8e9c0f0c21ff33fa35ef240088b0fc39dbce7813c29885c9"
+        },
+        {
+            "type": "file",
+            "name": "supabase/migrations/20251205104000_capture_revocation_request_ip.sql",
+            "size": 4316,
+            "hash": "58b96fab0950513d05c1f2781fb68e44cd686cab758114bcf2f86fc135efe0a8"
+        },
+        {
+            "type": "file",
+            "name": "supabase/migrations/20251205112000_restrict_revoke_rpc_execution.sql",
+            "size": 1411,
+            "hash": "9c724968544b0a14da7dd5173f5a18f6a238e2d06f2679eae9dba40e2cfe3b67"
+        },
+        {
+            "type": "file",
+            "name": "supabase/migrations/20251205120000_convert_active_products_table_to_view.sql",
+            "size": 5357,
+            "hash": "7902886ee5ab0101a65cda67df01f8de8cdd97dcfb2cba83cbebcf1904a5df8a"
+        },
+        {
+            "type": "file",
+            "name": "supabase/migrations/20251205125000_rls_active_products.sql",
+            "size": 1507,
+            "hash": "260769cc8185e596bc80da3215d043f08b7c4b666859e54228510d7f32d4a713"
+        },
+        {
+            "type": "file",
+            "name": "supabase/migrations/20251205132000_create_password_reset_logs.sql",
+            "size": 567,
+            "hash": "7a1948b6c81a037e8b4dd9888889b896487b7d45155c53e75d9825c17c2d4010"
+        },
+        {
+            "type": "file",
+            "name": "supabase/migrations/20251205190000_convert_active_products_table_to_view_prod.sql",
+            "size": 4773,
+            "hash": "e0c7911b96ecb03973b08573419ed1e29cac50eecd7a0e83d6e438918e7b1714"
+        },
+        {
+            "type": "file",
+            "name": "supabase/migrations/20251205202000_add_admin_api_url_to_site_settings.sql",
+            "size": 342,
+            "hash": "89c061207d8baa3011328eea538ed66f2bae064c7cb8e4ca845ce1d73694010f"
+        },
+        {
+            "type": "file",
+            "name": "supabase/migrations/20251217174016_fix_active_products_rls_policies.sql",
+            "size": 1717,
+            "hash": "591abb95641b360d6c3350c204c6d7e9eaf49ce15f16c3efda6e3fda352112f0"
+        },
+        {
+            "type": "file",
+            "name": "supabase/migrations/20251217190000_remove_hardcoded_uuid_from_active_products_policies.sql",
+            "size": 1350,
+            "hash": "3694771bf8baf245ab65e0899d1c877eaeac1e8a36688cffc79c04edd3b85f27"
+        },
+        {
+            "type": "file",
+            "name": "supabase/migrations/20251217191500_add_security_is_admin_helper_and_update_policies.sql",
+            "size": 1534,
+            "hash": "fb449860147ac6671c2dd7abe4fb649221a8df5c1889b05c5eaf13f240d4d29d"
+        },
+        {
+            "type": "file",
+            "name": "supabase/migrations/20251217192500_refactor_products_policies_use_security_is_admin.sql",
+            "size": 852,
+            "hash": "e7487179caf8a6bfd881e6295d07b3dc7a0375676811e3505f1413b7cade9b15"
+        },
+        {
+            "type": "file",
+            "name": "supabase/migrations/20251217193500_rls_refactor_more_tables_use_security_is_admin.sql",
+            "size": 3132,
+            "hash": "fbf95ce6ff5465be9ff09040ebae57fb052809ee91c043161346c2672f2d50eb"
+        },
+        {
+            "type": "file",
+            "name": "supabase/migrations/20251217194000_storage_images_bucket_policies.sql",
+            "size": 991,
+            "hash": "5c195c80c184c017c83f93cd6632a5e3c92a8c83d4e6d003a5a1434bed828a80"
+        },
+        {
+            "type": "file",
+            "name": "supabase/migrations/20251217195000_extend_admin_policies_to_admin_tables.sql",
+            "size": 3645,
+            "hash": "5704c888a5a570ebb9df44def99141f94bfbb5543da2224a543975c1cea76fc6"
+        },
+        {
+            "type": "file",
+            "name": "supabase/migrations/20251217200000_add_admin_policies_on_users_table.sql",
+            "size": 655,
+            "hash": "1f69683535d95a2a3a87f3e258c16ce923d81b1fa51198db787398a736c9921d"
+        },
+        {
+            "type": "file",
+            "name": "supabase/migrations/20251217201500_tighten_users_table_rls_self_or_admin.sql",
+            "size": 1139,
+            "hash": "49232bd6693dc4766cc8bc2e39dc7e07b33cf0d1536a39efd598c55d1859f906"
+        },
+        {
+            "type": "file",
+            "name": "supabase/migrations/20251217202500_secure_user_roles_table_admin_only.sql",
+            "size": 989,
+            "hash": "b3badf27648ea43b82a6fd6dc820060f3f342aef779eb4ff9aeca7a0062a1925"
+        },
+        {
+            "type": "file",
+            "name": "supabase/migrations/20251217203000_create_reviews_table.sql",
+            "size": 1638,
+            "hash": "856c328283b0a0d20cf1947f6b806ae41b181e50b4fde349d5e8b42ec89d937e"
+        },
+        {
+            "type": "file",
+            "name": "supabase/migrations/20251217203100_create_shopping_carts_table.sql",
+            "size": 2032,
+            "hash": "30b015f508d98bfe5478ee1b24728959009f03502a67f7fd8055f6bd215d5101"
+        },
+        {
+            "type": "file",
+            "name": "supabase/migrations/20251217204000_create_application_settings_table.sql",
+            "size": 951,
+            "hash": "5e0fe09a59be61a5764e58015e27d609998c07f5f2d0bc5b6dbfc4689dc8cbf7"
+        },
+        {
+            "type": "file",
+            "name": "supabase/migrations/20251218000000_fix_admin_access_orders_users_revocations.sql",
+            "size": 3051,
+            "hash": "7fd862b259be2a98ed4e6f06ba89a5ef33de5271dd1a7c9e9c775a6e727f8480"
+        },
+        {
+            "type": "file",
+            "name": "supabase/migrations/20251218000100_ensure_admin_user_and_fix_is_admin_function.sql",
+            "size": 2904,
+            "hash": "3e28b9d9b1e8bfde82f9046418851231b44256f67df15679171bf28c14bbef95"
+        },
+        {
+            "type": "file",
+            "name": "supabase/migrations/20251218000200_fix_is_admin_security_invoker.sql",
+            "size": 2134,
+            "hash": "5426de9ecc6d913fda686f76cb355aaa837017ad9c05b0a2287ddd5a64ac7893"
+        },
+        {
+            "type": "file",
+            "name": "supabase/migrations/20251218000300_fix_circular_dependency_in_rls.sql",
+            "size": 3659,
+            "hash": "f6b642814fe871bb1804fb6ef22b5c885c0f0bfad52962a378915dedba6ea1a5"
+        },
+        {
+            "type": "file",
+            "name": "supabase/migrations/20251218000400_simplify_rls_only_check_user_roles.sql",
+            "size": 2958,
+            "hash": "f7860affd44e6466594177e2192b234c9d9c55a416a21fad7cb95ef50a74a507"
+        },
+        {
+            "type": "file",
+            "name": "supabase/migrations/20251218000500_sync_hello_ace1_to_public_users.sql",
+            "size": 1857,
+            "hash": "d11c78af13ae5b41b17bca0cdb0b4297f7c789918df0f4031b559d173fd809fa"
+        },
+        {
+            "type": "file",
+            "name": "supabase/migrations/20251218000600_fix_users_table_rls_no_circular_dependency.sql",
+            "size": 1520,
+            "hash": "d55202c144c9d954aa1afc585bc928bdceb1560e3fe61566c26d31de8304c146"
+        },
+        {
+            "type": "file",
+            "name": "supabase/migrations/20251218000700_fix_user_roles_infinite_recursion.sql",
+            "size": 1424,
+            "hash": "a915cdb4a771b3752113da2859dfa381870a1528c18acd05d46613b33d0d8236"
+        },
+        {
+            "type": "file",
+            "name": "supabase/migrations/20251218000800_comprehensive_user_roles_fix.sql",
+            "size": 1500,
+            "hash": "dd4568207e9f50d8096d9bcccd87910b3d8d96d41b4d68530b44bf8c1cffb64e"
+        },
+        {
+            "type": "file",
+            "name": "supabase/migrations/20251218000900_disable_rls_on_user_roles.sql",
+            "size": 1366,
+            "hash": "4d97febefea2d0afb5be8b12d0d260a40c181955e8d806ba3e984d8c3b9336b6"
+        },
+        {
+            "type": "file",
+            "name": "supabase/migrations/20251218001000_add_admin_notes_to_orders.sql",
+            "size": 287,
+            "hash": "13146a41ce7159b1c4ebb70f4679667cb9b4d283f98d962410624c30f50723c9"
+        },
+        {
+            "type": "file",
+            "name": "supabase/migrations/20251218001100_add_payment_status_and_updated_at_to_orders.sql",
+            "size": 936,
+            "hash": "3273451dedb234a85edc7aa10153c869cfc6a658192373de8345019bf4a7ac96"
+        },
+        {
+            "type": "folder",
+            "name": "supabase/migrations/20251218155843_enable_rls_user_roles"
+        },
+        {
+            "type": "file",
+            "name": "supabase/migrations/20251218160000_add_set_session_id_function.sql",
+            "size": 533,
+            "hash": "cda139e0498b8ea3474eea6f34256c79af4811a5d6c89db7ad302d0a50441e64"
+        },
+        {
+            "type": "file",
+            "name": "supabase/migrations/20251219000000_create_roles_table.sql",
+            "size": 1297,
+            "hash": "dec7d73d228718bf6813be4bcbd4621149b7071b7c4492d08736848bbbb4a7c4"
+        },
+        {
+            "type": "file",
+            "name": "supabase/migrations/20251226032715_add_primary_category_to_products.sql",
+            "size": 1987,
+            "hash": "43b63743251af6beccec001e1309edf329ade1a7e67bf1a187b29ecc23b0c655"
+        },
+        {
+            "type": "file",
+            "name": "supabase/migrations/20251226120000_create_cart_items_table.sql",
+            "size": 566,
+            "hash": "95cd513de8fa2cbc4a867c1a9f983b05f996783152b78eb44c285332d77c6419"
+        },
+        {
+            "type": "file",
+            "name": "supabase/migrations/20251226120500_remove_shopping_cart_columns.sql",
+            "size": 233,
+            "hash": "a5df0952e828642a82bd7e88199975b66527a9f222ef3e3271fb080fbbc2298c"
+        },
+        {
+            "type": "file",
+            "name": "supabase/migrations/20251226130000_migrate_cart_functions.sql",
+            "size": 5213,
+            "hash": "90d2894ade6c0946da5c78123fac9a501e8a98d5cdaa5d6cf7e61a79b3c566ea"
+        },
+        {
+            "type": "file",
+            "name": "supabase/migrations/20251227000000_add_sub_categories_to_products.sql",
+            "size": 483,
+            "hash": "1f2a226ba608cd31fb44c884b60b3bb14e26c1f46a6d081b62d52610b81b1dbb"
+        },
+        {
+            "type": "file",
+            "name": "supabase/migrations/20251227010000_fix_product_deletion_admin_check.sql",
+            "size": 10423,
+            "hash": "e42887ab761d65c0b2b35b90c70dee7d87a9a56e673d504e5af4584c34dc8886"
+        },
+        {
+            "type": "file",
+            "name": "supabase/migrations/20260104000100_add_site_settings_delete_policy.sql",
+            "size": 531,
+            "hash": "caf2e5453224bb83270e86acca48569baa33840c0559368821ce554f303247ff"
+        },
+        {
+            "type": "file",
+            "name": "supabase/migrations/20260104000200_products_lock_status_cart_items_rls_indexes.sql",
+            "size": 4159,
+            "hash": "3366a5110dd04d25330d4b026a78c84f4d7f4b4d1686d4cebf5abbff45019361"
+        },
+        {
+            "type": "file",
+            "name": "supabase/migrations/20260104000300_tighten_products_public_visibility_rls.sql",
+            "size": 849,
+            "hash": "19c570295166406e9f60772e3fa436d963d145117dcc464fe49920106a993c29"
+        },
+        {
+            "type": "file",
+            "name": "supabase/migrations/add_show_on_index_column.sql",
+            "size": 1771,
+            "hash": "d91f2f1cfb1d6219384ae4d8d8bc57a00c63931bd49d62f31b6917210cb92d0f"
+        },
+        {
+            "type": "file",
+            "name": "supabase/migrations/enable_rls_security.sql",
+            "size": 5221,
+            "hash": "25ea327a2d79f29fad0389f5fe2187c1909608105a9c13af27a9677b923ff8ec"
+        },
+        {
+            "type": "file",
+            "name": "supabase/migrations/fix_security_issues.sql",
+            "size": 7033,
+            "hash": "5578ca876c109069a105bdbea30e502475fee7113715a920292ce23dbba23df0"
+        },
+        {
+            "type": "file",
+            "name": "supabase/migrations/product_change_history.sql",
+            "size": 1765,
+            "hash": "6a50517621cd50f0bcf17f8fbd0a1ac6a5c79978cc866eefe4592886d4e7e700"
+        },
+        {
+            "type": "file",
+            "name": "supabase/snippets/recent_session_revocations.sql",
+            "size": 1050,
+            "hash": "cb676f49f050ff5d9e1bb9d86e468a8adad2ebe671def21647c8a36c4c180a0a"
+        },
+        {
+            "type": "file",
+            "name": "supabase/snippets/verify_schema.sql",
+            "size": 2452,
+            "hash": "20e4dfe3b7f41d4503ca623df9d3eec593b113f7f8d49020c62a328e80c3d08c"
+        },
+        {
+            "type": "file",
+            "name": "supabase/functions/admin-reset/config.toml",
+            "size": 18,
+            "hash": "902f16c83253ea7e85c560ea383ddbe9ca7697269f66ea84d9ca37ac73a0f649"
+        },
+        {
+            "type": "file",
+            "name": "supabase/functions/create-order/config.toml",
+            "size": 18,
+            "hash": "902f16c83253ea7e85c560ea383ddbe9ca7697269f66ea84d9ca37ac73a0f649"
+        },
+        {
+            "type": "file",
+            "name": "supabase/functions/create-order/env:.yaml.yml",
+            "size": 196,
+            "hash": "93845aec46e7d6c62ac9a7087d9ab1198fc80db4e9d045b5d34c5db6b5a0eb78"
+        },
+        {
+            "type": "file",
+            "name": "supabase/functions/verify-hcaptcha/env:.yaml.yml",
+            "size": 294,
+            "hash": "61482f4c1d91120bc874b8e76959f747b9c24e9fd906d02370e835f9108b6bdc"
+        },
+        {
+            "type": "file",
+            "name": "supabase/functions/webhook-razorpay/config.toml",
+            "size": 19,
+            "hash": "7551533d8029d2f2ff237c1ff0915b2758a25711aec701d6a5378cc7f7d94e3f"
+        },
+        {
+            "type": "file",
+            "name": "supabase/migrations/20251218155843_enable_rls_user_roles/migration.sql",
+            "size": 1395,
+            "hash": "426fd403ab1f46310911fb0dcb3ccaad5a4a7ada1c5e0ba637169168c4371fc4"
+        }
+    ]
+}

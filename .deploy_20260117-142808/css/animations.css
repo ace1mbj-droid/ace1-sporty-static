@@ -1,0 +1,60 @@
+/* Lightweight site-wide animations - non-intrusive and accessible */
+:root {
+  --anim-duration-fast: 300ms;
+  --anim-duration: 600ms;
+  --anim-duration-slow: 900ms;
+  --anim-ease: cubic-bezier(.22,.9,.31,1);
+  --anim-stagger-step: 60ms;
+}
+
+/* Respect prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; }
+}
+
+/* Base utilities */
+.animated { will-change: opacity, transform; opacity: 0; transform: none; }
+.animated.in { opacity: 1; }
+
+/* Fade up */
+.fade-up { transform: translateY(16px); opacity: 0; transition: transform var(--anim-duration) var(--anim-ease), opacity var(--anim-duration) var(--anim-ease); }
+.fade-up.in { transform: translateY(0); opacity: 1; }
+
+/* Fade in */
+.fade-in { opacity: 0; transition: opacity var(--anim-duration) var(--anim-ease); }
+.fade-in.in { opacity: 1; }
+
+/* Slide from left/right */
+.slide-left { transform: translateX(-18px); opacity: 0; transition: transform var(--anim-duration) var(--anim-ease), opacity var(--anim-duration) var(--anim-ease); }
+.slide-left.in { transform: translateX(0); opacity: 1; }
+.slide-right { transform: translateX(18px); opacity: 0; transition: transform var(--anim-duration) var(--anim-ease), opacity var(--anim-duration) var(--anim-ease); }
+.slide-right.in { transform: translateX(0); opacity: 1; }
+
+/* Scale in */
+.scale-up { transform: scale(.98); opacity: 0; transition: transform var(--anim-duration) var(--anim-ease), opacity var(--anim-duration) var(--anim-ease); }
+.scale-up.in { transform: scale(1); opacity: 1; }
+
+/* Button hover subtle animation */
+.button-animated:hover { transform: translateY(-2px) scale(1.01); transition: transform 180ms var(--anim-ease); }
+
+/* Stagger utility (applied to containers with children) */
+.stagger > * { opacity: 0; transform: translateY(8px); transition: transform var(--anim-duration) var(--anim-ease), opacity var(--anim-duration) var(--anim-ease); }
+.stagger.in > * { opacity: 1; transform: translateY(0); }
+.stagger.in > *:nth-child(1){ transition-delay: 0ms }
+.stagger.in > *:nth-child(2){ transition-delay: calc(var(--anim-stagger-step) * 1) }
+.stagger.in > *:nth-child(3){ transition-delay: calc(var(--anim-stagger-step) * 2) }
+.stagger.in > *:nth-child(4){ transition-delay: calc(var(--anim-stagger-step) * 3) }
+
+/* Per-component overrides */
+.hero { --anim-duration: var(--anim-duration-slow); }
+.hero.scale-up { transform: scale(.96); }
+.hero.scale-up.in { transform: scale(1); }
+
+.product-card { --anim-duration: 480ms; }
+.product-card.fade-up { transform: translateY(12px); }
+
+.cta, .cta-button, .button-animated { --anim-duration: var(--anim-duration-fast); transition-duration: var(--anim-duration-fast); }
+
+/* Small helper to avoid flashing when JS is slow */
+[data-animate]{ opacity: 0 }
+[data-animate].in{ opacity: 1 }

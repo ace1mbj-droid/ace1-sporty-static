@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="alternate icon" href="favicon.svg">
+    <link rel="apple-touch-icon" href="images/apple-touch-icon.png" sizes="180x180">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#1a1a2e">
+    <title>Terms of Service | Ace#1</title>
+
+    <!-- Cache Control Meta Tags -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+
+    <!-- Security Meta Tags -->
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta http-equiv="X-XSS-Protection" content="1; mode=block">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+
+    <meta name="description" content="Terms of service for Ace#1 - policies for purchases and site use">
+    <link rel="canonical" href="https://ace1.in/terms-of-service.html">
+
+    <!-- OpenGraph / Social -->
+    <meta property="og:site_name" content="ACE#1">
+    <meta property="og:locale" content="en_IN">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://ace1.in/terms-of-service.html">
+    <meta property="og:title" content="Terms of Service | Ace#1">
+    <meta property="og:description" content="Terms of service for Ace#1 - policies for purchases and site use">
+    <meta property="og:image" content="https://ace1.in/images/og-image.svg">
+
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Terms of Service | Ace#1">
+    <meta name="twitter:description" content="Terms of service for Ace#1 - policies for purchases and site use">
+    <meta name="twitter:image" content="https://ace1.in/images/og-image.svg">
+
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        .terms-container {
+            max-width: 900px;
+            margin: 120px auto 50px;
+            padding: 40px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        .terms-container h1 {
+            color: #FF6B00;
+            margin-bottom: 10px;
+            font-size: 36px;
+        }
+        .terms-container .last-updated {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 30px;
+        }
+        .terms-container h2 {
+            color: #333;
+            margin-top: 35px;
+            margin-bottom: 15px;
+            font-size: 22px;
+            border-bottom: 2px solid #FF6B00;
+            padding-bottom: 8px;
+        }
+        .terms-container p, .terms-container ul, .terms-container ol {
+            color: #555;
+            line-height: 1.8;
+            margin-bottom: 15px;
+        }
+        .terms-container ul, .terms-container ol {
+            padding-left: 30px;
+        }
+        .terms-container li {
+            margin-bottom: 10px;
+        }
+        .terms-container strong {
+            color: #333;
+        }
+        .highlight-box {
+            background: #fff3e0;
+            border-left: 4px solid #FF6B00;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div id="dev-banner">This website is under development</div>
+
+    <!-- Navigation -->
+    <nav class="navbar" id="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <a href="index.html">
+                    <img class="site-logo-img" src="https://vorqavsuqcjnkjzwkyzr.supabase.co/storage/v1/object/public/Website/brand/ace1-logo.jpeg" alt="ACE#1" decoding="async" loading="eager" onerror="this.remove();">
+                    <span class="logo-text">ACE<span class="logo-accent">#1</span></span>
+                </a>
+            </div>
+            <ul class="nav-menu" id="nav-menu">
+                <li><a href="shoes.html" class="nav-link">Shoes</a></li>
+                <li><a href="technology.html" class="nav-link">Technology</a></li>
+                <li><a href="about.html" class="nav-link">About</a></li>
+                <li><a href="contact.html" class="nav-link">Contact</a></li>
+            </ul>
+            <div class="nav-icons">
+                <button class="icon-btn search-btn" id="search-btn" aria-label="Search products">
+                    <i class="fas fa-search"></i>
+                </button>
+                <button class="icon-btn cart-btn" id="cart-btn" aria-label="Shopping cart">
+                    <i class="fas fa-shopping-bag"></i>
+                    <span class="cart-count" id="cart-count">0</span>
+                </button>
+                <button class="icon-btn user-btn" aria-label="User account">
+                    <i class="fas fa-user"></i>
+                </button>
+                <button class="hamburger" id="hamburger" aria-label="Toggle menu">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Search Overlay -->
+    <div class="search-overlay" id="search-overlay">
+        <div class="search-container">
+            <input type="text" class="search-input" placeholder="Search for products...">
+            <button class="search-close" id="search-close">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Terms of Service Content -->
+    <div class="terms-container">
+        <h1>Terms of Service</h1>
+        <p class="last-updated">Last Updated: December 18, 2025</p>
+
+        <p>Welcome to ACE#1. By accessing or using our website and services, you agree to be bound by these Terms of Service. Please read them carefully.</p>
+
+        <h2>1. Acceptance of Terms</h2>
+        <p>By accessing and using the ACE#1 website (ace1.in), you accept and agree to be bound by the terms and provision of this agreement. If you do not agree to abide by these terms, please do not use this service.</p>
+
+        <h2>2. Products and Services</h2>
+        <p>ACE#1 specializes in terahertz technology-integrated footwear designed for enhanced wellness and lifestyle. Our products include:</p>
+        <ul>
+            <li>Running shoes with terahertz technology</li>
+            <li>Sneakers with wellness features</li>
+            <li>Trekking footwear</li>
+        </ul>
+        <p>Product availability, pricing, and specifications are subject to change without prior notice.</p>
+
+        <h2>3. User Accounts</h2>
+        <p>When you create an account with us, you must provide accurate and complete information. You are responsible for:</p>
+        <ul>
+            <li>Maintaining the confidentiality of your account credentials</li>
+            <li>All activities that occur under your account</li>
+            <li>Notifying us immediately of any unauthorized use</li>
+        </ul>
+
+        <h2>4. Orders and Payments</h2>
+        <p>All orders are subject to acceptance and availability. We reserve the right to refuse or cancel any order for any reason, including:</p>
+        <ul>
+            <li>Product availability issues</li>
+            <li>Errors in pricing or product information</li>
+            <li>Suspected fraudulent transactions</li>
+        </ul>
+        <p>Payment must be made through our accepted payment methods (Razorpay, UPI, Credit/Debit Cards, or Cash on Delivery where available).</p>
+
+        <h2>5. Shipping and Delivery</h2>
+        <p>We aim to deliver products within the estimated timeframes provided at checkout. However, delivery times are estimates and not guaranteed. ACE#1 is not liable for delays caused by:</p>
+        <ul>
+            <li>Shipping carrier issues</li>
+            <li>Incorrect addresses provided by customers</li>
+            <li>Natural disasters or unforeseen circumstances</li>
+        </ul>
+
+        <h2>6. Returns and Refunds</h2>
+        <p>Please refer to our <a href="faq.html#returns" style="color: #FF6B00;">Returns Policy</a> for detailed information about returns, exchanges, and refunds.</p>
+
+        <div class="highlight-box">
+            <strong>Key Points:</strong>
+            <ul>
+                <li>Returns accepted within 7 days of delivery</li>
+                <li>Products must be unused and in original packaging</li>
+                <li>Refunds processed within 5-7 business days</li>
+            </ul>
+        </div>
+
+        <h2>7. Intellectual Property</h2>
+        <p>All content on this website, including but not limited to text, graphics, logos, images, and software, is the property of ACE#1 and is protected by intellectual property laws. You may not:</p>
+        <ul>
+            <li>Copy, modify, or distribute our content without permission</li>
+            <li>Use our trademarks or branding without authorization</li>
+            <li>Reverse engineer any software or technology</li>
+        </ul>
+
+        <h2>8. Limitation of Liability</h2>
+        <p>To the fullest extent permitted by law, ACE#1 shall not be liable for any indirect, incidental, special, consequential, or punitive damages resulting from your use of our services or products.</p>
+
+        <h2>9. Privacy</h2>
+        <p>Your privacy is important to us. Please review our <a href="privacy-policy.html" style="color: #FF6B00;">Privacy Policy</a> to understand how we collect, use, and protect your personal information.</p>
+
+        <h2>10. Modifications to Terms</h2>
+        <p>ACE#1 reserves the right to modify these terms at any time. Changes will be effective immediately upon posting to this website. Your continued use of the service after changes constitutes acceptance of the modified terms.</p>
+
+        <h2>11. Governing Law</h2>
+        <p>These Terms of Service are governed by and construed in accordance with the laws of India. Any disputes arising from these terms shall be subject to the exclusive jurisdiction of the courts in India.</p>
+
+        <h2>12. Contact Information</h2>
+        <p>For questions about these Terms of Service, please contact us:</p>
+        <ul>
+            <li><strong>Email:</strong> hello@ace1.in</li>
+            <li><strong>Website:</strong> <a href="contact.html" style="color: #FF6B00;">Contact Page</a></li>
+        </ul>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-column">
+                    <h3 class="footer-logo"><img class="footer-logo-img" src="https://vorqavsuqcjnkjzwkyzr.supabase.co/storage/v1/object/public/Website/brand/ace1-logo.jpeg" alt="ACE#1" loading="lazy" decoding="async" onerror="this.remove();"><span class="logo-text">ACE<span class="logo-accent">#1</span></span></h3>
+                    <p>Revolutionary footwear integrated with terahertz technology for enhanced wellness and lifestyle.</p>
+                    <div class="social-icons">
+                        <a href="https://instagram.com/ace_1_official/" target="_blank" rel="noopener noreferrer" aria-label="Ace#1 on Instagram"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+                <div class="footer-column">
+                    <h4>Shop</h4>
+                    <ul>
+                        <li><a href="shoes.html">All Products</a></li>
+                        <li><a href="index.html?category=runners">Runners</a></li>
+                        <li><a href="index.html?category=sneakers">Sneakers</a></li>
+                        <li><a href="index.html?category=trekking">Trekking</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h4>Company</h4>
+                    <ul>
+                        <li><a href="about.html">About Us</a></li>
+                        <li><a href="technology.html">Technology</a></li>
+                        <li><a href="contact.html">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h4>Support</h4>
+                    <ul>
+                        <li><a href="faq.html">FAQ</a></li>
+                        <li><a href="faq.html#shipping">Shipping Info</a></li>
+                        <li><a href="faq.html#returns">Returns</a></li>
+                        <li><a href="size-guide.html">Size Guide</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 Ace#1. All rights reserved.</p>
+                <div class="footer-links">
+                    <a href="privacy-policy.html">Privacy Policy</a>
+                    <a href="terms-of-service.html">Terms of Service</a>
+                    <a href="#" id="clearCacheBtn" style="color: #ff8c00; font-weight: 600;" title="Clear browser cache">🧹 Clear Cache</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Shopping Cart Sidebar -->
+    <div class="cart-sidebar" id="cart-sidebar">
+        <div class="cart-header">
+            <h3>Shopping Cart</h3>
+            <button class="cart-close" id="cart-close">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="cart-items" id="cart-items">
+            <div class="cart-empty">
+                <i class="fas fa-shopping-bag"></i>
+                <p>Your cart is empty</p>
+            </div>
+        </div>
+        <div class="cart-footer">
+            <div class="cart-total">
+                <span>Subtotal:</span>
+                <span id="cart-total">₹0</span>
+            </div>
+            <button class="btn btn-primary btn-block">Checkout</button>
+            <a href="shoes.html" class="btn btn-secondary">Continue Shopping</a>
+        </div>
+    </div>
+
+    <div class="cart-overlay" id="cart-overlay"></div>
+
+    <!-- Cache Buster -->
+    <script src="js/cache-buster.js"></script>
+    <script src="js/main.js"></script>
+    <!-- Image Optimization -->
+    <script src="js/image-optimizer.js"></script>
+</body>
+</html>

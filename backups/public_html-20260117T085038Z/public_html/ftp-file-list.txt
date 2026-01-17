@@ -1,0 +1,516 @@
+drwxr-xr-x  20 u788576096.adminace1 o52339043     4096 Jan 17 06:34 .
+drwxr-xr-x  14 u788576096.adminace1 o52339043     4096 Jan 17 05:11 ..
+-rw-r--r--   1 u788576096.adminace1 o52339043    17377 Jan 17 06:33 about.html
+-rw-r--r--   1 u788576096.adminace1 o52339043    14040 Jan 17 06:33 accessories.html
+-rw-r--r--   1 u788576096.adminace1 o52339043    13649 Jan 17 06:33 ADMIN_DASHBOARD_TEST_REPORT.md
+-rw-r--r--   1 u788576096.adminace1 o52339043    87496 Jan 17 06:33 admin.html
+-rw-r--r--   1 u788576096.adminace1 o52339043    15698 Jan 17 06:33 admin-login.html
+-rw-r--r--   1 u788576096.adminace1 o52339043    11519 Jan 17 06:33 ADMIN_QUICK_REFERENCE.md
+-rw-r--r--   1 u788576096.adminace1 o52339043    13324 Jan 17 06:33 ADMIN_VERIFICATION_COMPLETE.md
+-rw-r--r--   1 u788576096.adminace1 o52339043     1121 Jan 17 06:33 apple-touch-icon.svg
+drwxr-xr-x   2 u788576096.adminace1 o52339043     4096 Jan 17 06:34 artifacts
+drwxr-xr-x   2 u788576096.adminace1 o52339043     4096 Jan 17 06:34 artifacts-prod
+drwxr-xr-x   2 u788576096.adminace1 o52339043     4096 Jan 17 06:34 artifacts_prod
+-rw-r--r--   1 u788576096.adminace1 o52339043     7410 Jan 17 06:33 auth-callback.html
+-rw-r--r--   1 u788576096.adminace1 o52339043    17399 Jan 17 06:33 auth-test.html
+-rw-r--r--   1 u788576096.adminace1 o52339043       29 Jan 17 06:33 cache-version.txt
+-rw-r--r--   1 u788576096.adminace1 o52339043      520 Jan 17 06:33 check_inventory.sql
+-rw-r--r--   1 u788576096.adminace1 o52339043    19731 Jan 17 06:33 checkout.html
+-rw-r--r--   1 u788576096.adminace1 o52339043    16826 Jan 17 06:33 clothing.html
+-rw-r--r--   1 u788576096.adminace1 o52339043    12145 Jan 17 06:33 # Code Citations.md
+-rw-r--r--   1 u788576096.adminace1 o52339043    13783 Jan 17 06:33 contact.html
+drwxr-xr-x   4 u788576096.adminace1 o52339043     4096 Jan 17 06:34 .continue
+-rw-r--r--   1 u788576096.adminace1 o52339043     1269 Jan 17 06:33 CONTRIBUTING.md
+drwxr-xr-x   2 u788576096.adminace1 o52339043     4096 Jan 17 06:34 css
+-rw-r--r--   1 u788576096.adminace1 o52339043    19037 Jan 17 06:33 data-deletion.html
+drwxr-xr-x   3 u788576096.adminace1 o52339043     4096 Jan 17 06:34 docs
+-rw-r--r--   1 u788576096.adminace1 o52339043    10766 Jan 17 06:33 DOCUMENTATION_INDEX.md
+drwxr-xr-x   2 u788576096.adminace1 o52339043     4096 Jan 17 06:34 emails
+-rw-r--r--   1 u788576096.adminace1 o52339043     1157 Jan 17 06:33 .env.example
+-rw-r--r--   1 u788576096.adminace1 o52339043    23572 Jan 17 06:33 faq.html
+-rw-r--r--   1 u788576096.adminace1 o52339043      834 Jan 17 06:33 favicon.svg
+-rw-r--r--   1 u788576096.adminace1 o52339043    11376 Jan 17 06:33 forgot-password.html
+-rw-r--r--   1 u788576096.adminace1 o52339043      237 Jan 17 06:33 .gitignore
+-rw-r--r--   1 u788576096.adminace1 o52339043     4248 Jan 17 06:33 .htaccess
+drwxr-xr-x   2 u788576096.adminace1 o52339043     4096 Jan 17 06:34 images
+-rw-r--r--   1 u788576096.adminace1 o52339043    58824 Jan 17 06:33 index.html
+drwxr-xr-x   2 u788576096.adminace1 o52339043     4096 Jan 17 06:34 js
+-rw-r--r--   1 u788576096.adminace1 o52339043    11432 Jan 17 06:33 login.html
+-rw-r--r--   1 u788576096.adminace1 o52339043     1532 Jan 17 06:33 manifest.json
+-rw-r--r--   1 u788576096.adminace1 o52339043   377649 Jan 17 06:33 navbar-after-circle.png
+-rw-r--r--   1 u788576096.adminace1 o52339043      362 Jan 17 06:33 npm-audit-latest.json
+-rw-r--r--   1 u788576096.adminace1 o52339043    15266 Jan 17 06:33 order-confirmation.html
+drwxr-xr-x   2 u788576096.adminace1 o52339043     4096 Jan 17 06:34 package
+-rw-r--r--   1 u788576096.adminace1 o52339043      967 Jan 17 06:33 package.json
+-rw-r--r--   1 u788576096.adminace1 o52339043    64985 Jan 17 06:33 package-lock.json
+-rw-r--r--   1 u788576096.adminace1 o52339043     1347 Jan 17 06:33 playwright.config.js
+-rw-r--r--   1 u788576096.adminace1 o52339043   129987 Jan 17 06:33 preview-index.png
+-rw-r--r--   1 u788576096.adminace1 o52339043    21226 Jan 17 06:33 privacy-policy.html
+-rw-r--r--   1 u788576096.adminace1 o52339043   383838 Jan 17 06:33 product-card-after-fix.png
+-rw-r--r--   1 u788576096.adminace1 o52339043     3427 Jan 17 06:33 products.html
+-rw-r--r--   1 u788576096.adminace1 o52339043    11683 Jan 17 06:33 PROJECT_COMPLETION_SUMMARY.md
+-rw-r--r--   1 u788576096.adminace1 o52339043    12659 Jan 17 06:33 README.md
+-rw-r--r--   1 u788576096.adminace1 o52339043    12979 Jan 17 06:33 register.html
+drwxr-xr-x   4 u788576096.adminace1 o52339043     4096 Jan 17 06:34 reproduction
+-rw-r--r--   1 u788576096.adminace1 o52339043       61 Jan 17 06:33 robots.txt
+drwxr-xr-x   2 u788576096.adminace1 o52339043     4096 Jan 17 06:35 scripts
+-rw-r--r--   1 u788576096.adminace1 o52339043     1134 Jan 17 06:33 SECRETS.md
+-rw-r--r--   1 u788576096.adminace1 o52339043    25177 Jan 17 06:33 SECURITY_AUDIT_REPORT.html
+drwxr-xr-x   2 u788576096.adminace1 o52339043     4096 Jan 17 06:34 server
+-rw-r--r--   1 u788576096.adminace1 o52339043    20592 Jan 17 06:33 shoes.html
+-rw-r--r--   1 u788576096.adminace1 o52339043     1886 Jan 17 06:33 sitemap.xml
+-rw-r--r--   1 u788576096.adminace1 o52339043    18526 Jan 17 06:33 size-guide.html
+drwxr-xr-x   2 u788576096.adminace1 o52339043     4096 Jan 17 06:34 sql
+drwxr-xr-x   5 u788576096.adminace1 o52339043     4096 Jan 17 06:34 supabase
+-rw-r--r--   1 u788576096.adminace1 o52339043    91717 Jan 17 06:33 supabase-mcp-server-supabase-0.5.9.tgz
+-rw-r--r--   1 u788576096.adminace1 o52339043    17308 Jan 17 06:33 technology.html
+-rw-r--r--   1 u788576096.adminace1 o52339043      166 Jan 17 06:33 temp_query.sql
+-rw-r--r--   1 u788576096.adminace1 o52339043    14674 Jan 17 06:33 terms-of-service.html
+drwxr-xr-x   2 u788576096.adminace1 o52339043     4096 Jan 17 06:34 test-results-ci
+drwxr-xr-x   3 u788576096.adminace1 o52339043     4096 Jan 17 06:32 tests
+-rw-r--r--   1 u788576096.adminace1 o52339043    18544 Jan 17 06:33 update-password.html
+-rw-r--r--   1 u788576096.adminace1 o52339043     3007 Jan 17 06:33 URGENT_APPLY_DELETION_FIX.md
+-rw-r--r--   1 u788576096.adminace1 o52339043    17408 Jan 17 06:33 user-profile.html
+-rw-r--r--   1 u788576096.adminace1 o52339043     3598 Jan 17 06:33 vercel.json
+drwxr-xr-x   2 u788576096.adminace1 o52339043     4096 Jan 17 06:34 .vscode
+-rw-r--r--   1 u788576096.adminace1 o52339043     5170 Jan 17 06:33 web.config
+-rw-r--r--   1 u788576096.adminace1 o52339043     3073 Jan 17 06:33 welcome.html
+
+artifacts:
+drwxr-xr-x   2 u788576096.adminace1 o52339043     4096 Jan 17 06:34 .
+drwxr-xr-x  20 u788576096.adminace1 o52339043     4096 Jan 17 06:34 ..
+-rw-r--r--   1 u788576096.adminace1 o52339043     6113 Jan 17 06:33 ftp-healthcheck.log
+
+artifacts-prod:
+drwxr-xr-x   2 u788576096.adminace1 o52339043     4096 Jan 17 06:34 .
+drwxr-xr-x  20 u788576096.adminace1 o52339043     4096 Jan 17 06:34 ..
+-rw-r--r--   1 u788576096.adminace1 o52339043       56 Jan 17 06:33 ftp-healthcheck.log
+
+artifacts_prod:
+drwxr-xr-x   2 u788576096.adminace1 o52339043     4096 Jan 17 06:34 .
+drwxr-xr-x  20 u788576096.adminace1 o52339043     4096 Jan 17 06:34 ..
+-rw-r--r--   1 u788576096.adminace1 o52339043       56 Jan 17 06:33 ftp-healthcheck.log
+-rw-r--r--   1 u788576096.adminace1 o52339043     1678 Jan 17 06:33 ftp-listing.log
+
+.continue:
+drwxr-xr-x   4 u788576096.adminace1 o52339043     4096 Jan 17 06:34 .
+drwxr-xr-x  20 u788576096.adminace1 o52339043     4096 Jan 17 06:34 ..
+drwxr-xr-x   2 u788576096.adminace1 o52339043     4096 Jan 17 06:34 agents
+-rw-r--r--   1 u788576096.adminace1 o52339043      299 Jan 17 06:33 config.json
+drwxr-xr-x   2 u788576096.adminace1 o52339043     4096 Jan 17 06:34 mcpServers
+
+.continue/agents:
+drwxr-xr-x   2 u788576096.adminace1 o52339043     4096 Jan 17 06:34 .
+drwxr-xr-x   4 u788576096.adminace1 o52339043     4096 Jan 17 06:34 ..
+-rw-r--r--   1 u788576096.adminace1 o52339043      636 Jan 17 06:33 new-config.yaml
+
+.continue/mcpServers:
+drwxr-xr-x   2 u788576096.adminace1 o52339043     4096 Jan 17 06:34 .
+drwxr-xr-x   4 u788576096.adminace1 o52339043     4096 Jan 17 06:34 ..
+-rw-r--r--   1 u788576096.adminace1 o52339043      160 Jan 17 06:33 new-mcp-server-1.yaml
+-rw-r--r--   1 u788576096.adminace1 o52339043      160 Jan 17 06:33 new-mcp-server.yaml
+
+css:
+drwxr-xr-x   2 u788576096.adminace1 o52339043     4096 Jan 17 06:34 .
+drwxr-xr-x  20 u788576096.adminace1 o52339043     4096 Jan 17 06:34 ..
+-rw-r--r--   1 u788576096.adminace1 o52339043     2831 Jan 17 06:33 animations.css
+-rw-r--r--   1 u788576096.adminace1 o52339043     9479 Jan 17 06:33 image-manager.css
+-rw-r--r--   1 u788576096.adminace1 o52339043     6700 Jan 17 06:33 password-manager.css
+-rw-r--r--   1 u788576096.adminace1 o52339043     6173 Jan 17 06:33 reviews.css
+-rw-r--r--   1 u788576096.adminace1 o52339043   119635 Jan 17 06:33 style.css
+
+docs:
+drwxr-xr-x   3 u788576096.adminace1 o52339043     4096 Jan 17 06:34 .
+drwxr-xr-x  20 u788576096.adminace1 o52339043     4096 Jan 17 06:34 ..
+-rw-r--r--   1 u788576096.adminace1 o52339043     2761 Jan 17 06:33 ADMIN_PASSWORD_RESET.md
+-rw-r--r--   1 u788576096.adminace1 o52339043     2784 Jan 17 06:33 admin-setup.md
+-rw-r--r--   1 u788576096.adminace1 o52339043      946 Jan 17 06:33 ADMIN_TOTP_SETUP.md
+-rw-r--r--   1 u788576096.adminace1 o52339043     5334 Jan 17 06:33 AI_SETUP.md
+-rw-r--r--   1 u788576096.adminace1 o52339043     4223 Jan 17 06:33 AUTH_EMAIL_BRANDING.md
+-rw-r--r--   1 u788576096.adminace1 o52339043     6083 Jan 17 06:33 AUTHENTICATION_STATUS.md
+-rw-r--r--   1 u788576096.adminace1 o52339043    10089 Jan 17 06:33 A-Z_TEST_REPORT.md
+-rw-r--r--   1 u788576096.adminace1 o52339043     3185 Jan 17 06:33 bot-defense.md
+-rw-r--r--   1 u788576096.adminace1 o52339043     1079 Jan 17 06:33 CHANGELOG.md
+-rw-r--r--   1 u788576096.adminace1 o52339043    25031 Jan 17 06:33 CLEANUP_COMPLETE.md
+-rw-r--r--   1 u788576096.adminace1 o52339043    12196 Jan 17 06:33 COMPLETE_DATABASE_MIGRATION_REPORT.md
+-rw-r--r--   1 u788576096.adminace1 o52339043     9439 Jan 17 06:33 COMPLETE_STORAGE_AUDIT.md
+-rw-r--r--   1 u788576096.adminace1 o52339043     1548 Jan 17 06:33 CREATE_TEST_ADMIN.md
+-rw-r--r--   1 u788576096.adminace1 o52339043     5070 Jan 17 06:33 DATABASE_STORAGE_MIGRATION.md
+-rw-r--r--   1 u788576096.adminace1 o52339043     4758 Jan 17 06:33 DEPLOY_ADMIN_RESET.md
+-rw-r--r--   1 u788576096.adminace1 o52339043     7744 Jan 17 06:33 DEPLOYMENT-CHECKLIST.txt
+drwxr-xr-x   2 u788576096.adminace1 o52339043     4096 Jan 17 06:35 email-templates
+-rw-r--r--   1 u788576096.adminace1 o52339043    10659 Jan 17 06:33 FINAL_LOCALSTORAGE_SUMMARY.md
+-rw-r--r--   1 u788576096.adminace1 o52339043     2853 Jan 17 06:33 FIX_ADMIN_PASSWORD.md
+-rw-r--r--   1 u788576096.adminace1 o52339043     6440 Jan 17 06:33 FIX_SECURITY_LINTER_ERRORS.md
+-rw-r--r--   1 u788576096.adminace1 o52339043     3170 Jan 17 06:33 FREE_DEPLOY_WITHOUT_HOSTINGER.md
+-rw-r--r--   1 u788576096.adminace1 o52339043     2260 Jan 17 06:33 ftp-healthcheck.md
+-rw-r--r--   1 u788576096.adminace1 o52339043     4077 Jan 17 06:33 FTP-UPLOAD-CHECKLIST.txt
+-rw-r--r--   1 u788576096.adminace1 o52339043     6067 Jan 17 06:33 HISTORY_REWRITE_PLAN.md
+-rw-r--r--   1 u788576096.adminace1 o52339043     5870 Jan 17 06:33 LOCALSTORAGE_MIGRATION.md
+-rw-r--r--   1 u788576096.adminace1 o52339043     3731 Jan 17 06:33 MCP_SETUP.md
+-rw-r--r--   1 u788576096.adminace1 o52339043     7652 Jan 17 06:33 MIGRATION_COMPLETE.md
+-rw-r--r--   1 u788576096.adminace1 o52339043     5765 Jan 17 06:33 PRODUCT_DELETION_PROTECTION.md
+-rw-r--r--   1 u788576096.adminace1 o52339043     2511 Jan 17 06:33 PRODUCTION_POST_DEPLOY.md
+-rw-r--r--   1 u788576096.adminace1 o52339043    12484 Jan 17 06:33 RLS_SECURITY_GUIDE.md
+-rw-r--r--   1 u788576096.adminace1 o52339043     3251 Jan 17 06:33 SECURITY.md
+-rw-r--r--   1 u788576096.adminace1 o52339043     7423 Jan 17 06:33 SERVER_TEST_REPORT.md
+-rw-r--r--   1 u788576096.adminace1 o52339043     2525 Jan 17 06:33 SESSION_MANAGEMENT.md
+-rw-r--r--   1 u788576096.adminace1 o52339043     3917 Jan 17 06:33 SHOW_ON_INDEX_VERIFICATION.md
+-rw-r--r--   1 u788576096.adminace1 o52339043     2727 Jan 17 06:33 SMTP_SETUP_RESEND.md
+-rw-r--r--   1 u788576096.adminace1 o52339043     9483 Jan 17 06:33 START_HERE.txt
+-rw-r--r--   1 u788576096.adminace1 o52339043     7950 Jan 17 06:33 SUPABASE_QUICK_REFERENCE.txt
+-rw-r--r--   1 u788576096.adminace1 o52339043     2060 Jan 17 06:33 SUPABASE_SECURITY_ENHANCEMENTS.md
+-rw-r--r--   1 u788576096.adminace1 o52339043     1059 Jan 17 06:33 TESTS-E2E.md
+-rw-r--r--   1 u788576096.adminace1 o52339043     5778 Jan 17 06:33 WHAT_IS_LOCALSTORAGE.md
+
+docs/email-templates:
+drwxr-xr-x   2 u788576096.adminace1 o52339043     4096 Jan 17 06:35 .
+drwxr-xr-x   3 u788576096.adminace1 o52339043     4096 Jan 17 06:34 ..
+-rw-r--r--   1 u788576096.adminace1 o52339043      358 Jan 17 06:33 change-email.html
+-rw-r--r--   1 u788576096.adminace1 o52339043      362 Jan 17 06:33 confirm-signup.html
+-rw-r--r--   1 u788576096.adminace1 o52339043      305 Jan 17 06:33 invite-user.html
+-rw-r--r--   1 u788576096.adminace1 o52339043      283 Jan 17 06:33 magic-link.html
+-rw-r--r--   1 u788576096.adminace1 o52339043      325 Jan 17 06:33 reset-password.html
+
+emails:
+drwxr-xr-x   2 u788576096.adminace1 o52339043     4096 Jan 17 06:34 .
+drwxr-xr-x  20 u788576096.adminace1 o52339043     4096 Jan 17 06:34 ..
+-rw-r--r--   1 u788576096.adminace1 o52339043      221 Jan 17 06:33 order_confirmation.html
+-rw-r--r--   1 u788576096.adminace1 o52339043       88 Jan 17 06:33 order_confirmation.txt
+
+images:
+drwxr-xr-x   2 u788576096.adminace1 o52339043     4096 Jan 17 06:34 .
+drwxr-xr-x  20 u788576096.adminace1 o52339043     4096 Jan 17 06:34 ..
+-rw-r--r--   1 u788576096.adminace1 o52339043    31954 Jan 17 06:33 ace1-logo-180.png
+-rw-r--r--   1 u788576096.adminace1 o52339043   188451 Jan 17 06:33 ace1-logo-512.png
+-rw-r--r--   1 u788576096.adminace1 o52339043      808 Jan 17 06:33 ace1-logo-horizontal.svg
+-rw-r--r--   1 u788576096.adminace1 o52339043    40410 Jan 17 06:33 ace1-logo.jpeg
+-rw-r--r--   1 u788576096.adminace1 o52339043   228689 Jan 17 06:33 ace1-logo-original-512.png
+-rw-r--r--   1 u788576096.adminace1 o52339043     1798 Jan 17 06:33 ace1-logo.svg
+-rw-r--r--   1 u788576096.adminace1 o52339043    39226 Jan 17 06:33 apple-touch-icon.png
+-rw-r--r--   1 u788576096.adminace1 o52339043     1914 Jan 17 06:33 # Code Citations.md
+-rw-r--r--   1 u788576096.adminace1 o52339043     3566 Jan 17 06:33 hero-sneaker.svg
+-rw-r--r--   1 u788576096.adminace1 o52339043     2304 Jan 17 06:33 og-image.svg
+-rw-r--r--   1 u788576096.adminace1 o52339043      185 Jan 17 06:33 placeholder.jpg
+-rw-r--r--   1 u788576096.adminace1 o52339043     1898 Jan 17 06:33 product-placeholder.svg
+
+js:
+drwxr-xr-x   2 u788576096.adminace1 o52339043     4096 Jan 17 06:34 .
+drwxr-xr-x  20 u788576096.adminace1 o52339043     4096 Jan 17 06:34 ..
+-rw-r--r--   1 u788576096.adminace1 o52339043     6425 Jan 17 06:33 about-page.js
+-rw-r--r--   1 u788576096.adminace1 o52339043   104699 Jan 17 06:33 admin-extended.js
+-rw-r--r--   1 u788576096.adminace1 o52339043   145337 Jan 17 06:33 admin.js
+-rw-r--r--   1 u788576096.adminace1 o52339043     3585 Jan 17 06:33 animations.js
+-rw-r--r--   1 u788576096.adminace1 o52339043    16963 Jan 17 06:33 auth.js
+-rw-r--r--   1 u788576096.adminace1 o52339043     2132 Jan 17 06:33 bot-defense.js
+-rw-r--r--   1 u788576096.adminace1 o52339043     9771 Jan 17 06:33 cache-buster.js
+-rw-r--r--   1 u788576096.adminace1 o52339043    30882 Jan 17 06:33 checkout.js
+-rw-r--r--   1 u788576096.adminace1 o52339043     1938 Jan 17 06:33 contact.js
+-rw-r--r--   1 u788576096.adminace1 o52339043    32439 Jan 17 06:33 database-auth.js
+-rw-r--r--   1 u788576096.adminace1 o52339043    20273 Jan 17 06:33 ecommerce-backend.js
+-rw-r--r--   1 u788576096.adminace1 o52339043      456 Jan 17 06:33 hcaptcha-config.js
+-rw-r--r--   1 u788576096.adminace1 o52339043     7002 Jan 17 06:33 hcaptcha-manager.js
+-rw-r--r--   1 u788576096.adminace1 o52339043    27061 Jan 17 06:33 image-manager.js
+-rw-r--r--   1 u788576096.adminace1 o52339043     5608 Jan 17 06:33 image-optimizer.js
+-rw-r--r--   1 u788576096.adminace1 o52339043    91344 Jan 17 06:33 main.js
+-rw-r--r--   1 u788576096.adminace1 o52339043     5828 Jan 17 06:33 password-hasher.js
+-rw-r--r--   1 u788576096.adminace1 o52339043    18690 Jan 17 06:33 password-manager.js
+-rw-r--r--   1 u788576096.adminace1 o52339043    55353 Jan 17 06:33 products.js
+-rw-r--r--   1 u788576096.adminace1 o52339043      515 Jan 17 06:33 razorpay-config.js
+-rw-r--r--   1 u788576096.adminace1 o52339043    13902 Jan 17 06:33 reviews.js
+-rw-r--r--   1 u788576096.adminace1 o52339043    13664 Jan 17 06:33 reviews-manager.js
+-rw-r--r--   1 u788576096.adminace1 o52339043    13371 Jan 17 06:33 security.js
+-rw-r--r--   1 u788576096.adminace1 o52339043     3711 Jan 17 06:33 supabase-config.js
+-rw-r--r--   1 u788576096.adminace1 o52339043    36618 Jan 17 06:33 supabase-service.js
+-rw-r--r--   1 u788576096.adminace1 o52339043    60055 Jan 17 06:33 user-profile.js
+
+package:
+drwxr-xr-x   2 u788576096.adminace1 o52339043     4096 Jan 17 06:34 .
+drwxr-xr-x  20 u788576096.adminace1 o52339043     4096 Jan 17 06:34 ..
+-rw-r--r--   1 u788576096.adminace1 o52339043    10928 Jan 17 06:33 LICENSE
+-rw-r--r--   1 u788576096.adminace1 o52339043     2419 Jan 17 06:33 package.json
+-rw-r--r--   1 u788576096.adminace1 o52339043   157605 Jan 17 06:33 package-lock.json
+
+reproduction:
+drwxr-xr-x   4 u788576096.adminace1 o52339043     4096 Jan 17 06:34 .
+drwxr-xr-x  20 u788576096.adminace1 o52339043     4096 Jan 17 06:34 ..
+-rw-r--r--   1 u788576096.adminace1 o52339043      193 Jan 17 06:33 package.json
+-rw-r--r--   1 u788576096.adminace1 o52339043    13865 Jan 17 06:33 package-lock.json
+drwxr-xr-x   2 u788576096.adminace1 o52339043     4096 Jan 17 06:34 src
+drwxr-xr-x   2 u788576096.adminace1 o52339043     4096 Jan 17 06:34 www
+
+reproduction/src:
+drwxr-xr-x   2 u788576096.adminace1 o52339043     4096 Jan 17 06:34 .
+drwxr-xr-x   4 u788576096.adminace1 o52339043     4096 Jan 17 06:34 ..
+-rw-r--r--   1 u788576096.adminace1 o52339043       19 Jan 17 06:33 app.ts
+
+reproduction/www:
+drwxr-xr-x   2 u788576096.adminace1 o52339043     4096 Jan 17 06:34 .
+drwxr-xr-x   4 u788576096.adminace1 o52339043     4096 Jan 17 06:34 ..
+-rw-r--r--   1 u788576096.adminace1 o52339043      230 Jan 17 06:33 index.html
+
+scripts:
+drwxr-xr-x   2 u788576096.adminace1 o52339043     4096 Jan 17 06:35 .
+drwxr-xr-x  20 u788576096.adminace1 o52339043     4096 Jan 17 06:34 ..
+-rwxr-xr-x   1 u788576096.adminace1 o52339043      172 Jan 17 06:33 auto-commit-models.sh
+-rwxr-xr-x   1 u788576096.adminace1 o52339043      547 Jan 17 06:33 bump-cache-version.sh
+-rw-r--r--   1 u788576096.adminace1 o52339043     3696 Jan 17 06:33 check-links.js
+-rw-r--r--   1 u788576096.adminace1 o52339043     2104 Jan 17 06:33 check-ollama.js
+-rw-r--r--   1 u788576096.adminace1 o52339043      832 Jan 17 06:33 check-ollama.sh
+-rw-r--r--   1 u788576096.adminace1 o52339043      390 Jan 17 06:33 check_schema.sql
+-rw-r--r--   1 u788576096.adminace1 o52339043      369 Jan 17 06:33 check_wishlists.sql
+-rw-r--r--   1 u788576096.adminace1 o52339043     6422 Jan 17 06:33 create-admin-user.js
+-rw-r--r--   1 u788576096.adminace1 o52339043     4114 Jan 17 06:33 create-test-admin.js
+-rw-r--r--   1 u788576096.adminace1 o52339043      896 Jan 17 06:33 debug-products-playwright.js
+-rw-r--r--   1 u788576096.adminace1 o52339043      353 Jan 17 06:33 disable_user_roles_rls.sql
+-rw-r--r--   1 u788576096.adminace1 o52339043     7671 Jan 17 06:33 enable_admin_header_access.sql
+-rw-r--r--   1 u788576096.adminace1 o52339043       73 Jan 17 06:33 find_admin.sql
+-rw-r--r--   1 u788576096.adminace1 o52339043     1540 Jan 17 06:33 fix_admin_password_hash.sql
+-rw-r--r--   1 u788576096.adminace1 o52339043      683 Jan 17 06:33 fix_function_search_path.sql
+-rw-r--r--   1 u788576096.adminace1 o52339043     1464 Jan 17 06:33 fix_user_roles_recursion.sql
+-rw-r--r--   1 u788576096.adminace1 o52339043    12853 Jan 17 06:33 optimize_rls_policies.sql
+-rw-r--r--   1 u788576096.adminace1 o52339043      829 Jan 17 06:33 revoke_one_time_admin_session.sql
+-rw-r--r--   1 u788576096.adminace1 o52339043      270 Jan 17 06:33 rls_check_temp.sql
+-rw-r--r--   1 u788576096.adminace1 o52339043     2536 Jan 17 06:33 seed_admin.sql
+-rw-r--r--   1 u788576096.adminace1 o52339043      961 Jan 17 06:33 send_test_email.js
+-rw-r--r--   1 u788576096.adminace1 o52339043     4594 Jan 17 06:33 session_functions.sql
+-rw-r--r--   1 u788576096.adminace1 o52339043      747 Jan 17 06:33 set_admin_api_url.sql
+-rw-r--r--   1 u788576096.adminace1 o52339043     2160 Jan 17 06:33 setup-continue-local.sh
+-rw-r--r--   1 u788576096.adminace1 o52339043     2305 Jan 17 06:33 start-ollama.sh
+-rw-r--r--   1 u788576096.adminace1 o52339043     2058 Jan 17 06:33 static-server.js
+-rwxr-xr-x   1 u788576096.adminace1 o52339043      422 Jan 17 06:33 supabase-db-pull-safe.sh
+-rwxr-xr-x   1 u788576096.adminace1 o52339043     4140 Jan 17 06:33 sync-admin-password.js
+-rw-r--r--   1 u788576096.adminace1 o52339043      269 Jan 17 06:33 update_admin_api_url.sql
+-rwxr-xr-x   1 u788576096.adminace1 o52339043     3431 Jan 17 06:33 update-supabase-auth-templates.py
+-rw-r--r--   1 u788576096.adminace1 o52339043     4582 Jan 17 06:33 upload-event-photos.mjs
+-rw-r--r--   1 u788576096.adminace1 o52339043     5731 Jan 17 06:33 verify_deletion_safeguards.sql
+-rw-r--r--   1 u788576096.adminace1 o52339043     2869 Jan 17 06:33 verify_rls.js
+
+server:
+drwxr-xr-x   2 u788576096.adminace1 o52339043     4096 Jan 17 06:34 .
+drwxr-xr-x  20 u788576096.adminace1 o52339043     4096 Jan 17 06:34 ..
+-rw-r--r--   1 u788576096.adminace1 o52339043      113 Jan 17 06:33 .env.example
+-rw-r--r--   1 u788576096.adminace1 o52339043     8176 Jan 17 06:33 index.js
+-rw-r--r--   1 u788576096.adminace1 o52339043      286 Jan 17 06:33 package.json
+-rw-r--r--   1 u788576096.adminace1 o52339043    30199 Jan 17 06:33 package-lock.json
+
+sql:
+drwxr-xr-x   2 u788576096.adminace1 o52339043     4096 Jan 17 06:34 .
+drwxr-xr-x  20 u788576096.adminace1 o52339043     4096 Jan 17 06:34 ..
+-rw-r--r--   1 u788576096.adminace1 o52339043      898 Jan 17 06:33 affordable_price_adjustments.sql
+-rw-r--r--   1 u788576096.adminace1 o52339043     1523 Jan 17 06:33 manual_primary_category_update.sql
+-rw-r--r--   1 u788576096.adminace1 o52339043      418 Jan 17 06:33 quick_category_fix.sql
+-rw-r--r--   1 u788576096.adminace1 o52339043      966 Jan 17 06:33 setup_admin.sql
+-rw-r--r--   1 u788576096.adminace1 o52339043      830 Jan 17 06:33 update_product_categories.sql
+
+supabase:
+drwxr-xr-x   5 u788576096.adminace1 o52339043     4096 Jan 17 06:34 .
+drwxr-xr-x  20 u788576096.adminace1 o52339043     4096 Jan 17 06:34 ..
+-rw-r--r--   1 u788576096.adminace1 o52339043      234 Jan 17 06:33 .env.example
+drwxr-xr-x  11 u788576096.adminace1 o52339043     4096 Jan 17 06:32 functions
+drwxr-xr-x   3 u788576096.adminace1 o52339043    12288 Jan 17 06:35 migrations
+-rw-r--r--   1 u788576096.adminace1 o52339043     1698 Jan 17 06:33 rls.sql
+-rw-r--r--   1 u788576096.adminace1 o52339043     5086 Jan 17 06:33 schema.sql
+-rw-r--r--   1 u788576096.adminace1 o52339043        0 Jan 17 06:33 seed.sql
+drwxr-xr-x   3 u788576096.adminace1 o52339043     4096 Jan 17 06:35 snippets
+
+supabase/functions:
+drwxr-xr-x  11 u788576096.adminace1 o52339043     4096 Jan 17 06:32 .
+drwxr-xr-x   5 u788576096.adminace1 o52339043     4096 Jan 17 06:34 ..
+drwxr-xr-x   2 u788576096.adminace1 o52339043     4096 Jan 17 06:34 admin-reset
+drwxr-xr-x   2 u788576096.adminace1 o52339043     4096 Jan 17 06:35 admin-save
+drwxr-xr-x   2 u788576096.adminace1 o52339043     4096 Jan 17 06:35 create-order
+drwxr-xr-x   2 u788576096.adminace1 o52339043     4096 Jan 17 06:35 get_cart_with_session
+drwxr-xr-x   2 u788576096.adminace1 o52339043     4096 Jan 17 06:35 notify-order-update
+drwxr-xr-x   2 u788576096.adminace1 o52339043     4096 Jan 17 06:35 send-2fa-code
+drwxr-xr-x   2 u788576096.adminace1 o52339043     4096 Jan 17 06:35 verify-hcaptcha
+drwxr-xr-x   2 u788576096.adminace1 o52339043     4096 Jan 17 06:35 verify-user-2fa
+drwxr-xr-x   2 u788576096.adminace1 o52339043     4096 Jan 17 06:35 webhook-razorpay
+
+supabase/functions/admin-reset:
+drwxr-xr-x   2 u788576096.adminace1 o52339043     4096 Jan 17 06:34 .
+drwxr-xr-x  11 u788576096.adminace1 o52339043     4096 Jan 17 06:32 ..
+-rw-r--r--   1 u788576096.adminace1 o52339043       18 Jan 17 06:33 config.toml
+-rw-r--r--   1 u788576096.adminace1 o52339043     7008 Jan 17 06:33 index.ts
+
+supabase/functions/admin-save:
+drwxr-xr-x   2 u788576096.adminace1 o52339043     4096 Jan 17 06:35 .
+drwxr-xr-x  11 u788576096.adminace1 o52339043     4096 Jan 17 06:32 ..
+-rw-r--r--   1 u788576096.adminace1 o52339043       30 Jan 17 06:33 config.toml
+-rw-r--r--   1 u788576096.adminace1 o52339043     6311 Jan 17 06:33 index.ts
+
+supabase/functions/create-order:
+drwxr-xr-x   2 u788576096.adminace1 o52339043     4096 Jan 17 06:35 .
+drwxr-xr-x  11 u788576096.adminace1 o52339043     4096 Jan 17 06:32 ..
+-rw-r--r--   1 u788576096.adminace1 o52339043       18 Jan 17 06:33 config.toml
+-rw-r--r--   1 u788576096.adminace1 o52339043      196 Jan 17 06:33 env:.yaml.yml
+-rw-r--r--   1 u788576096.adminace1 o52339043    10603 Jan 17 06:33 index.ts
+
+supabase/functions/get_cart_with_session:
+drwxr-xr-x   2 u788576096.adminace1 o52339043     4096 Jan 17 06:35 .
+drwxr-xr-x  11 u788576096.adminace1 o52339043     4096 Jan 17 06:32 ..
+-rw-r--r--   1 u788576096.adminace1 o52339043     5418 Jan 17 06:33 index.ts
+
+supabase/functions/notify-order-update:
+drwxr-xr-x   2 u788576096.adminace1 o52339043     4096 Jan 17 06:35 .
+drwxr-xr-x  11 u788576096.adminace1 o52339043     4096 Jan 17 06:32 ..
+-rw-r--r--   1 u788576096.adminace1 o52339043     4242 Jan 17 06:33 index.ts
+
+supabase/functions/send-2fa-code:
+drwxr-xr-x   2 u788576096.adminace1 o52339043     4096 Jan 17 06:35 .
+drwxr-xr-x  11 u788576096.adminace1 o52339043     4096 Jan 17 06:32 ..
+-rw-r--r--   1 u788576096.adminace1 o52339043      337 Jan 17 06:33 index.ts
+
+supabase/functions/verify-hcaptcha:
+drwxr-xr-x   2 u788576096.adminace1 o52339043     4096 Jan 17 06:35 .
+drwxr-xr-x  11 u788576096.adminace1 o52339043     4096 Jan 17 06:32 ..
+-rw-r--r--   1 u788576096.adminace1 o52339043      294 Jan 17 06:33 env:.yaml.yml
+-rw-r--r--   1 u788576096.adminace1 o52339043     4059 Jan 17 06:33 index.ts
+
+supabase/functions/verify-user-2fa:
+drwxr-xr-x   2 u788576096.adminace1 o52339043     4096 Jan 17 06:35 .
+drwxr-xr-x  11 u788576096.adminace1 o52339043     4096 Jan 17 06:32 ..
+-rw-r--r--   1 u788576096.adminace1 o52339043      337 Jan 17 06:33 index.ts
+
+supabase/functions/webhook-razorpay:
+drwxr-xr-x   2 u788576096.adminace1 o52339043     4096 Jan 17 06:35 .
+drwxr-xr-x  11 u788576096.adminace1 o52339043     4096 Jan 17 06:32 ..
+-rw-r--r--   1 u788576096.adminace1 o52339043       19 Jan 17 06:33 config.toml
+-rw-r--r--   1 u788576096.adminace1 o52339043     5956 Jan 17 06:33 index.ts
+
+supabase/migrations:
+drwxr-xr-x   3 u788576096.adminace1 o52339043    12288 Jan 17 06:35 .
+drwxr-xr-x   5 u788576096.adminace1 o52339043     4096 Jan 17 06:34 ..
+-rw-r--r--   1 u788576096.adminace1 o52339043     1754 Jan 17 06:33 20251121090000_init_schema.sql
+-rw-r--r--   1 u788576096.adminace1 o52339043      913 Jan 17 06:33 20251202074425_create_users_and_sessions_tables.sql
+-rw-r--r--   1 u788576096.adminace1 o52339043     2907 Jan 17 06:33 20251204161000_harden_session_revocations.sql
+-rw-r--r--   1 u788576096.adminace1 o52339043     2542 Jan 17 06:33 20251204163000_fix_revoke_service_role_check.sql
+-rw-r--r--   1 u788576096.adminace1 o52339043     2532 Jan 17 06:33 20251204164000_fix_revoke_rows_count.sql
+-rw-r--r--   1 u788576096.adminace1 o52339043     3377 Jan 17 06:33 20251204170000_create_sync_active_products.sql
+-rw-r--r--   1 u788576096.adminace1 o52339043     5174 Jan 17 06:33 20251204171000_populate_active_products.sql
+-rw-r--r--   1 u788576096.adminace1 o52339043     3016 Jan 17 06:33 20251204173000_add_ip_user_agent_to_session_revocations.sql
+-rw-r--r--   1 u788576096.adminace1 o52339043      437 Jan 17 06:33 20251204180000_revoke_one_time_admin_session.sql
+-rw-r--r--   1 u788576096.adminace1 o52339043     4312 Jan 17 06:33 20251205104000_capture_revocation_request_ip.sql
+-rw-r--r--   1 u788576096.adminace1 o52339043     1861 Jan 17 06:33 20251205112000_restrict_revoke_rpc_execution.sql
+-rw-r--r--   1 u788576096.adminace1 o52339043     6997 Jan 17 06:33 20251205120000_convert_active_products_table_to_view.sql
+-rw-r--r--   1 u788576096.adminace1 o52339043     1833 Jan 17 06:33 20251205125000_rls_active_products.sql
+-rw-r--r--   1 u788576096.adminace1 o52339043      564 Jan 17 06:33 20251205132000_create_password_reset_logs.sql
+-rw-r--r--   1 u788576096.adminace1 o52339043     6351 Jan 17 06:33 20251205190000_convert_active_products_table_to_view_prod.sql
+-rw-r--r--   1 u788576096.adminace1 o52339043      340 Jan 17 06:33 20251205202000_add_admin_api_url_to_site_settings.sql
+-rw-r--r--   1 u788576096.adminace1 o52339043     2675 Jan 17 06:33 20251217174016_fix_active_products_rls_policies.sql
+-rw-r--r--   1 u788576096.adminace1 o52339043     2030 Jan 17 06:33 20251217190000_remove_hardcoded_uuid_from_active_products_policies.sql
+-rw-r--r--   1 u788576096.adminace1 o52339043     1958 Jan 17 06:33 20251217191500_add_security_is_admin_helper_and_update_policies.sql
+-rw-r--r--   1 u788576096.adminace1 o52339043      848 Jan 17 06:33 20251217192500_refactor_products_policies_use_security_is_admin.sql
+-rw-r--r--   1 u788576096.adminace1 o52339043     3128 Jan 17 06:33 20251217193500_rls_refactor_more_tables_use_security_is_admin.sql
+-rw-r--r--   1 u788576096.adminace1 o52339043      988 Jan 17 06:33 20251217194000_storage_images_bucket_policies.sql
+-rw-r--r--   1 u788576096.adminace1 o52339043     4763 Jan 17 06:33 20251217195000_extend_admin_policies_to_admin_tables.sql
+-rw-r--r--   1 u788576096.adminace1 o52339043      654 Jan 17 06:33 20251217200000_add_admin_policies_on_users_table.sql
+-rw-r--r--   1 u788576096.adminace1 o52339043     1135 Jan 17 06:33 20251217201500_tighten_users_table_rls_self_or_admin.sql
+-rw-r--r--   1 u788576096.adminace1 o52339043      984 Jan 17 06:33 20251217202500_secure_user_roles_table_admin_only.sql
+-rw-r--r--   1 u788576096.adminace1 o52339043     1632 Jan 17 06:33 20251217203000_create_reviews_table.sql
+-rw-r--r--   1 u788576096.adminace1 o52339043     2026 Jan 17 06:33 20251217203100_create_shopping_carts_table.sql
+-rw-r--r--   1 u788576096.adminace1 o52339043      947 Jan 17 06:33 20251217204000_create_application_settings_table.sql
+-rw-r--r--   1 u788576096.adminace1 o52339043     3038 Jan 17 06:33 20251218000000_fix_admin_access_orders_users_revocations.sql
+-rw-r--r--   1 u788576096.adminace1 o52339043     2899 Jan 17 06:33 20251218000100_ensure_admin_user_and_fix_is_admin_function.sql
+-rw-r--r--   1 u788576096.adminace1 o52339043     2131 Jan 17 06:33 20251218000200_fix_is_admin_security_invoker.sql
+-rw-r--r--   1 u788576096.adminace1 o52339043     3648 Jan 17 06:33 20251218000300_fix_circular_dependency_in_rls.sql
+-rw-r--r--   1 u788576096.adminace1 o52339043     2947 Jan 17 06:33 20251218000400_simplify_rls_only_check_user_roles.sql
+-rw-r--r--   1 u788576096.adminace1 o52339043     1857 Jan 17 06:33 20251218000500_sync_hello_ace1_to_public_users.sql
+-rw-r--r--   1 u788576096.adminace1 o52339043     1515 Jan 17 06:33 20251218000600_fix_users_table_rls_no_circular_dependency.sql
+-rw-r--r--   1 u788576096.adminace1 o52339043     1420 Jan 17 06:33 20251218000700_fix_user_roles_infinite_recursion.sql
+-rw-r--r--   1 u788576096.adminace1 o52339043     1496 Jan 17 06:33 20251218000800_comprehensive_user_roles_fix.sql
+-rw-r--r--   1 u788576096.adminace1 o52339043     1362 Jan 17 06:33 20251218000900_disable_rls_on_user_roles.sql
+-rw-r--r--   1 u788576096.adminace1 o52339043      286 Jan 17 06:33 20251218001000_add_admin_notes_to_orders.sql
+-rw-r--r--   1 u788576096.adminace1 o52339043      932 Jan 17 06:33 20251218001100_add_payment_status_and_updated_at_to_orders.sql
+drwxr-xr-x   2 u788576096.adminace1 o52339043     4096 Jan 17 06:35 20251218155843_enable_rls_user_roles
+-rw-r--r--   1 u788576096.adminace1 o52339043      532 Jan 17 06:33 20251218160000_add_set_session_id_function.sql
+-rw-r--r--   1 u788576096.adminace1 o52339043     1295 Jan 17 06:33 20251219000000_create_roles_table.sql
+-rw-r--r--   1 u788576096.adminace1 o52339043     1984 Jan 17 06:33 20251226032715_add_primary_category_to_products.sql
+-rw-r--r--   1 u788576096.adminace1 o52339043      567 Jan 17 06:33 20251226120000_create_cart_items_table.sql
+-rw-r--r--   1 u788576096.adminace1 o52339043      234 Jan 17 06:33 20251226120500_remove_shopping_cart_columns.sql
+-rw-r--r--   1 u788576096.adminace1 o52339043     5206 Jan 17 06:33 20251226130000_migrate_cart_functions.sql
+-rw-r--r--   1 u788576096.adminace1 o52339043      482 Jan 17 06:33 20251227000000_add_sub_categories_to_products.sql
+-rw-r--r--   1 u788576096.adminace1 o52339043    10620 Jan 17 06:33 20251227010000_fix_product_deletion_admin_check.sql
+-rw-r--r--   1 u788576096.adminace1 o52339043     1720 Jan 17 06:33 20260103182957_fix_product_deletion_updated_at.sql
+-rw-r--r--   1 u788576096.adminace1 o52339043     1051 Jan 17 06:33 20260103183245_fix_product_deletion_audit_price_field.sql
+-rw-r--r--   1 u788576096.adminace1 o52339043     2167 Jan 17 06:33 20260103190440_fix_product_delete_live.sql
+-rw-r--r--   1 u788576096.adminace1 o52339043     1777 Jan 17 06:33 20260103192627_create_rls_policies_for_soft_delete.sql
+-rw-r--r--   1 u788576096.adminace1 o52339043     1725 Jan 17 06:33 20260103202702_fix_conflicting_rls_policies.sql
+-rw-r--r--   1 u788576096.adminace1 o52339043     1622 Jan 17 06:33 20260103202814_fix_soft_delete_function.sql
+-rw-r--r--   1 u788576096.adminace1 o52339043     2001 Jan 17 06:33 20260103202902_fix_log_product_deletion_trigger.sql
+-rw-r--r--   1 u788576096.adminace1 o52339043      357 Jan 17 06:33 20260103203322_fix_auth_view_products_policy.sql
+-rw-r--r--   1 u788576096.adminace1 o52339043     5994 Jan 17 06:33 20260104103755_20260104_products_lock_status_cart_items_rls_indexes.sql
+-rw-r--r--   1 u788576096.adminace1 o52339043     1122 Jan 17 06:33 20260104103956_20260104_tighten_products_public_visibility_rls.sql
+-rw-r--r--   1 u788576096.adminace1 o52339043    84391 Jan 17 06:33 20260104122610_remote_schema.sql
+-rw-r--r--   1 u788576096.adminace1 o52339043     3751 Jan 17 06:33 20260104152000_sync_auth_users_to_public_users.sql
+-rw-r--r--   1 u788576096.adminace1 o52339043     1228 Jan 17 06:33 20260104152100_recreate_verify_session_with_token_and_confirmed_check.sql
+-rw-r--r--   1 u788576096.adminace1 o52339043      436 Jan 17 06:33 20260109123000_set_search_path_on_jsonb_text.sql
+-rw-r--r--   1 u788576096.adminace1 o52339043     7407 Jan 17 06:33 20260109124000_secure_rls_policies.sql
+-rw-r--r--   1 u788576096.adminace1 o52339043     1091 Jan 17 06:33 20260110090000_accept_jwt_or_token_in_ace1_is_admin_session.sql
+-rw-r--r--   1 u788576096.adminace1 o52339043      302 Jan 17 06:33 20260110100000_update_admin_api_url_to_admin_save.sql
+
+supabase/migrations/20251218155843_enable_rls_user_roles:
+drwxr-xr-x   2 u788576096.adminace1 o52339043     4096 Jan 17 06:35 .
+drwxr-xr-x   3 u788576096.adminace1 o52339043    12288 Jan 17 06:35 ..
+-rw-r--r--   1 u788576096.adminace1 o52339043     1395 Jan 17 06:33 migration.sql
+
+supabase/snippets:
+drwxr-xr-x   3 u788576096.adminace1 o52339043     4096 Jan 17 06:35 .
+drwxr-xr-x   5 u788576096.adminace1 o52339043     4096 Jan 17 06:34 ..
+-rw-r--r--   1 u788576096.adminace1 o52339043     1771 Jan 17 06:33 add_show_on_index_column.sql
+drwxr-xr-x   2 u788576096.adminace1 o52339043     4096 Jan 17 06:35 archived-migrations
+-rw-r--r--   1 u788576096.adminace1 o52339043     5221 Jan 17 06:33 enable_rls_security.sql
+-rw-r--r--   1 u788576096.adminace1 o52339043     7033 Jan 17 06:33 fix_security_issues.sql
+-rw-r--r--   1 u788576096.adminace1 o52339043     1765 Jan 17 06:33 product_change_history.sql
+-rw-r--r--   1 u788576096.adminace1 o52339043     1050 Jan 17 06:33 recent_session_revocations.sql
+-rw-r--r--   1 u788576096.adminace1 o52339043     2452 Jan 17 06:33 verify_schema.sql
+
+supabase/snippets/archived-migrations:
+drwxr-xr-x   2 u788576096.adminace1 o52339043     4096 Jan 17 06:35 .
+drwxr-xr-x   3 u788576096.adminace1 o52339043     4096 Jan 17 06:35 ..
+-rw-r--r--   1 u788576096.adminace1 o52339043      531 Jan 17 06:33 20260104000100_add_site_settings_delete_policy.sql
+-rw-r--r--   1 u788576096.adminace1 o52339043     4159 Jan 17 06:33 20260104000200_products_lock_status_cart_items_rls_indexes.sql
+-rw-r--r--   1 u788576096.adminace1 o52339043      849 Jan 17 06:33 20260104000300_tighten_products_public_visibility_rls.sql
+
+test-results-ci:
+drwxr-xr-x   2 u788576096.adminace1 o52339043     4096 Jan 17 06:34 .
+drwxr-xr-x  20 u788576096.adminace1 o52339043     4096 Jan 17 06:34 ..
+-rw-r--r--   1 u788576096.adminace1 o52339043       45 Jan 17 06:33 .last-run.json
+
+tests:
+drwxr-xr-x   3 u788576096.adminace1 o52339043     4096 Jan 17 06:32 .
+drwxr-xr-x  20 u788576096.adminace1 o52339043     4096 Jan 17 06:34 ..
+drwxr-xr-x   2 u788576096.adminace1 o52339043     4096 Jan 17 06:35 e2e
+
+tests/e2e:
+drwxr-xr-x   2 u788576096.adminace1 o52339043     4096 Jan 17 06:35 .
+drwxr-xr-x   3 u788576096.adminace1 o52339043     4096 Jan 17 06:32 ..
+-rw-r--r--   1 u788576096.adminace1 o52339043     8551 Jan 17 06:33 admin-button-execution.spec.js
+-rw-r--r--   1 u788576096.adminace1 o52339043    19992 Jan 17 06:33 admin-complete-functional.spec.js
+-rw-r--r--   1 u788576096.adminace1 o52339043    30052 Jan 17 06:33 admin-complete-test.spec.js
+-rw-r--r--   1 u788576096.adminace1 o52339043    11846 Jan 17 06:33 admin-crud.spec.js
+-rw-r--r--   1 u788576096.adminace1 o52339043    16961 Jan 17 06:33 admin-ecommerce-test.spec.js
+-rw-r--r--   1 u788576096.adminace1 o52339043     6493 Jan 17 06:33 admin-modals.spec.js
+-rw-r--r--   1 u788576096.adminace1 o52339043     6388 Jan 17 06:33 admin-onclick-contract.spec.js
+-rw-r--r--   1 u788576096.adminace1 o52339043     1691 Jan 17 06:33 admin-save-fallback.spec.js
+-rw-r--r--   1 u788576096.adminace1 o52339043    10251 Jan 17 06:33 admin-smoke-test.spec.js
+-rw-r--r--   1 u788576096.adminace1 o52339043    15717 Jan 17 06:33 admin.spec.js
+-rw-r--r--   1 u788576096.adminace1 o52339043     1842 Jan 17 06:33 animations.spec.js
+-rw-r--r--   1 u788576096.adminace1 o52339043     2191 Jan 17 06:33 cart.spec.js
+-rw-r--r--   1 u788576096.adminace1 o52339043     1678 Jan 17 06:33 checkout.spec.js
+-rw-r--r--   1 u788576096.adminace1 o52339043     4540 Jan 17 06:33 inline-suggestions.spec.js
+-rw-r--r--   1 u788576096.adminace1 o52339043     4996 Jan 17 06:33 modals.spec.js
+-rw-r--r--   1 u788576096.adminace1 o52339043     3609 Jan 17 06:33 public-zero-console.spec.js
+-rw-r--r--   1 u788576096.adminace1 o52339043     2669 Jan 17 06:33 quickview.spec.js
+-rw-r--r--   1 u788576096.adminace1 o52339043    11439 Jan 17 06:33 user-dashboard-actions.spec.js
+-rw-r--r--   1 u788576096.adminace1 o52339043    10151 Jan 17 06:33 user-login-and-dashboard.spec.js
+-rw-r--r--   1 u788576096.adminace1 o52339043     1366 Jan 17 06:33 user-login-flow.spec.js
+-rw-r--r--   1 u788576096.adminace1 o52339043    11860 Jan 17 06:33 website-complete-check.spec.js
+
+.vscode:
+drwxr-xr-x   2 u788576096.adminace1 o52339043     4096 Jan 17 06:34 .
+drwxr-xr-x  20 u788576096.adminace1 o52339043     4096 Jan 17 06:34 ..
+-rw-r--r--   1 u788576096.adminace1 o52339043      263 Jan 17 06:33 extensions.json
+-rw-r--r--   1 u788576096.adminace1 o52339043     1050 Jan 17 06:33 keybindings.json
+-rw-r--r--   1 u788576096.adminace1 o52339043     1589 Jan 17 06:33 settings.json
+-rw-r--r--   1 u788576096.adminace1 o52339043     3959 Jan 17 06:33 tasks.json

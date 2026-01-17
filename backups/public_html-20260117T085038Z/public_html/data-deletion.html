@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="alternate icon" href="favicon.svg">
+    <link rel="apple-touch-icon" href="images/apple-touch-icon.png" sizes="180x180">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#1a1a2e">
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta http-equiv="X-XSS-Protection" content="1; mode=block">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <meta name="description" content="Request deletion of your Ace#1 account data">
+    <title>Data Deletion Request | Ace#1</title>
+    <link rel="canonical" href="https://ace1.in/data-deletion.html">
+
+    <!-- OpenGraph / Social -->
+    <meta property="og:site_name" content="ACE#1">
+    <meta property="og:locale" content="en_IN">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://ace1.in/data-deletion.html">
+    <meta property="og:title" content="Data Deletion Request | Ace#1">
+    <meta property="og:description" content="Request deletion of your Ace#1 account data">
+    <meta property="og:image" content="https://ace1.in/images/og-image.svg">
+
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Data Deletion Request | Ace#1">
+    <meta name="twitter:description" content="Request deletion of your Ace#1 account data">
+    <meta name="twitter:image" content="https://ace1.in/images/og-image.svg">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        .deletion-container {
+            max-width: 800px;
+            margin: 120px auto 50px;
+            padding: 40px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        .deletion-container h1 {
+            color: #FF6B00;
+            margin-bottom: 10px;
+        }
+        .deletion-container h2 {
+            color: #333;
+            margin-top: 30px;
+            margin-bottom: 15px;
+            font-size: 22px;
+        }
+        .deletion-container p, .deletion-container ul {
+            color: #666;
+            line-height: 1.8;
+            margin-bottom: 15px;
+        }
+        .deletion-container ul {
+            padding-left: 30px;
+        }
+        .deletion-container li {
+            margin-bottom: 8px;
+        }
+        .info-box {
+            background: #fff3e0;
+            border-left: 4px solid #FF6B00;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        .warning-box {
+            background: #ffebee;
+            border-left: 4px solid #f44336;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        .deletion-form {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 8px;
+            margin-top: 30px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+        }
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: 'Poppins', sans-serif;
+        }
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+        .btn-delete {
+            background: #f44336;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .btn-delete:hover {
+            background: #d32f2f;
+        }
+        .checkbox-group {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+        .checkbox-group input[type="checkbox"] {
+            width: auto;
+            margin-top: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div id="dev-banner">This website is under development</div>
+
+    <!-- Navigation -->
+    <nav class="navbar" id="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <a href="index.html">
+                    <img class="site-logo-img" src="https://vorqavsuqcjnkjzwkyzr.supabase.co/storage/v1/object/public/Website/brand/ace1-logo.jpeg" alt="ACE#1" decoding="async" loading="eager" onerror="this.remove();">
+                    <span class="logo-text">ACE<span class="logo-accent">#1</span></span>
+                </a>
+            </div>
+            <ul class="nav-menu" id="nav-menu">
+                <li><a href="shoes.html" class="nav-link">Shoes</a></li>
+                <li><a href="technology.html" class="nav-link">Technology</a></li>
+                <li><a href="about.html" class="nav-link">About</a></li>
+                <li><a href="contact.html" class="nav-link">Contact</a></li>
+            </ul>
+            <div class="nav-icons">
+                <button class="icon-btn search-btn" id="search-btn" aria-label="Search products">
+                    <i class="fas fa-search"></i>
+                </button>
+                <button class="icon-btn cart-btn" id="cart-btn" aria-label="Shopping cart">
+                    <i class="fas fa-shopping-bag"></i>
+                    <span class="cart-count" id="cart-count">0</span>
+                </button>
+                <button class="icon-btn user-btn" aria-label="User account">
+                    <i class="fas fa-user"></i>
+                </button>
+                <button class="hamburger" id="hamburger" aria-label="Toggle menu">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Search Overlay -->
+    <div class="search-overlay" id="search-overlay">
+        <div class="search-container">
+            <input type="text" class="search-input" placeholder="Search for products...">
+            <button class="search-close" id="search-close">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    </div>
+
+    <div class="deletion-container">
+        <h1>🗑️ Data Deletion Request</h1>
+        <p>We respect your right to privacy and control over your personal data. This page allows you to request the deletion of your account and all associated personal information from our systems.</p>
+
+        <h2>What Data Will Be Deleted?</h2>
+        <p>When you request account deletion, we will permanently remove:</p>
+        <ul>
+            <li><strong>Account Information:</strong> Your name, email address, phone number, and password</li>
+            <li><strong>Profile Data:</strong> Profile picture, preferences, and settings</li>
+            <li><strong>Addresses:</strong> Saved shipping and billing addresses</li>
+            <li><strong>Wishlist:</strong> All items in your wishlist</li>
+            <li><strong>Reviews:</strong> Product reviews and ratings you've submitted</li>
+            <li><strong>Session Data:</strong> All active login sessions</li>
+            <li><strong>Social Login Data:</strong> Google/Facebook OAuth connections</li>
+        </ul>
+
+        <h2>What Data Will Be Retained?</h2>
+        <p>For legal, tax, and fraud prevention purposes, we may retain certain information:</p>
+        <ul>
+            <li><strong>Order History:</strong> Anonymized transaction records (for up to 7 years for tax compliance)</li>
+            <li><strong>Payment Records:</strong> Basic payment transaction IDs (no credit card details)</li>
+            <li><strong>Legal Communications:</strong> Records required by law or for dispute resolution</li>
+        </ul>
+
+        <div class="info-box">
+            <strong>📌 Note:</strong> Retained data will be anonymized (all personally identifiable information removed) and cannot be linked back to you.
+        </div>
+
+        <h2>Deletion Timeline</h2>
+        <ul>
+            <li><strong>Immediate:</strong> Your account will be deactivated immediately upon request</li>
+            <li><strong>Within 30 days:</strong> All personal data will be permanently deleted from our active systems</li>
+            <li><strong>Within 90 days:</strong> Data removed from backup systems</li>
+        </ul>
+
+        <h2>Before You Request Deletion</h2>
+        
+        <div class="warning-box">
+            <strong>⚠️ Warning:</strong> Account deletion is <strong>permanent and irreversible</strong>. Please consider the following:
+        </div>
+
+        <ul>
+            <li>You will lose access to all order history and tracking information</li>
+            <li>Any pending orders will need to be canceled first</li>
+            <li>Outstanding refunds or credits will be processed before deletion</li>
+            <li>You will need to create a new account if you wish to use our services again</li>
+            <li>Your email address may become available for reuse after deletion</li>
+        </ul>
+
+        <h2>Alternative Options</h2>
+        <p>If you're concerned about privacy but don't want to delete your account, consider:</p>
+        <ul>
+            <li><strong>Update Your Information:</strong> Edit or remove specific data in your <a href="user-profile.html">profile settings</a></li>
+            <li><strong>Deactivate Account:</strong> Temporarily disable your account instead of deleting it</li>
+            <li><strong>Opt-Out of Marketing:</strong> Unsubscribe from promotional emails while keeping your account</li>
+            <li><strong>Clear Wishlist/Reviews:</strong> Manually remove specific items or reviews</li>
+        </ul>
+
+        <h2>Submit Deletion Request</h2>
+
+        <div class="deletion-form">
+            <form id="deletion-request-form">
+                <div class="form-group">
+                    <label for="deletion-email">Email Address *</label>
+                    <input type="email" id="deletion-email" required placeholder="Enter your registered email">
+                </div>
+
+                <div class="form-group">
+                    <label for="deletion-reason">Reason for Deletion (Optional)</label>
+                    <select id="deletion-reason">
+                        <option value="">-- Select a reason --</option>
+                        <option value="privacy">Privacy concerns</option>
+                        <option value="no-longer-using">No longer using the service</option>
+                        <option value="too-many-emails">Too many emails</option>
+                        <option value="found-alternative">Found an alternative</option>
+                        <option value="bad-experience">Poor customer experience</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="deletion-comments">Additional Comments (Optional)</label>
+                    <textarea id="deletion-comments" placeholder="Let us know how we can improve..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="deletion-method">How did you sign up?</label>
+                    <select id="deletion-method" required>
+                        <option value="">-- Select method --</option>
+                        <option value="email">Email/Password</option>
+                        <option value="google">Google</option>
+                        <option value="facebook">Facebook</option>
+                    </select>
+                </div>
+
+                <div class="form-group checkbox-group">
+                    <input type="checkbox" id="confirm-deletion" required>
+                    <label for="confirm-deletion">
+                        I understand that this action is permanent and irreversible. I want to permanently delete my account and all associated personal data.
+                    </label>
+                </div>
+
+                <div class="form-group checkbox-group">
+                    <input type="checkbox" id="confirm-no-pending" required>
+                    <label for="confirm-no-pending">
+                        I confirm that I have no pending orders or outstanding issues that need resolution.
+                    </label>
+                </div>
+
+                <button type="submit" class="btn-delete">
+                    🗑️ Submit Deletion Request
+                </button>
+            </form>
+
+            <p style="margin-top: 20px; font-size: 14px; color: #666;">
+                <strong>Note:</strong> You will receive a confirmation email at the address provided. Click the link in the email to verify and complete the deletion process.
+            </p>
+        </div>
+
+        <h2>Contact Support</h2>
+        <p>If you have questions about data deletion or need assistance:</p>
+        <ul>
+            <li><strong>Email:</strong> privacy@ace1.in</li>
+            <li><strong>Support:</strong> hello@ace1.in</li>
+            <li><strong>Response Time:</strong> Within 48 hours</li>
+        </ul>
+
+    </div>
+    
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-column">
+                    <h3 class="footer-logo"><img class="footer-logo-img" src="https://vorqavsuqcjnkjzwkyzr.supabase.co/storage/v1/object/public/Website/brand/ace1-logo.jpeg" alt="ACE#1" loading="lazy" decoding="async" onerror="this.remove();"><span class="logo-text">ACE<span class="logo-accent">#1</span></span></h3>
+                    <p>Revolutionary footwear integrated with terahertz technology for enhanced wellness and lifestyle.</p>
+                    <div class="social-icons">
+                        <a href="https://instagram.com/ace_1_official/" target="_blank" rel="noopener noreferrer" aria-label="Ace#1 on Instagram"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+                <div class="footer-column">
+                    <h4>Shop</h4>
+                    <ul>
+                        <li><a href="shoes.html">All Products</a></li>
+                        <li><a href="index.html?category=runners">Runners</a></li>
+                        <li><a href="index.html?category=sneakers">Sneakers</a></li>
+                        <li><a href="index.html?category=trekking">Trekking</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h4>Company</h4>
+                    <ul>
+                        <li><a href="about.html">About Us</a></li>
+                        <li><a href="technology.html">Technology</a></li>
+                        <li><a href="contact.html">Contact</a></li>
+                        
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h4>Support</h4>
+                    <ul>
+                        <li><a href="faq.html">FAQ</a></li>
+                        <li><a href="faq.html#shipping">Shipping Info</a></li>
+                        <li><a href="faq.html#returns">Returns</a></li>
+                        <li><a href="size-guide.html">Size Guide</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 Ace#1. All rights reserved.</p>
+                <div class="footer-links">
+                    <a href="privacy-policy.html">Privacy Policy</a>
+                    <a href="terms-of-service.html">Terms of Service</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Shopping Cart Sidebar -->
+    <div class="cart-sidebar" id="cart-sidebar">
+        <div class="cart-header">
+            <h3>Shopping Cart</h3>
+            <button class="cart-close" id="cart-close" aria-label="Close cart">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="cart-items" id="cart-items">
+            <div class="cart-empty">
+                <i class="fas fa-shopping-bag"></i>
+                <p>Your cart is empty</p>
+            </div>
+        </div>
+        <div class="cart-footer">
+            <div class="cart-total">
+                <span>Subtotal:</span>
+                <span id="cart-total">$0.00</span>
+            </div>
+            <button class="btn btn-primary btn-block">Checkout</button>
+            <a href="shoes.html" class="btn btn-secondary">Continue Shopping</a>
+        </div>
+    </div>
+
+    <div class="cart-overlay" id="cart-overlay"></div>
+
+    <!-- Cache Buster (must load first) -->
+    <script src="js/cache-buster.js"></script>
+    <!-- Supabase Integration -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.89.0"></script>
+    <script src="js/supabase-config.js"></script>
+    <script src="js/supabase-service.js"></script>
+    <!-- Security Scripts -->
+    <script src="js/security.js"></script>
+    <script src="js/database-auth.js"></script>
+    <!-- Core UI -->
+    <script src="js/main.js"></script>
+    <!-- Image Optimization -->
+    <script src="js/image-optimizer.js"></script>
+
+    <script>
+        document.getElementById('deletion-request-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('deletion-email').value;
+            const reason = document.getElementById('deletion-reason').value;
+            const comments = document.getElementById('deletion-comments').value;
+            const method = document.getElementById('deletion-method').value;
+            
+            // In production, send this to your backend
+            console.log('Deletion request:', { email, reason, comments, method });
+            
+            // For now, show confirmation
+            alert(`✅ Deletion request submitted!\n\nWe've sent a confirmation email to ${email}.\n\nPlease click the link in the email to verify and complete the deletion process.\n\nYour account will be deleted within 30 days.`);
+            
+            // Optionally redirect
+            // window.location.href = 'index.html';
+        });
+    </script>
+</body>
+</html>
