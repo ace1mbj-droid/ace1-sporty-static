@@ -4,8 +4,7 @@
     "supabase.postgrestools",
     "supabase-snippets.supabase-javascript-snippets",
     "ms-edgedevtools.vscode-edge-devtools",
-    "saoudrizwan.claude-dev",
-    "continue.continue"
+    "saoudrizwan.claude-dev"
   ],
   "unwantedRecommendations": []
 }
