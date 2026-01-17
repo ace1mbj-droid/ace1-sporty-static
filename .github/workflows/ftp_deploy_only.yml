@@ -17,6 +17,14 @@ jobs:
         run: |
           SERVER_DIR='${{ secrets.FTP_SERVER_DIR }}'
           if [ -z "$SERVER_DIR" ]; then SERVER_DIR='${{ secrets.FTP_PUBLIC_DIR }}'; fi
+
+          # Normalize common FTP hosting dir names to the actual server root when requested.
+          # If the secret was set to "public_html" (or contains it), we treat it as a legacy host dir and map to '/'.
+          if echo "$SERVER_DIR" | grep -qi 'public_html'; then
+            echo "WARNING: FTP server dir contains 'public_html' — normalizing to root '/' to avoid nested deployment." >&2
+            SERVER_DIR='/'
+          fi
+
           if [ -z "$SERVER_DIR" ]; then SERVER_DIR='/'; fi
 
           PORT='${{ secrets.FTP_PORT }}'
