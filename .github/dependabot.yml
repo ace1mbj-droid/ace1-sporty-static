@@ -1,0 +1,16 @@
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "daily"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "automated"
+    # allow GitHub to create security updates for vulnerabilities
+    allow:
+      - dependency-type: "direct"
+      - dependency-type: "indirect"
+    # Enable security/semver and version updates
+    reviewers: []
