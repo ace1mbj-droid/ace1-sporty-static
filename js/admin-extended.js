@@ -112,7 +112,7 @@ class AdminExtended {
                     </td>
                     <td><strong>${totalStock}</strong></td>
                     <td>
-                        <span class="stock-badge ${isOutOfStock ? 'out' : isLowStock ? 'low' : 'ok'}" style="padding:4px 8px;border-radius:4px;background:${isOutOfStock ? '#ffebee' : isLowStock ? '#fff3e0' : '#e8f5e9'};color:${isOutOfStock ? '#c62828' : isLowStock ? '#ef6c00' : '#2e7d32'};">
+                        <span class="stock-badge ${isOutOfStock ? 'out' : isLowStock ? 'low' : 'ok'}" style="padding:4px 8px;border-radius:4px;background:var(--color-light);color:var(--color-dark);">
                             ${isOutOfStock ? 'Out of Stock' : isLowStock ? 'Low Stock' : 'In Stock'}
                         </span>
                     </td>
@@ -458,7 +458,7 @@ class AdminExtended {
                 <style>
                     .customer-profile { margin-bottom: 20px; }
                     .profile-header { display: flex; align-items: center; gap: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px; margin-bottom: 15px; }
-                    .profile-avatar { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 3px solid #fff; box-shadow: 0 2px 10px rgba(0,0,0,0.1); background: #ddd; display: flex; align-items: center; justify-content: center; font-size: 2em; color: #999; }
+                    .profile-avatar { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 3px solid var(--color-light); box-shadow: 0 2px 10px rgba(31,29,29,0.08); background: var(--color-light); display: flex; align-items: center; justify-content: center; font-size: 2em; color: var(--color-dark); }
                     .profile-header h3 { margin: 0 0 5px 0; font-size: 1.3em; }
                     .profile-header p { margin: 3px 0; color: #666; }
                     .profile-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; }

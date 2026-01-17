@@ -801,7 +801,7 @@ class CheckoutManager {
                     <i class="fas fa-shopping-bag" style="font-size: 80px; color: #ddd; margin-bottom: 30px;"></i>
                     <h2 style="font-size: 28px; margin-bottom: 15px; color: #333;">Your cart is empty</h2>
                     <p style="color: #666; margin-bottom: 30px; line-height: 1.6;">Looks like you haven't added any products yet. Browse our collection and find something you'll love!</p>
-                    <a href="shoes.html" class="btn btn-primary" style="display: inline-block; padding: 16px 40px; background: #000; color: #fff; border-radius: 50px; text-decoration: none; font-weight: 600;">Browse Products</a>
+                    <a href="shoes.html" class="btn btn-primary" style="display: inline-block; padding: 16px 40px; background: var(--color-dark); color: var(--color-light); border-radius: 50px; text-decoration: none; font-weight: 600;">Browse Products</a>
                 </div>
             `;
         }

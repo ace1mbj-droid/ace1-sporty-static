@@ -17,7 +17,7 @@
 
 .shop-sidebar-modern {
     width: 280px;
-    background: #fff;
+    background: var(--color-light);
     border-radius: 18px;
     box-shadow: var(--shadow-sm);
     padding: 32px 24px 24px 24px;
@@ -163,6 +163,25 @@ body {
     overflow-x: hidden;
     background: var(--bg-white);
 }
+
+/* Palette enforcement: ensure the site uses only the two approved colors */
+:root {
+  --color-dark: #1F1D1D;
+  --color-light: #EFEAE8;
+}
+body {
+  background: var(--color-light) !important;
+  color: var(--color-dark) !important;
+}
+
+/* Links, headings, and general text should use the dark color */
+a, .nav-link, h1, h2, h3, h4, h5, h6, p, span, li { color: var(--color-dark) !important; }
+
+/* Primary interactive elements use dark background with light text for visibility */
+button, .btn, .btn-primary, .hero-cta, .category-link, .icon-btn, .cart-count { background: var(--color-dark) !important; color: var(--color-light) !important; border-color: var(--color-dark) !important; }
+
+/* Footer uses the light background and dark text */
+.footer { background: var(--color-light) !important; color: var(--color-dark) !important; }
 
 .container {
     max-width: 1400px;
@@ -1029,7 +1048,7 @@ button {
 
 .buy-now-btn:hover {
     background: var(--primary-color);
-    color: #fff;
+    color: var(--color-light);
 }
 
 .add-to-cart-btn {
