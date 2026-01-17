@@ -91,8 +91,9 @@ test.describe('Admin panel smoke tests (headless)', () => {
 
     // Switch to Users tab so the user list is visible, then click the Edit button and assert modal fields
     await page.evaluate(() => window.adminPanel.switchTab('users'));
-    await page.waitForSelector('#users-content.active', { timeout: 10000 });
-    await page.waitForSelector('#users-table-body button:has-text("Edit")');
+    await page.waitForSelector('#users-content.active', { timeout: 20000 });
+    // Users table may take longer to render in CI; allow a larger timeout for the Edit button
+    await page.waitForSelector('#users-table-body button:has-text("Edit")', { timeout: 30000 });
 
     // Open via API (more reliable than clicking a row that may be re-rendered)
     await page.evaluate(() => window.adminPanel.openUserModal('u1'));

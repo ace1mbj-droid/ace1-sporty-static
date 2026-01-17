@@ -94,7 +94,8 @@ test.describe('Sporty Ace#1 - Complete Website Verification', () => {
             return;
         }
         
-        await page.goto(BASE_URL, { waitUntil: 'networkidle', timeout: 30000 });
+        // Use domcontentloaded instead of networkidle to avoid external resource stalls in CI
+        await page.goto(BASE_URL, { waitUntil: 'domcontentloaded', timeout: 30000 });
         
         // Count images
         const images = page.locator('img');
