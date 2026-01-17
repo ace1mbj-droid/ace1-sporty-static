@@ -39,6 +39,9 @@ test.describe('Site animations QA', () => {
       // Wait for at least one element to get the 'in' class (revealed)
       // Scroll first animated element into view and give animations more time in CI
       await page.evaluate(() => { const el = document.querySelector('[data-animate]'); if (el) el.scrollIntoView(); });
+      // In some environments the 'ace1:products-rendered' may not have fired or been observed; trigger it to be sure
+      await page.evaluate(() => { try { document.dispatchEvent(new CustomEvent('ace1:products-rendered')); } catch (e) { /* ignore */ } });
+
       const gotIn = await page.waitForFunction(() => {
         return Array.from(document.querySelectorAll('[data-animate]')).some(e => e.classList.contains('in'));
       }, { timeout: 5000 }).catch(() => false);

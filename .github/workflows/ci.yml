@@ -26,8 +26,17 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
 
+      - name: Start local server (for CI)
+        run: npx http-server . -p 3000 &
+        env:
+          CI: true
+
       - name: Run Playwright tests (CI)
         # Run Playwright and produce JUnit XML results for upload
+        env:
+          BASE_URL: http://127.0.0.1:3000
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: npx playwright test --output=test-results
         continue-on-error: true
 
