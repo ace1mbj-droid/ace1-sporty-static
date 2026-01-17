@@ -1,0 +1,17 @@
+{
+  "generatedAt": "2026-01-17T07:10:09.796Z",
+  "results": [
+    {
+      "page": "https://ace1.in/",
+      "violations": 1,
+      "json": "/Users/jai_das13/Development/ACE#1/ace1-sporty-static/audit/home-axe.json",
+      "html": "/Users/jai_das13/Development/ACE#1/ace1-sporty-static/audit/home-axe.html"
+    },
+    {
+      "page": "https://ace1.in/shoes.html",
+      "violations": 3,
+      "json": "/Users/jai_das13/Development/ACE#1/ace1-sporty-static/audit/shoes-axe.json",
+      "html": "/Users/jai_das13/Development/ACE#1/ace1-sporty-static/audit/shoes-axe.html"
+    }
+  ]
+}
