@@ -37,11 +37,35 @@ jobs:
           echo "port=$PORT" >> "$GITHUB_OUTPUT"
           echo "protocol=$PROTOCOL" >> "$GITHUB_OUTPUT"
 
-      - name: Build & copy to dist
+      - name: Build & copy to dist (exclude sensitive files)
         run: |
           rm -rf dist || true
           mkdir -p dist
-          rsync -av --exclude='.git' --exclude='.github' --exclude='node_modules' --exclude='dist' ./ dist/
+          # Copy only public site assets, explicitly excluding known sensitive and dev files/directories
+          rsync -av \
+            --exclude='.git' \
+            --exclude='.github' \
+            --exclude='node_modules' \
+            --exclude='dist' \
+            --exclude='.env*' \
+            --exclude='.vscode' \
+            --exclude='backups' \
+            --exclude='scripts' \
+            --exclude='package' \
+            --exclude='.ftp-deploy-sync-state.json' \
+            --exclude='*.sqlite' \
+            --exclude='*.sql' \
+            --exclude='*.key' \
+            ./ dist/
+
+          echo "Scanning dist for possible secrets..."
+          # Fail early if obvious secrets are present in the generated dist
+          if grep -RIn --exclude-dir=.git --exclude='*.map' -E "BEGIN RSA PRIVATE KEY|BEGIN PRIVATE KEY|SUPABASE_SERVICE_ROLE_KEY|SUPABASE_SERVICE_ROLE|SUPABASE_SERVICE|SERVICE_ROLE|SERVICE_ROLE_KEY|SECRET|API_KEY|PASSWORD=|PRIVATE_KEY|AKIA[0-9A-Z]{16}" dist; then
+            echo "ERROR: Secrets detected in dist. Aborting deploy." >&2
+            exit 1
+          else
+            echo "No obvious secrets found in dist. Proceeding with deploy."
+          fi
 
       - name: Check for legacy /public_html and optionally archive it
         if: ${{ steps.ftp_vars.outputs.server_dir == '/' }}
