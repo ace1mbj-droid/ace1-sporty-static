@@ -605,7 +605,18 @@ class ProductFilterManager {
             const categoryLabel = this.sanitizeText(product.category || 'Sneakers');
             const description = this.truncateText(this.sanitizeText(product.description || ''), 120);
 
-            const priceNumber = Number(product.price);
+            // Determine display price: prefer `price` (rupees) but fall back to `price_cents` (paise/cents)
+            let priceNumber;
+            if (product.price !== undefined && product.price !== null && String(product.price) !== '') {
+                priceNumber = Number(product.price);
+            } else if (product.price_cents !== undefined && product.price_cents !== null) {
+                priceNumber = Number(product.price_cents) / 100;
+            } else {
+                priceNumber = NaN;
+            }
+            // Persist unified price on the product object so other scripts can rely on it
+            if (Number.isFinite(priceNumber)) product.price = priceNumber;
+
             const priceLabel = Number.isFinite(priceNumber)
                 ? `₹${priceNumber.toLocaleString('en-IN')}`
                 : '₹0';
