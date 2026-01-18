@@ -142,7 +142,7 @@ jobs:
           MAX_RETRIES=3
           RETRY_DELAY=5
           ATTEMPT=1
-          MIRROR_CMD="mirror -R --delete --parallel=4 --verbose --no-perms --continue --only-newer ./dist ${SERVER_DIR}"
+          MIRROR_CMD="mirror -R --delete --parallel=4 --verbose --no-perms --continue --only-newer --ignore-glob='.in.*' ./dist ${SERVER_DIR}"
 
           while [ "$ATTEMPT" -le "$MAX_RETRIES" ]; do
             echo "Attempt ${ATTEMPT}/${MAX_RETRIES}: running lftp mirror..."
