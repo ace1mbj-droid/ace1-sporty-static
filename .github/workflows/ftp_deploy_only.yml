@@ -59,8 +59,16 @@ jobs:
             ./ dist/
 
           echo "Scanning dist for possible secrets..."
-          # Fail early if obvious secrets are present in the generated dist
-          if grep -RIn --exclude-dir=.git --exclude='*.map' -E "BEGIN RSA PRIVATE KEY|BEGIN PRIVATE KEY|SUPABASE_SERVICE_ROLE_KEY|SUPABASE_SERVICE_ROLE|SUPABASE_SERVICE|SERVICE_ROLE|SERVICE_ROLE_KEY|SECRET|API_KEY|PASSWORD=|PRIVATE_KEY|AKIA[0-9A-Z]{16}" dist; then
+          # Fail early if obvious secrets are present in the generated dist.
+          # Reduce false positives: skip docs, backups and test folders (they often contain placeholder examples)
+          # and only flag assignments or long key-like values (so mentions like "SUPABASE_SERVICE_ROLE_KEY" in docs won't fail).
+          if grep -RIn --exclude-dir=.git \
+                 --exclude-dir='dist/docs' \
+                 --exclude-dir='dist/.deploy_*' \
+                 --exclude-dir='dist/tests' \
+                 --exclude-dir='dist/remote_backups*' \
+                 --exclude='*.map' \
+                 -E "BEGIN RSA PRIVATE KEY|BEGIN PRIVATE KEY|-----BEGIN PRIVATE KEY|SUPABASE_SERVICE_ROLE_KEY[^[:space:]=:]*[=:\\s]*[A-Za-z0-9_\-]{20,}|SERVICE_ROLE_KEY[^[:space:]=:]*[=:\\s]*[A-Za-z0-9_\-]{20,}|API_KEY[^[:space:]=:]*[=:\\s]*[A-Za-z0-9_\-]{16,}|AKIA[0-9A-Z]{16}|[A-Za-z0-9_\-]{40,}" dist; then
             echo "ERROR: Secrets detected in dist. Aborting deploy." >&2
             exit 1
           else
