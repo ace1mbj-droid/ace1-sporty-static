@@ -146,7 +146,7 @@ jobs:
           # Best-effort cleanup: remove transient upload temp files on remote (these can appear during uploads).
           # Ignore failures (e.g., if no such files or permission errors) so this step is non-fatal.
           echo "Cleaning up remote transient files (.in.*) before mirroring (non-fatal)..."
-          lftp -u "${FTP_USER}","${FTP_PASSWORD}" -p "$PORT" "${FTP_HOST}" -e "set ftp:ssl-force true; set ftp:ssl-protect-data true; set ssl:verify-certificate false; rm .in.* || true; bye"
+          lftp -u "${FTP_USER}","${FTP_PASSWORD}" -p "$PORT" "${FTP_HOST}" -e "set ftp:ssl-force true; set ftp:ssl-protect-data true; set ssl:verify-certificate false; rm .in.*; bye"
 
           MIRROR_CMD="mirror -R --delete --parallel=4 --verbose --no-perms --continue --only-newer ./dist ${SERVER_DIR}"
 
