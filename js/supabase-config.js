@@ -6,7 +6,13 @@ const HOSTED_SUPABASE_URL = 'https://vorqavsuqcjnkjzwkyzr.supabase.co';
 
 const SUPABASE_CONFIG = {
     url: HOSTED_SUPABASE_URL,
-    anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZvcnFhdnN1cWNqbmtqendreXpyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM2NTYwMTMsImV4cCI6MjA3OTIzMjAxM30.HhExWu9XMFm2CBhoZUnHyYI0D0-smScXb_pSzCGkMvI'
+    // anonKey must not be hardcoded in source. Provide it at runtime via:
+    // 1) window.SUPABASE_ANON_KEY = '<anon key>' (set by server-side injection), or
+    // 2) <meta name="supabase-anon-key" content="<anon key>"> in the page head
+    // If neither is present the client will still initialize but requests requiring anon key will log a warning.
+    anonKey: (typeof window.SUPABASE_ANON_KEY !== 'undefined' && window.SUPABASE_ANON_KEY) ||
+             (document.querySelector('meta[name="supabase-anon-key"]') && document.querySelector('meta[name="supabase-anon-key"]').getAttribute('content')) ||
+             ''
 };
 
 function assertHostedSupabaseConfig() {
@@ -73,6 +79,11 @@ function initSupabase() {
     
     if (!supabaseClient) {
         const { createClient } = window.supabase;
+
+        if (!SUPABASE_CONFIG.anonKey) {
+            console.warn('⚠️ Supabase anon key is not set at runtime. Set `window.SUPABASE_ANON_KEY` or a meta tag `supabase-anon-key` to enable public Supabase features.');
+        }
+
         supabaseClient = createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey, {
             global: {
                 fetch: sessionAwareFetch

@@ -19,23 +19,14 @@
   <!-- Inner ring accent -->
   <circle cx="256" cy="256" r="220" fill="none" stroke="url(#accentGrad)" stroke-width="3" opacity="0.4"/>
   
-  <!-- ACE Text -->
-  <text x="256" y="245" 
-        font-family="'Bebas Neue', 'Impact', Arial Black, sans-serif" 
-        font-size="160" 
-        font-weight="bold" 
-        fill="#EFEAE8" 
+  <!-- Minimal uppercase black text logo as requested -->
+  <text x="256" y="280"
+        font-family="system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif"
+        font-size="160"
+        font-weight="700"
+        fill="#000000"
         text-anchor="middle"
-        letter-spacing="8">ACE</text>
-  
-  <!-- #1 Text with accent color -->
-  <text x="256" y="360" 
-        font-family="'Bebas Neue', 'Impact', Arial Black, sans-serif" 
-        font-size="120" 
-        font-weight="bold" 
-        fill="url(#accentGrad)" 
-        text-anchor="middle"
-        letter-spacing="4">#1</text>
+        letter-spacing="6">ACE#1</text>
   
   <!-- Subtle shoe silhouette accent at bottom -->
   <path d="M180 400 Q200 385 230 390 Q256 395 282 390 Q312 385 332 400" 
