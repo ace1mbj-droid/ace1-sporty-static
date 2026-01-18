@@ -1599,8 +1599,8 @@ class AdminPanel {
     updateImagePreview(url) {
         const preview = document.getElementById('image-preview');
         // Clear previous preview content
-        // SAFE: Empty string
-        preview.innerHTML = "";
+        // SAFE: Use textContent instead of innerHTML to prevent XSS
+        preview.textContent = "";
         if (url) {
             const img = document.createElement("img");
             img.src = url;
@@ -2830,7 +2830,10 @@ class AdminPanel {
                 const notice = document.getElementById('user-reset-notice');
                 if (newPwd) newPwd.value = '';
                 if (confirm) confirm.value = '';
-                if (notice) { notice.style.display = 'none'; notice.textContent = '' }
+                if (notice) {
+                    notice.style.display = 'none';
+                    notice.textContent = '';
+                }
             }
         } catch (e) { /* no-op if DOM not ready */ }
     }
