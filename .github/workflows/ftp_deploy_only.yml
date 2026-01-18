@@ -138,7 +138,32 @@ jobs:
           sudo apt-get update && sudo apt-get install -y lftp
           PORT=${FTP_PORT:-21}
           echo "Deploying ./dist to ${SERVER_DIR} on ${FTP_HOST}:${PORT}"
-          lftp -u "${FTP_USER}","${FTP_PASSWORD}" -p "$PORT" "${FTP_HOST}" -e "set ftp:ssl-force true; set ftp:ssl-protect-data true; set ssl:verify-certificate false; mirror -R --delete --parallel=4 --verbose ./dist ${SERVER_DIR}; bye"
+          # Harden mirror: avoid changing permissions on remote files, resume partial transfers, and retry transient failures.
+          MAX_RETRIES=3
+          RETRY_DELAY=5
+          ATTEMPT=1
+          MIRROR_CMD="mirror -R --delete --parallel=4 --verbose --no-perms --continue --only-newer ./dist ${SERVER_DIR}"
+
+          while [ "$ATTEMPT" -le "$MAX_RETRIES" ]; do
+            echo "Attempt ${ATTEMPT}/${MAX_RETRIES}: running lftp mirror..."
+            lftp -u "${FTP_USER}","${FTP_PASSWORD}" -p "$PORT" "${FTP_HOST}" -e "set ftp:ssl-force true; set ftp:ssl-protect-data true; set ssl:verify-certificate false; $MIRROR_CMD; bye" && MIRROR_RC=0 || MIRROR_RC=$?
+            if [ "$MIRROR_RC" -eq 0 ]; then
+              echo "Mirror completed successfully."
+              break
+            fi
+            echo "Mirror failed with exit code ${MIRROR_RC}."
+            if [ "$ATTEMPT" -lt "$MAX_RETRIES" ]; then
+              SLEEP=$((RETRY_DELAY * ATTEMPT))
+              echo "Retrying in ${SLEEP}s..."
+              sleep ${SLEEP}
+            fi
+            ATTEMPT=$((ATTEMPT + 1))
+          done
+
+          if [ "$MIRROR_RC" -ne 0 ]; then
+            echo "ERROR: Mirror failed after ${MAX_RETRIES} attempts. Aborting deploy." >&2
+            exit 1
+          fi
 
 # Required repository secrets for this workflow:
 # - FTP_HOST
