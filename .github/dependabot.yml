@@ -13,4 +13,3 @@ updates:
       - dependency-type: "direct"
       - dependency-type: "indirect"
     # Enable security/semver and version updates
-    reviewers: []

@@ -83,12 +83,8 @@ jobs:
           echo "Running FTP health check against ${FTP_HOST}:${PORT} (debug enabled)"
           # Run lftp in debug mode and capture both stdout and stderr to ftp-healthcheck.log.
           # Make the command non-fatal (|| true) so the job can upload the debug log even on auth failures.
-<<<<<<< HEAD
-          lftp -d -p "$PORT" -e "set net:max-retries 1; set net:timeout 20; set ftp:ssl-force true; set ftp:ssl-protect-data true; set ssl:verify-certificate true; set cmd:fail-exit true; open -u $FTP_USER,$FTP_PASSWORD $FTP_HOST; pwd; ls; bye" 2>&1 | tee ftp-healthcheck.log || true
-=======
           # Note: certificate CN mismatches occur when connecting by IP; disable strict verification
           lftp -d -p "$PORT" -e "set net:max-retries 1; set net:timeout 20; set ftp:ssl-force true; set ftp:ssl-protect-data true; set ssl:verify-certificate false; set cmd:fail-exit true; open -u $FTP_USER,$FTP_PASSWORD $FTP_HOST; pwd; ls; bye" 2>&1 | tee ftp-healthcheck.log || true
->>>>>>> origin/main
           echo "FTP health check finished (debug log: ftp-healthcheck.log)"
 
       - name: Upload healthcheck & manifests
