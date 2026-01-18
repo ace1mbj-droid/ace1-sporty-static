@@ -7,7 +7,7 @@ DROP POLICY IF EXISTS "users_select_admin" ON users;
 CREATE POLICY "users_select_admin" 
 ON users FOR SELECT 
 USING (
-  security.is_admin() OR auth.uid() = id
+  security.is_admin() OR (select auth.uid()) = id
 );
 -- Also ensure admin can update users
 DROP POLICY IF EXISTS "users_update_admin" ON users;
@@ -22,7 +22,7 @@ DROP POLICY IF EXISTS "orders_select_admin" ON orders;
 -- Users can see their own orders
 CREATE POLICY "orders_select_own" 
 ON orders FOR SELECT 
-USING (auth.uid() = user_id);
+USING ((select auth.uid()) = user_id);
 -- Admins can see all orders
 CREATE POLICY "orders_select_admin" 
 ON orders FOR SELECT 

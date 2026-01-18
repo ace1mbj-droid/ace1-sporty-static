@@ -2079,7 +2079,7 @@ with check (security.is_admin());
   to public
 using ((public.ace1_is_admin_session() OR (EXISTS ( SELECT 1
    FROM public.user_roles ur
-  WHERE ((ur.user_id = auth.uid()) AND (ur.is_admin = true))))));
+  WHERE ((ur.user_id = (select auth.uid())) AND (ur.is_admin = true))))));
 
 
 
@@ -2127,7 +2127,7 @@ with check ((auth.role() = 'service_role'::text));
   to public
 using ((public.ace1_is_admin_session() OR (EXISTS ( SELECT 1
    FROM public.user_roles ur
-  WHERE ((ur.user_id = auth.uid()) AND (ur.is_admin = true))))));
+  WHERE ((ur.user_id = (select auth.uid())) AND (ur.is_admin = true))))));
 
 
 
@@ -2138,7 +2138,7 @@ using ((public.ace1_is_admin_session() OR (EXISTS ( SELECT 1
   to public
 using ((public.ace1_is_admin_session() OR (EXISTS ( SELECT 1
    FROM public.user_roles ur
-  WHERE ((ur.user_id = auth.uid()) AND (ur.is_admin = true))))));
+  WHERE ((ur.user_id = (select auth.uid())) AND (ur.is_admin = true))))));
 
 
 
@@ -2149,7 +2149,7 @@ using ((public.ace1_is_admin_session() OR (EXISTS ( SELECT 1
   to public
 using ((public.ace1_is_admin_session() OR (EXISTS ( SELECT 1
    FROM public.user_roles ur
-  WHERE ((ur.user_id = auth.uid()) AND (ur.is_admin = true))))));
+  WHERE ((ur.user_id = (select auth.uid())) AND (ur.is_admin = true))))));
 
 
 
@@ -2169,7 +2169,7 @@ using ((is_active = true));
   to public
 using ((public.ace1_is_admin_session() OR (EXISTS ( SELECT 1
    FROM public.user_roles ur
-  WHERE ((ur.user_id = auth.uid()) AND (ur.is_admin = true))))));
+  WHERE ((ur.user_id = (select auth.uid())) AND (ur.is_admin = true))))));
 
 
 
@@ -2189,7 +2189,7 @@ using (((is_active = true) AND ((start_date IS NULL) OR (start_date <= now())) A
   to public
 using ((public.ace1_is_admin_session() OR (EXISTS ( SELECT 1
    FROM public.user_roles ur
-  WHERE ((ur.user_id = auth.uid()) AND (ur.is_admin = true))))));
+  WHERE ((ur.user_id = (select auth.uid())) AND (ur.is_admin = true))))));
 
 
 
@@ -2236,7 +2236,7 @@ using (true);
   to public
 using ((public.ace1_is_admin_session() OR (EXISTS ( SELECT 1
    FROM public.user_roles ur
-  WHERE ((ur.user_id = auth.uid()) AND (ur.is_admin = true))))));
+  WHERE ((ur.user_id = (select auth.uid())) AND (ur.is_admin = true))))));
 
 
 
@@ -2247,7 +2247,7 @@ using ((public.ace1_is_admin_session() OR (EXISTS ( SELECT 1
   to public
 using ((public.ace1_is_admin_session() OR (EXISTS ( SELECT 1
    FROM public.user_roles ur
-  WHERE ((ur.user_id = auth.uid()) AND (ur.is_admin = true))))));
+  WHERE ((ur.user_id = (select auth.uid())) AND (ur.is_admin = true))))));
 
 
 
@@ -2266,8 +2266,8 @@ using (true);
   for all
   to public
 using ((public.ace1_is_admin_session() OR (EXISTS ( SELECT 1
-   FROM public.user_roles ur
-  WHERE ((ur.user_id = auth.uid()) AND (ur.is_admin = true))))));
+  FROM public.user_roles ur
+  WHERE ((ur.user_id = (select auth.uid())) AND (ur.is_admin = true))))));
 
 
 
@@ -2286,8 +2286,9 @@ with check (true);
   for select
   to public
 using ((order_id IN ( SELECT orders.id
-   FROM public.orders
-  WHERE (orders.user_id = ( SELECT auth.uid() AS uid)))));
+  FROM public.orders
+  WHERE (orders.user_id = (select auth.uid()))
+)));
 
 
 
@@ -2297,8 +2298,8 @@ using ((order_id IN ( SELECT orders.id
   for select
   to public
 using ((EXISTS ( SELECT 1
-   FROM public.orders o
-  WHERE ((o.id = order_items.order_id) AND (o.user_id = auth.uid())))));
+  FROM public.orders o
+  WHERE ((o.id = order_items.order_id) AND (o.user_id = (select auth.uid()))));
 
 
 
@@ -2307,7 +2308,7 @@ using ((EXISTS ( SELECT 1
   as permissive
   for insert
   to public
-with check ((auth.uid() = user_id));
+with check ((select auth.uid()) = user_id);
 
 
 
@@ -2316,7 +2317,7 @@ with check ((auth.uid() = user_id));
   as permissive
   for insert
   to public
-with check ((( SELECT auth.uid() AS uid) = user_id));
+with check ((select auth.uid()) = user_id);
 
 
 
@@ -2325,7 +2326,7 @@ with check ((( SELECT auth.uid() AS uid) = user_id));
   as permissive
   for update
   to public
-using ((( SELECT auth.uid() AS uid) = user_id));
+using ((select auth.uid()) = user_id);
 
 
 
@@ -2334,7 +2335,7 @@ using ((( SELECT auth.uid() AS uid) = user_id));
   as permissive
   for select
   to public
-using ((auth.uid() = user_id));
+using ((select auth.uid()) = user_id);
 
 
 
@@ -2343,8 +2344,8 @@ using ((auth.uid() = user_id));
   as permissive
   for update
   to public
-using ((auth.uid() = user_id))
-with check ((auth.uid() = user_id));
+using ((select auth.uid()) = user_id))
+with check ((select auth.uid()) = user_id);
 
 
 
@@ -2363,8 +2364,8 @@ with check (true);
   for select
   to public
 using ((EXISTS ( SELECT 1
-   FROM public.user_roles
-  WHERE ((user_roles.user_id = auth.uid()) AND (user_roles.is_admin = true)))));
+  FROM public.user_roles
+  WHERE ((user_roles.user_id = (select auth.uid())) AND (user_roles.is_admin = true)))));
 
 
 
@@ -2383,8 +2384,9 @@ with check (true);
   for select
   to public
 using ((order_id IN ( SELECT orders.id
-   FROM public.orders
-  WHERE (orders.user_id = ( SELECT auth.uid() AS uid)))));
+  FROM public.orders
+  WHERE orders.user_id = (select auth.uid())
+)));
 
 
 
@@ -2394,11 +2396,11 @@ using ((order_id IN ( SELECT orders.id
   for all
   to public
 using ((public.ace1_is_admin_session() OR (EXISTS ( SELECT 1
-   FROM public.user_roles ur
-  WHERE ((ur.user_id = ( SELECT auth.uid() AS uid)) AND (ur.is_admin = true))))))
+  FROM public.user_roles ur
+  WHERE ((ur.user_id = (select auth.uid())) AND (ur.is_admin = true)))))
 with check ((public.ace1_is_admin_session() OR (EXISTS ( SELECT 1
-   FROM public.user_roles ur
-  WHERE ((ur.user_id = ( SELECT auth.uid() AS uid)) AND (ur.is_admin = true))))));
+  FROM public.user_roles ur
+  WHERE ((ur.user_id = (select auth.uid())) AND (ur.is_admin = true))))));
 
 
 
@@ -2463,7 +2465,7 @@ using (true);
   to public
 using ((public.ace1_is_admin_session() OR (EXISTS ( SELECT 1
    FROM public.user_roles ur
-  WHERE ((ur.user_id = auth.uid()) AND (ur.is_admin = true))))));
+  WHERE ((ur.user_id = (select auth.uid())) AND (ur.is_admin = true))))));
 
 
 
@@ -2575,7 +2577,7 @@ with check (((public.ace1_session_token() IS NOT NULL) AND (token = public.ace1_
   to public
 using ((public.ace1_is_admin_session() OR (EXISTS ( SELECT 1
    FROM public.user_roles ur
-  WHERE ((ur.user_id = auth.uid()) AND (ur.is_admin = true))))));
+  WHERE ((ur.user_id = (select auth.uid())) AND (ur.is_admin = true))))));
 
 
 
@@ -2593,7 +2595,7 @@ using ((is_active = true));
   as permissive
   for insert
   to authenticated
-with check ((auth.uid() = user_id));
+with check ((select auth.uid()) = user_id);
 
 
 
@@ -2602,7 +2604,7 @@ with check ((auth.uid() = user_id));
   as permissive
   for delete
   to authenticated
-using ((auth.uid() = user_id));
+using ((select auth.uid()) = user_id));
 
 
 
@@ -2611,8 +2613,8 @@ using ((auth.uid() = user_id));
   as permissive
   for update
   to authenticated
-using ((auth.uid() = user_id))
-with check ((auth.uid() = user_id));
+using ((select auth.uid()) = user_id))
+with check ((select auth.uid()) = user_id);
 
 
 
@@ -2621,7 +2623,7 @@ with check ((auth.uid() = user_id));
   as permissive
   for select
   to authenticated
-using ((auth.uid() = user_id));
+using ((select auth.uid()) = user_id));
 
 
 
@@ -2687,7 +2689,7 @@ using (true);
   to public
 using ((public.ace1_is_admin_session() OR (EXISTS ( SELECT 1
    FROM public.user_roles ur
-  WHERE ((ur.user_id = auth.uid()) AND (ur.is_admin = true))))));
+  WHERE ((ur.user_id = (select auth.uid())) AND (ur.is_admin = true))))));
 
 
 
@@ -2705,7 +2707,7 @@ using (true);
   as permissive
   for select
   to public
-using ((auth.uid() = user_id));
+using ((select auth.uid()) = user_id));
 
 
 
@@ -2714,7 +2716,7 @@ using ((auth.uid() = user_id));
   as permissive
   for insert
   to authenticated
-with check ((auth.uid() = user_id));
+with check ((select auth.uid()) = user_id);
 
 
 
@@ -2723,7 +2725,7 @@ with check ((auth.uid() = user_id));
   as permissive
   for delete
   to authenticated
-using ((auth.uid() = user_id));
+using ((select auth.uid()) = user_id));
 
 
 
@@ -2732,7 +2734,7 @@ using ((auth.uid() = user_id));
   as permissive
   for select
   to authenticated
-using ((auth.uid() = user_id));
+using ((select auth.uid()) = user_id));
 
 
 

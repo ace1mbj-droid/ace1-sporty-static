@@ -16,15 +16,15 @@ USING (true);
 -- Cannot check is_admin here as it would cause recursion
 CREATE POLICY "user_roles_insert_self_only" 
 ON user_roles FOR INSERT 
-WITH CHECK (auth.uid() = user_id);
+WITH CHECK ((select auth.uid()) = user_id);
 -- UPDATE: Only the user themselves or service role
 CREATE POLICY "user_roles_update_self_only" 
 ON user_roles FOR UPDATE 
-USING (auth.uid() = user_id)
-WITH CHECK (auth.uid() = user_id);
+USING ((select auth.uid()) = user_id)
+WITH CHECK ((select auth.uid()) = user_id);
 -- DELETE: Only the user themselves or service role
 CREATE POLICY "user_roles_delete_self_only" 
 ON user_roles FOR DELETE 
-USING (auth.uid() = user_id);
+USING ((select auth.uid()) = user_id);
 -- Note: Admins should use service role key for managing user_roles
 -- Regular users can only manage their own role entry;

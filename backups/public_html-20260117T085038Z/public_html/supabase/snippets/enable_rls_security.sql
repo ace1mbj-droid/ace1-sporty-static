@@ -10,7 +10,7 @@ CREATE POLICY "Users can view their own payment"
 ON public.payments FOR SELECT
 USING (
   order_id IN (
-    SELECT id FROM public.orders WHERE orders.user_id = auth.uid()
+    SELECT id FROM public.orders WHERE orders.user_id = (select auth.uid())
   )
 );
 
@@ -24,7 +24,7 @@ ALTER TABLE public.user_roles ENABLE ROW LEVEL SECURITY;
 -- Users can view their own role
 CREATE POLICY "Users can view their own role"
 ON public.user_roles FOR SELECT
-USING (auth.uid() = user_id);
+USING ((select auth.uid()) = user_id);
 
 -- Admin can view all roles
 CREATE POLICY "Admins can view all roles"
@@ -32,7 +32,7 @@ ON public.user_roles FOR SELECT
 USING (
   EXISTS (
     SELECT 1 FROM public.user_roles ur
-    WHERE ur.user_id = auth.uid() AND ur.is_admin = true
+    WHERE ur.user_id = (select auth.uid()) AND ur.is_admin = true
   )
 );
 
@@ -42,7 +42,7 @@ ON public.user_roles FOR UPDATE
 USING (
   EXISTS (
     SELECT 1 FROM public.user_roles ur
-    WHERE ur.user_id = auth.uid() AND ur.is_admin = true
+    WHERE ur.user_id = (select auth.uid()) AND ur.is_admin = true
   )
 );
 
@@ -52,7 +52,7 @@ ALTER TABLE public.orders ENABLE ROW LEVEL SECURITY;
 -- Users can view their own orders
 CREATE POLICY "Users can view their own orders"
 ON public.orders FOR SELECT
-USING (auth.uid() = user_id);
+USING ((select auth.uid()) = user_id);
 
 -- Admin can view all orders
 CREATE POLICY "Admins can view all orders"
@@ -60,19 +60,19 @@ ON public.orders FOR SELECT
 USING (
   EXISTS (
     SELECT 1 FROM public.user_roles ur
-    WHERE ur.user_id = auth.uid() AND ur.is_admin = true
+    WHERE ur.user_id = (select auth.uid()) AND ur.is_admin = true
   )
 );
 
 -- Authenticated users can create orders
 CREATE POLICY "Authenticated users can create orders"
 ON public.orders FOR INSERT
-WITH CHECK (auth.uid() = user_id);
+WITH CHECK ((select auth.uid()) = user_id);
 
 -- Users can update their own orders
 CREATE POLICY "Users can update their own orders"
 ON public.orders FOR UPDATE
-USING (auth.uid() = user_id);
+USING ((select auth.uid()) = user_id);
 
 -- 4. Enable RLS on order_items table
 ALTER TABLE public.order_items ENABLE ROW LEVEL SECURITY;
@@ -82,7 +82,7 @@ CREATE POLICY "Users can view their order items"
 ON public.order_items FOR SELECT
 USING (
   order_id IN (
-    SELECT id FROM public.orders WHERE user_id = auth.uid()
+    SELECT id FROM public.orders WHERE user_id = (select auth.uid())
   )
 );
 
@@ -105,7 +105,7 @@ ON public.products FOR SELECT
 USING (
   EXISTS (
     SELECT 1 FROM public.user_roles ur
-    WHERE ur.user_id = auth.uid() AND ur.is_admin = true
+    WHERE ur.user_id = (select auth.uid()) AND ur.is_admin = true
   )
 );
 
@@ -115,7 +115,7 @@ ON public.products FOR INSERT
 WITH CHECK (
   EXISTS (
     SELECT 1 FROM public.user_roles ur
-    WHERE ur.user_id = auth.uid() AND ur.is_admin = true
+    WHERE ur.user_id = (select auth.uid()) AND ur.is_admin = true
   )
 );
 
@@ -124,7 +124,7 @@ ON public.products FOR UPDATE
 USING (
   EXISTS (
     SELECT 1 FROM public.user_roles ur
-    WHERE ur.user_id = auth.uid() AND ur.is_admin = true
+    WHERE ur.user_id = (select auth.uid()) AND ur.is_admin = true
   )
 );
 
@@ -133,7 +133,7 @@ ON public.products FOR DELETE
 USING (
   EXISTS (
     SELECT 1 FROM public.user_roles ur
-    WHERE ur.user_id = auth.uid() AND ur.is_admin = true
+    WHERE ur.user_id = (select auth.uid()) AND ur.is_admin = true
   )
 );
 
@@ -151,7 +151,7 @@ ON public.inventory FOR INSERT
 WITH CHECK (
   EXISTS (
     SELECT 1 FROM public.user_roles ur
-    WHERE ur.user_id = auth.uid() AND ur.is_admin = true
+    WHERE ur.user_id = (select auth.uid()) AND ur.is_admin = true
   )
 );
 
@@ -160,7 +160,7 @@ ON public.inventory FOR UPDATE
 USING (
   EXISTS (
     SELECT 1 FROM public.user_roles ur
-    WHERE ur.user_id = auth.uid() AND ur.is_admin = true
+    WHERE ur.user_id = (select auth.uid()) AND ur.is_admin = true
   )
 );
 
@@ -178,7 +178,7 @@ ON public.product_images FOR INSERT
 WITH CHECK (
   EXISTS (
     SELECT 1 FROM public.user_roles ur
-    WHERE ur.user_id = auth.uid() AND ur.is_admin = true
+    WHERE ur.user_id = (select auth.uid()) AND ur.is_admin = true
   )
 );
 
@@ -187,7 +187,7 @@ ON public.product_images FOR UPDATE
 USING (
   EXISTS (
     SELECT 1 FROM public.user_roles ur
-    WHERE ur.user_id = auth.uid() AND ur.is_admin = true
+    WHERE ur.user_id = (select auth.uid()) AND ur.is_admin = true
   )
 );
 
@@ -196,6 +196,6 @@ ON public.product_images FOR DELETE
 USING (
   EXISTS (
     SELECT 1 FROM public.user_roles ur
-    WHERE ur.user_id = auth.uid() AND ur.is_admin = true
+    WHERE ur.user_id = (select auth.uid()) AND ur.is_admin = true
   )
 );

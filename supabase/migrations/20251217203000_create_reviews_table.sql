@@ -22,14 +22,14 @@ CREATE POLICY "reviews_select_public" ON public.reviews FOR SELECT
 USING (true);
 -- Authenticated users can create reviews
 CREATE POLICY "reviews_insert_authenticated" ON public.reviews FOR INSERT
-WITH CHECK (auth.uid() = user_id);
+WITH CHECK ((select auth.uid()) = user_id);
 -- Users can update their own reviews
 CREATE POLICY "reviews_update_self" ON public.reviews FOR UPDATE
-USING (auth.uid() = user_id)
-WITH CHECK (auth.uid() = user_id);
+USING ((select auth.uid()) = user_id)
+WITH CHECK ((select auth.uid()) = user_id);
 -- Users can delete their own reviews or admins can delete any
 CREATE POLICY "reviews_delete_self_or_admin" ON public.reviews FOR DELETE
-USING (auth.uid() = user_id OR security.is_admin());
+USING ((select auth.uid()) = user_id OR security.is_admin());
 -- Create index for faster lookups
 CREATE INDEX IF NOT EXISTS idx_reviews_product_id ON public.reviews(product_id);
 CREATE INDEX IF NOT EXISTS idx_reviews_user_id ON public.reviews(user_id);

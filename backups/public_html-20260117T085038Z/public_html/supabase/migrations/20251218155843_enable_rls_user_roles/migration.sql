@@ -20,7 +20,7 @@ $$;
 
 -- Allow users to read their own role
 CREATE POLICY "Users can view own role" ON user_roles
-FOR SELECT USING (auth.uid() = user_id);
+FOR SELECT USING ((select auth.uid()) = user_id);
 
 -- Allow service role to manage all roles (for admin operations)
 CREATE POLICY "Service role can manage all roles" ON user_roles

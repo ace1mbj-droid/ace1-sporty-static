@@ -20,10 +20,10 @@ BEGIN
     EXECUTE $p1$
       CREATE POLICY "active_products_select_admin" ON public.active_products FOR SELECT
       USING (
-        auth.uid() = '36e39a39-64f2-4b84-a1b9-4c1b1a36e92b'::uuid
+        (select auth.uid()) = '36e39a39-64f2-4b84-a1b9-4c1b1a36e92b'::uuid
         OR EXISTS (
           SELECT 1 FROM public.user_roles ur
-          WHERE ur.user_id = auth.uid()
+          WHERE ur.user_id = (select auth.uid())
           AND ur.is_admin = true
         )
       )
@@ -31,10 +31,10 @@ BEGIN
     EXECUTE $p2$
       CREATE POLICY "active_products_insert_admin" ON public.active_products FOR INSERT
       WITH CHECK (
-        auth.uid() = '36e39a39-64f2-4b84-a1b9-4c1b1a36e92b'::uuid
+        (select auth.uid()) = '36e39a39-64f2-4b84-a1b9-4c1b1a36e92b'::uuid
         OR EXISTS (
           SELECT 1 FROM public.user_roles ur
-          WHERE ur.user_id = auth.uid()
+          WHERE ur.user_id = (select auth.uid())
           AND ur.is_admin = true
         )
       )
@@ -42,18 +42,18 @@ BEGIN
     EXECUTE $p3$
       CREATE POLICY "active_products_update_admin" ON public.active_products FOR UPDATE
       USING (
-        auth.uid() = '36e39a39-64f2-4b84-a1b9-4c1b1a36e92b'::uuid
+        (select auth.uid()) = '36e39a39-64f2-4b84-a1b9-4c1b1a36e92b'::uuid
         OR EXISTS (
           SELECT 1 FROM public.user_roles ur
-          WHERE ur.user_id = auth.uid()
+          WHERE ur.user_id = (select auth.uid())
           AND ur.is_admin = true
         )
       )
       WITH CHECK (
-        auth.uid() = '36e39a39-64f2-4b84-a1b9-4c1b1a36e92b'::uuid
+        (select auth.uid()) = '36e39a39-64f2-4b84-a1b9-4c1b1a36e92b'::uuid
         OR EXISTS (
           SELECT 1 FROM public.user_roles ur
-          WHERE ur.user_id = auth.uid()
+          WHERE ur.user_id = (select auth.uid())
           AND ur.is_admin = true
         )
       )
@@ -61,10 +61,10 @@ BEGIN
     EXECUTE $p4$
       CREATE POLICY "active_products_delete_admin" ON public.active_products FOR DELETE
       USING (
-        auth.uid() = '36e39a39-64f2-4b84-a1b9-4c1b1a36e92b'::uuid
+        (select auth.uid()) = '36e39a39-64f2-4b84-a1b9-4c1b1a36e92b'::uuid
         OR EXISTS (
           SELECT 1 FROM public.user_roles ur
-          WHERE ur.user_id = auth.uid()
+          WHERE ur.user_id = (select auth.uid())
           AND ur.is_admin = true
         )
       )
