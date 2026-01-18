@@ -146,13 +146,13 @@ jobs:
           # Best-effort cleanup: remove transient upload temp files on remote (these can appear during uploads).
           # Ignore failures (e.g., if no such files or permission errors) so this step is non-fatal.
           echo "Cleaning up remote transient files (.in.*) before mirroring (non-fatal)..."
-          lftp -u "${FTP_USER}","${FTP_PASSWORD}" -p "$PORT" "${FTP_HOST}" -e "set ftp:ssl-force true; set ftp:ssl-protect-data true; set ssl:verify-certificate false; rm .in.*; bye"
+          lftp -u "${FTP_USER}","${FTP_PASSWORD}" -p "$PORT" "${FTP_HOST}" -e "set ssl:verify-certificate false; set ftp:ssl-force true; set ftp:ssl-protect-data true; rm .in.*; bye"
 
           MIRROR_CMD="mirror -R --delete --parallel=4 --verbose --no-perms --continue --only-newer ./dist ${SERVER_DIR}"
 
           while [ "$ATTEMPT" -le "$MAX_RETRIES" ]; do
             echo "Attempt ${ATTEMPT}/${MAX_RETRIES}: running lftp mirror..."
-            lftp -u "${FTP_USER}","${FTP_PASSWORD}" -p "$PORT" "${FTP_HOST}" -e "set ftp:ssl-force true; set ftp:ssl-protect-data true; set ssl:verify-certificate false; $MIRROR_CMD; bye" && MIRROR_RC=0 || MIRROR_RC=$?
+            lftp -u "${FTP_USER}","${FTP_PASSWORD}" -p "$PORT" "${FTP_HOST}" -e "set ssl:verify-certificate false; set ftp:ssl-force true; set ftp:ssl-protect-data true; $MIRROR_CMD; bye" && MIRROR_RC=0 || MIRROR_RC=$?
             if [ "$MIRROR_RC" -eq 0 ]; then
               echo "Mirror completed successfully."
               break
