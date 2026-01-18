@@ -148,299 +148,62 @@
             <div class="hero-content">
                 <h1>Premium Sneakers Collection</h1>
                 <p>Discover our curated selection of quality, affordable sneakers designed for comfort, performance, and style. Perfect for walking, jogging, work shifts, and everyday wear.</p>
-                <div class="hero-stats">
-                    <div class="stat-item">
-                        <span class="stat-number">3</span>
-                        <span class="stat-label">Styles</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-number">₹6,999</span>
-                        <span class="stat-label">Starting Price</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-number">4.8★</span>
-                        <span class="stat-label">Avg Rating</span>
-                    </div>
-                </div>
-            </div>
-            <div class="hero-visual">
-                <div class="hero-image-stack">
-                    <img src="images/hero-sneaker.svg" alt="Featured Sneaker" class="hero-main-image">
-                    <div class="hero-floating-card">
-                        <div class="floating-badge">New Arrival</div>
-                        <h4>Thz - F</h4>
-                        <p>₹6,999</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Trust Strip -->
-    <section class="trust-strip-section" aria-label="Shipping and support highlights">
-        <div class="container">
-            <div class="trust-strip" role="list">
-                <div class="trust-item" role="listitem">
-                    <i class="fas fa-shipping-fast" aria-hidden="true"></i>
-                    <div>
-                        <strong>Fast dispatch</strong>
-                        <span>Ships in 2–3 business days</span>
-                    </div>
-                </div>
-                <div class="trust-item" role="listitem">
-                    <i class="fas fa-undo" aria-hidden="true"></i>
-                    <div>
-                        <strong>Easy returns</strong>
-                        <span>Simple return & exchange support</span>
-                    </div>
-                </div>
-                <div class="trust-item" role="listitem">
-                    <i class="fas fa-headset" aria-hidden="true"></i>
-                    <div>
-                        <strong>Help when you need it</strong>
-                        <span><a href="contact.html">Contact support</a> or <a href="faq.html">view FAQs</a></span>
-                    </div>
-                </div>
             </div>
         </div>
     </section>
 
     <!-- Products Section -->
-    <section class="shop-section">
-        <div class="container">
-            <div class="shop-layout">
-                <!-- Sidebar Filters -->
-                <aside class="shop-sidebar">
-                    <div class="filter-group">
-                        <h3>Categories</h3>
-                        <div id="category-filters"></div>
+    <section class="shop-modern-layout">
+        <aside class="shop-sidebar-modern">
+            <h2 class="sidebar-title">Filter by</h2>
+            <div class="filter-group">
+                <h3>Categories</h3>
+                <ul>
+                    <li><a href="#">Running Shoes</a></li>
+                    <li><a href="#">Walking Shoes</a></li>
+                    <li><a href="#">Casual Shoes</a></li>
+                </ul>
+            </div>
+            <div class="filter-group">
+                <h3>Price Range</h3>
+                <input type="range" min="0" max="5000" step="100" value="2500">
+            </div>
+        </aside>
+
+        <div class="shop-content-modern">
+            <div class="products-grid-modern">
+                <div class="product-card">
+                    <div class="product-image">
+                        <img src="images/sneaker1.jpg" alt="Sneaker 1">
                     </div>
-
-                    <div class="filter-group">
-                        <h3>Price Range</h3>
-                        <div class="price-range">
-                            <label for="price-slider" class="sr-only">Maximum price</label>
-                            <input type="range" min="0" max="15000" value="15000" id="price-slider" aria-label="Price slider" aria-valuemin="0" aria-valuemax="15000">
-                            <div class="price-labels">
-                                <span>₹0</span>
-                                <span id="price-value">₹15,000</span>
-                            </div>
-                        </div>
+                    <h3 class="product-title">Comfort Sneaker</h3>
+                    <p class="product-price">₹2,499</p>
+                    <button class="btn-primary">Add to Cart</button>
+                </div>
+                <div class="product-card">
+                    <div class="product-image">
+                        <img src="images/sneaker2.jpg" alt="Sneaker 2">
                     </div>
-
-                    <div class="filter-group">
-                        <h3>Size</h3>
-                        <div class="size-grid">
-                            <button class="size-btn">6</button>
-                            <button class="size-btn">7</button>
-                            <button class="size-btn">8</button>
-                            <button class="size-btn">9</button>
-                            <button class="size-btn">10</button>
-                            <button class="size-btn">11</button>
-                            <button class="size-btn">12</button>
-                            <button class="size-btn">13</button>
-                        </div>
+                    <h3 class="product-title">Performance Sneaker</h3>
+                    <p class="product-price">₹3,199</p>
+                    <button class="btn-primary">Add to Cart</button>
+                </div>
+                <div class="product-card">
+                    <div class="product-image">
+                        <img src="images/sneaker3.jpg" alt="Sneaker 3">
                     </div>
-
-                    <div class="filter-group">
-                        <h3>Color</h3>
-                        <div class="color-grid">
-                            <button class="color-btn" style="background: var(--color-dark); color: var(--color-light);" title="Black"></button>
-                            <button class="color-btn" style="background: var(--color-light); border: 1px solid var(--color-dark); color: var(--color-dark);" title="White"></button>
-                            <button class="color-btn" style="background: #FF6B00" title="Orange"></button>
-                            <button class="color-btn" style="background: #00D4FF" title="Blue"></button>
-                            <button class="color-btn" style="background: #FF3D00" title="Red"></button>
-                            <button class="color-btn" style="background: #808080" title="Gray"></button>
-                        </div>
-                    </div>
-
-                    <button class="btn btn-secondary btn-block" id="clear-filters">Reset Filters</button>
-                </aside>
-
-                <div class="shop-content">
-                    <div class="shop-header">
-                        <p class="results-count" id="results-count">Showing 15 products</p>
-                        <label for="sort-select" class="sr-only">Sort products</label>
-                        <select class="sort-select" id="sort-select" aria-label="Sort products">
-                            <option value="featured">Featured</option>
-                            <option value="price-low">Price: Low to High</option>
-                            <option value="price-high">Price: High to Low</option>
-                            <option value="name-az">Name: A to Z</option>
-                            <option value="rating">Top Rated</option>
-                        </select>
-                    </div>
-
-                    <div class="products-grid">
-                        <!-- Products loaded dynamically by products.js -->
-                    </div>
-
-                    <!-- Pagination -->
-                    <div class="pagination" id="pagination"></div>
+                    <h3 class="product-title">Stylish Sneaker</h3>
+                    <p class="product-price">₹2,999</p>
+                    <button class="btn-primary">Add to Cart</button>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Footer -->
     <footer class="footer">
         <div class="container">
-            <div class="footer-content">
-                <div class="footer-column">
-                    <h3 class="footer-logo"><img class="footer-logo-img" src="https://vorqavsuqcjnkjzwkyzr.supabase.co/storage/v1/object/public/Website/brand/ace1-logo.jpeg" alt="ACE#1" loading="lazy" decoding="async" onerror="this.remove();"><span class="logo-text">ACE<span class="logo-accent">#1</span></span></h3>
-                    <p>Revolutionary footwear integrated with terahertz technology for enhanced wellness and lifestyle.</p>
-                    <p style="opacity:0.85;margin-top:10px;">Accessories &amp; apparel coming in the future — for now we’re footwear-only.</p>
-                    <div class="social-icons">
-                        <a href="https://instagram.com/ace_1_official/" target="_blank" rel="noopener noreferrer" aria-label="Ace#1 on Instagram"><i class="fab fa-instagram"></i></a>
-                        <a href="https://facebook.com/ace1official" target="_blank" rel="noopener noreferrer" aria-label="Ace#1 on Facebook"><i class="fab fa-facebook"></i></a>
-                    </div>
-                </div>
-                <div class="footer-column">
-                    <h4>Shop</h4>
-                    <ul id="footer-shop-links">
-                        <li><a href="shoes.html">All Products</a></li>
-                    </ul>
-                </div>
-                <div class="footer-column">
-                    <h4>Company</h4>
-                    <ul>
-                        <li><a href="about.html">About Us</a></li>
-                        <li><a href="technology.html">Technology</a></li>
-                        <li><a href="contact.html">Contact</a></li>
-                        
-                    </ul>
-                </div>
-                <div class="footer-column">
-                    <h4>Support</h4>
-                    <ul>
-                        <li><a href="faq.html">FAQ</a></li>
-                        <li><a href="faq.html#shipping">Shipping Info</a></li>
-                        <li><a href="faq.html#returns">Returns</a></li>
-                        <li><a href="size-guide.html">Size Guide</a></li>
-                    </ul>
-                </div>
-            </div>
-            <div class="footer-bottom">
-                <p>&copy; 2025 Ace#1. All rights reserved.</p>
-                <div class="footer-links">
-                    <a href="privacy-policy.html">Privacy Policy</a>
-                    <a href="terms-of-service.html">Terms of Service</a>
-                </div>
-            </div>
+            <p>&copy; 2026 Ace#1. All rights reserved.</p>
         </div>
     </footer>
-
-    <!-- Shopping Cart Sidebar -->
-    <div class="cart-sidebar" id="cart-sidebar">
-        <div class="cart-header">
-            <h3>Shopping Cart</h3>
-            <button class="cart-close" id="cart-close" aria-label="Close cart">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-        <div class="cart-items" id="cart-items">
-            <div class="cart-empty">
-                <i class="fas fa-shopping-bag"></i>
-                <p>Your cart is empty</p>
-            </div>
-        </div>
-        <div class="cart-footer">
-            <div class="cart-total">
-                <span>Subtotal:</span>
-                <span id="cart-total">$0.00</span>
-            </div>
-            <button class="btn btn-primary btn-block">Checkout</button>
-            <a href="shoes.html" class="btn btn-secondary">Continue Shopping</a>
-        </div>
-    </div>
-
-    <div class="cart-overlay" id="cart-overlay"></div>
-
-    <!-- Quick View Modal -->
-    <div class="modal" id="quick-view-modal">
-        <div class="modal-overlay" id="modal-overlay"></div>
-        <div class="modal-content quick-view-content">
-            <button class="modal-close" id="modal-close-btn">
-                <i class="fas fa-times"></i>
-            </button>
-            <div class="quick-view-container">
-                <div class="quick-view-image">
-                    <img id="qv-image" src="" alt="" class="no-lazy">
-                </div>
-                <div class="quick-view-details">
-                    <h2 id="qv-name"></h2>
-                    <p class="qv-category" id="qv-category"></p>
-                    <div class="qv-rating" id="qv-rating">
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star-half-alt"></i>
-                        <span>(127)</span>
-                    </div>
-                    <div class="qv-price" id="qv-price"></div>
-                    <p class="qv-description" id="qv-description"></p>
-                    
-                    <div class="qv-stock" id="qv-stock"></div>
-                    
-                    <div class="qv-sizes" id="qv-sizes">
-                        <h4>Select Size:</h4>
-                        <div class="size-options">
-                            <button class="size-option">7</button>
-                            <button class="size-option">8</button>
-                            <button class="size-option">9</button>
-                            <button class="size-option">10</button>
-                            <button class="size-option">11</button>
-                        </div>
-                    </div>
-                    
-                    <div class="qv-actions">
-                        <button class="btn btn-primary" id="qv-add-to-cart">
-                            <i class="fas fa-shopping-bag"></i> Add to Cart
-                        </button>
-                        <button class="btn btn-outline" id="qv-buy-now">
-                            <i class="fas fa-bolt"></i> Buy Now
-                        </button>
-                    </div>
-                    
-                    <div class="qv-features">
-                        <div class="qv-feature">
-                            <i class="fas fa-shield-alt"></i>
-                            <span>1 Year Warranty</span>
-                        </div>
-                        <div class="qv-feature">
-                            <i class="fas fa-shipping-fast"></i>
-                            <span>Free Shipping</span>
-                        </div>
-                        <div class="qv-feature">
-                            <i class="fas fa-undo"></i>
-                            <span>30 Days Return</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Cache Buster (must load first) -->
-    <script src="js/cache-buster.js"></script>
-    <!-- Supabase Integration -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.89.0"></script>
-    <script src="js/supabase-config.js"></script>
-    <!-- Security Scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.6/dist/purify.min.js"></script>
-    <script src="js/password-hasher.js"></script>
-    <script src="js/security.js"></script>
-    <script src="js/database-auth.js"></script>
-    <script src="js/supabase-service.js"></script>
-    <!-- E-Commerce Backend -->
-    <script src="js/ecommerce-backend.js"></script>
-    <!-- Reviews System -->
-    <script src="js/reviews-manager.js"></script>
-
-    <script src="js/main.js"></script>
-    <script src="js/products.js"></script>
-    <!-- Image Optimization -->
-    <script src="js/image-optimizer.js"></script>
-
 </body>
 </html>

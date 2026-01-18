@@ -106,6 +106,167 @@
                 font-size: 20px;
             }
         }
+
+        /* New styles for clothing page */
+        .page-hero {
+            padding: 60px 0;
+            background: url('images/clothing-hero.jpg') no-repeat center center / cover;
+            color: var(--bg-white);
+            text-align: center;
+        }
+
+        .hero-content h1 {
+            font-size: 36px;
+            margin: 0 0 12px;
+            font-weight: 700;
+        }
+
+        .hero-content p {
+            font-size: 18px;
+            margin: 0;
+        }
+
+        .shop-modern-layout {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 24px;
+            margin: 40px 0;
+        }
+
+        .shop-sidebar-modern {
+            flex: 0 0 250px;
+            background: var(--bg-light);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .sidebar-title {
+            font-size: 22px;
+            margin: 0 0 16px;
+            font-weight: 600;
+            color: var(--text-color);
+        }
+
+        .filter-group {
+            margin-bottom: 24px;
+        }
+
+        .filter-group h3 {
+            font-size: 18px;
+            margin: 0 0 12px;
+            font-weight: 500;
+            color: var(--text-color);
+        }
+
+        .filter-group ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .filter-group ul li {
+            margin: 0 0 8px;
+        }
+
+        .filter-group ul li a {
+            color: var(--text-color);
+            text-decoration: none;
+        }
+
+        .filter-group input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 4px;
+            border-radius: 2px;
+            background: var(--primary-color);
+            outline: none;
+            opacity: 0.7;
+            transition: opacity .2s;
+        }
+
+        .filter-group input[type="range"]:hover {
+            opacity: 1;
+        }
+
+        .shop-content-modern {
+            flex: 1;
+        }
+
+        .products-grid-modern {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 16px;
+        }
+
+        .product-card {
+            background: var(--bg-white);
+            border-radius: 8px;
+            box-shadow: var(--shadow-sm);
+            overflow: hidden;
+            transition: transform .2s;
+        }
+
+        .product-card:hover {
+            transform: translateY(-4px);
+        }
+
+        .product-image img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .product-title {
+            font-size: 16px;
+            margin: 12px 0 8px;
+            color: var(--text-color);
+            font-weight: 500;
+        }
+
+        .product-price {
+            font-size: 14px;
+            margin: 0 0 12px;
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: var(--bg-white);
+            padding: 10px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background .2s;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-color-dark);
+        }
+
+        /* Footer styles */
+        .footer {
+            background: var(--bg-dark);
+            color: var(--text-light);
+            padding: 40px 0;
+            text-align: center;
+        }
+
+        .footer p {
+            margin: 0;
+            font-size: 14px;
+        }
+
+        .footer a {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
@@ -160,8 +321,10 @@
     <!-- Page Header -->
     <section class="page-hero">
         <div class="container">
-            <h1>Footwear Only (For Now)</h1>
-            <p>We currently sell sneakers only — explore Shoes for the latest products.</p>
+            <div class="hero-content">
+                <h1>Clothing Collection</h1>
+                <p>Discover our premium clothing line, designed for comfort and style. Perfect for every occasion.</p>
+            </div>
         </div>
     </section>
 
@@ -187,80 +350,48 @@
     </section>
 
     <!-- Products Section -->
-    <section class="shop-section">
-        <div class="container">
-            <div class="shop-layout">
-                <!-- Sidebar Filters -->
-                <aside class="shop-sidebar">
-                    <div class="filter-group">
-                        <h3>Sub Categories</h3>
-                        <div id="category-filters"></div>
-                    </div>
+    <section class="shop-modern-layout">
+        <aside class="shop-sidebar-modern">
+            <h2 class="sidebar-title">Filter by</h2>
+            <div class="filter-group">
+                <h3>Categories</h3>
+                <ul>
+                    <li><a href="#">T-Shirts</a></li>
+                    <li><a href="#">Hoodies</a></li>
+                    <li><a href="#">Jackets</a></li>
+                </ul>
+            </div>
+            <div class="filter-group">
+                <h3>Price Range</h3>
+                <input type="range" min="0" max="5000" step="100" value="2500">
+            </div>
+        </aside>
 
-                    <div class="filter-group">
-                        <h3>Price Range</h3>
-                        <div class="price-range">
-                            <label for="price-slider" class="sr-only">Maximum price</label>
-                            <input type="range" min="0" max="15000" value="15000" id="price-slider" aria-label="Price slider" aria-valuemin="0" aria-valuemax="15000">
-                            <div class="price-labels">
-                                <span>₹0</span>
-                                <span id="price-value">₹15,000</span>
-                            </div>
-                        </div>
+        <div class="shop-content-modern">
+            <div class="products-grid-modern">
+                <div class="product-card">
+                    <div class="product-image">
+                        <img src="images/tshirt1.jpg" alt="T-Shirt 1">
                     </div>
-
-                    <div class="filter-group">
-                        <h3>Size</h3>
-                        <div class="size-grid">
-                            <button class="size-btn">XS</button>
-                            <button class="size-btn">S</button>
-                            <button class="size-btn">M</button>
-                            <button class="size-btn">L</button>
-                            <button class="size-btn">XL</button>
-                            <button class="size-btn">XXL</button>
-                        </div>
+                    <h3 class="product-title">Casual T-Shirt</h3>
+                    <p class="product-price">₹999</p>
+                    <button class="btn-primary">Add to Cart</button>
+                </div>
+                <div class="product-card">
+                    <div class="product-image">
+                        <img src="images/hoodie1.jpg" alt="Hoodie 1">
                     </div>
-
-                    <div class="filter-group">
-                        <h3>Color</h3>
-                        <div class="color-grid">
-                            <button class="color-btn" style="background: #000" title="Black"></button>
-                            <button class="color-btn" style="background: #fff; border: 1px solid #ddd" title="White"></button>
-                            <button class="color-btn" style="background: #FF6B00" title="Orange"></button>
-                            <button class="color-btn" style="background: #00D4FF" title="Blue"></button>
-                            <button class="color-btn" style="background: #FF3D00" title="Red"></button>
-                            <button class="color-btn" style="background: #808080" title="Gray"></button>
-                        </div>
+                    <h3 class="product-title">Cozy Hoodie</h3>
+                    <p class="product-price">₹1,999</p>
+                    <button class="btn-primary">Add to Cart</button>
+                </div>
+                <div class="product-card">
+                    <div class="product-image">
+                        <img src="images/jacket1.jpg" alt="Jacket 1">
                     </div>
-
-                    <button class="btn btn-secondary btn-block" id="clear-filters">Reset Filters</button>
-                </aside>
-
-                <div class="shop-content">
-                    <div class="shop-header">
-                        <p class="results-count" id="results-count">Showing 15 products</p>
-                        <label for="sort-select" class="sr-only">Sort products</label>
-                        <select class="sort-select" id="sort-select" aria-label="Sort products">
-                            <option value="featured">Featured</option>
-                            <option value="price-low">Price: Low to High</option>
-                            <option value="price-high">Price: High to Low</option>
-                            <option value="name-az">Name: A to Z</option>
-                            <option value="name-za">Name: Z to A</option>
-                            <option value="newest">Newest First</option>
-                        </select>
-                    </div>
-
-                    <div class="products-grid" id="products-grid">
-                        <!-- Products will be loaded here by JavaScript -->
-                        <div class="loading-spinner">
-                            <i class="fas fa-spinner fa-spin"></i>
-                            <p>Loading products...</p>
-                        </div>
-                    </div>
-
-                    <div class="pagination" id="pagination">
-                        <!-- Pagination will be generated here -->
-                    </div>
+                    <h3 class="product-title">Stylish Jacket</h3>
+                    <p class="product-price">₹3,499</p>
+                    <button class="btn-primary">Add to Cart</button>
                 </div>
             </div>
         </div>
@@ -365,7 +496,7 @@
                 </div>
             </div>
             <div class="footer-bottom">
-                <p>&copy; 2025 Ace#1. All rights reserved.</p>
+                <p>&copy; 2026 Ace#1. All rights reserved.</p>
             </div>
         </div>
     </footer>

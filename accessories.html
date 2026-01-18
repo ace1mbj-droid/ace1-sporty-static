@@ -106,6 +106,170 @@
                 font-size: 20px;
             }
         }
+
+        /* New styles for modern e-commerce layout */
+        .page-hero {
+            padding: 60px 0;
+            background: url('images/hero-bg.jpg') no-repeat center center/cover;
+            color: var(--bg-white);
+            text-align: center;
+        }
+
+        .hero-content h1 {
+            font-size: 36px;
+            margin: 0 0 12px;
+            font-weight: 700;
+        }
+
+        .hero-content p {
+            font-size: 18px;
+            margin: 0;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .shop-modern-layout {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 24px;
+            padding: 40px 0;
+        }
+
+        .shop-sidebar-modern {
+            flex: 0 0 250px;
+            background: var(--bg-light);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: var(--shadow-md);
+        }
+
+        .sidebar-title {
+            font-size: 22px;
+            margin: 0 0 16px;
+            font-weight: 600;
+            color: var(--text-color);
+        }
+
+        .filter-group {
+            margin-bottom: 24px;
+        }
+
+        .filter-group h3 {
+            font-size: 18px;
+            margin: 0 0 12px;
+            font-weight: 500;
+            color: var(--text-color);
+        }
+
+        .filter-group ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .filter-group ul li {
+            margin-bottom: 8px;
+        }
+
+        .filter-group ul li a {
+            color: var(--text-color);
+            text-decoration: none;
+        }
+
+        .filter-group input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 8px;
+            border-radius: 4px;
+            background: var(--primary-color);
+            outline: none;
+            opacity: 0.7;
+            transition: opacity .2s;
+        }
+
+        .filter-group input[type="range"]:hover {
+            opacity: 1;
+        }
+
+        .shop-content-modern {
+            flex: 1;
+        }
+
+        .products-grid-modern {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 24px;
+        }
+
+        .product-card {
+            background: var(--bg-white);
+            border-radius: 8px;
+            box-shadow: var(--shadow-sm);
+            overflow: hidden;
+            transition: transform .2s;
+        }
+
+        .product-card:hover {
+            transform: translateY(-4px);
+        }
+
+        .product-image img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .product-title {
+            font-size: 16px;
+            margin: 12px 0 8px;
+            color: var(--text-color);
+            font-weight: 500;
+        }
+
+        .product-price {
+            font-size: 14px;
+            margin: 0 0 12px;
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: var(--bg-white);
+            padding: 10px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background .2s;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-color-dark);
+        }
+
+        /* Footer styles */
+        .footer {
+            background: var(--bg-dark);
+            color: var(--text-light);
+            padding: 40px 0;
+            text-align: center;
+        }
+
+        .footer p {
+            margin: 0;
+            font-size: 14px;
+        }
+
+        .footer a {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
@@ -161,101 +325,57 @@
     <!-- Page Header -->
     <section class="page-hero">
         <div class="container">
-            <h1>Accessories</h1>
-            <p>Browse the latest accessories drops. If you don’t see this link, accessories aren’t live yet.</p>
-        </div>
-    </section>
-
-    <!-- Launch Update (shown only when accessories are not available; hidden automatically when products load) -->
-    <section class="launch-update" hidden>
-        <div class="container">
-            <div class="launch-update-card" role="status" aria-live="polite">
-                <div class="launch-update-left">
-                    <div class="launch-update-icon" aria-hidden="true">
-                        <i class="fas fa-bolt"></i>
-                    </div>
-                    <div class="launch-update-copy">
-                        <h2>Accessories are launching soon</h2>
-                        <p>We’ll publish accessories as soon as they’re in stock. Check back soon.</p>
-                    </div>
-                </div>
-                <div class="launch-update-actions">
-                    <a class="btn btn-primary" href="https://instagram.com/ace_1_official/" target="_blank" rel="noopener noreferrer">Follow on Instagram</a>
-                    <a class="btn btn-secondary" href="contact.html">Contact Us</a>
-                </div>
+            <div class="hero-content">
+                <h1>Accessories Collection</h1>
+                <p>Explore our range of premium accessories designed to complement your style and enhance your daily life.</p>
             </div>
         </div>
     </section>
 
     <!-- Products Section -->
-    <section class="shop-section">
-        <div class="container">
-            <div class="shop-layout">
-                <!-- Sidebar Filters -->
-                <aside class="shop-sidebar">
-                    <div class="filter-group">
-                        <h3>Sub Categories</h3>
-                        <div id="category-filters"></div>
-                    </div>
+    <section class="shop-modern-layout">
+        <aside class="shop-sidebar-modern">
+            <h2 class="sidebar-title">Filter by</h2>
+            <div class="filter-group">
+                <h3>Categories</h3>
+                <ul>
+                    <li><a href="#">Bags</a></li>
+                    <li><a href="#">Hats</a></li>
+                    <li><a href="#">Socks</a></li>
+                </ul>
+            </div>
+            <div class="filter-group">
+                <h3>Price Range</h3>
+                <input type="range" min="0" max="5000" step="100" value="2500">
+            </div>
+        </aside>
 
-                    <div class="filter-group">
-                        <h3>Price Range</h3>
-                        <div class="price-range">
-                            <label for="price-slider" class="sr-only">Maximum price</label>
-                            <input type="range" min="0" max="15000" value="15000" id="price-slider" aria-label="Price slider" aria-valuemin="0" aria-valuemax="15000">
-                            <div class="price-labels">
-                                <span>₹0</span>
-                                <span id="price-value">₹15,000</span>
-                            </div>
-                        </div>
+        <div class="shop-content-modern">
+            <div class="products-grid-modern">
+                <div class="product-card">
+                    <div class="product-image">
+                        <img src="images/bag1.jpg" alt="Bag 1">
                     </div>
-
-                    <div class="filter-group">
-                        <h3>Size</h3>
-                        <div class="size-grid">
-                            <button class="size-btn">XS</button>
-                            <button class="size-btn">S</button>
-                            <button class="size-btn">M</button>
-                            <button class="size-btn">L</button>
-                            <button class="size-btn">XL</button>
-                            <button class="size-btn">XXL</button>
-                        </div>
+                    <h3 class="product-title">Stylish Bag</h3>
+                    <p class="product-price">₹1,499</p>
+                    <button class="btn-primary">Add to Cart</button>
+                </div>
+                <div class="product-card">
+                    <div class="product-image">
+                        <img src="images/hat1.jpg" alt="Hat 1">
                     </div>
-
-                    <div class="filter-group">
-                        <h3>Customer Rating</h3>
-                        <div class="rating-filter">
-                            <button class="rating-btn" data-rating="4">4+ Stars</button>
-                            <button class="rating-btn" data-rating="3">3+ Stars</button>
-                            <button class="rating-btn" data-rating="2">2+ Stars</button>
-                        </div>
+                    <h3 class="product-title">Classic Hat</h3>
+                    <p class="product-price">₹799</p>
+                    <button class="btn-primary">Add to Cart</button>
+                </div>
+                <div class="product-card">
+                    <div class="product-image">
+                        <img src="images/socks1.jpg" alt="Socks 1">
                     </div>
-                </aside>
-
-                <!-- Products Grid -->
-                <main class="shop-main">
-                    <div class="shop-header">
-                        <h2>All Accessories</h2>
-                        <div class="shop-controls">
-                            <label for="sort-select" class="sr-only">Sort products</label>
-                            <select class="sort-select" id="sort-select" aria-label="Sort products">
-                                <option value="featured">Featured</option>
-                                <option value="price-low">Price: Low to High</option>
-                                <option value="price-high">Price: High to Low</option>
-                                <option value="rating">Highest Rated</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="products-grid" id="products-grid">
-                        <div class="loading-products">
-                            <div class="loading-spinner"></div>
-                            <p>Loading products...</p>
-                        </div>
-                    </div>
-
-                    <div class="pagination" id="pagination"></div>
-                </main>
+                    <h3 class="product-title">Comfort Socks</h3>
+                    <p class="product-price">₹299</p>
+                    <button class="btn-primary">Add to Cart</button>
+                </div>
             </div>
         </div>
     </section>
@@ -263,56 +383,7 @@
     <!-- Footer -->
     <footer class="footer">
         <div class="container">
-            <div class="footer-content">
-                <div class="footer-section">
-                    <div class="footer-logo">
-                        <span class="logo-text">ACE<span class="logo-accent">#1</span></span>
-                    </div>
-                    <p>Revolutionary footwear technology for enhanced wellness and lifestyle.</p>
-                </div>
-                <div class="footer-section">
-                    <h4>Shop</h4>
-                    <ul id="footer-shop-links">
-                        <li><a href="shoes.html">Shoes</a></li>
-                        <li><a href="clothing.html">Clothing</a></li>
-                        <li><a href="accessories.html">Accessories</a></li>
-                    </ul>
-                </div>
-                <div class="footer-section">
-                    <h4>Support</h4>
-                    <ul>
-                        <li><a href="contact.html">Contact Us</a></li>
-                        <li><a href="faq.html">FAQ</a></li>
-                        <li><a href="size-guide.html">Size Guide</a></li>
-                        <li><a href="privacy-policy.html">Privacy Policy</a></li>
-                    </ul>
-                </div>
-                <div class="footer-section">
-                    <h4>About</h4>
-                    <ul>
-                        <li><a href="about.html">Our Story</a></li>
-                        <li><a href="technology.html">Technology</a></li>
-                        <li><a href="contact.html">Contact Us</a></li>
-                    </ul>
-                </div>
-                <div class="footer-section">
-                    <h4>Connect</h4>
-                    <div class="social-links">
-                        <a href="https://instagram.com/ace_1_official/" target="_blank" rel="noopener noreferrer" aria-label="Ace#1 on Instagram" class="social-link"><i class="fab fa-instagram"></i></a>
-                        <a href="https://facebook.com/ace1official" target="_blank" rel="noopener noreferrer" aria-label="Ace#1 on Facebook" class="social-link"><i class="fab fa-facebook"></i></a>
-                    </div>
-                    <div class="newsletter">
-                        <h5>Stay Updated</h5>
-                        <div class="newsletter-form">
-                            <input type="email" placeholder="Enter your email">
-                            <button class="btn btn-primary">Subscribe</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="footer-bottom">
-                <p>&copy; 2025 Ace#1. All rights reserved.</p>
-            </div>
+            <p>&copy; 2026 Ace#1. All rights reserved.</p>
         </div>
     </footer>
 
