@@ -24,6 +24,6 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.25.2",
-    "hono": "^4.11.4"
+    "hono": "^4.11.5"
   }
 }
