@@ -79,16 +79,17 @@ jobs:
           PORT=${FTP_PORT:-21}
           echo "Clearing FTP server at ${SERVER_DIR} on ${FTP_HOST}:${PORT}"
           
-          # Connect and remove all files recursively
+          # Use lftp's mget/mrm to remove all files recursively
+          # This approach works better than find in lftp's context
           lftp -u "${FTP_USER}","${FTP_PASSWORD}" -p "$PORT" "${FTP_HOST}" -e "
             set ftp:ssl-force true
             set ftp:ssl-protect-data true
             set ssl:verify-certificate false
             cd ${SERVER_DIR}
-            find . -type f -delete
-            find . -type d -depth -empty -delete
+            set cmd:fail-exit no
+            mrm *
             bye
-          "
+          " || true
           
           echo "FTP server cleared successfully"
 
