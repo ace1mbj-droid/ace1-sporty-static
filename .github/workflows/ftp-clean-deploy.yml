@@ -1,0 +1,132 @@
+name: FTP Clean Deploy
+
+on:
+  workflow_dispatch:
+
+jobs:
+  clean-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Resolve FTP settings
+        id: ftp_vars
+        run: |
+          SERVER_DIR='${{ secrets.FTP_SERVER_DIR }}'
+          if [ -z "$SERVER_DIR" ]; then SERVER_DIR='${{ secrets.FTP_PUBLIC_DIR }}'; fi
+          if [ -z "$SERVER_DIR" ]; then SERVER_DIR='/'; fi
+
+          # Normalize /public_html to / to avoid nested deployment
+          if echo "$SERVER_DIR" | grep -qi 'public_html'; then
+            echo "WARNING: FTP server dir contains 'public_html' — normalizing to root '/' to avoid nested deployment." >&2
+            SERVER_DIR='/'
+          fi
+
+          PORT='${{ secrets.FTP_PORT }}'
+          if [ -z "$PORT" ]; then PORT='21'; fi
+
+          PROTOCOL='${{ secrets.FTP_PROTOCOL }}'
+          if [ -z "$PROTOCOL" ]; then PROTOCOL='ftps'; fi
+
+          echo "server_dir=$SERVER_DIR" >> "$GITHUB_OUTPUT"
+          echo "port=$PORT" >> "$GITHUB_OUTPUT"
+          echo "protocol=$PROTOCOL" >> "$GITHUB_OUTPUT"
+
+      - name: Use Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Prepare dist folder
+        run: |
+          rm -rf dist || true
+          mkdir -p dist
+          # Copy only what we need for the static site; drop tooling/docs/tests/server content before FTP
+          rsync -av \
+            --exclude='.git' \
+            --exclude='.github' \
+            --exclude='node_modules' \
+            --exclude='.vscode' \
+            --exclude='dist' \
+            --exclude='.gitignore' \
+            --exclude='.env*' \
+            --exclude='*.tgz' \
+            --exclude='package.json' \
+            --exclude='package-lock.json' \
+            --exclude='vercel.json' \
+            --exclude='tests' \
+            --exclude='test-results' \
+            --exclude='sql' \
+            --exclude='supabase' \
+            --exclude='server' \
+            --exclude='package' \
+            --exclude='docs' \
+            --exclude='reproduction' \
+            --exclude='scripts' \
+            --exclude='**/*.md' \
+            ./ dist/ || true
+
+      - name: Clear FTP Server (delete all files)
+        env:
+          FTP_HOST: ${{ secrets.FTP_HOST }}
+          FTP_USER: ${{ secrets.FTP_USER }}
+          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+          FTP_PORT: ${{ steps.ftp_vars.outputs.port }}
+          SERVER_DIR: ${{ steps.ftp_vars.outputs.server_dir }}
+        run: |
+          sudo apt-get update && sudo apt-get install -y lftp
+          PORT=${FTP_PORT:-21}
+          echo "Clearing FTP server at ${SERVER_DIR} on ${FTP_HOST}:${PORT}"
+          
+          # Connect and remove all files recursively
+          lftp -u "${FTP_USER}","${FTP_PASSWORD}" -p "$PORT" "${FTP_HOST}" -e "
+            set ftp:ssl-force true
+            set ftp:ssl-protect-data true
+            set ssl:verify-certificate false
+            cd ${SERVER_DIR}
+            find . -type f -delete
+            find . -type d -depth -empty -delete
+            bye
+          "
+          
+          echo "FTP server cleared successfully"
+
+      - name: Deploy Fresh Files to FTP
+        env:
+          FTP_HOST: ${{ secrets.FTP_HOST }}
+          FTP_USER: ${{ secrets.FTP_USER }}
+          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+          FTP_PORT: ${{ steps.ftp_vars.outputs.port }}
+          SERVER_DIR: ${{ steps.ftp_vars.outputs.server_dir }}
+        run: |
+          PORT=${FTP_PORT:-21}
+          echo "Deploying fresh ./dist to ${SERVER_DIR} on ${FTP_HOST}:${PORT}"
+          lftp -u "${FTP_USER}","${FTP_PASSWORD}" -p "$PORT" "${FTP_HOST}" -e "
+            set ftp:ssl-force true
+            set ftp:ssl-protect-data true
+            set ssl:verify-certificate false
+            mirror -R --parallel=4 --verbose ./dist ${SERVER_DIR}
+            bye
+          "
+          
+          echo "Deployment completed successfully"
+
+      - name: Verify Deployment
+        env:
+          FTP_HOST: ${{ secrets.FTP_HOST }}
+          FTP_USER: ${{ secrets.FTP_USER }}
+          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+          FTP_PORT: ${{ steps.ftp_vars.outputs.port }}
+          SERVER_DIR: ${{ steps.ftp_vars.outputs.server_dir }}
+        run: |
+          PORT=${FTP_PORT:-21}
+          echo "Verifying files on FTP server at ${SERVER_DIR}"
+          lftp -u "${FTP_USER}","${FTP_PASSWORD}" -p "$PORT" "${FTP_HOST}" -e "
+            set ftp:ssl-force true
+            set ftp:ssl-protect-data true
+            set ssl:verify-certificate false
+            cd ${SERVER_DIR}
+            find . -type f | head -20
+            bye
+          "
