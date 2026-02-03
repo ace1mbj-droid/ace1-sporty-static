@@ -77,6 +77,8 @@ jobs:
         run: |
           sudo apt-get update && sudo apt-get install -y lftp
           PORT=${FTP_PORT:-21}
+          LOG_FILE=ftp-clean-deploy.log
+          : > "$LOG_FILE"
           echo "Clearing FTP server at ${SERVER_DIR} on ${FTP_HOST}:${PORT}"
           
           # Use lftp's mget/mrm to remove all files recursively
@@ -89,7 +91,7 @@ jobs:
             set cmd:fail-exit no
             mrm *
             bye
-          " || true
+          " 2>&1 | tee -a "$LOG_FILE" || true
           
           echo "FTP server cleared successfully"
 
@@ -102,6 +104,7 @@ jobs:
           SERVER_DIR: ${{ steps.ftp_vars.outputs.server_dir }}
         run: |
           PORT=${FTP_PORT:-21}
+          LOG_FILE=ftp-clean-deploy.log
           echo "Deploying fresh ./dist to ${SERVER_DIR} on ${FTP_HOST}:${PORT}"
           lftp -u "${FTP_USER}","${FTP_PASSWORD}" -p "$PORT" "${FTP_HOST}" -e "
             set ftp:ssl-force true
@@ -109,7 +112,7 @@ jobs:
             set ssl:verify-certificate false
             mirror -R --parallel=4 --verbose ./dist ${SERVER_DIR}
             bye
-          "
+          " 2>&1 | tee -a "$LOG_FILE"
           
           echo "Deployment completed successfully"
 
@@ -122,6 +125,7 @@ jobs:
           SERVER_DIR: ${{ steps.ftp_vars.outputs.server_dir }}
         run: |
           PORT=${FTP_PORT:-21}
+          LOG_FILE=ftp-clean-deploy.log
           echo "Verifying files on FTP server at ${SERVER_DIR}"
           lftp -u "${FTP_USER}","${FTP_PASSWORD}" -p "$PORT" "${FTP_HOST}" -e "
             set ftp:ssl-force true
@@ -130,4 +134,11 @@ jobs:
             cd ${SERVER_DIR}
             find . -type f | head -20
             bye
-          "
+          " 2>&1 | tee -a "$LOG_FILE"
+
+      - name: Upload FTP clean deploy log (on failure)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ftp-clean-deploy-log
+          path: ftp-clean-deploy.log
