@@ -112,7 +112,7 @@ jobs:
           sudo apt-get update && sudo apt-get install -y lftp
           PORT=${FTP_PORT:-21}
           echo "Deploying ./dist to ${SERVER_DIR} on ${FTP_HOST}:${PORT}"
-          lftp -u "${FTP_USER}","${FTP_PASSWORD}" -p "$PORT" "${FTP_HOST}" -e "set ftp:ssl-force true; set ftp:ssl-protect-data true; set ssl:verify-certificate false; mirror -R --delete --parallel=4 --verbose ./dist ${SERVER_DIR}; bye"
+          lftp -u "${FTP_USER}","${FTP_PASSWORD}" -p "$PORT" "${FTP_HOST}" -e "set ftp:ssl-force true; set ftp:ssl-protect-data true; set ssl:verify-certificate false; mirror -R --delete --parallel=4 --verbose --no-temp ./dist ${SERVER_DIR}; bye"
 
 
 # Secrets to set: FTP_HOST, FTP_USER, FTP_PASSWORD
