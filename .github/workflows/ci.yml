@@ -31,6 +31,18 @@ jobs:
         env:
           CI: true
 
+      - name: Wait for local server
+        run: |
+          for i in {1..20}; do
+            if curl -fsS http://127.0.0.1:3000 >/dev/null 2>&1; then
+              echo "Server is up."
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "Server did not start in time" >&2
+          exit 1
+
       - name: Run Playwright tests (CI)
         # Run Playwright and produce JUnit XML results for upload
         env:
@@ -69,11 +81,12 @@ jobs:
             **/playwright-report
 
       - name: Publish JUnit results to GitHub Checks
-        if: always()
+        if: always() && hashFiles('test-results/junit.xml') != ''
         uses: dorny/test-reporter@v1
         with:
           name: Playwright E2E
           path: test-results/junit.xml
           reporter: java-junit
+          fail-on-error: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
