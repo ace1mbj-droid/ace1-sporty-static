@@ -19,6 +19,12 @@ jobs:
           if [ -z "$SERVER_DIR" ]; then SERVER_DIR='${{ secrets.FTP_PUBLIC_DIR }}'; fi
           if [ -z "$SERVER_DIR" ]; then SERVER_DIR='/'; fi
 
+          # Normalize /public_html to / to avoid nested deployment
+          if echo "$SERVER_DIR" | grep -qi 'public_html'; then
+            echo "WARNING: FTP server dir contains 'public_html' — normalizing to root '/' to avoid nested deployment." >&2
+            SERVER_DIR='/'
+          fi
+
           PORT='${{ secrets.FTP_PORT }}'
           if [ -z "$PORT" ]; then PORT='21'; fi
 
@@ -122,6 +128,31 @@ jobs:
           PORT=${FTP_PORT:-21}
           echo "Deploying ./dist to ${SERVER_DIR} on ${FTP_HOST}:${PORT}"
           lftp -u "${FTP_USER}","${FTP_PASSWORD}" -p "$PORT" "${FTP_HOST}" -e "set ftp:ssl-force true; set ftp:ssl-protect-data true; set ssl:verify-certificate false; mirror -R --delete --parallel=4 --verbose ./dist ${SERVER_DIR}; bye"
+
+      - name: Clean up legacy /public_html directory
+        if: steps.ftp_vars.outputs.protocol != 'sftp'
+        env:
+          FTP_HOST: ${{ secrets.FTP_HOST }}
+          FTP_USER: ${{ secrets.FTP_USER }}
+          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+          FTP_PORT: ${{ steps.ftp_vars.outputs.port }}
+          ARCHIVE_FLAG: ${{ secrets.FTP_DELETE_PUBLIC_HTML }}
+        run: |
+          PORT=${FTP_PORT:-21}
+          # List root and check for public_html
+          FOUND=$(lftp -u "${FTP_USER}","${FTP_PASSWORD}" -p "$PORT" "${FTP_HOST}" -e "cls -1; bye" | grep -i '^public_html$' || true)
+          if [ -n "$FOUND" ]; then
+            echo "Found legacy 'public_html' directory on server." >&2
+            if [ "$ARCHIVE_FLAG" = "true" ]; then
+              ARCHIVE_NAME="public_html_archived_$(date +%s)"
+              echo "Archiving /public_html -> /${ARCHIVE_NAME} (rename)"
+              lftp -u "${FTP_USER}","${FTP_PASSWORD}" -p "$PORT" "${FTP_HOST}" -e "mv public_html ${ARCHIVE_NAME} || echo 'Rename failed'; bye"
+            else
+              echo "Archive flag not set. To archive public_html automatically, set secret FTP_DELETE_PUBLIC_HTML=true" >&2
+            fi
+          else
+            echo "No legacy /public_html directory found (or not visible)."
+          fi
 
 
 # Secrets to set: FTP_HOST, FTP_USER, FTP_PASSWORD
