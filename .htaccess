@@ -26,6 +26,13 @@
     AddOutputFilterByType DEFLATE image/svg+xml
 </IfModule>
 
+# Ensure correct MIME types (prevents CSS/JS being blocked by nosniff)
+<IfModule mod_mime.c>
+    AddType text/css .css
+    AddType application/javascript .js
+    AddType image/svg+xml .svg
+</IfModule>
+
 # Browser Caching
 <IfModule mod_expires.c>
     ExpiresActive On
