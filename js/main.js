@@ -270,9 +270,15 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function applySiteLogo() {
-    const logoUrl = 'https://vorqavsuqcjnkjzwkyzr.supabase.co/storage/v1/object/public/Website/Index%20Image%20Gallery/WhatsApp%20Image%202026-01-04%20at%2005.09.49.jpeg';
+    const logoUrl = 'images/ace1-logo-bw.svg';
 
-    // Navbar logo
+    // Update any existing logo images
+    document.querySelectorAll('img.site-logo-img, img.footer-logo-img').forEach(img => {
+        img.src = logoUrl;
+        img.alt = 'Ace#1';
+    });
+
+    // Navbar logo (ensure one exists)
     const navLink = document.querySelector('.nav-logo a');
     if (navLink && !navLink.querySelector('img.site-logo-img')) {
         const img = document.createElement('img');
@@ -286,7 +292,7 @@ function applySiteLogo() {
         navLink.appendChild(img);
     }
 
-    // Footer logo(s)
+    // Footer logo(s) (ensure one exists)
     document.querySelectorAll('.footer-logo').forEach(footerLogo => {
         if (footerLogo.querySelector('img.site-logo-img')) return;
 
