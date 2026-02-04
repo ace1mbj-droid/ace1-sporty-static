@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [ main ]
 
+permissions:
+  contents: read
+  checks: write
+
 jobs:
   e2e:
     name: Playwright E2E
@@ -81,7 +85,10 @@ jobs:
             **/playwright-report
 
       - name: Publish JUnit results to GitHub Checks
-        if: always() && hashFiles('test-results/junit.xml') != ''
+        if: >-
+          always() &&
+          hashFiles('test-results/junit.xml') != '' &&
+          (github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork == false)
         uses: dorny/test-reporter@v1
         with:
           name: Playwright E2E

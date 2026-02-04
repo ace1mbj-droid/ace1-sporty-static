@@ -9,6 +9,9 @@ test.describe('Admin button execution (stubbed)', () => {
 
   async function stubSupabase(page) {
     await page.addInitScript(() => {
+      if (!window.SUPABASE_ANON_KEY) {
+        window.SUPABASE_ANON_KEY = 'e2e-test-anon-key';
+      }
       const seed = {
         products: [{ id: 'p1', name: 'Test Product', is_active: true }],
         inventory: [{ id: 'inv1', product_id: 'p1', size: 'M', stock: 3 }],
@@ -127,8 +130,19 @@ test.describe('Admin button execution (stubbed)', () => {
       // deterministically switch tabs and access managers without running full app init.
       try {
         window.adminExtended = window.adminExtended || {};
+        window.adminExtended.closeModal = window.adminExtended.closeModal || ((id) => {
+          const modal = document.getElementById(id);
+          if (modal) modal.classList.remove('active');
+        });
         window.categoryManager = window.categoryManager || { load: async () => null };
         window.inventoryManager = window.inventoryManager || { load: async () => null };
+        window.rolesManager = window.rolesManager || {
+          load: async () => null,
+          showRoleModal: () => {
+            const modal = document.getElementById('role-modal');
+            if (modal) modal.classList.add('active');
+          }
+        };
 
         window.adminPanel = window.adminPanel || {
           switchTab: (t) => {
