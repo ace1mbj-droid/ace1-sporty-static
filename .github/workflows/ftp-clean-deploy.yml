@@ -110,7 +110,7 @@ jobs:
             set ftp:ssl-force true
             set ftp:ssl-protect-data true
             set ssl:verify-certificate false
-            mirror -R --parallel=4 --verbose --no-temp ./dist ${SERVER_DIR}
+            mirror -R --parallel=4 --verbose ./dist ${SERVER_DIR}
             bye
           " 2>&1 | tee -a "$LOG_FILE"
           
