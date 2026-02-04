@@ -23,7 +23,7 @@
     "pg": "^8.17.1"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.25.2",
+    "@modelcontextprotocol/sdk": "^1.26.0",
     "hono": "^4.11.4"
   }
 }
