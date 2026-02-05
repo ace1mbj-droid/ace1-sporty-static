@@ -132,8 +132,36 @@ jobs:
         run: |
           sudo apt-get update && sudo apt-get install -y lftp
           PORT=${FTP_PORT:-21}
+          LOG_FILE=ftp-deploy.log
+          : > "$LOG_FILE"
           echo "Deploying ./dist to ${SERVER_DIR} on ${FTP_HOST}:${PORT}"
-          lftp -u "${FTP_USER}","${FTP_PASSWORD}" -p "$PORT" "${FTP_HOST}" -e "set ftp:ssl-force true; set ftp:ssl-protect-data true; set ssl:verify-certificate false; mirror -R --delete --parallel=4 --verbose --no-perms ./dist ${SERVER_DIR}; bye"
+          # Retry the mirror command to handle transient FTP failures.
+          MAX_RETRIES=3
+          RETRY_DELAY=5
+          ATTEMPT=1
+          MIRROR_CMD="mirror -R --delete --parallel=4 --verbose --no-perms --continue --only-newer ./dist ${SERVER_DIR}"
+          set -o pipefail
+
+          while [ "$ATTEMPT" -le "$MAX_RETRIES" ]; do
+            echo "Attempt ${ATTEMPT}/${MAX_RETRIES}: running lftp mirror..." | tee -a "$LOG_FILE"
+            lftp -u "${FTP_USER}","${FTP_PASSWORD}" -p "$PORT" "${FTP_HOST}" -e "set ssl:verify-certificate false; set ftp:ssl-force true; set ftp:ssl-protect-data true; $MIRROR_CMD; bye" 2>&1 | tee -a "$LOG_FILE" && MIRROR_RC=0 || MIRROR_RC=$?
+            if [ "$MIRROR_RC" -eq 0 ]; then
+              echo "Mirror completed successfully." | tee -a "$LOG_FILE"
+              break
+            fi
+            echo "Mirror failed with exit code ${MIRROR_RC}." | tee -a "$LOG_FILE"
+            if [ "$ATTEMPT" -lt "$MAX_RETRIES" ]; then
+              SLEEP=$((RETRY_DELAY * ATTEMPT))
+              echo "Retrying in ${SLEEP}s..." | tee -a "$LOG_FILE"
+              sleep ${SLEEP}
+            fi
+            ATTEMPT=$((ATTEMPT + 1))
+          done
+
+          if [ "$MIRROR_RC" -ne 0 ]; then
+            echo "ERROR: Mirror failed after ${MAX_RETRIES} attempts. Aborting deploy." >&2
+            exit 1
+          fi
 
       - name: Clean up legacy /public_html directory
         if: steps.ftp_vars.outputs.protocol != 'sftp'
@@ -159,6 +187,13 @@ jobs:
           else
             echo "No legacy /public_html directory found (or not visible)."
           fi
+
+      - name: Upload FTP deploy log (on failure)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ftp-deploy-log
+          path: ftp-deploy.log
 
 
 # Secrets to set: FTP_HOST, FTP_USER, FTP_PASSWORD
