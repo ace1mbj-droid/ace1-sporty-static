@@ -325,6 +325,7 @@ button {
 .nav-logo {
     display: flex;
     align-items: center;
+    perspective: 900px;
 }
 
 .nav-logo a {
@@ -348,6 +349,9 @@ button {
     /* Ensure crisp logo rendering */
     image-rendering: -webkit-optimize-contrast;
     image-rendering: crisp-edges;
+    transform-style: preserve-3d;
+    animation: logoVideo3d 6s linear infinite;
+    will-change: transform;
 }
 
 .footer-logo-img {
@@ -356,6 +360,9 @@ button {
     max-width: 160px;
     object-fit: contain;
     border-radius: 4px;
+    transform-style: preserve-3d;
+    animation: logoVideo3d 6s linear infinite;
+    will-change: transform;
 }
 
 .nav-logo .logo-text {
@@ -1498,6 +1505,7 @@ table th, table td {
     align-items: center;
     gap: 15px;
     text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    perspective: 900px;
 }
 
 .footer-logo .footer-logo-img {
@@ -1931,6 +1939,40 @@ table th, table td {
     to {
         opacity: 1;
         transform: translateY(0);
+    }
+}
+
+@keyframes logoVideo3d {
+    0% {
+        transform: translateZ(0) rotateX(0deg) rotateY(0deg) rotateZ(0deg) scale(1);
+        filter: drop-shadow(0 6px 14px rgba(15, 23, 42, 0.15));
+    }
+    20% {
+        transform: translateZ(10px) rotateX(10deg) rotateY(-18deg) rotateZ(2deg) scale(1.02);
+        filter: drop-shadow(0 10px 22px rgba(15, 23, 42, 0.22));
+    }
+    40% {
+        transform: translateZ(4px) rotateX(-6deg) rotateY(12deg) rotateZ(-3deg) scale(1.01);
+        filter: drop-shadow(0 8px 18px rgba(15, 23, 42, 0.2));
+    }
+    60% {
+        transform: translateZ(12px) rotateX(12deg) rotateY(18deg) rotateZ(3deg) scale(1.03);
+        filter: drop-shadow(0 12px 26px rgba(15, 23, 42, 0.24));
+    }
+    80% {
+        transform: translateZ(5px) rotateX(-8deg) rotateY(-10deg) rotateZ(-2deg) scale(1.01);
+        filter: drop-shadow(0 9px 20px rgba(15, 23, 42, 0.2));
+    }
+    100% {
+        transform: translateZ(0) rotateX(0deg) rotateY(0deg) rotateZ(0deg) scale(1);
+        filter: drop-shadow(0 6px 14px rgba(15, 23, 42, 0.15));
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .site-logo-img,
+    .footer-logo-img {
+        animation: none;
     }
 }
 
