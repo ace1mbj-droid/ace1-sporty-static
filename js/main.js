@@ -442,9 +442,122 @@ document.addEventListener('DOMContentLoaded', () => {
     initBackToTopButton();
     ensureTrustStrip();
     ensureGlobalCtaStrip();
+    // Scroll-reveal animations for cards
+    initScrollReveal();
+    // Animated counters for stat numbers
+    initAnimatedCounters();
+    // Newsletter strip before footer
+    ensureNewsletterStrip();
     // Track page view for analytics
     trackPageView();
 });
+
+function initScrollReveal() {
+    try {
+        if (!('IntersectionObserver' in window)) return;
+        const targets = document.querySelectorAll(
+            '.why-card, .tech-deep-card, .why-choose-card, .benefit-detail-card, .value-card, .team-member, .stat-card, .step-card, .timeline-item, .promise-item, .info-card'
+        );
+        if (!targets.length) return;
+
+        const obs = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('sr-visible');
+                    obs.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+
+        targets.forEach(el => {
+            el.classList.add('sr-hidden');
+            obs.observe(el);
+        });
+    } catch (e) {
+        // non-critical UI
+    }
+}
+
+function initAnimatedCounters() {
+    try {
+        const counters = document.querySelectorAll('.stat-number');
+        if (!counters.length || !('IntersectionObserver' in window)) return;
+
+        counters.forEach(el => {
+            const raw = el.textContent.trim();
+            const hasPercent = raw.includes('%');
+            const hasPlus = raw.includes('+');
+            const numVal = parseInt(raw.replace(/[^\d]/g, ''), 10);
+            if (isNaN(numVal) || numVal === 0) return;
+
+            el.dataset.target = numVal;
+            el.dataset.suffix = (hasPercent ? '%' : '') + (hasPlus ? '+' : '');
+        });
+
+        const obs = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (!entry.isIntersecting) return;
+                const el = entry.target;
+                const target = parseInt(el.dataset.target, 10);
+                const suffix = el.dataset.suffix || '';
+                if (isNaN(target)) return;
+
+                let current = 0;
+                const step = Math.max(1, Math.ceil(target / 60));
+                const timer = setInterval(() => {
+                    current += step;
+                    if (current >= target) {
+                        current = target;
+                        clearInterval(timer);
+                    }
+                    el.textContent = current.toLocaleString() + suffix;
+                }, 18);
+
+                obs.unobserve(el);
+            });
+        }, { threshold: 0.3 });
+
+        counters.forEach(c => obs.observe(c));
+    } catch (e) {
+        // non-critical UI
+    }
+}
+
+function ensureNewsletterStrip() {
+    try {
+        if (document.getElementById('newsletter-strip')) return;
+        if (window.location.pathname.includes('admin')) return;
+
+        const footer = document.querySelector('footer');
+        if (!footer || !footer.parentNode) return;
+
+        const strip = document.createElement('section');
+        strip.id = 'newsletter-strip';
+        strip.className = 'newsletter-strip';
+        strip.innerHTML = `
+            <div class="container newsletter-strip-content">
+                <div class="newsletter-text">
+                    <h3><i class="fas fa-paper-plane"></i> Stay in the Loop</h3>
+                    <p>Get early access to new drops, exclusive offers, and Ace#1 updates.</p>
+                </div>
+                <form class="newsletter-form" onsubmit="event.preventDefault(); this.querySelector('button').textContent='Subscribed ✓'; this.querySelector('input').disabled=true;">
+                    <input type="email" placeholder="Enter your email" required aria-label="Email for newsletter">
+                    <button type="submit" class="btn btn-primary">Subscribe</button>
+                </form>
+            </div>
+        `;
+
+        // Insert before footer but after the CTA strip (if present)
+        const ctaStrip = document.getElementById('global-cta-strip');
+        if (ctaStrip && ctaStrip.nextElementSibling) {
+            ctaStrip.insertAdjacentElement('afterend', strip);
+        } else {
+            footer.insertAdjacentElement('beforebegin', strip);
+        }
+    } catch (e) {
+        // non-critical UI
+    }
+}
 
 function applySiteLogo() {
     const logoUrl = 'images/ace1-logo-bw.svg';

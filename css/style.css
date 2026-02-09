@@ -2045,6 +2045,132 @@ table th, table td {
 }
 
 /* ===================================
+   INSOLE HIGHLIGHT SECTION
+   =================================== */
+.insoles-highlight {
+    padding: 90px 0;
+    background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+}
+
+.insoles-highlight-grid {
+    display: grid;
+    grid-template-columns: 1.1fr 0.9fr;
+    gap: 40px;
+    align-items: center;
+}
+
+.insoles-highlight h2 {
+    font-family: var(--font-display);
+    font-size: 48px;
+    margin-bottom: 16px;
+}
+
+.insoles-highlight p {
+    color: var(--text-light);
+    margin-bottom: 18px;
+}
+
+.insoles-feature-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+}
+
+.insoles-feature {
+    background: var(--bg-white);
+    border-radius: var(--radius-md);
+    padding: 16px 18px;
+    border: 1px solid var(--border-subtle);
+    box-shadow: var(--shadow-sm);
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+}
+
+.insoles-feature i {
+    color: var(--secondary-color);
+    font-size: 18px;
+    margin-top: 2px;
+}
+
+.insoles-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 18px;
+}
+
+.insoles-pill {
+    background: rgba(15, 23, 42, 0.08);
+    color: var(--text-color);
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.insoles-poster {
+    width: 100%;
+    border-radius: 18px;
+    box-shadow: var(--shadow-lg);
+    border: 1px solid var(--border-light);
+}
+
+.characteristics-panel {
+    padding: 90px 0;
+    background: var(--bg-page);
+}
+
+.characteristics-grid {
+    display: grid;
+    grid-template-columns: 0.95fr 1.05fr;
+    gap: 40px;
+    align-items: center;
+}
+
+.characteristics-list {
+    display: grid;
+    gap: 12px;
+    margin: 20px 0;
+}
+
+.characteristics-item {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    background: var(--bg-white);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-subtle);
+    padding: 14px 16px;
+    box-shadow: var(--shadow-sm);
+}
+
+.characteristics-item span {
+    font-weight: 600;
+}
+
+.characteristics-poster {
+    width: 100%;
+    border-radius: 18px;
+    box-shadow: var(--shadow-lg);
+    border: 1px solid var(--border-light);
+}
+
+@media (max-width: 900px) {
+    .insoles-highlight-grid {
+        grid-template-columns: 1fr;
+    }
+    .insoles-highlight h2 {
+        font-size: 36px;
+    }
+    .characteristics-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ===================================
    SHOPPING CART SIDEBAR
    =================================== */
 .cart-sidebar {
@@ -7132,5 +7258,429 @@ table th, table td {
 
 .toast-info i {
     color: var(--primary-color);
+}
+
+/* ======================================
+   UPGRADE — Why Ace#1 Feature Strip
+   ====================================== */
+.why-ace1-strip {
+    padding: 80px 0;
+    background: var(--bg-light, #f8f9fa);
+}
+.why-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 28px;
+    margin-top: 40px;
+}
+.why-card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 36px 28px;
+    text-align: center;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+.why-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 12px 36px rgba(0,0,0,0.1);
+}
+.why-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    margin-bottom: 18px;
+}
+.why-card h3 {
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+    color: var(--text-color, #111);
+}
+.why-card p {
+    font-size: 0.95rem;
+    color: var(--text-light, #666);
+    line-height: 1.6;
+}
+
+/* ======================================
+   UPGRADE — Technology Teaser
+   ====================================== */
+.tech-teaser {
+    padding: 80px 0;
+    background: #fff;
+}
+.tech-teaser-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 50px;
+    align-items: center;
+}
+.tech-teaser-text .hero-eyebrow {
+    font-size: 0.78rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--text-light, #999);
+    margin-bottom: 10px;
+}
+.tech-teaser-text h2 {
+    font-size: 2.2rem;
+    font-weight: 800;
+    margin-bottom: 16px;
+    color: var(--text-color, #111);
+}
+.tech-teaser-text > p {
+    font-size: 1.05rem;
+    color: var(--text-light, #555);
+    line-height: 1.7;
+    margin-bottom: 24px;
+}
+.tech-teaser-features {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 28px;
+}
+.tech-teaser-features span {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--bg-light, #f0f0f0);
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--text-color, #333);
+}
+.tech-teaser-features span i {
+    color: #667eea;
+}
+.tech-teaser-visual img {
+    width: 100%;
+    border-radius: 16px;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.1);
+}
+@media (max-width: 768px) {
+    .tech-teaser-grid {
+        grid-template-columns: 1fr;
+        gap: 30px;
+    }
+}
+
+/* ======================================
+   UPGRADE — Customer Promise Strip
+   ====================================== */
+.customer-promise {
+    padding: 50px 0;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+}
+.promise-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 30px;
+    text-align: center;
+}
+.promise-item i {
+    font-size: 2rem;
+    margin-bottom: 12px;
+    opacity: 0.95;
+}
+.promise-item h4 {
+    font-size: 1.05rem;
+    font-weight: 700;
+    margin-bottom: 6px;
+}
+.promise-item p {
+    font-size: 0.9rem;
+    opacity: 0.85;
+}
+
+/* ======================================
+   UPGRADE — Innovation Timeline
+   ====================================== */
+.timeline-section {
+    padding: 80px 0;
+    background: var(--bg-light, #f8f9fa);
+}
+.timeline {
+    position: relative;
+    max-width: 700px;
+    margin: 40px auto 0;
+    padding-left: 40px;
+}
+.timeline::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 15px;
+    width: 3px;
+    height: 100%;
+    background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+    border-radius: 2px;
+}
+.timeline-item {
+    position: relative;
+    margin-bottom: 36px;
+    padding-left: 24px;
+}
+.timeline-marker {
+    position: absolute;
+    left: -33px;
+    top: 4px;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: #667eea;
+    border: 3px solid #fff;
+    box-shadow: 0 0 0 3px #667eea;
+}
+.timeline-content {
+    background: #fff;
+    border-radius: 12px;
+    padding: 24px 28px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+}
+.timeline-date {
+    display: inline-block;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+    padding: 4px 14px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+}
+.timeline-content h3 {
+    font-size: 1.15rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: var(--text-color, #111);
+}
+.timeline-content p {
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: var(--text-light, #666);
+}
+
+/* ======================================
+   UPGRADE — Why Choose Section
+   ====================================== */
+.why-choose-section {
+    padding: 80px 0;
+    background: #fff;
+}
+.why-choose-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 28px;
+    margin-top: 40px;
+}
+.why-choose-card {
+    background: var(--bg-light, #f8f9fa);
+    border-radius: 16px;
+    padding: 36px 28px;
+    text-align: center;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    border: 1px solid transparent;
+}
+.why-choose-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 28px rgba(0,0,0,0.08);
+    border-color: #667eea;
+}
+.why-choose-card i {
+    font-size: 2.5rem;
+    margin-bottom: 18px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+.why-choose-card h3 {
+    font-size: 1.15rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+    color: var(--text-color, #111);
+}
+.why-choose-card p {
+    font-size: 0.95rem;
+    color: var(--text-light, #666);
+    line-height: 1.65;
+}
+
+/* ======================================
+   UPGRADE — Technology Deep-Dive Grid
+   ====================================== */
+.tech-deep-dive {
+    padding: 80px 0;
+    background: var(--bg-light, #f8f9fa);
+}
+.tech-deep-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 28px;
+    margin-top: 40px;
+}
+.tech-deep-card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 36px 28px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.05);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    border-bottom: 3px solid transparent;
+}
+.tech-deep-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 36px rgba(0,0,0,0.1);
+    border-bottom-color: #667eea;
+}
+.tech-deep-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    margin-bottom: 18px;
+}
+.tech-deep-card h3 {
+    font-size: 1.15rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+    color: var(--text-color, #111);
+}
+.tech-deep-card p {
+    font-size: 0.95rem;
+    color: var(--text-light, #666);
+    line-height: 1.65;
+}
+
+/* ======================================
+   UPGRADE — Enhanced Section Styling
+   ====================================== */
+.section-title {
+    text-align: center;
+    font-size: 2.2rem;
+    font-weight: 800;
+    color: var(--text-color, #111);
+    margin-bottom: 10px;
+}
+.section-subtitle {
+    text-align: center;
+    font-size: 1.05rem;
+    color: var(--text-light, #666);
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+/* ======================================
+   UPGRADE — Smooth scroll & page transitions
+   ====================================== */
+html {
+    scroll-behavior: smooth;
+}
+@media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* ======================================
+   UPGRADE — Scroll Reveal Animations
+   ====================================== */
+.sr-hidden {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.55s ease, transform 0.55s ease;
+}
+.sr-visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* ======================================
+   UPGRADE — Newsletter Strip
+   ====================================== */
+.newsletter-strip {
+    padding: 48px 0;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    color: #fff;
+}
+.newsletter-strip-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 30px;
+    flex-wrap: wrap;
+}
+.newsletter-text h3 {
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin-bottom: 6px;
+}
+.newsletter-text h3 i {
+    margin-right: 8px;
+    color: #667eea;
+}
+.newsletter-text p {
+    font-size: 0.95rem;
+    opacity: 0.8;
+}
+.newsletter-form {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+.newsletter-form input[type="email"] {
+    padding: 12px 20px;
+    border: 2px solid rgba(255,255,255,0.15);
+    border-radius: 8px;
+    background: rgba(255,255,255,0.08);
+    color: #fff;
+    font-size: 0.95rem;
+    min-width: 260px;
+    outline: none;
+    transition: border-color 0.3s ease;
+}
+.newsletter-form input[type="email"]::placeholder {
+    color: rgba(255,255,255,0.5);
+}
+.newsletter-form input[type="email"]:focus {
+    border-color: #667eea;
+}
+.newsletter-form button {
+    padding: 12px 28px;
+    border-radius: 8px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+@media (max-width: 600px) {
+    .newsletter-strip-content {
+        flex-direction: column;
+        text-align: center;
+    }
+    .newsletter-form {
+        width: 100%;
+        flex-direction: column;
+    }
+    .newsletter-form input[type="email"] {
+        min-width: auto;
+        width: 100%;
+    }
+    .newsletter-form button {
+        width: 100%;
+    }
 }
 
