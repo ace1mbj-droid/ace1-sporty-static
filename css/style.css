@@ -1137,6 +1137,48 @@ table th, table td {
     color: var(--primary-color);
 }
 
+/* Showcase mode (non-selling) */
+.cart-btn,
+.cart-count,
+.cart-sidebar,
+.cart-overlay {
+    display: none !important;
+}
+
+.add-to-cart-btn,
+.buy-now-btn {
+    display: none !important;
+}
+
+.product-price {
+    display: none !important;
+}
+
+.qv-price,
+.product-price-current {
+    display: none !important;
+}
+
+.product-availability {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-light);
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+}
+
+.view-details-btn {
+    padding: 10px 18px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
 /* Layout for action buttons inside product cards */
 .action-buttons {
     display: flex;

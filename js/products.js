@@ -653,20 +653,10 @@ class ProductFilterManager {
                     <h3 class="product-name">${name}</h3>
                     ${description ? `<p class="product-description">${description}</p>` : ''}
                     <div class="product-footer">
-                        <div class="product-price">${priceLabel}</div>
-                        <div class="action-buttons">
-                            ${isAvailable
-                                ? `<button class="add-to-cart-btn" data-id="${product.id}" aria-label="Add ${name} to cart" title="Add to cart">
-                                    <i class="fas fa-shopping-bag" aria-hidden="true"></i><span class="sr-only">Add to cart</span>
-                                   </button>
-                                   <button class="buy-now-btn btn" data-id="${product.id}" aria-label="Buy ${name} now" title="Buy now">
-                                    <i class="fas fa-bolt" aria-hidden="true"></i><span class="sr-only">Buy now</span>
-                                   </button>`
-                                : `<button class="add-to-cart-btn" disabled title="${disabledReason}">
-                                    <i class="fas fa-times-circle" style="margin-right: 8px;" aria-hidden="true"></i><span class="sr-only">${disabledReason}</span>
-                                   </button>`
-                            }
-                        </div>
+                        <div class="product-availability">Coming Soon</div>
+                        <a class="btn btn-secondary view-details-btn" href="contact.html" aria-label="Contact us about ${name}">
+                            View Details
+                        </a>
                     </div>
                 </div>
             </div>
