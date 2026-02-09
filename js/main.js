@@ -116,6 +116,177 @@ function scheduleCartSync() {
     }
 })();
 
+function ensureShowcaseBanner() {
+    try {
+        if (sessionStorage.getItem('ace1_hide_showcase_banner') === '1') return;
+        if (document.getElementById('showcase-banner')) return;
+
+        const nav = document.getElementById('navbar');
+        if (!nav || !nav.parentNode) return;
+
+        const banner = document.createElement('div');
+        banner.id = 'showcase-banner';
+        banner.className = 'showcase-banner';
+        banner.innerHTML = `
+            <div class="showcase-banner-content">
+                <div class="showcase-banner-text">
+                    <i class="fas fa-bolt" aria-hidden="true"></i>
+                    <span><strong>Showcase mode:</strong> explore the collection, request a demo, or reach out for bulk orders.</span>
+                </div>
+                <div class="showcase-banner-actions">
+                    <a class="showcase-banner-link" href="contact.html">Contact Us</a>
+                    <button type="button" class="showcase-banner-dismiss" aria-label="Dismiss banner">&times;</button>
+                </div>
+            </div>
+        `;
+
+        nav.insertAdjacentElement('afterend', banner);
+
+        const dismiss = banner.querySelector('.showcase-banner-dismiss');
+        dismiss?.addEventListener('click', () => {
+            banner.remove();
+            sessionStorage.setItem('ace1_hide_showcase_banner', '1');
+        });
+    } catch (e) {
+        // non-critical UI
+    }
+}
+
+function initBackToTopButton() {
+    if (document.getElementById('back-to-top')) return;
+
+    const button = document.createElement('button');
+    button.id = 'back-to-top';
+    button.className = 'back-to-top';
+    button.type = 'button';
+    button.setAttribute('aria-label', 'Back to top');
+    button.innerHTML = '<i class="fas fa-arrow-up" aria-hidden="true"></i>';
+
+    document.body.appendChild(button);
+
+    const toggle = () => {
+        if (window.scrollY > 420) button.classList.add('show');
+        else button.classList.remove('show');
+    };
+
+    window.addEventListener('scroll', toggle, { passive: true });
+    toggle();
+
+    button.addEventListener('click', () => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+}
+
+function initFloatingHelpDock() {
+    if (document.getElementById('floating-help')) return;
+
+    const dock = document.createElement('div');
+    dock.id = 'floating-help';
+    dock.className = 'floating-help';
+    dock.innerHTML = `
+        <a class="floating-help-btn primary" href="contact.html" aria-label="Contact Ace#1">
+            <i class="fas fa-headset" aria-hidden="true"></i>
+            <span>Talk to us</span>
+        </a>
+        <a class="floating-help-btn" href="size-guide.html" aria-label="View size guide">
+            <i class="fas fa-ruler" aria-hidden="true"></i>
+            <span>Size guide</span>
+        </a>
+    `;
+
+    document.body.appendChild(dock);
+}
+
+function ensureTrustStrip() {
+    try {
+        if (document.getElementById('trust-strip')) return;
+        if (window.location.pathname.includes('admin')) return;
+
+        const hero = document.querySelector('.page-hero') || document.querySelector('.page-header');
+        const anchor = hero?.nextElementSibling || document.querySelector('main') || document.body;
+        if (!anchor) return;
+
+        const section = document.createElement('section');
+        section.id = 'trust-strip';
+        section.className = 'trust-strip';
+        section.innerHTML = `
+            <div class="container">
+                <div class="trust-grid">
+                    <div class="trust-item">
+                        <i class="fas fa-shoe-prints" aria-hidden="true"></i>
+                        <div>
+                            <h4>Everyday Comfort</h4>
+                            <p>Soft cushioning and breathable builds for long wear.</p>
+                        </div>
+                    </div>
+                    <div class="trust-item">
+                        <i class="fas fa-feather" aria-hidden="true"></i>
+                        <div>
+                            <h4>Lightweight Feel</h4>
+                            <p>Designed to keep movement easy and effortless.</p>
+                        </div>
+                    </div>
+                    <div class="trust-item">
+                        <i class="fas fa-shield-halved" aria-hidden="true"></i>
+                        <div>
+                            <h4>Durable Build</h4>
+                            <p>Materials chosen for everyday resilience.</p>
+                        </div>
+                    </div>
+                    <div class="trust-item">
+                        <i class="fas fa-bolt" aria-hidden="true"></i>
+                        <div>
+                            <h4>Ready for Action</h4>
+                            <p>Great for walks, shifts, and on-the-go days.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        if (hero && hero.parentNode) {
+            hero.insertAdjacentElement('afterend', section);
+        } else if (anchor.firstElementChild) {
+            anchor.insertAdjacentElement('afterbegin', section);
+        } else {
+            anchor.appendChild(section);
+        }
+    } catch (e) {
+        // non-critical UI
+    }
+}
+
+function ensureGlobalCtaStrip() {
+    try {
+        if (document.getElementById('global-cta-strip')) return;
+        if (window.location.pathname.includes('admin')) return;
+
+        const footer = document.querySelector('footer');
+        if (!footer || !footer.parentNode) return;
+
+        const cta = document.createElement('section');
+        cta.id = 'global-cta-strip';
+        cta.className = 'cta-strip';
+        cta.innerHTML = `
+            <div class="container cta-strip-content">
+                <div>
+                    <p class="cta-kicker">Need help choosing?</p>
+                    <h3>Get a personalized recommendation</h3>
+                    <p>Tell us how you plan to use the shoes — we’ll guide you to the best fit.</p>
+                </div>
+                <div class="cta-actions">
+                    <a class="btn btn-primary" href="contact.html">Talk to our team</a>
+                    <a class="btn btn-outline" href="size-guide.html">View size guide</a>
+                </div>
+            </div>
+        `;
+
+        footer.insertAdjacentElement('beforebegin', cta);
+    } catch (e) {
+        // non-critical UI
+    }
+}
+
 
 // Main Site button in nav panel removed
 
@@ -265,6 +436,12 @@ document.addEventListener('DOMContentLoaded', () => {
     syncFooterShopLinks();
     // Show/hide primary-category pages (e.g., Clothing) based on inventory.
     syncPrimaryCategoryPageLinks();
+    // Add UI enhancements across the storefront.
+    ensureShowcaseBanner();
+    initFloatingHelpDock();
+    initBackToTopButton();
+    ensureTrustStrip();
+    ensureGlobalCtaStrip();
     // Track page view for analytics
     trackPageView();
 });

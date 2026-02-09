@@ -4,15 +4,30 @@
 // Configured on: December 3, 2025
 const HOSTED_SUPABASE_URL = 'https://vorqavsuqcjnkjzwkyzr.supabase.co';
 
+function resolveSupabaseAnonKey() {
+    try {
+        const fromWindow = (typeof window.SUPABASE_ANON_KEY !== 'undefined' && window.SUPABASE_ANON_KEY) || '';
+        if (fromWindow) return fromWindow;
+
+        const meta = document.querySelector('meta[name="supabase-anon-key"]');
+        const fromMeta = meta ? meta.getAttribute('content') : '';
+        if (fromMeta) return fromMeta;
+
+        const fromStorage = localStorage.getItem('ace1_supabase_anon_key') || '';
+        if (fromStorage) return fromStorage;
+    } catch (e) {
+        // Ignore storage access errors (e.g., private mode)
+    }
+    return '';
+}
+
 const SUPABASE_CONFIG = {
     url: HOSTED_SUPABASE_URL,
     // anonKey must not be hardcoded in source. Provide it at runtime via:
     // 1) window.SUPABASE_ANON_KEY = '<anon key>' (set by server-side injection), or
     // 2) <meta name="supabase-anon-key" content="<anon key>"> in the page head
-    // If neither is present the client will still initialize but requests requiring anon key will log a warning.
-    anonKey: (typeof window.SUPABASE_ANON_KEY !== 'undefined' && window.SUPABASE_ANON_KEY) ||
-             (document.querySelector('meta[name="supabase-anon-key"]') && document.querySelector('meta[name="supabase-anon-key"]').getAttribute('content')) ||
-             ''
+    // 3) localStorage key: ace1_supabase_anon_key (set via admin login helper)
+    anonKey: resolveSupabaseAnonKey()
 };
 
 function assertHostedSupabaseConfig() {
@@ -81,7 +96,8 @@ function initSupabase() {
         const { createClient } = window.supabase;
 
         if (!SUPABASE_CONFIG.anonKey) {
-            console.warn('⚠️ Supabase anon key is not set at runtime. Set `window.SUPABASE_ANON_KEY` or a meta tag `supabase-anon-key` to enable public Supabase features.');
+            console.warn('⚠️ Supabase anon key is not set at runtime. Set `window.SUPABASE_ANON_KEY`, add a meta tag `supabase-anon-key`, or store `ace1_supabase_anon_key` in localStorage.');
+            return null;
         }
 
         supabaseClient = createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey, {
@@ -114,6 +130,31 @@ window.setSupabaseSessionToken = (token) => {
     } else {
         sessionToken = null;
     }
+};
+
+window.setSupabaseAnonKey = (anonKey, persist = true) => {
+    if (!anonKey) return null;
+    try {
+        if (persist) localStorage.setItem('ace1_supabase_anon_key', anonKey);
+    } catch (e) {
+        // ignore storage errors
+    }
+
+    window.SUPABASE_ANON_KEY = anonKey;
+    SUPABASE_CONFIG.anonKey = anonKey;
+    supabaseClient = null;
+    return initSupabase();
+};
+
+window.clearSupabaseAnonKey = () => {
+    try {
+        localStorage.removeItem('ace1_supabase_anon_key');
+    } catch (e) {
+        // ignore
+    }
+    window.SUPABASE_ANON_KEY = '';
+    SUPABASE_CONFIG.anonKey = '';
+    supabaseClient = null;
 };
 
 // 2FA removed site-wide: no feature flag needed

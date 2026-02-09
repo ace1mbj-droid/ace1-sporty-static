@@ -50,6 +50,39 @@
             color: #7a6200;
             margin-bottom: 20px;
         }
+
+        .supabase-key-panel {
+            background: #eef7ff;
+            border: 1px solid #cfe4ff;
+            border-radius: 10px;
+            padding: 14px;
+            margin-bottom: 18px;
+            display: none;
+        }
+
+        .supabase-key-panel h3 {
+            font-size: 14px;
+            margin-bottom: 8px;
+            color: #1f3b7f;
+        }
+
+        .supabase-key-panel p {
+            font-size: 12px;
+            color: #3a4b6b;
+            margin-bottom: 10px;
+        }
+
+        .supabase-key-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .supabase-key-actions input {
+            flex: 1 1 240px;
+            min-width: 200px;
+        }
     </style>
 </head>
 <body>
@@ -120,6 +153,15 @@
                     <div class="admin-notice">
                         <i class="fas fa-exclamation-triangle"></i>
                         All admin sign-ins are audited. Use dedicated credentials and keep them confidential.
+                    </div>
+
+                    <div class="supabase-key-panel" id="supabaseKeyPanel">
+                        <h3><i class="fas fa-key"></i> Supabase anon key required</h3>
+                        <p>Admin login needs the public anon key. Paste it once to enable sign-in on this device.</p>
+                        <div class="supabase-key-actions">
+                            <input type="password" id="supabaseAnonKeyInput" placeholder="Paste Supabase anon key" autocomplete="off">
+                            <button type="button" class="btn btn-primary" id="saveSupabaseKeyBtn">Save Key</button>
+                        </div>
                     </div>
 
                     <div class="error-message" id="errorMessage" style="display:none"></div>
@@ -265,6 +307,48 @@
         const adminLoginForm = document.getElementById('adminLoginForm');
         const errorMessage = document.getElementById('errorMessage');
         const toggleButtons = document.querySelectorAll('.toggle-password');
+        const supabaseKeyPanel = document.getElementById('supabaseKeyPanel');
+        const supabaseKeyInput = document.getElementById('supabaseAnonKeyInput');
+        const saveSupabaseKeyBtn = document.getElementById('saveSupabaseKeyBtn');
+
+        const resolveRuntimeAnonKey = () => {
+            try {
+                if (window.SUPABASE_ANON_KEY) return window.SUPABASE_ANON_KEY;
+                const meta = document.querySelector('meta[name="supabase-anon-key"]');
+                if (meta && meta.getAttribute('content')) return meta.getAttribute('content');
+                const stored = localStorage.getItem('ace1_supabase_anon_key');
+                return stored || '';
+            } catch (e) {
+                return '';
+            }
+        };
+
+        const showSupabaseKeyPanelIfNeeded = () => {
+            const key = resolveRuntimeAnonKey();
+            if (!key && supabaseKeyPanel) {
+                supabaseKeyPanel.style.display = 'block';
+            }
+        };
+
+        if (saveSupabaseKeyBtn) {
+            saveSupabaseKeyBtn.addEventListener('click', () => {
+                const key = supabaseKeyInput?.value?.trim();
+                if (!key) {
+                    errorMessage.textContent = 'Please paste the Supabase anon key.';
+                    errorMessage.style.display = 'block';
+                    return;
+                }
+                if (typeof window.setSupabaseAnonKey === 'function') {
+                    window.setSupabaseAnonKey(key, true);
+                    errorMessage.style.display = 'none';
+                    supabaseKeyPanel.style.display = 'none';
+                    window.location.reload();
+                } else {
+                    errorMessage.textContent = 'Unable to save key. Refresh and try again.';
+                    errorMessage.style.display = 'block';
+                }
+            });
+        }
 
         toggleButtons.forEach((btn) => {
             btn.addEventListener('click', () => {
@@ -344,6 +428,8 @@
                 }
             }
         });
+
+        showSupabaseKeyPanelIfNeeded();
     </script>
     <!-- Image Optimization -->
     <script src="js/image-optimizer.js"></script>
