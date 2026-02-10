@@ -16,7 +16,7 @@
     "start:ollama": "bash scripts/start-ollama.sh"
   },
   "devDependencies": {
-    "@playwright/test": "^1.36.0",
+    "@playwright/test": "^1.58.2",
     "@supabase/supabase-js": "^2.90.1",
     "http-server": "^14.1.1",
     "nodemailer": "^7.0.12",
