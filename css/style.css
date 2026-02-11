@@ -2601,12 +2601,21 @@ table th, table td {
    PRODUCTS PAGE STYLES
    =================================== */
 .page-hero {
-    background: linear-gradient(135deg, var(--primary-color) 0%, #4f46e5 50%, #3730a3 100%);
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 55%, #0f172a 100%);
     color: white;
     padding: 120px 0;
     position: relative;
     overflow: hidden;
     margin-top: 80px;
+}
+.page-hero::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--secondary-color), var(--accent-color));
 }
 
 .page-hero::before {
@@ -2622,28 +2631,43 @@ table th, table td {
 }
 
 .page-hero .container {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 80px;
+    display: flex;
+    flex-direction: column;
     align-items: center;
+    text-align: center;
     position: relative;
     z-index: 1;
 }
 
 .hero-content h1 {
-    font-size: 3.5rem;
+    font-family: var(--font-display);
+    font-size: 4rem;
     font-weight: 800;
-    margin-bottom: 24px;
-    line-height: 1.1;
-    text-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    margin-bottom: 18px;
+    line-height: 1.05;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #ffffff;
+    text-shadow: none;
+}
+.hero-content h1::after {
+    content: '';
+    display: block;
+    width: 60px;
+    height: 3px;
+    background: var(--secondary-color);
+    margin: 14px auto 0;
+    border-radius: 2px;
 }
 
 .hero-content p {
-    font-size: 1.3rem;
-    opacity: 0.9;
+    font-family: var(--font-primary);
+    font-size: 1.1rem;
+    opacity: 1;
     line-height: 1.7;
     margin-bottom: 40px;
-    max-width: 500px;
+    max-width: 560px;
+    color: #cbd5e1;
 }
 
 .hero-stats {

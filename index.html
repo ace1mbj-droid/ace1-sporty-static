@@ -196,8 +196,8 @@
         /* Use global theme variables so homepage matches site-wide styles */
         .hero-section {
             /* fallback keeps the current look if variables aren't set */
-            background: var(--index-hero-bg, linear-gradient(135deg, rgba(102, 126, 234, 0.9) 0%, rgba(118, 75, 162, 0.9) 100%), url('images/hero-home.svg') center/cover);
-            color: var(--hero-text, var(--primary-text-on-dark, #fff));
+            background: var(--index-hero-bg, linear-gradient(160deg, #f8fafc 0%, #eef2f7 40%, #e2e8f0 100%));
+            color: var(--hero-text, var(--brand-ink, #111));
             padding: 120px 0;
             text-align: center;
             position: relative;
@@ -207,7 +207,7 @@
             font-size: var(--hero-title-size, 3.5rem);
             font-weight: 800;
             margin-bottom: 20px;
-            color: var(--hero-text, var(--primary-text-on-dark, #fff));
+            color: var(--hero-text, var(--brand-ink, #111));
             font-family: var(--font-family-main);
         }
         .hero-subtitle {
@@ -215,7 +215,7 @@
             opacity: 0.9;
             max-width: 600px;
             margin: 0 auto;
-            color: var(--hero-subtext, rgba(255,255,255,0.9));
+            color: var(--hero-subtext, var(--muted, #6f6f6f));
             font-family: var(--font-family-main);
         }
 
@@ -787,9 +787,8 @@
             align-items: center;
             min-height: 72vh;
             padding: 110px 0;
-            background: linear-gradient(135deg, rgba(255,255,255,0.26), rgba(0,0,0,0.04)), url('images/hero-home.svg') center/cover;
+            background: linear-gradient(160deg, #f8fafc 0%, #eef2f7 40%, #e2e8f0 100%);
             color: var(--brand-ink);
-            background-blend-mode: multiply;
             position: relative;
             overflow: hidden;
         }
