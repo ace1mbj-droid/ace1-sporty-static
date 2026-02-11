@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#fff3e0"/>
+      <stop offset="100%" stop-color="#fce4ec"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#e94560"/>
+      <stop offset="100%" stop-color="#ff6b6b"/>
+    </linearGradient>
+    <linearGradient id="insole" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#667eea"/>
+      <stop offset="100%" stop-color="#764ba2"/>
+    </linearGradient>
+  </defs>
+  <rect width="600" height="400" fill="url(#bg)"/>
+  <!-- Insole shape -->
+  <g transform="translate(175,30) scale(1)" opacity="0.8">
+    <path d="M120,20 Q160,10 180,30 Q200,50 200,90 Q200,150 190,200 Q180,260 170,300 Q160,330 130,340 Q100,340 85,320 Q70,300 60,250 Q50,200 50,140 Q50,80 60,50 Q70,30 90,20 Z" fill="url(#insole)" opacity="0.2" stroke="url(#insole)" stroke-width="2"/>
+    <!-- Texture lines -->
+    <path d="M90,80 Q120,70 160,80" fill="none" stroke="url(#insole)" stroke-width="1" opacity="0.3"/>
+    <path d="M80,130 Q120,120 175,130" fill="none" stroke="url(#insole)" stroke-width="1" opacity="0.3"/>
+    <path d="M70,180 Q120,170 180,185" fill="none" stroke="url(#insole)" stroke-width="1" opacity="0.3"/>
+    <path d="M65,230 Q120,220 175,235" fill="none" stroke="url(#insole)" stroke-width="1" opacity="0.3"/>
+    <path d="M75,280 Q110,270 160,285" fill="none" stroke="url(#insole)" stroke-width="1" opacity="0.3"/>
+    <!-- Pressure zones -->
+    <circle cx="125" cy="100" r="18" fill="url(#accent)" opacity="0.15"/>
+    <circle cx="115" cy="180" r="15" fill="url(#accent)" opacity="0.12"/>
+    <circle cx="120" cy="260" r="20" fill="url(#accent)" opacity="0.18"/>
+    <!-- Wave symbols for massage -->
+    <g transform="translate(125,100)" opacity="0.5">
+      <path d="M-10,0 Q-5,-6 0,0 Q5,6 10,0" fill="none" stroke="url(#accent)" stroke-width="1.5"/>
+      <path d="M-8,6 Q-3,0 2,6 Q7,12 12,6" fill="none" stroke="url(#accent)" stroke-width="1"/>
+    </g>
+    <g transform="translate(120,260)" opacity="0.5">
+      <path d="M-10,0 Q-5,-6 0,0 Q5,6 10,0" fill="none" stroke="url(#accent)" stroke-width="1.5"/>
+      <path d="M-8,6 Q-3,0 2,6 Q7,12 12,6" fill="none" stroke="url(#accent)" stroke-width="1"/>
+    </g>
+  </g>
+  <!-- Decorative arcs -->
+  <path d="M0,350 Q300,300 600,350" fill="none" stroke="#e94560" stroke-opacity="0.1" stroke-width="2"/>
+  <path d="M0,370 Q300,320 600,370" fill="none" stroke="#667eea" stroke-opacity="0.08" stroke-width="1.5"/>
+</svg>

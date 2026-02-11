@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#e8f5e9"/>
+      <stop offset="100%" stop-color="#f3e5f5"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#667eea"/>
+      <stop offset="100%" stop-color="#764ba2"/>
+    </linearGradient>
+  </defs>
+  <rect width="600" height="400" fill="url(#bg)"/>
+  <!-- Waves representing relaxation -->
+  <path d="M0,280 Q100,250 200,280 Q300,310 400,280 Q500,250 600,280 L600,400 L0,400 Z" fill="#667eea" opacity="0.08"/>
+  <path d="M0,300 Q100,270 200,300 Q300,330 400,300 Q500,270 600,300 L600,400 L0,400 Z" fill="#764ba2" opacity="0.06"/>
+  <path d="M0,320 Q100,290 200,320 Q300,350 400,320 Q500,290 600,320 L600,400 L0,400 Z" fill="#667eea" opacity="0.04"/>
+  <!-- Foot outline -->
+  <g transform="translate(200,60) scale(0.9)" opacity="0.6">
+    <ellipse cx="100" cy="140" rx="55" ry="85" fill="none" stroke="url(#accent)" stroke-width="2.5" transform="rotate(-10 100 140)"/>
+    <!-- Toes -->
+    <circle cx="65" cy="58" r="12" fill="none" stroke="url(#accent)" stroke-width="1.5" opacity="0.5"/>
+    <circle cx="85" cy="48" r="13" fill="none" stroke="url(#accent)" stroke-width="1.5" opacity="0.5"/>
+    <circle cx="107" cy="46" r="12" fill="none" stroke="url(#accent)" stroke-width="1.5" opacity="0.5"/>
+    <circle cx="127" cy="52" r="11" fill="none" stroke="url(#accent)" stroke-width="1.5" opacity="0.5"/>
+    <circle cx="143" cy="64" r="10" fill="none" stroke="url(#accent)" stroke-width="1.5" opacity="0.5"/>
+    <!-- Pressure points -->
+    <circle cx="100" cy="120" r="6" fill="#667eea" opacity="0.3"/>
+    <circle cx="85" cy="160" r="5" fill="#764ba2" opacity="0.25"/>
+    <circle cx="110" cy="190" r="7" fill="#667eea" opacity="0.2"/>
+  </g>
+  <!-- Floating leaf shapes -->
+  <g transform="translate(440,100) rotate(20)" opacity="0.4">
+    <path d="M0,0 Q15,-25 30,0 Q15,25 0,0 Z" fill="#4caf50" opacity="0.5"/>
+  </g>
+  <g transform="translate(80,280) rotate(-15)" opacity="0.3">
+    <path d="M0,0 Q10,-18 20,0 Q10,18 0,0 Z" fill="#4caf50" opacity="0.5"/>
+  </g>
+  <g transform="translate(500,260) rotate(35)" opacity="0.35">
+    <path d="M0,0 Q12,-20 24,0 Q12,20 0,0 Z" fill="#4caf50" opacity="0.5"/>
+  </g>
+</svg>

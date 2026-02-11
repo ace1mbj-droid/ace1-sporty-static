@@ -12,7 +12,7 @@ const variants = [
   {
     id: 'soft',
     label: 'Softer contrast',
-    css: `.index-home .hero-section { background: linear-gradient(135deg, rgba(255,255,255,0.26), rgba(0,0,0,0.04)), url('/images/hero-2026.jpg') center/cover !important; }
+    css: `.index-home .hero-section { background: linear-gradient(135deg, rgba(255,255,255,0.26), rgba(0,0,0,0.04)), url('images/hero-home.svg') center/cover !important; }
 .index-home .hero-cta { background: rgba(255,255,255,0.92) !important; color: #111 !important; box-shadow: none !important; }`  },
   {
     id: 'outline-cta',

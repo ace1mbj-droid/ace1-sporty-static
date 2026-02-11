@@ -8,7 +8,7 @@ const options = [
     label: 'Playfair Display',
     css: `@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&display=swap');
 .index-home .hero-title { font-family: 'Playfair Display', serif !important; font-size: 5rem !important; }
-.index-home .hero-section { background: linear-gradient(135deg, rgba(255,255,255,0.26), rgba(0,0,0,0.04)), url('/images/hero-2026.jpg') center/cover !important; }
+.index-home .hero-section { background: linear-gradient(135deg, rgba(255,255,255,0.26), rgba(0,0,0,0.04)), url('images/hero-home.svg') center/cover !important; }
 .index-home .hero-cta { background: rgba(255,255,255,0.92) !important; color: #111 !important; }
 .footer, .footer * { color: rgba(17,17,17,0.85) !important; background: none !important; }
 .footer { background: var(--brand-bg, #FBFBFB); padding: 48px 0; }
@@ -18,7 +18,7 @@ const options = [
     label: 'Cormorant Garamond',
     css: `@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@700;900&display=swap');
 .index-home .hero-title { font-family: 'Cormorant Garamond', serif !important; font-size: 5rem !important; }
-.index-home .hero-section { background: linear-gradient(135deg, rgba(255,255,255,0.28), rgba(0,0,0,0.05)), url('/images/hero-2026.jpg') center/cover !important; }
+.index-home .hero-section { background: linear-gradient(135deg, rgba(255,255,255,0.28), rgba(0,0,0,0.05)), url('images/hero-home.svg') center/cover !important; }
 .index-home .hero-cta { background: rgba(255,255,255,0.92) !important; color: #111 !important; }
 .footer { background: var(--brand-bg, #FBFBFB); color: rgba(17,17,17,0.85) !important; padding: 48px 0; }
 `  },
@@ -27,7 +27,7 @@ const options = [
     label: 'Merriweather',
     css: `@import url('https://fonts.googleapis.com/css2?family=Merriweather:wght@700;900&display=swap');
 .index-home .hero-title { font-family: 'Merriweather', serif !important; font-size: 5rem !important; }
-.index-home .hero-section { background: linear-gradient(135deg, rgba(255,255,255,0.24), rgba(0,0,0,0.06)), url('/images/hero-2026.jpg') center/cover !important; }
+.index-home .hero-section { background: linear-gradient(135deg, rgba(255,255,255,0.24), rgba(0,0,0,0.06)), url('images/hero-home.svg') center/cover !important; }
 .index-home .hero-cta { background: rgba(255,255,255,0.92) !important; color: #111 !important; }
 .footer { background: var(--brand-bg, #FBFBFB); color: rgba(17,17,17,0.85) !important; padding: 48px 0; }
 `  }

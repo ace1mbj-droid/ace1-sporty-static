@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 800">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1a1a2e"/>
+      <stop offset="100%" stop-color="#16213e"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#e94560"/>
+      <stop offset="100%" stop-color="#ff6b6b"/>
+    </linearGradient>
+    <linearGradient id="blue" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#667eea"/>
+      <stop offset="100%" stop-color="#764ba2"/>
+    </linearGradient>
+  </defs>
+  <rect width="600" height="800" fill="url(#bg)" rx="16"/>
+  <!-- Header bar -->
+  <rect x="40" y="40" width="520" height="60" rx="8" fill="url(#accent)" opacity="0.9"/>
+  <text x="300" y="78" text-anchor="middle" font-family="Arial, sans-serif" font-size="22" font-weight="bold" fill="#ffffff">MBJ Insole Efficacy Board</text>
+  <!-- Insole shape -->
+  <g transform="translate(175,140) scale(0.7)" opacity="0.8">
+    <path d="M120,20 Q160,10 180,30 Q200,50 200,90 Q200,150 190,200 Q180,280 170,340 Q160,380 130,400 Q100,400 85,380 Q70,350 60,280 Q50,200 50,140 Q50,80 60,50 Q70,30 90,20 Z" fill="url(#blue)" opacity="0.25" stroke="url(#blue)" stroke-width="2.5"/>
+    <!-- Zones -->
+    <circle cx="125" cy="80" r="22" fill="url(#accent)" opacity="0.2"/>
+    <circle cx="125" cy="160" r="20" fill="url(#accent)" opacity="0.15"/>
+    <circle cx="120" cy="250" r="25" fill="url(#accent)" opacity="0.2"/>
+    <circle cx="120" cy="340" r="22" fill="url(#accent)" opacity="0.18"/>
+    <!-- Lines -->
+    <path d="M80,100 L170,100" stroke="#ffffff" stroke-width="0.5" opacity="0.2"/>
+    <path d="M70,180 L180,180" stroke="#ffffff" stroke-width="0.5" opacity="0.2"/>
+    <path d="M65,260 L180,260" stroke="#ffffff" stroke-width="0.5" opacity="0.2"/>
+    <path d="M75,340 L170,340" stroke="#ffffff" stroke-width="0.5" opacity="0.2"/>
+  </g>
+  <!-- Feature bullets -->
+  <g font-family="Arial, sans-serif" fill="#ffffff">
+    <circle cx="60" cy="480" r="8" fill="url(#accent)" opacity="0.8"/>
+    <text x="80" y="485" font-size="14" opacity="0.9">Terahertz-inspired comfort design</text>
+    <circle cx="60" cy="520" r="8" fill="url(#accent)" opacity="0.8"/>
+    <text x="80" y="525" font-size="14" opacity="0.9">Magnetic vibration chip zones</text>
+    <circle cx="60" cy="560" r="8" fill="url(#accent)" opacity="0.8"/>
+    <text x="80" y="565" font-size="14" opacity="0.9">Reflexology-mapped pressure points</text>
+    <circle cx="60" cy="600" r="8" fill="url(#accent)" opacity="0.8"/>
+    <text x="80" y="605" font-size="14" opacity="0.9">Ultra-light, non-slip sole</text>
+    <circle cx="60" cy="640" r="8" fill="url(#accent)" opacity="0.8"/>
+    <text x="80" y="645" font-size="14" opacity="0.9">Breathable comfort materials</text>
+  </g>
+  <!-- Bottom branding -->
+  <rect x="40" y="700" width="520" height="60" rx="8" fill="url(#blue)" opacity="0.2"/>
+  <text x="300" y="737" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="#ffffff" opacity="0.7">ACE#1 × MBJ Mai Bu Jian</text>
+  <!-- Decorative -->
+  <circle cx="540" cy="180" r="50" fill="none" stroke="#e94560" stroke-opacity="0.08" stroke-width="1"/>
+  <circle cx="540" cy="180" r="35" fill="none" stroke="#e94560" stroke-opacity="0.1" stroke-width="0.8"/>
+</svg>

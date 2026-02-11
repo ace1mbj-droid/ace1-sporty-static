@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 500">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1a1a2e"/>
+      <stop offset="50%" stop-color="#16213e"/>
+      <stop offset="100%" stop-color="#0f3460"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#e94560"/>
+      <stop offset="100%" stop-color="#ff6b6b"/>
+    </linearGradient>
+    <linearGradient id="glow" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#e94560" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#e94560" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <rect width="1400" height="500" fill="url(#bg)"/>
+  <!-- Decorative circles -->
+  <circle cx="1100" cy="250" r="200" fill="none" stroke="#e94560" stroke-opacity="0.1" stroke-width="2"/>
+  <circle cx="1100" cy="250" r="150" fill="none" stroke="#e94560" stroke-opacity="0.15" stroke-width="1.5"/>
+  <circle cx="1100" cy="250" r="100" fill="none" stroke="#e94560" stroke-opacity="0.2" stroke-width="1"/>
+  <!-- Subtle grid pattern -->
+  <line x1="0" y1="100" x2="1400" y2="100" stroke="#ffffff" stroke-opacity="0.03" stroke-width="1"/>
+  <line x1="0" y1="200" x2="1400" y2="200" stroke="#ffffff" stroke-opacity="0.03" stroke-width="1"/>
+  <line x1="0" y1="300" x2="1400" y2="300" stroke="#ffffff" stroke-opacity="0.03" stroke-width="1"/>
+  <line x1="0" y1="400" x2="1400" y2="400" stroke="#ffffff" stroke-opacity="0.03" stroke-width="1"/>
+  <!-- Shoe silhouette -->
+  <g transform="translate(900,160) scale(1.2)" opacity="0.9">
+    <path d="M0,120 Q20,80 80,70 Q140,60 200,65 Q260,70 300,90 L320,100 Q340,108 340,130 L340,145 Q340,165 320,170 L40,170 Q10,170 5,150 Z" fill="url(#accent)" opacity="0.85"/>
+    <path d="M5,150 Q10,170 40,170 L320,170 Q340,165 340,145 L340,155 Q340,175 320,180 L40,180 Q10,180 5,160 Z" fill="#1a1a2e" opacity="0.4"/>
+    <ellipse cx="170" cy="100" rx="60" ry="20" fill="#ffffff" opacity="0.08"/>
+  </g>
+  <!-- Glow effect -->
+  <ellipse cx="1050" cy="350" rx="250" ry="60" fill="url(#glow)"/>
+  <!-- Diagonal accent line -->
+  <line x1="0" y1="500" x2="600" y2="0" stroke="url(#accent)" stroke-opacity="0.06" stroke-width="80"/>
+  <!-- Small decorative dots -->
+  <circle cx="200" cy="100" r="3" fill="#e94560" opacity="0.4"/>
+  <circle cx="300" cy="380" r="2" fill="#e94560" opacity="0.3"/>
+  <circle cx="500" cy="80" r="2.5" fill="#e94560" opacity="0.35"/>
+  <circle cx="700" cy="420" r="2" fill="#e94560" opacity="0.25"/>
+  <circle cx="800" cy="60" r="1.5" fill="#ffffff" opacity="0.3"/>
+</svg>

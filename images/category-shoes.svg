@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#667eea"/>
+      <stop offset="100%" stop-color="#764ba2"/>
+    </linearGradient>
+    <linearGradient id="shoe" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#f0f0f0"/>
+    </linearGradient>
+  </defs>
+  <rect width="600" height="400" fill="url(#bg)"/>
+  <!-- Shoe silhouette -->
+  <g transform="translate(120,120) scale(1.1)" opacity="0.9">
+    <path d="M0,120 Q20,80 80,70 Q140,60 200,65 Q260,70 300,90 L320,100 Q340,108 340,130 L340,145 Q340,165 320,170 L40,170 Q10,170 5,150 Z" fill="url(#shoe)" opacity="0.25"/>
+    <path d="M5,150 Q10,170 40,170 L320,170 Q340,165 340,145 L340,155 Q340,175 320,180 L40,180 Q10,180 5,160 Z" fill="#ffffff" opacity="0.1"/>
+  </g>
+  <!-- Decorative circle -->
+  <circle cx="300" cy="200" r="120" fill="none" stroke="#ffffff" stroke-opacity="0.15" stroke-width="1.5"/>
+  <circle cx="300" cy="200" r="90" fill="none" stroke="#ffffff" stroke-opacity="0.1" stroke-width="1"/>
+  <!-- Dots -->
+  <circle cx="100" cy="60" r="3" fill="#ffffff" opacity="0.3"/>
+  <circle cx="500" cy="340" r="2" fill="#ffffff" opacity="0.25"/>
+  <circle cx="480" cy="80" r="2.5" fill="#ffffff" opacity="0.2"/>
+</svg>
