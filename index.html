@@ -1309,6 +1309,10 @@
         <!-- Categories Grid -->
         <section class="categories-section">
             <div class="container">
+                <div class="section-header">
+                    <h2 class="section-title">Shop by Category</h2>
+                    <p class="section-subtitle">Find exactly what you need</p>
+                </div>
                 <div class="categories-grid">
                     <!-- Shoes Category -->
                     <div class="category-card">
@@ -1323,6 +1327,86 @@
                             </a>
                         </div>
                     </div>
+                    <!-- Accessories Category -->
+                    <div class="category-card">
+                        <div class="category-image" style="background-image: url('images/hero-accessories.svg');">
+                            <i class="fas fa-bag-shopping"></i>
+                        </div>
+                        <div class="category-content">
+                            <h3 class="category-title">Accessories</h3>
+                            <p class="category-description">Bags, hats, socks &amp; more — coming soon</p>
+                            <a href="accessories.html" class="category-link">
+                                View Accessories <i class="fas fa-arrow-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Testimonials Section -->
+        <section class="testimonials-section">
+            <div class="container">
+                <div class="section-header">
+                    <h2 class="section-title">What Our Customers Say</h2>
+                    <p class="section-subtitle">Real experiences from real people</p>
+                </div>
+                <div class="testimonials-grid">
+                    <div class="testimonial-card">
+                        <div class="testimonial-stars" aria-label="5 out of 5 stars">
+                            <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+                        </div>
+                        <p class="testimonial-text">&ldquo;The most comfortable sneakers I&rsquo;ve ever owned. I wear them all day at work and my feet never hurt anymore.&rdquo;</p>
+                        <div class="testimonial-author">
+                            <div class="testimonial-avatar"><i class="fas fa-user-circle"></i></div>
+                            <div>
+                                <strong>Rahul S.</strong>
+                                <span>IT Professional, Bangalore</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="testimonial-card">
+                        <div class="testimonial-stars" aria-label="5 out of 5 stars">
+                            <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+                        </div>
+                        <p class="testimonial-text">&ldquo;Lightweight and stylish — exactly what I was looking for. The insole technology really does make a difference.&rdquo;</p>
+                        <div class="testimonial-author">
+                            <div class="testimonial-avatar"><i class="fas fa-user-circle"></i></div>
+                            <div>
+                                <strong>Priya M.</strong>
+                                <span>Designer, Mumbai</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="testimonial-card">
+                        <div class="testimonial-stars" aria-label="4 out of 5 stars">
+                            <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="far fa-star"></i>
+                        </div>
+                        <p class="testimonial-text">&ldquo;Bought these for daily walks and jogging. The grip and cushioning are top-tier for the price.&rdquo;</p>
+                        <div class="testimonial-author">
+                            <div class="testimonial-avatar"><i class="fas fa-user-circle"></i></div>
+                            <div>
+                                <strong>Amit K.</strong>
+                                <span>Fitness Enthusiast, Delhi</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Newsletter Section -->
+        <section class="newsletter-section" id="newsletter">
+            <div class="container">
+                <div class="newsletter-card">
+                    <div class="newsletter-content">
+                        <h2><i class="fas fa-envelope-open-text"></i> Stay in the Loop</h2>
+                        <p>Get exclusive drops, early access to new launches, and style tips — straight to your inbox.</p>
+                    </div>
+                    <form class="newsletter-form" id="newsletter-form" onsubmit="event.preventDefault(); this.querySelector('.btn').textContent='Subscribed ✓'; this.querySelector('.btn').disabled=true;">
+                        <input type="email" placeholder="Enter your email address" required aria-label="Email address">
+                        <button type="submit" class="btn btn-primary">Subscribe</button>
+                    </form>
                 </div>
             </div>
         </section>
@@ -1344,6 +1428,14 @@
                         <a href="https://instagram.com/ace_1_official/" target="_blank" rel="noopener noreferrer" aria-label="Ace#1 on Instagram"><i class="fab fa-instagram"></i></a>
                         <a href="https://facebook.com/ace1official" target="_blank" rel="noopener noreferrer" aria-label="Ace#1 on Facebook"><i class="fab fa-facebook"></i></a>
                     </div>
+                </div>
+                <div class="footer-section">
+                    <h4>Shop</h4>
+                    <ul>
+                        <li><a href="shoes.html">All Shoes</a></li>
+                        <li><a href="accessories.html">Accessories</a></li>
+                        <li><a href="technology.html">Technology</a></li>
+                    </ul>
                 </div>
                 <div class="footer-section">
                     <h4>Quick Links</h4>

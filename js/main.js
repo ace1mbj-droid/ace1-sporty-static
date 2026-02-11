@@ -202,7 +202,7 @@ function ensureTrustStrip() {
         if (document.getElementById('trust-strip')) return;
         if (window.location.pathname.includes('admin')) return;
 
-        const hero = document.querySelector('.page-hero') || document.querySelector('.page-header');
+        const hero = document.querySelector('.page-hero') || document.querySelector('.hero-section') || document.querySelector('.page-header');
         const anchor = hero?.nextElementSibling || document.querySelector('main') || document.body;
         if (!anchor) return;
 

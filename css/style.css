@@ -277,6 +277,63 @@ button {
 }
 
 /* ===================================
+   BREADCRUMBS
+   =================================== */
+.breadcrumb {
+    background: var(--bg-page);
+    border-bottom: 1px solid var(--border-subtle);
+    padding: 14px 0;
+}
+
+.breadcrumb-list {
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    font-size: 14px;
+    flex-wrap: wrap;
+}
+
+.breadcrumb-list li {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-light);
+}
+
+.breadcrumb-list li + li::before {
+    content: '\f054';
+    font-family: 'Font Awesome 6 Free';
+    font-weight: 900;
+    font-size: 10px;
+    color: var(--text-light);
+    opacity: 0.5;
+}
+
+.breadcrumb-list li a {
+    color: var(--primary-color);
+    text-decoration: none;
+    font-weight: 500;
+    transition: var(--transition);
+}
+
+.breadcrumb-list li a:hover {
+    color: var(--secondary-color);
+}
+
+.breadcrumb-list li a i {
+    margin-right: 4px;
+    font-size: 13px;
+}
+
+.breadcrumb-list li[aria-current="page"] {
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+/* ===================================
    NAVIGATION
    =================================== */
 .navbar {
@@ -1438,6 +1495,26 @@ table th, table td {
     color: var(--text-light);
 }
 
+.testimonial-stars {
+    color: #FFB800;
+    font-size: 16px;
+    margin-bottom: 16px;
+    letter-spacing: 2px;
+}
+
+.testimonial-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 22px;
+    flex-shrink: 0;
+}
+
 /* ===================================
    NEWSLETTER SECTION
    =================================== */
@@ -1484,6 +1561,58 @@ table th, table td {
 
 .newsletter-form .btn {
     white-space: nowrap;
+}
+
+.newsletter-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 40px;
+    max-width: 900px;
+    margin: 0 auto;
+    flex-wrap: wrap;
+}
+
+.newsletter-card .newsletter-content {
+    text-align: left;
+    flex: 1;
+    min-width: 260px;
+}
+
+.newsletter-card .newsletter-content h2 {
+    font-size: 28px;
+    font-family: var(--font-display);
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+}
+
+.newsletter-card .newsletter-content h2 i {
+    margin-right: 8px;
+    color: var(--accent-color);
+}
+
+.newsletter-card .newsletter-content p {
+    font-size: 15px;
+    margin-bottom: 0;
+    opacity: 0.9;
+}
+
+.newsletter-card .newsletter-form {
+    min-width: 320px;
+}
+
+@media (max-width: 768px) {
+    .newsletter-card {
+        flex-direction: column;
+        text-align: center;
+    }
+    .newsletter-card .newsletter-content {
+        text-align: center;
+    }
+    .newsletter-card .newsletter-form {
+        min-width: 0;
+        width: 100%;
+    }
 }
 
 /* ===================================
@@ -3271,10 +3400,11 @@ table th, table td {
 }
 
 .faq-item {
-    padding: 30px;
+    padding: 0;
     background: var(--bg-light);
     border-radius: 15px;
     transition: var(--transition);
+    overflow: hidden;
 }
 
 .faq-item:hover {
@@ -3282,14 +3412,58 @@ table th, table td {
     box-shadow: var(--shadow-md);
 }
 
-.faq-item h3 {
+.faq-item summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 24px 30px;
+    cursor: pointer;
+    list-style: none;
+    user-select: none;
+}
+
+.faq-item summary::-webkit-details-marker { display: none; }
+
+.faq-item summary h3 {
+    font-size: 18px;
+    margin: 0;
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+.faq-item summary i {
+    font-size: 14px;
+    color: var(--text-light);
+    transition: transform 0.3s ease;
+    flex-shrink: 0;
+    margin-left: 16px;
+}
+
+.faq-item[open] summary i {
+    transform: rotate(180deg);
+}
+
+.faq-item p {
+    padding: 0 30px 24px;
+    margin: 0;
+    color: var(--text-light);
+    line-height: 1.8;
+}
+
+/* Fallback for non-details faq-item (legacy divs) */
+div.faq-item {
+    padding: 30px;
+}
+
+div.faq-item h3 {
     font-size: 18px;
     margin-bottom: 15px;
     font-weight: 600;
     color: var(--primary-color);
 }
 
-.faq-item p {
+div.faq-item p {
+    padding: 0;
     color: var(--text-light);
     line-height: 1.8;
 }

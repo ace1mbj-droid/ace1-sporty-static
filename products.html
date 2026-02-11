@@ -47,43 +47,195 @@
         </div>
     </nav>
     <main>
-        <section class="products-section" data-animate="fade-up">
+        <!-- Page Hero -->
+        <section class="page-hero" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%); min-height: 340px; display:flex; align-items:center;">
             <div class="container">
-                <h1>Shoes</h1>
+                <div class="hero-content">
+                    <h1>All Products</h1>
+                    <p>Browse our complete collection of comfort-first footwear and accessories.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Breadcrumbs -->
+        <nav class="breadcrumb" aria-label="Breadcrumb">
+            <div class="container">
+                <ol class="breadcrumb-list">
+                    <li><a href="index.html"><i class="fas fa-home"></i> Home</a></li>
+                    <li aria-current="page">Products</li>
+                </ol>
+            </div>
+        </nav>
+
+        <!-- Product Categories -->
+        <section class="categories-section" style="padding:60px 0;">
+            <div class="container">
+                <div class="section-header">
+                    <h2 class="section-title">Shop by Category</h2>
+                    <p class="section-subtitle">Choose a category to explore</p>
+                </div>
+                <div class="categories-grid">
+                    <div class="category-card">
+                        <div class="category-image" style="background-image: url('images/category-shoes.svg');">
+                            <i class="fas fa-shoe-prints"></i>
+                        </div>
+                        <div class="category-content">
+                            <h3 class="category-title">Shoes</h3>
+                            <p class="category-description">Modern footwear built for comfort and everyday wear</p>
+                            <a href="shoes.html" class="category-link">Shop Shoes <i class="fas fa-arrow-right"></i></a>
+                        </div>
+                    </div>
+                    <div class="category-card">
+                        <div class="category-image" style="background-image: url('images/hero-accessories.svg');">
+                            <i class="fas fa-bag-shopping"></i>
+                        </div>
+                        <div class="category-content">
+                            <h3 class="category-title">Accessories</h3>
+                            <p class="category-description">Bags, hats, socks &amp; more — coming soon</p>
+                            <a href="accessories.html" class="category-link">View Accessories <i class="fas fa-arrow-right"></i></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Featured Products -->
+        <section class="products-section" data-animate="fade-up" style="padding:60px 0; background: var(--bg-page);">
+            <div class="container">
+                <div class="section-header">
+                    <h2 class="section-title">Featured Products</h2>
+                    <p class="section-subtitle">Hand-picked for you</p>
+                </div>
                 <div class="products-grid-modern">
                     <div class="product-card">
                         <div class="product-image">
-                            <img src="https://vorqavsuqcjnkjzwkyzr.supabase.co/storage/v1/object/public/Images/Product%20Images/IMG_0739.webp" alt="Product 1" onerror="this.src='images/placeholder.jpg'">
+                            <img src="https://vorqavsuqcjnkjzwkyzr.supabase.co/storage/v1/object/public/Images/Product%20Images/IMG_0739.webp" alt="Ace#1 Comfort Sneaker" onerror="this.src='images/placeholder.jpg'">
                         </div>
-                        <h3 class="product-title">Product 1</h3>
+                        <h3 class="product-title">Comfort Sneaker</h3>
                         <p class="product-price">Coming Soon</p>
                         <a class="btn btn-secondary view-details-btn" href="contact.html">View Details</a>
                     </div>
                     <div class="product-card">
                         <div class="product-image">
-                            <img src="https://vorqavsuqcjnkjzwkyzr.supabase.co/storage/v1/object/public/Images/Product%20Images/IMG_0739.webp" alt="Product 2" onerror="this.src='images/placeholder.jpg'">
+                            <img src="https://vorqavsuqcjnkjzwkyzr.supabase.co/storage/v1/object/public/Images/Product%20Images/IMG_0739.webp" alt="Ace#1 Performance Sneaker" onerror="this.src='images/placeholder.jpg'">
                         </div>
-                        <h3 class="product-title">Product 2</h3>
+                        <h3 class="product-title">Performance Sneaker</h3>
                         <p class="product-price">Coming Soon</p>
                         <a class="btn btn-secondary view-details-btn" href="contact.html">View Details</a>
                     </div>
                     <div class="product-card">
                         <div class="product-image">
-                            <img src="https://vorqavsuqcjnkjzwkyzr.supabase.co/storage/v1/object/public/Images/Product%20Images/IMG_0739.webp" alt="Product 3" onerror="this.src='images/placeholder.jpg'">
+                            <img src="https://vorqavsuqcjnkjzwkyzr.supabase.co/storage/v1/object/public/Images/Product%20Images/IMG_0739.webp" alt="Ace#1 Stylish Sneaker" onerror="this.src='images/placeholder.jpg'">
                         </div>
-                        <h3 class="product-title">Product 3</h3>
+                        <h3 class="product-title">Stylish Sneaker</h3>
                         <p class="product-price">Coming Soon</p>
                         <a class="btn btn-secondary view-details-btn" href="contact.html">View Details</a>
                     </div>
                 </div>
             </div>
         </section>
+
+        <!-- Customer Promise -->
+        <section class="customer-promise">
+            <div class="container">
+                <div class="promise-grid">
+                    <div class="promise-item">
+                        <i class="fas fa-truck-fast"></i>
+                        <h4>Free Shipping</h4>
+                        <p>On all orders across India</p>
+                    </div>
+                    <div class="promise-item">
+                        <i class="fas fa-rotate-left"></i>
+                        <h4>Easy Returns</h4>
+                        <p>30-day hassle-free returns</p>
+                    </div>
+                    <div class="promise-item">
+                        <i class="fas fa-lock"></i>
+                        <h4>Secure Checkout</h4>
+                        <p>100% encrypted payments</p>
+                    </div>
+                    <div class="promise-item">
+                        <i class="fas fa-headset"></i>
+                        <h4>Dedicated Support</h4>
+                        <p>Mon–Sat, 10AM–7PM IST</p>
+                    </div>
+                </div>
+            </div>
+        </section>
     </main>
 
+    <!-- Footer -->
     <footer class="footer">
         <div class="container">
-            <p>&copy; 2026 Ace#1. All rights reserved.</p>
+            <div class="footer-content">
+                <div class="footer-column">
+                    <h3 class="footer-logo"><img class="footer-logo-img" src="images/ace1-logo-bw.svg" alt="ACE#1" loading="lazy" decoding="async" onerror="this.remove();"><span class="logo-text">ACE<span class="logo-accent">#1</span></span></h3>
+                    <p>Modern footwear built for comfort, style, and everyday wear.</p>
+                    <div class="social-icons">
+                        <a href="https://instagram.com/ace_1_official/" target="_blank" rel="noopener noreferrer" aria-label="Ace#1 on Instagram"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+                <div class="footer-column">
+                    <h4>Shop</h4>
+                    <ul>
+                        <li><a href="shoes.html">All Shoes</a></li>
+                        <li><a href="accessories.html">Accessories</a></li>
+                        <li><a href="technology.html">Technology</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h4>Company</h4>
+                    <ul>
+                        <li><a href="about.html">About Us</a></li>
+                        <li><a href="contact.html">Contact</a></li>
+                        <li><a href="faq.html">FAQ</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h4>Support</h4>
+                    <ul>
+                        <li><a href="size-guide.html">Size Guide</a></li>
+                        <li><a href="faq.html#shipping">Shipping Info</a></li>
+                        <li><a href="privacy-policy.html">Privacy Policy</a></li>
+                        <li><a href="terms-of-service.html">Terms of Service</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 Ace#1. All rights reserved.</p>
+                <div class="footer-links">
+                    <a href="privacy-policy.html">Privacy Policy</a>
+                    <a href="terms-of-service.html">Terms of Service</a>
+                </div>
+            </div>
         </div>
     </footer>
+
+    <!-- Shopping Cart Sidebar -->
+    <div class="cart-sidebar" id="cart-sidebar">
+        <div class="cart-header">
+            <h3>Shopping Cart</h3>
+            <button class="cart-close" id="cart-close" aria-label="Close cart"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="cart-items" id="cart-items">
+            <div class="cart-empty"><i class="fas fa-shopping-bag"></i><p>Your cart is empty</p></div>
+        </div>
+        <div class="cart-footer">
+            <div class="cart-total"><span>Subtotal:</span><span id="cart-total">₹0</span></div>
+            <a href="checkout.html" class="btn btn-primary btn-block">Checkout</a>
+            <a href="shoes.html" class="btn btn-secondary">Continue Shopping</a>
+        </div>
+    </div>
+    <div class="cart-overlay" id="cart-overlay"></div>
+
+    <!-- Cache Buster -->
+    <script src="js/cache-buster.js"></script>
+    <!-- Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.89.0"></script>
+    <script src="js/supabase-config.js"></script>
+    <script src="js/supabase-service.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/products.js"></script>
+    <script src="js/image-optimizer.js"></script>
 </body>
 </html>
