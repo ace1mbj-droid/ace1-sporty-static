@@ -340,12 +340,14 @@ button {
 }
 
 .site-logo-img {
-    height: 50px;
+    height: 44px;
     width: auto;
-    max-width: 200px;
+    max-width: 180px;
     display: block;
     object-fit: contain;
-    border-radius: 4px;
+    border-radius: 8px;
+    padding: 4px;
+    background: rgba(255, 255, 255, 0.92);
     /* Ensure crisp logo rendering */
     image-rendering: -webkit-optimize-contrast;
     image-rendering: crisp-edges;
@@ -355,11 +357,14 @@ button {
 }
 
 .footer-logo-img {
-    height: 50px;
+    height: 44px;
     width: auto;
     max-width: 160px;
     object-fit: contain;
-    border-radius: 4px;
+    border-radius: 8px;
+    padding: 4px;
+    /* Invert the dark SVG to white for dark footer background */
+    filter: brightness(0) invert(1);
     transform-style: preserve-3d;
     animation: logoVideo3d 6s linear infinite;
     will-change: transform;
@@ -1551,10 +1556,14 @@ table th, table td {
 }
 
 .footer-logo .footer-logo-img {
-    width: 60px;
-    height: 60px;
-    border-radius: 16px;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+    width: 52px;
+    height: 52px;
+    padding: 6px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.08);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+    /* Invert dark logo to white on dark footer */
+    filter: brightness(0) invert(1);
     transition: var(--transition);
 }
 
@@ -2510,8 +2519,8 @@ table th, table td {
     }
 
     .footer-logo .footer-logo-img {
-        width: 50px;
-        height: 50px;
+        width: 44px;
+        height: 44px;
     }
 
     .footer-section {
@@ -5574,8 +5583,8 @@ table th, table td {
     }
 
     .site-logo-img {
-        height: clamp(40px, 9vw, 48px);
-        max-width: 200px;
+        height: clamp(36px, 8vw, 44px);
+        max-width: 160px;
     }
 
     .nav-icons .cart-count {
@@ -6075,8 +6084,8 @@ table th, table td {
     }
 
     .site-logo-img {
-        height: clamp(38px, 10vw, 44px);
-        max-width: 180px;
+        height: clamp(34px, 9vw, 40px);
+        max-width: 150px;
     }
 
     .nav-icons .cart-count {
@@ -6306,8 +6315,9 @@ table th, table td {
     }
 
     .site-logo-img {
-        height: 32px;
-        max-width: 140px;
+        height: 30px;
+        max-width: 120px;
+        padding: 3px;
     }
 
     .nav-icons .icon-btn {
