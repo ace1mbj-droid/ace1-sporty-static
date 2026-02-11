@@ -792,13 +792,7 @@
             position: relative;
             overflow: hidden;
         }
-        /* subtle nav refinement for homepage only */
-        .index-home .nav-container {
-            max-width: 1180px;
-            margin: 0 auto;
-        }
-        .index-home .nav-menu { justify-content: center; gap: 24px; }
-        .index-home .nav-menu .nav-link { font-size: 0.95rem; letter-spacing: 0.06em; }
+
 
         .index-home .hero-content {
             max-width: 1180px;
@@ -924,8 +918,8 @@
         <div class="nav-container">
             <div class="nav-logo">
                 <a href="index.html">
-                    <img class="site-logo-img" src="images/ace1-logo-bw.svg" alt="ACE#1" decoding="async" loading="eager" onerror="this.src='images/ace1-logo-original-512.png'; this.onerror=function(){this.style.display='none'; this.nextElementSibling.style.display='inline';};">
-                    <span class="logo-text" style="display:none;">ACE<span class="logo-accent">#1</span></span>
+                    <img class="site-logo-img" src="images/ace1-logo-bw.svg" alt="ACE#1" decoding="async" loading="eager" onerror="this.remove();">
+                    <span class="logo-text">ACE<span class="logo-accent">#1</span></span>
                 </a>
             </div>
             <ul class="nav-menu" id="nav-menu">
@@ -955,6 +949,16 @@
             </div>
         </div>
     </nav>
+
+    <!-- Search Overlay -->
+    <div class="search-overlay" id="search-overlay">
+        <div class="search-container">
+            <input type="text" class="search-input" placeholder="Search for products...">
+            <button class="search-close" id="search-close">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    </div>
 
     <!-- Main Content -->
     <main class="main-content">
