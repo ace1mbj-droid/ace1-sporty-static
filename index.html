@@ -1412,24 +1412,18 @@
         </section>
 
     </main>
-
     <!-- Footer -->
     <footer class="footer">
         <div class="container">
             <div class="footer-content">
-                <div class="footer-section">
-                    <div class="footer-logo">
-                        <img class="footer-logo-img" src="images/ace1-logo-bw.svg" alt="ACE#1" loading="lazy" decoding="async" onerror="this.src='images/ace1-logo-original-512.png';">
-                        <span class="logo-text">ACE<span class="logo-accent">#1</span></span>
-                    </div>
-                    <p>Modern footwear built for comfort and everyday wear.</p>
-                    <p style="opacity:0.85;margin-top:10px;">Accessories &amp; apparel coming in the future — for now we’re focused on footwear.</p>
-                    <div class="social-links">
+                <div class="footer-column">
+                    <h3 class="footer-logo"><img class="footer-logo-img" src="images/ace1-logo-bw.svg" alt="ACE#1" loading="lazy" decoding="async" onerror="this.remove();"><span class="logo-text">ACE<span class="logo-accent">#1</span></span></h3>
+                    <p>Modern footwear built for comfort, style, and everyday wear.</p>
+                    <div class="social-icons">
                         <a href="https://instagram.com/ace_1_official/" target="_blank" rel="noopener noreferrer" aria-label="Ace#1 on Instagram"><i class="fab fa-instagram"></i></a>
-                        <a href="https://facebook.com/ace1official" target="_blank" rel="noopener noreferrer" aria-label="Ace#1 on Facebook"><i class="fab fa-facebook"></i></a>
                     </div>
                 </div>
-                <div class="footer-section">
+                <div class="footer-column">
                     <h4>Shop</h4>
                     <ul>
                         <li><a href="shoes.html">All Shoes</a></li>
@@ -1437,33 +1431,30 @@
                         <li><a href="technology.html">Technology</a></li>
                     </ul>
                 </div>
-                <div class="footer-section">
-                    <h4>Quick Links</h4>
+                <div class="footer-column">
+                    <h4>Company</h4>
                     <ul>
-                        <li><a href="about.html">About</a></li>
-                        <li><a href="technology.html">Technology</a></li>
+                        <li><a href="about.html">About Us</a></li>
                         <li><a href="contact.html">Contact</a></li>
                         <li><a href="faq.html">FAQ</a></li>
                     </ul>
                 </div>
-                <div class="footer-section">
-                    <h4>Categories</h4>
-                    <ul>
-                        <li><a href="shoes.html">Shoes</a></li>
-                    </ul>
-                </div>
-                <div class="footer-section">
+                <div class="footer-column">
                     <h4>Support</h4>
                     <ul>
                         <li><a href="size-guide.html">Size Guide</a></li>
+                        <li><a href="faq.html#shipping">Shipping Info</a></li>
+                        <li><a href="faq.html#returns">Returns</a></li>
                         <li><a href="privacy-policy.html">Privacy Policy</a></li>
-                        <li><a href="terms-of-service.html">Terms of Service</a></li>
-                        <li><a href="data-deletion.html">Data Deletion</a></li>
                     </ul>
                 </div>
             </div>
             <div class="footer-bottom">
                 <p>&copy; 2026 Ace#1. All rights reserved.</p>
+                <div class="footer-links">
+                    <a href="privacy-policy.html">Privacy Policy</a>
+                    <a href="terms-of-service.html">Terms of Service</a>
+                </div>
             </div>
         </div>
     </footer>
@@ -1494,19 +1485,26 @@
 
     <div class="cart-overlay" id="cart-overlay"></div>
 
-    <!-- Scripts -->
+    <!-- Cache Buster (must load first) -->
+    <script src="js/cache-buster.js"></script>
+    <!-- Supabase Integration -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.89.0"></script>
-    <script src="js/main.js"></script>
-    <script src="js/auth.js"></script>
     <script src="js/supabase-config.js"></script>
     <script src="js/supabase-service.js"></script>
+    <!-- Security Scripts -->
+    <script src="js/security.js"></script>
+    <script src="js/database-auth.js"></script>
+    <!-- E-Commerce Backend -->
     <script src="js/ecommerce-backend.js"></script>
-    <script src="js/products.js"></script>
-    <script src="js/reviews.js"></script>
+    <!-- Bot Defense -->
     <script src="js/hcaptcha-config.js"></script>
     <script src="js/hcaptcha-manager.js"></script>
     <script src="js/bot-defense.js"></script>
-    <script src="js/cache-buster.js"></script>
+
+    <script src="js/main.js"></script>
+    <script src="js/products.js"></script>
+    <!-- Image Optimization -->
+    <script src="js/image-optimizer.js"></script>
     <!-- Media Lightbox Modal -->
     <div class="media-lightbox" id="media-lightbox">
         <button class="lightbox-close" aria-label="Close lightbox">&times;</button>
