@@ -201,7 +201,7 @@
             flex: 1;
         }
 
-        .products-grid-modern {
+        .products-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
             gap: 24px;
@@ -346,7 +346,9 @@
         </aside>
 
         <div class="shop-content-modern">
-            <div class="products-grid-modern">
+            <div class="products-grid">
+                <!-- Products loaded dynamically by products.js from Supabase -->
+                <!-- Fallback: shown only if JS/Supabase fails -->
                 <div class="product-card">
                     <div class="product-image">
                         <img src="https://vorqavsuqcjnkjzwkyzr.supabase.co/storage/v1/object/public/Images/Product%20Images/IMG_0739.webp" alt="Stylish Bag" onerror="this.src='images/placeholder.jpg'">

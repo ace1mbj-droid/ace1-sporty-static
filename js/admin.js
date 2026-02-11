@@ -936,36 +936,30 @@ class AdminPanel {
     }
 
     async loadAccessoriesProducts() {
-        try {
-            const { data: products, error } = await this.supabase
-                .from('products')
-                .select(`
-                    *,
-                    product_images (
-                        storage_path,
-                        alt
-                    ),
-                    inventory (
-                        stock,
-                        size
-                    )
-                `)
-                .eq('is_active', true)
-                .is('deleted_at', null)
-                .or('is_locked.is.null,is_locked.eq.false')
-                .eq('status', 'available')
-                .eq('primary_category', 'accessories')
-                .order('created_at', { ascending: false });
+        const { data: products, error } = await this.supabase
+            .from('products')
+            .select(`
+                *,
+                inventory (
+                    stock,
+                    size
+                ),
+                product_images (
+                    storage_path,
+                    alt,
+                    position
+                )
+            `)
+            .eq('primary_category', 'accessories')
+            .is('deleted_at', null)
+            .order('created_at', { ascending: false });
 
-            if (error) throw error;
-
-            this.renderProductsGrid(products || [], 'accessories-grid');
-        } catch (error) {
+        if (error) {
             console.error('Error loading accessories products:', error);
-            showNotification('Failed to load accessories products', 'error');
-            const grid = document.getElementById('accessories-grid');
-            if (grid) grid.innerHTML = '<p style="text-align: center; padding: 40px; color: #666;">No products found. Add your first product!</p>';
+            return;
         }
+
+        this.processAndRenderProducts(products, 'accessories');
     }
 
     async processAndRenderProducts(products, category) {
@@ -1010,7 +1004,7 @@ class AdminPanel {
     }
 
     updatePrimaryCategoryPublicVisibility(category, rawProducts) {
-        if (category !== 'shoes' && category !== 'clothing') return;
+        if (category !== 'shoes' && category !== 'clothing' && category !== 'accessories') return;
 
         const publicCount = (rawProducts || []).filter(p => {
             const isActive = p && p.is_active === true;
@@ -1024,7 +1018,7 @@ class AdminPanel {
         const visible = publicCount > 0;
         const tabButton = document.querySelector(`.admin-tab[data-tab="${category}"]`);
         if (tabButton) {
-            const baseLabel = category === 'shoes' ? 'Shoes' : 'Clothing';
+            const baseLabel = category === 'shoes' ? 'Shoes' : category === 'accessories' ? 'Accessories' : 'Clothing';
             tabButton.textContent = visible ? baseLabel : `${baseLabel} (Hidden)`;
         }
 
@@ -1044,7 +1038,7 @@ class AdminPanel {
             }
         }
 
-        const label = category === 'shoes' ? 'Shoes' : 'Clothing';
+        const label = category === 'shoes' ? 'Shoes' : category === 'accessories' ? 'Accessories' : 'Clothing';
         // TODO: Sanitize visible before injecting
         note.innerHTML = visible
             ? `<strong>Public page:</strong> Visible (${publicCount} active product${publicCount === 1 ? '' : 's'}).`
@@ -1053,7 +1047,8 @@ class AdminPanel {
 
     renderProducts(category = null) {
         const gridId = category === 'shoes' ? 'shoes-grid' : 
-                      category === 'clothing' ? 'clothing-grid' : 'products-grid';
+                      category === 'clothing' ? 'clothing-grid' :
+                      category === 'accessories' ? 'accessories-grid' : 'products-grid';
         const grid = document.getElementById(gridId);
         
         if (!grid) {
@@ -1643,6 +1638,7 @@ class AdminPanel {
             description: productData.description,
             price_cents: productData.price_cents,
             category: productData.category,
+            primary_category: productData.primary_category,
             is_active: productData.is_active,
             show_on_index: productData.show_on_index
         };
