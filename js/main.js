@@ -2689,30 +2689,30 @@ function injectFooterLoginButtons() {
         return;
     }
 
-    const footerBottom = footer.querySelector('.footer-bottom') || footer;
-    if (!footerBottom || footerBottom.querySelector('.footer-login-cta')) {
-        return;
-    }
+    // Secret admin access: triple-click (or triple-tap) the copyright text
+    // to navigate to admin login. No visible buttons for customers.
+    const footerBottom = footer.querySelector('.footer-bottom');
+    if (!footerBottom) return;
 
-    const wrapper = document.createElement('div');
-    wrapper.className = 'footer-login-cta';
-    wrapper.innerHTML = `
-        <a class="footer-login-btn" href="login.html" aria-label="User login">
-            <i class="fas fa-user-circle"></i>
-            <span>User Login</span>
-        </a>
-        <a class="footer-login-btn admin" href="admin-login.html" aria-label="Admin login">
-            <i class="fas fa-user-shield"></i>
-            <span>Admin Login</span>
-        </a>
-    `;
+    const copyrightEl = footerBottom.querySelector('p');
+    if (!copyrightEl || copyrightEl.dataset.adminBound) return;
+    copyrightEl.dataset.adminBound = 'true';
 
-    const footerLinks = footerBottom.querySelector('.footer-links');
-    if (footerLinks) {
-        footerBottom.insertBefore(wrapper, footerLinks);
-    } else {
-        footerBottom.appendChild(wrapper);
-    }
+    let tapCount = 0;
+    let tapTimer = null;
+
+    copyrightEl.addEventListener('click', function () {
+        tapCount++;
+        if (tapTimer) clearTimeout(tapTimer);
+        tapTimer = setTimeout(function () { tapCount = 0; }, 800);
+        if (tapCount >= 3) {
+            tapCount = 0;
+            window.location.href = 'admin-login.html';
+        }
+    });
+    // Keep cursor default so it doesn't hint at interactivity
+    copyrightEl.style.cursor = 'default';
+    copyrightEl.style.userSelect = 'none';
 }
 
 if (document.readyState === 'loading') {

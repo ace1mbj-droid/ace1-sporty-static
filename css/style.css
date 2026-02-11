@@ -1853,6 +1853,11 @@ table th, table td {
     z-index: 1;
 }
 
+/* Hide user login icon from navbar — customers don't need it */
+.nav-icons .user-btn {
+    display: none !important;
+}
+
 .footer-login-cta {
     display: flex;
     gap: 16px;
