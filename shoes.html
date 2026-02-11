@@ -290,6 +290,34 @@
         </div>
     </section>
 
+    <!-- Quick View Modal -->
+    <div id="modal-overlay" class="modal-overlay"></div>
+    <div class="modal" id="quick-view-modal">
+        <div class="modal-content quick-view-content">
+            <button class="modal-close" id="modal-close-btn"><i class="fas fa-times"></i></button>
+            <div class="qv-layout">
+                <div class="qv-left" id="qv-gallery-container">
+                    <img id="qv-image" src="" alt="Product" style="width:100%; border-radius:12px;">
+                </div>
+                <div class="qv-right">
+                    <span class="qv-category" id="qv-category">Shoes</span>
+                    <h2 class="qv-name" id="qv-name">Product Name</h2>
+                    <p class="qv-price" id="qv-price">₹0</p>
+                    <p class="qv-description" id="qv-description">Description coming soon.</p>
+                    <div class="qv-stock" id="qv-stock"></div>
+                    <div class="qv-sizes" id="qv-sizes">
+                        <h4>Select Size</h4>
+                        <div class="size-options"></div>
+                    </div>
+                    <div class="qv-actions">
+                        <button class="btn btn-primary" id="qv-add-to-cart"><i class="fas fa-shopping-bag"></i> Add to Cart</button>
+                        <button class="btn btn-secondary" id="qv-buy-now"><i class="fas fa-bolt"></i> Buy Now</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Footer -->
     <footer class="footer">
         <div class="container">

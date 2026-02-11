@@ -2354,6 +2354,9 @@ function openQuickView(productData) {
     
     // Get proper image URL
     const imageUrl = productData.image_url || productData.image || 'images/placeholder.jpg';
+    const allImages = productData.all_images && productData.all_images.length > 0
+        ? productData.all_images
+        : [imageUrl];
     
     // Get proper price (handle both price and price_cents)
     let price = productData.price;
@@ -2364,11 +2367,49 @@ function openQuickView(productData) {
         price = (productData.price_cents / 100);
     }
     
-    // Populate modal with product data
-    document.getElementById('qv-image').src = imageUrl;
-    document.getElementById('qv-image').onerror = () => {
-        document.getElementById('qv-image').src = 'images/placeholder.jpg';
-    };
+    // Populate gallery with product images
+    const galleryContainer = document.getElementById('qv-gallery-container');
+    if (galleryContainer) {
+        if (allImages.length > 1) {
+            // Multi-image gallery
+            galleryContainer.innerHTML = `
+                <div class="qv-gallery">
+                    <img class="qv-main-img" id="qv-image" src="${allImages[0]}" alt="${productData.name || 'Product'}" onerror="this.src='images/placeholder.jpg'">
+                    <button class="gallery-arrow gallery-prev" aria-label="Previous image"><i class="fas fa-chevron-left"></i></button>
+                    <button class="gallery-arrow gallery-next" aria-label="Next image"><i class="fas fa-chevron-right"></i></button>
+                </div>
+                <div class="qv-thumbnails">
+                    ${allImages.map((img, idx) => `<img class="${idx === 0 ? 'active' : ''}" src="${img}" alt="Image ${idx + 1}" data-index="${idx}" onerror="this.src='images/product-placeholder.svg'">`).join('')}
+                </div>
+            `;
+
+            // Attach gallery navigation
+            let currentIdx = 0;
+            const mainImg = galleryContainer.querySelector('.qv-main-img');
+            const thumbs = galleryContainer.querySelectorAll('.qv-thumbnails img');
+            const showImage = (idx) => {
+                currentIdx = ((idx % allImages.length) + allImages.length) % allImages.length;
+                mainImg.src = allImages[currentIdx];
+                thumbs.forEach(t => t.classList.remove('active'));
+                thumbs[currentIdx]?.classList.add('active');
+            };
+            galleryContainer.querySelector('.gallery-prev')?.addEventListener('click', () => showImage(currentIdx - 1));
+            galleryContainer.querySelector('.gallery-next')?.addEventListener('click', () => showImage(currentIdx + 1));
+            thumbs.forEach(thumb => {
+                thumb.addEventListener('click', () => showImage(parseInt(thumb.dataset.index || 0)));
+            });
+        } else {
+            // Single image
+            galleryContainer.innerHTML = `<img id="qv-image" src="${allImages[0]}" alt="${productData.name || 'Product'}" style="width:100%; border-radius:12px;" onerror="this.src='images/placeholder.jpg'">`;
+        }
+    } else {
+        // Fallback: set single #qv-image directly
+        const qvImg = document.getElementById('qv-image');
+        if (qvImg) {
+            qvImg.src = imageUrl;
+            qvImg.onerror = () => { qvImg.src = 'images/placeholder.jpg'; };
+        }
+    }
     document.getElementById('qv-name').textContent = productData.name;
     document.getElementById('qv-category').textContent = productData.category || 'Sneakers';
     document.getElementById('qv-price').textContent = `₹${price ? parseFloat(price).toLocaleString('en-IN') : '0'}`;
@@ -2582,7 +2623,8 @@ function attachQuickViewHandlers() {
                             *,
                             product_images (
                                 storage_path,
-                                alt
+                                alt,
+                                position
                             ),
                             inventory (
                                 stock,
@@ -2617,10 +2659,17 @@ function attachQuickViewHandlers() {
                             return `${projectUrl}/storage/v1/object/public/Images/${storagePath}`;
                         };
                         
-                        // Process product with proper image URL and inventory
+                        // Process product with proper image URL, all images, and inventory
+                        const sortedImages = (product.product_images || [])
+                            .sort((a, b) => (a.position || 0) - (b.position || 0));
+                        const allImageUrls = sortedImages
+                            .map(img => getImageUrl(img.storage_path))
+                            .filter(Boolean);
+
                         const processedProduct = {
                             ...product,
-                            image_url: getImageUrl(product.product_images?.[0]?.storage_path) || 'images/placeholder.jpg',
+                            image_url: allImageUrls[0] || 'images/placeholder.jpg',
+                            all_images: allImageUrls,
                             stock_quantity: (product.inventory || []).reduce((sum, inv) => sum + (inv.stock || 0), 0),
                             price: (product.price_cents / 100).toFixed(2)
                         };

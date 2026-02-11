@@ -328,7 +328,8 @@ class ProductFilterManager {
                     *,
                     product_images (
                         storage_path,
-                        alt
+                        alt,
+                        position
                     ),
                     inventory (
                         stock,
@@ -394,9 +395,15 @@ class ProductFilterManager {
 
             let processedProducts = (products || []).map(product => {
                 const productInventory = inventoryByProduct[product.id] || [];
+                // Build ALL image URLs (not just the first) for gallery support
+                const allImages = (product.product_images || [])
+                    .sort((a, b) => (a.position || 0) - (b.position || 0))
+                    .map(img => getImageUrl(img.storage_path))
+                    .filter(Boolean);
                 return {
                     ...product,
-                    image_url: getImageUrl(product.product_images?.[0]?.storage_path) || null,
+                    image_url: allImages[0] || null,
+                    all_images: allImages,
                     // Sum stock across all sizes for total availability
                     stock_quantity: productInventory.reduce((sum, inv) => sum + (inv.stock || 0), 0),
                     // Also keep per-size inventory for detailed view
@@ -631,8 +638,21 @@ class ProductFilterManager {
 
             return `
             <div class="product-card" data-animate="fade-up" data-product-id="${product.id}" data-category="${this.normalizeCategoryToSlug(product.category || 'casual')}">
-                <div class="product-image">
+                <div class="product-image ${(product.all_images && product.all_images.length > 1) ? 'has-gallery' : ''}">
+                    ${(product.all_images && product.all_images.length > 1) ? `
+                    <div class="product-gallery" data-current="0">
+                        ${product.all_images.map((imgUrl, idx) => `
+                            <img class="gallery-img ${idx === 0 ? 'active' : ''}" src="${imgUrl}" alt="${name} - Image ${idx + 1}" onerror="this.src='images/product-placeholder.svg'" loading="lazy" decoding="async" data-index="${idx}">
+                        `).join('')}
+                        <button class="gallery-arrow gallery-prev" aria-label="Previous image"><i class="fas fa-chevron-left"></i></button>
+                        <button class="gallery-arrow gallery-next" aria-label="Next image"><i class="fas fa-chevron-right"></i></button>
+                        <div class="gallery-dots">
+                            ${product.all_images.map((_, idx) => `<span class="gallery-dot ${idx === 0 ? 'active' : ''}" data-index="${idx}"></span>`).join('')}
+                        </div>
+                    </div>
+                    ` : `
                     <img src="${product.image_url || 'images/product-placeholder.svg'}" alt="${name}" onerror="this.src='images/product-placeholder.svg'" loading="lazy" decoding="async">
+                    `}
                     ${product.is_locked ? '<div class="product-badge bg-gray">Locked</div>' : ''}
                     ${product.stock_quantity === 0 ? '<div class="product-badge bg-red">Out of Stock</div>' : ''}
                     ${product.stock_quantity > 0 && product.stock_quantity < 10 ? '<div class="product-badge bg-orange">Low Stock</div>' : ''}
@@ -699,8 +719,52 @@ class ProductFilterManager {
         if (window.attachQuickViewHandlers) {
             window.attachQuickViewHandlers();
         }
+
+        // Attach image gallery navigation handlers
+        this.attachGalleryHandlers();
         
         console.log('✅ Event listeners attached');
+    }
+
+    /**
+     * Attach click handlers for product card image galleries (prev/next arrows + dots)
+     */
+    attachGalleryHandlers() {
+        document.querySelectorAll('.product-gallery').forEach(gallery => {
+            const imgs = gallery.querySelectorAll('.gallery-img');
+            const dots = gallery.querySelectorAll('.gallery-dot');
+            if (imgs.length < 2) return;
+
+            const showSlide = (index) => {
+                const total = imgs.length;
+                const idx = ((index % total) + total) % total;
+                gallery.dataset.current = idx;
+                imgs.forEach(img => img.classList.remove('active'));
+                dots.forEach(dot => dot.classList.remove('active'));
+                imgs[idx]?.classList.add('active');
+                dots[idx]?.classList.add('active');
+            };
+
+            gallery.querySelector('.gallery-prev')?.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                showSlide(parseInt(gallery.dataset.current || 0) - 1);
+            });
+
+            gallery.querySelector('.gallery-next')?.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                showSlide(parseInt(gallery.dataset.current || 0) + 1);
+            });
+
+            dots.forEach(dot => {
+                dot.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    showSlide(parseInt(dot.dataset.index || 0));
+                });
+            });
+        });
     }
 
     loadProducts() {

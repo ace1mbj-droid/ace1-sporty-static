@@ -237,6 +237,58 @@
             background: var(--primary-color-dark);
         }
 
+        /* Category Showcase Cards */
+        .category-showcase {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 32px;
+        }
+
+        .category-showcase-card {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            border-radius: 14px;
+            overflow: hidden;
+            box-shadow: var(--shadow-md);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .category-showcase-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 12px 32px rgba(15, 23, 42, 0.25);
+        }
+
+        .category-showcase-image {
+            width: 100%;
+            aspect-ratio: 3 / 2;
+            overflow: hidden;
+        }
+
+        .category-showcase-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .category-showcase-info {
+            padding: 18px 20px;
+        }
+
+        .category-showcase-info h3 {
+            font-size: 20px;
+            font-weight: 700;
+            color: #ffffff;
+            margin: 0 0 8px;
+        }
+
+        .category-showcase-info p {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.65);
+            margin: 0;
+            line-height: 1.5;
+        }
+
     </style>
 </head>
 <body>
@@ -321,11 +373,35 @@
                     <li><a href="#">Hats</a></li>
                     <li><a href="#">Socks</a></li>
                     <li><a href="#">Energy Bands</a></li>
+                    <li><a href="#">Radiation Cards</a></li>
+                    <li><a href="#">Energy Wrist Bands</a></li>
                 </ul>
             </div>
         </aside>
 
         <div class="shop-content-modern">
+            <!-- Category Showcase -->
+            <div class="category-showcase">
+                <div class="category-showcase-card">
+                    <div class="category-showcase-image">
+                        <img src="images/category-radiation-card.svg" alt="Radiation Card" loading="lazy" decoding="async">
+                    </div>
+                    <div class="category-showcase-info">
+                        <h3>Radiation Card</h3>
+                        <p>Advanced radiation protection card — slim, portable, engineered for everyday safety.</p>
+                    </div>
+                </div>
+                <div class="category-showcase-card">
+                    <div class="category-showcase-image">
+                        <img src="images/category-energy-band.svg" alt="Energy Wrist Band" loading="lazy" decoding="async">
+                    </div>
+                    <div class="category-showcase-info">
+                        <h3>Energy Wrist Band</h3>
+                        <p>MBJ energy wrist band — designed to boost your daily energy and well-being.</p>
+                    </div>
+                </div>
+            </div>
+
             <div class="products-grid">
                 <!-- Products loaded dynamically by products.js from Supabase -->
                 <!-- Fallback: shown only if JS/Supabase fails -->
@@ -361,9 +437,53 @@
                     <p class="product-price">Coming Soon</p>
                     <a class="btn btn-secondary view-details-btn" href="contact.html">View Details</a>
                 </div>
+                <div class="product-card">
+                    <div class="product-image">
+                        <img src="images/category-radiation-card.svg" alt="Radiation Card" onerror="this.src='images/placeholder.jpg'">
+                    </div>
+                    <h3 class="product-title">Radiation Card</h3>
+                    <p class="product-price">Coming Soon</p>
+                    <a class="btn btn-secondary view-details-btn" href="contact.html">View Details</a>
+                </div>
+                <div class="product-card">
+                    <div class="product-image">
+                        <img src="images/category-energy-band.svg" alt="Energy Wrist Band" onerror="this.src='images/placeholder.jpg'">
+                    </div>
+                    <h3 class="product-title">Energy Wrist Band</h3>
+                    <p class="product-price">Coming Soon</p>
+                    <a class="btn btn-secondary view-details-btn" href="contact.html">View Details</a>
+                </div>
             </div>
         </div>
     </section>
+
+    <!-- Quick View Modal -->
+    <div id="modal-overlay" class="modal-overlay"></div>
+    <div class="modal" id="quick-view-modal">
+        <div class="modal-content quick-view-content">
+            <button class="modal-close" id="modal-close-btn"><i class="fas fa-times"></i></button>
+            <div class="qv-layout">
+                <div class="qv-left" id="qv-gallery-container">
+                    <img id="qv-image" src="" alt="Product" style="width:100%; border-radius:12px;">
+                </div>
+                <div class="qv-right">
+                    <span class="qv-category" id="qv-category">Accessories</span>
+                    <h2 class="qv-name" id="qv-name">Product Name</h2>
+                    <p class="qv-price" id="qv-price">₹0</p>
+                    <p class="qv-description" id="qv-description">Description coming soon.</p>
+                    <div class="qv-stock" id="qv-stock"></div>
+                    <div class="qv-sizes" id="qv-sizes">
+                        <h4>Select Size</h4>
+                        <div class="size-options"></div>
+                    </div>
+                    <div class="qv-actions">
+                        <button class="btn btn-primary" id="qv-add-to-cart"><i class="fas fa-shopping-bag"></i> Add to Cart</button>
+                        <button class="btn btn-secondary" id="qv-buy-now"><i class="fas fa-bolt"></i> Buy Now</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Footer -->
     <footer class="footer">

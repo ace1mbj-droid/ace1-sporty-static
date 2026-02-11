@@ -460,15 +460,18 @@ class AdminPanel {
             this.saveProduct();
         });
 
-        // Image preview (for URL input)
-        document.getElementById('product-image').addEventListener('input', (e) => {
-            const url = e.target.value.trim();
-            if (url) {
-                this.updateImagePreview(url);
-            } else {
-                this.updateImagePreview(null);
-            }
-        });
+        // Image preview (for legacy URL input — now handled by multi-image rows)
+        const legacyImageInput = document.getElementById('product-image');
+        if (legacyImageInput && legacyImageInput.type !== 'hidden') {
+            legacyImageInput.addEventListener('input', (e) => {
+                const url = e.target.value.trim();
+                if (url) {
+                    this.updateImagePreview(url);
+                } else {
+                    this.updateImagePreview(null);
+                }
+            });
+        }
 
         // Settings form
         document.getElementById('settings-form').addEventListener('submit', (e) => {
@@ -1186,9 +1189,10 @@ class AdminPanel {
             // Render inventory rows (size + stock)
             this.renderInventoryRows(product.inventory || []);
             document.getElementById('product-image').value = product.product_images?.[0]?.storage_path || '';
+            // Populate multi-image rows from product_images
+            this.renderProductImageRows(product.product_images || []);
             document.getElementById('product-active').checked = product.is_active;
             document.getElementById('product-featured').checked = product.show_on_index !== false;
-            this.updateImagePreview(product.product_images?.[0]?.storage_path || null);
             // Attach add-size button handler
             const addBtn = document.getElementById('add-size-btn');
             if (addBtn) {
@@ -1246,9 +1250,15 @@ class AdminPanel {
             }
             // Start with one empty size row
             this.renderInventoryRows([]);
+            // Start with one empty image row
+            this.renderProductImageRows([]);
             const addBtn = document.getElementById('add-size-btn');
             if (addBtn) addBtn.onclick = () => this.addInventoryRow();
         }
+
+        // Hook up add-image button
+        const addImgBtn = document.getElementById('add-image-btn');
+        if (addImgBtn) addImgBtn.onclick = () => this.addProductImageRow();
         
         modal.classList.add('active');
 
@@ -1457,15 +1467,28 @@ class AdminPanel {
         });
 
         // Image URL suggestions from existing images + recently used values
-        const imageInput = modal.querySelector('#product-image');
-        this.bindInlineSuggest(imageInput, () => {
-            const recent = this.getLocalList('ace1_admin_image_url_suggestions_v1', 30);
-            const existing = (this.products || []).map(p => p?.image_url).filter(Boolean);
-            return [...recent, ...existing];
-        });
-
-        imageInput?.addEventListener('blur', () => {
-            this.addLocalListValue('ace1_admin_image_url_suggestions_v1', imageInput.value, 30);
+        // Bind to all visible image URL inputs in multi-image rows
+        const bindImageSuggestions = () => {
+            modal.querySelectorAll('.img-row-url').forEach(imgInput => {
+                if (imgInput.dataset.inlineSuggestBound === '1') return;
+                imgInput.dataset.inlineSuggestBound = '1';
+                this.bindInlineSuggest(imgInput, () => {
+                    const recent = this.getLocalList('ace1_admin_image_url_suggestions_v1', 30);
+                    const existing = (this.products || []).flatMap(p => (p?.product_images || []).map(i => i.storage_path)).filter(Boolean);
+                    return [...recent, ...existing];
+                });
+                imgInput.addEventListener('blur', () => {
+                    this.addLocalListValue('ace1_admin_image_url_suggestions_v1', imgInput.value, 30);
+                });
+            });
+        };
+        bindImageSuggestions();
+        // Re-bind when add-image button is clicked
+        const addImgBtnSuggest = modal.querySelector('#add-image-btn');
+        if (addImgBtnSuggest && addImgBtnSuggest.dataset.inlineSuggestHooked !== '1') {
+            addImgBtnSuggest.dataset.inlineSuggestHooked = '1';
+            addImgBtnSuggest.addEventListener('click', () => setTimeout(bindImageSuggestions, 0));
+        }
         });
 
         // Inventory sizes: suggestions depend on selected primary category.
@@ -1607,6 +1630,141 @@ class AdminPanel {
             span.textContent = "Image preview will appear here";
             preview.appendChild(span);
         }
+    }
+
+    // ===================================
+    // MULTI-IMAGE MANAGEMENT
+    // ===================================
+
+    /**
+     * Render image URL rows in the product modal (multi-image support).
+     * @param {Array} images - Array of {storage_path, alt, position} objects
+     */
+    renderProductImageRows(images = []) {
+        const container = document.getElementById('product-images-container');
+        if (!container) return;
+        container.innerHTML = '';
+        const sorted = [...(images || [])].sort((a, b) => (a.position || 0) - (b.position || 0));
+        if (sorted.length === 0) {
+            // Start with one empty row
+            this.addProductImageRow();
+            return;
+        }
+        sorted.forEach((img, idx) => {
+            this._appendImageRow(container, img.storage_path || '', idx + 1);
+        });
+        // Sync hidden legacy input with first image
+        this._syncLegacyImageInput();
+    }
+
+    /**
+     * Add a new empty image URL row to the container.
+     */
+    addProductImageRow(url = '') {
+        const container = document.getElementById('product-images-container');
+        if (!container) return;
+        const position = container.querySelectorAll('.product-image-row').length + 1;
+        this._appendImageRow(container, url, position);
+    }
+
+    /**
+     * Append a single image row with URL input, preview thumbnail, and remove button.
+     */
+    _appendImageRow(container, url, position) {
+        const row = document.createElement('div');
+        row.className = 'product-image-row';
+        row.style.cssText = 'display:flex; gap:8px; align-items:center; margin-bottom:8px; padding:8px; background:#f8f9fa; border-radius:8px;';
+
+        const posLabel = document.createElement('span');
+        posLabel.className = 'img-row-position';
+        posLabel.textContent = `#${position}`;
+        posLabel.style.cssText = 'font-weight:600; font-size:13px; color:#666; min-width:28px;';
+
+        const input = document.createElement('input');
+        input.type = 'url';
+        input.className = 'img-row-url';
+        input.placeholder = 'Image URL (e.g., https://example.com/image.jpg)';
+        input.value = url || '';
+        input.style.cssText = 'flex:1; padding:8px 10px; border:1px solid #ddd; border-radius:6px; font-size:13px;';
+
+        const thumb = document.createElement('div');
+        thumb.className = 'img-row-thumb';
+        thumb.style.cssText = 'width:40px; height:40px; border-radius:6px; overflow:hidden; background:#eee; flex-shrink:0;';
+        if (url) {
+            const img = document.createElement('img');
+            img.src = url;
+            img.alt = 'Preview';
+            img.style.cssText = 'width:100%; height:100%; object-fit:cover;';
+            img.onerror = () => { img.style.display = 'none'; };
+            thumb.appendChild(img);
+        }
+
+        const removeBtn = document.createElement('button');
+        removeBtn.type = 'button';
+        removeBtn.innerHTML = '<i class="fas fa-trash"></i>';
+        removeBtn.title = 'Remove image';
+        removeBtn.style.cssText = 'background:#fee2e2; border:none; color:#ef4444; width:32px; height:32px; border-radius:6px; cursor:pointer; display:flex; align-items:center; justify-content:center;';
+        removeBtn.onclick = () => {
+            row.remove();
+            this._renumberImageRows();
+            this._syncLegacyImageInput();
+        };
+
+        // Live preview on input change
+        input.addEventListener('input', () => {
+            const val = input.value.trim();
+            thumb.innerHTML = '';
+            if (val) {
+                const img = document.createElement('img');
+                img.src = val;
+                img.alt = 'Preview';
+                img.style.cssText = 'width:100%; height:100%; object-fit:cover;';
+                img.onerror = () => { img.style.display = 'none'; };
+                thumb.appendChild(img);
+            }
+            this._syncLegacyImageInput();
+        });
+
+        row.appendChild(posLabel);
+        row.appendChild(input);
+        row.appendChild(thumb);
+        row.appendChild(removeBtn);
+        container.appendChild(row);
+    }
+
+    /**
+     * Renumber position labels after a row is removed.
+     */
+    _renumberImageRows() {
+        const container = document.getElementById('product-images-container');
+        if (!container) return;
+        container.querySelectorAll('.product-image-row').forEach((row, idx) => {
+            const label = row.querySelector('.img-row-position');
+            if (label) label.textContent = `#${idx + 1}`;
+        });
+    }
+
+    /**
+     * Sync the hidden legacy #product-image input with the first image URL.
+     */
+    _syncLegacyImageInput() {
+        const container = document.getElementById('product-images-container');
+        const legacyInput = document.getElementById('product-image');
+        if (!container || !legacyInput) return;
+        const firstRow = container.querySelector('.product-image-row .img-row-url');
+        legacyInput.value = firstRow ? firstRow.value.trim() : '';
+    }
+
+    /**
+     * Get all image URLs from the multi-image rows in order.
+     * @returns {Array<string>} Array of non-empty image URL strings
+     */
+    getProductImageUrls() {
+        const container = document.getElementById('product-images-container');
+        if (!container) return [];
+        return Array.from(container.querySelectorAll('.img-row-url'))
+            .map(input => input.value.trim())
+            .filter(Boolean);
     }
 
     async saveProduct() {
@@ -1751,9 +1909,13 @@ class AdminPanel {
         console.log('📦 Processing inventory');
         await this.saveProductInventory(savedProductId, inventory);
         
-        // Handle product image URL
-        console.log('🖼️ Processing product image URL');
-        if (imageUrl) {
+        // Handle product images (multi-image support)
+        console.log('🖼️ Processing product images');
+        const allImageUrls = this.getProductImageUrls();
+        if (allImageUrls.length > 0) {
+            await this.saveProductImages(savedProductId, allImageUrls);
+        } else if (imageUrl) {
+            // Fallback: single legacy image URL
             await this.saveProductImage(savedProductId, imageUrl);
         }
         
@@ -2080,6 +2242,46 @@ class AdminPanel {
             }
         } catch (error) {
             console.error('Error saving product image:', error);
+            // Don't fail the whole save operation for image issues
+        }
+    }
+
+    /**
+     * Save multiple product images to product_images table.
+     * Replaces all existing images for this product with the new set.
+     * @param {string} productId - The product ID
+     * @param {Array<string>} imageUrls - Array of image URL strings in display order
+     */
+    async saveProductImages(productId, imageUrls) {
+        try {
+            // Delete all existing images for this product
+            const { error: deleteError } = await this.supabase
+                .from('product_images')
+                .delete()
+                .eq('product_id', productId);
+
+            if (deleteError) {
+                console.warn('⚠️ Error deleting old images (may not exist):', deleteError);
+            }
+
+            // Insert new images with position ordering
+            const rows = imageUrls.map((url, idx) => ({
+                product_id: productId,
+                storage_path: url,
+                alt: `Product image ${idx + 1}`,
+                position: idx + 1
+            }));
+
+            if (rows.length > 0) {
+                const { error: insertError } = await this.supabase
+                    .from('product_images')
+                    .insert(rows);
+
+                if (insertError) throw insertError;
+                console.log(`✅ ${rows.length} product image(s) saved`);
+            }
+        } catch (error) {
+            console.error('Error saving product images:', error);
             // Don't fail the whole save operation for image issues
         }
     }
