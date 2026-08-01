@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "status": "idle",
+  "maxRetries": 2,
+  "createdAt": "2026-08-01T02:10:00.000Z",
+  "updatedAt": "2026-08-01T02:10:00.000Z",
+  "items": [
+    {"id":"1","title":"Main product image on white background","prompt":"Create a clean ecommerce main product image on a pure white background. Preserve the exact reference product design, geometry, proportions, branding, colours, texture, openings, accessories, and construction.","state":"pending","attempts":0,"outputPath":null,"error":null,"startedAt":null,"completedAt":null},
+    {"id":"2","title":"Front three-quarter lifestyle image","prompt":"Create a realistic front three-quarter lifestyle product image while preserving the exact product design and branding.","state":"pending","attempts":0,"outputPath":null,"error":null,"startedAt":null,"completedAt":null},
+    {"id":"3","title":"Opposite three-quarter angle","prompt":"Create an opposite three-quarter product view with commercially suitable lighting and exact product consistency.","state":"pending","attempts":0,"outputPath":null,"error":null,"startedAt":null,"completedAt":null},
+    {"id":"4","title":"Side-profile image","prompt":"Create a precise side-profile product image with a clean commercial background.","state":"pending","attempts":0,"outputPath":null,"error":null,"startedAt":null,"completedAt":null},
+    {"id":"5","title":"Rear-view image","prompt":"Create a precise rear-view product image while preserving all construction details.","state":"pending","attempts":0,"outputPath":null,"error":null,"startedAt":null,"completedAt":null},
+    {"id":"6","title":"Material and texture close-up","prompt":"Create a macro close-up emphasizing the product material, texture, finish, and construction quality.","state":"pending","attempts":0,"outputPath":null,"error":null,"startedAt":null,"completedAt":null},
+    {"id":"7","title":"Realistic use-environment image","prompt":"Create a realistic use-environment image showing the product naturally in context.","state":"pending","attempts":0,"outputPath":null,"error":null,"startedAt":null,"completedAt":null},
+    {"id":"8","title":"Premium studio image","prompt":"Create a premium studio product photograph with dramatic but accurate commercial lighting.","state":"pending","attempts":0,"outputPath":null,"error":null,"startedAt":null,"completedAt":null},
+    {"id":"9","title":"Scale or dimensions image","prompt":"Create a product scale and dimensions image with clear visual measurement guidance and exact product proportions.","state":"pending","attempts":0,"outputPath":null,"error":null,"startedAt":null,"completedAt":null},
+    {"id":"10","title":"Features and benefits image","prompt":"Create a clean features-and-benefits product graphic using accurate visual callouts without changing the product.","state":"pending","attempts":0,"outputPath":null,"error":null,"startedAt":null,"completedAt":null},
+    {"id":"11","title":"Packaging or box contents image","prompt":"Create a packaging or box-contents image showing the product and included accessories accurately.","state":"pending","attempts":0,"outputPath":null,"error":null,"startedAt":null,"completedAt":null},
+    {"id":"12","title":"Final advertising hero image","prompt":"Create a premium final advertising hero image suitable for ecommerce and social promotion while preserving exact product identity.","state":"pending","attempts":0,"outputPath":null,"error":null,"startedAt":null,"completedAt":null}
+  ]
+}
