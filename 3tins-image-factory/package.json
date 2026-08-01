@@ -1,0 +1,12 @@
+{
+  "name": "3tins-image-factory",
+  "version": "0.2.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node --env-file=.env worker.js"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
