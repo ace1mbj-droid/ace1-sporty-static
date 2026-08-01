@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "targetImages": 70,
+  "completedImages": 5,
+  "retryImages": 1,
+  "products": [
+    {"name":"Personalised Pencil Box","shopifyProductId":"gid://shopify/Product/9031075430628","done":5,"total":7,"status":"in_progress","next":"alternate_lifestyle"},
+    {"name":"Personalised Bookmark","done":0,"total":7,"status":"pending","next":"hero"},
+    {"name":"Personalised Door Sign","done":0,"total":7,"status":"pending","next":"hero"},
+    {"name":"Personalised Business Card Holder","done":0,"total":7,"status":"pending","next":"hero"},
+    {"name":"Personalised Luggage Tag","done":0,"total":7,"status":"pending","next":"hero"},
+    {"name":"Personalised Friendship Bracelet","done":0,"total":7,"status":"pending","next":"hero"},
+    {"name":"Personalised Initials Wall Art","done":0,"total":7,"status":"pending","next":"hero"},
+    {"name":"Personalised Retirement Gift Plaque","done":0,"total":7,"status":"pending","next":"hero"},
+    {"name":"Bathroom Organiser","done":0,"total":7,"status":"pending","next":"hero"},
+    {"name":"Abstract Mini Sculpture","done":0,"total":7,"status":"pending","next":"hero"}
+  ]
+}
