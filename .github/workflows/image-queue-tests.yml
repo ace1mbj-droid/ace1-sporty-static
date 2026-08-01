@@ -1,0 +1,26 @@
+name: Image Queue Tests
+
+on:
+  push:
+    branches:
+      - feature/persistent-image-queue
+    paths:
+      - 'image-queue-manager/**'
+      - '.github/workflows/image-queue-tests.yml'
+  pull_request:
+    paths:
+      - 'image-queue-manager/**'
+      - '.github/workflows/image-queue-tests.yml'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: image-queue-manager
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm test
